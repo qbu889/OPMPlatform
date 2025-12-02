@@ -4,32 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/5_功能需求_Demo模板.docx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/convert_upload.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/demo_upload.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/format_check.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/sql_formatter.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tmp/转换后_5_功能需求_Demo文档.docx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/app2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/demo_generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/demo_validator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/document_parser.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/format_matcher.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/parse_source_doc.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/sqlFotmat/format_sql_ids.py" afterDir="false" />
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="1">
+      <change afterPath="$PROJECT_DIR$/utils/cleanup_temp_files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tmp/转换后_5_功能需求_Demo文档.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/demo_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/demo_generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/demo_validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/demo_validator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/document_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/document_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/parse_source_doc.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/parse_source_doc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,12 +22,17 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fabb9db27d27865363c2bacc8fc9035a2f21e5c9" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo"><![CDATA[{
@@ -61,6 +49,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.app.executor": "Run",
     "Python.app2.executor": "Run",
+    "Python.cleanup_temp_files.executor": "Run",
     "Python.format_sql_ids.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
@@ -122,6 +111,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="cleanup_temp_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="wordToWord" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/cleanup_temp_files.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="format_sql_ids" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="ENV_FILES" value="" />
@@ -147,8 +158,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.app" />
-        <item itemvalue="Python.app2" />
         <item itemvalue="Python.format_sql_ids" />
+        <item itemvalue="Python.cleanup_temp_files" />
+        <item itemvalue="Python.app2" />
+        <item itemvalue="Python.cleanup_temp_files" />
       </list>
     </recent_temporary>
   </component>
@@ -167,6 +180,41 @@
       <option name="presentableId" value="Default" />
       <updated>1764577947384</updated>
     </task>
+    <task id="LOCAL-00001" summary="1">
+      <option name="closed" value="true" />
+      <created>1764655214151</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1764655214151</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1" />
+    <option name="LAST_COMMIT_MESSAGE" value="1" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

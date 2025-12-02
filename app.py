@@ -2,6 +2,8 @@
 from flask import Flask, request, render_template, send_file, jsonify
 import os
 import logging
+from utils.demo_generator import generate_demo_doc
+from utils.demo_validator import validate_demo_format
 
 # 导入所有需要的模块
 from utils.document_parser import parse_source_doc
@@ -68,14 +70,14 @@ def upload_demo():
     logger.info(f"临时文件已保存至: {temp_path}")
 
     # 验证Demo格式
-    # logger.info("开始验证Demo格式")
-    #validation_result, error_details = validate_demo_format(temp_path)
-    #logger.info(f"验证结果: {validation_result}, 错误数量: {len(error_details) if error_details else 0}")
+    logger.info("开始验证Demo格式")
+    validation_result, error_details = validate_demo_format(temp_path)
+    logger.info(f"验证结果: {validation_result}, 错误数量: {len(error_details) if error_details else 0}")
 
-    # if not validation_result:
-    #     logger.warning(f"Demo格式验证失败，错误详情: {error_details}")
-    #     os.remove(temp_path)  # 删除无效文件
-    #     return render_template('demo_upload.html', success=False, msg='Demo格式验证失败', error_details=error_details)
+    if not validation_result:
+        logger.warning(f"Demo格式验证失败，错误详情: {error_details}")
+        os.remove(temp_path)  # 删除无效文件
+        return render_template('demo_upload.html', success=False, msg='Demo格式验证失败', error_details=error_details)
 
     # 验证通过：保存为正式模板
     os.rename(temp_path, app.config['DEMO_TEMPLATE_PATH'])
@@ -91,14 +93,15 @@ def convert_page():
     return render_template('convert_upload.html', demo_exists=demo_exists, convert_result=None)
 
 # 4. 上传待转换文档并执行转换
+# 在 upload_and_convert 函数中增强错误处理
 @app.route('/upload-and-convert', methods=['POST'])
 def upload_and_convert():
     logger.info("开始处理文档转换请求")
+
     # 检查Demo模板是否存在
     if not os.path.exists(app.config['DEMO_TEMPLATE_PATH']):
         logger.warning("Demo模板不存在")
-        demo_exists = False
-        return render_template('convert_upload.html', demo_exists=demo_exists, convert_result=None)
+        return render_template('convert_upload.html', demo_exists=False, convert_result=None)
 
     # 处理上传文件
     if 'convert_file' not in request.files:
@@ -112,42 +115,56 @@ def upload_and_convert():
         return render_template('convert_upload.html', demo_exists=True,
                                convert_result={'success': False, 'msg': '文件名不能为空'})
 
-    # 保存待转换文件
-    source_path = os.path.join(app.config['UPLOAD_FOLDER'], 'source_doc.docx')
-    convert_file.save(source_path)
-    logger.info(f"待转换文件已保存至: {source_path}")
+    try:
+        # 保存待转换文件
+        source_path = os.path.join(app.config['UPLOAD_FOLDER'], 'source_doc.docx')
+        convert_file.save(source_path)
+        logger.info(f"待转换文件已保存至: {source_path}")
 
-    # 步骤1：解析待转换文档，提取功能需求信息
-    logger.info("开始解析待转换文档")
-    parsed_data, parse_error = parse_source_doc(source_path)
-    if parse_error:
-        logger.error(f"文档解析失败: {parse_error}")
+        # 步骤1：解析待转换文档，提取功能需求信息
+        logger.info("开始解析待转换文档")
+        parsed_data, parse_error = parse_source_doc(source_path)
+        if parse_error:
+            logger.error(f"文档解析失败: {parse_error}")
+            return render_template('convert_upload.html', demo_exists=True,
+                                   convert_result={'success': False, 'msg': f'文档解析失败：{parse_error}'})
+
+        if not parsed_data or len(parsed_data) == 0:
+            logger.warning("未解析到有效数据")
+            return render_template('convert_upload.html', demo_exists=True,
+                                   convert_result={'success': False, 'msg': '文档中未找到有效的功能需求数据'})
+
+        logger.info(f"文档解析成功，共提取到 {len(parsed_data)} 条数据")
+
+        # 步骤2：按Demo模板格式生成新文档
+        output_doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'converted_demo.docx')
+        logger.info("开始生成转换后的文档")
+
+        generate_success, generate_error = generate_demo_doc(
+            demo_template_path=app.config['DEMO_TEMPLATE_PATH'],
+            parsed_data=parsed_data,
+            output_path=output_doc_path
+        )
+
+        if not generate_success:
+            logger.error(f"文档转换失败: {generate_error}")
+            return render_template('convert_upload.html', demo_exists=True,
+                                   convert_result={'success': False, 'msg': f'文档转换失败：{generate_error}'})
+
+        logger.info(f"文档转换成功，输出文件路径: {output_doc_path}")
+
+        # 转换成功，返回下载链接
+        return render_template('convert_upload.html', demo_exists=True, convert_result={
+            'success': True,
+            'msg': f'文档已成功转换为Demo格式，共处理 {len(parsed_data)} 条数据',
+            'download_url': '/download-converted-doc'
+        })
+
+    except Exception as e:
+        logger.error(f"文档转换过程中发生未预期错误: {str(e)}", exc_info=True)
         return render_template('convert_upload.html', demo_exists=True,
-                               convert_result={'success': False, 'msg': f'文档解析失败：{parse_error}'})
+                               convert_result={'success': False, 'msg': f'系统错误：{str(e)}'})
 
-    logger.info(f"文档解析成功，共提取到 {len(parsed_data)} 条数据")
-
-    # 步骤2：按Demo模板格式生成新文档
-    output_doc_path = os.path.join(app.config['UPLOAD_FOLDER'], 'converted_demo.docx')
-    logger.info("开始生成转换后的文档")
-    generate_success, generate_error = generate_demo_doc(
-        demo_template_path=app.config['DEMO_TEMPLATE_PATH'],
-        parsed_data=parsed_data,
-        output_path=output_doc_path
-    )
-
-    if not generate_success:
-        logger.error(f"文档转换失败: {generate_error}")
-        return render_template('convert_upload.html', demo_exists=True,
-                               convert_result={'success': False, 'msg': f'文档转换失败：{generate_error}'})
-
-    logger.info(f"文档转换成功，输出文件路径: {output_doc_path}")
-    # 转换成功，返回下载链接
-    return render_template('convert_upload.html', demo_exists=True, convert_result={
-        'success': True,
-        'msg': '文档已成功转换为Demo格式',
-        'download_url': '/download-converted-doc'
-    })
 
 # 5. 下载转换后的Demo文档
 @app.route('/download-converted-doc')
