@@ -1,0 +1,81 @@
+<!-- templates/format_check.html -->
+{% extends "base.html" %}
+
+{% block title %}格式检查 - 文档转换系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>文档格式检查</h2>
+
+        <form method="POST" action="/format-check" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="document_file" class="form-label">选择待检查文档</label>
+                <input type="file" class="form-control" id="document_file" name="document_file" accept=".docx">
+                <div class="form-text">请选择需要检查格式的Word文档</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">检查格式匹配度</button>
+        </form>
+
+        {% if result %}
+        <div class="mt-4">
+            <h3>检查结果</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">匹配度: {{ "%.2f"|format(result.match_rate * 100) }}%</h5>
+
+                    {% if result.match_rate >= 0.8 %}
+                        <div class="alert alert-success">
+                            <strong>优秀匹配!</strong> 文档格式符合标准要求。
+                        </div>
+                    {% elif result.match_rate >= 0.6 %}
+                        <div class="alert alert-warning">
+                            <strong>良好匹配</strong> 文档格式基本符合要求，建议进行微调。
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <strong>匹配度较低</strong> 文档格式需要较大调整才能符合标准。
+                        </div>
+                    {% endif %}
+
+                    {% if result.errors %}
+                        <h6>错误信息:</h6>
+                        <ul>
+                            {% for error in result.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if result.details %}
+                        <h6>详细信息:</h6>
+                        <ul>
+                            <li>标题结构匹配度: {{ "%.2f"|format(result.details.heading_match * 100) }}%</li>
+                            <li>字段模式匹配度: {{ "%.2f"|format(result.details.field_match * 100) }}%</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>格式要求</h5>
+            </div>
+            <div class="card-body">
+                <p>标准文档应包含:</p>
+                <ul>
+                    <li>多级标题结构 (Heading 1-5)</li>
+                    <li>功能描述字段</li>
+                    <li>输入输出字段</li>
+                    <li>处理过程字段</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

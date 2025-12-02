@@ -1,0 +1,62 @@
+<!-- templates/convert_upload.html -->
+{% extends "base.html" %}
+
+{% block title %}转换文档 - 文档转换系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>转换文档</h2>
+
+        {% if not demo_exists %}
+            <div class="alert alert-warning">
+                <h4>请先上传Demo模板</h4>
+                <p>需要先上传并验证Demo模板才能进行文档转换。</p>
+                <a href="/upload-demo-page" class="btn btn-primary">上传Demo模板</a>
+            </div>
+        {% else %}
+            {% if convert_result %}
+                {% if convert_result.success %}
+                    <div class="alert alert-success">
+                        <h4>{{ convert_result.msg }}</h4>
+                        <a href="{{ convert_result.download_url }}" class="btn btn-success">下载转换后的文档</a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <h4>转换失败</h4>
+                        <p>{{ convert_result.msg }}</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="POST" action="/upload-and-convert" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="convert_file" class="form-label">选择待转换文档</label>
+                    <input type="file" class="form-control" id="convert_file" name="convert_file" accept=".docx">
+                    <div class="form-text">请上传需要转换为Demo格式的Word文档</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">上传并转换</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>转换说明</h5>
+            </div>
+            <div class="card-body">
+                <p>文档转换过程：</p>
+                <ol>
+                    <li>解析上传文档的结构</li>
+                    <li>提取功能需求信息</li>
+                    <li>按照Demo模板格式重新组织</li>
+                    <li>生成新的符合规范的文档</li>
+                </ol>
+                <p class="text-info">✓ Demo模板已准备就绪</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

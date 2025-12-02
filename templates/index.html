@@ -1,0 +1,120 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block title %}首页 - 文档转换系统{% endblock %}
+
+{% block content %}
+<ul class="nav nav-tabs" id="mainTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">文档转换</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sql-tab" data-bs-toggle="tab" data-bs-target="#sql" type="button" role="tab">SQL工具</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="mainTabsContent">
+    <!-- 文档转换 Tab -->
+    <div class="tab-pane fade show active" id="home" role="tabpanel">
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <h2>系统介绍</h2>
+                <p>本系统用于将普通Word文档转换为符合5.功能需求格式的Demo文档。</p>
+
+                <h3>使用步骤</h3>
+                <ol>
+                    <li>下载标准Demo模板</li>
+                    <li>上传并验证Demo格式</li>
+                    <li>上传待转换文档</li>
+                    <li>下载转换后的文档</li>
+                </ol>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>操作指引</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if demo_exists %}
+                            <p class="text-success">✓ Demo模板已上传</p>
+                        {% else %}
+                            <p class="text-warning">⚠ 需要先上传Demo模板</p>
+                        {% endif %}
+
+                        <a href="/download-demo-template" class="btn btn-primary mb-2">下载Demo模板</a>
+                        <a href="/upload-demo-page" class="btn btn-secondary mb-2">上传Demo模板</a>
+                        <a href="/convert-page" class="btn btn-info">转换文档</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL工具 Tab -->
+    <div class="tab-pane fade" id="sql" role="tabpanel">
+        <div class="row mt-4">
+            <div class="col-12">
+                <h2>SQL ID格式化工具</h2>
+                <p>快速格式化ID列表用于SQL查询</p>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="sqlIds" class="form-label">请输入需要格式化的ID（每行一个）:</label>
+                            <textarea class="form-control" id="sqlIds" rows="4" placeholder="例如：
+FJ-076-20251202-0322
+FJ-076-20251202-0323"></textarea>
+                        </div>
+                        <button class="btn btn-success" onclick="formatSqlIds()">格式化ID</button>
+
+                        <div id="sqlResult" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <h5>格式化结果:</h5>
+                                <pre id="formattedOutput" class="bg-light p-2"></pre>
+                                <button class="btn btn-sm btn-outline-primary" onclick="copyResult()">复制结果</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function formatSqlIds() {
+    const idsText = document.getElementById('sqlIds').value;
+    const resultDiv = document.getElementById('sqlResult');
+    const outputPre = document.getElementById('formattedOutput');
+
+    // 按行分割并清理空白字符
+    const idsList = idsText.split('\n').filter(id => id.trim());
+
+    if (idsList.length === 0) {
+        alert('请输入至少一个ID');
+        return;
+    }
+
+    // 格式化为SQL格式
+    const formattedIds = idsList.map(id => `'${id.trim()}'`);
+
+    let result;
+    if (idsList.length === 1) {
+        result = formattedIds[0];
+    } else {
+        result = formattedIds.join(',\n');
+    }
+
+    outputPre.textContent = result;
+    resultDiv.style.display = 'block';
+}
+
+function copyResult() {
+    const resultText = document.getElementById('formattedOutput').textContent;
+    navigator.clipboard.writeText(resultText).then(() => {
+        alert('已复制到剪贴板!');
+    });
+}
+</script>
+{% endblock %}

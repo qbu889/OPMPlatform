@@ -1,0 +1,65 @@
+<!-- templates/demo_upload.html -->
+{% extends "base.html" %}
+
+{% block title %}上传Demo模板 - 文档转换系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>上传Demo模板</h2>
+
+        {% if success %}
+            <div class="alert alert-success">
+                <h4>{{ msg }}</h4>
+                <p>现在可以进行文档转换操作了。</p>
+                <a href="/convert-page" class="btn btn-primary">前往转换页面</a>
+            </div>
+        {% else %}
+            {% if msg %}
+                <div class="alert alert-danger">
+                    <h4>{{ msg }}</h4>
+                    {% if error_details %}
+                        <ul>
+                            {% for error in error_details %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="/upload-demo" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="demo_file" class="form-label">选择Demo模板文件</label>
+                    <input type="file" class="form-control" id="demo_file" name="demo_file" accept=".docx">
+                    <div class="form-text">请上传符合5.功能需求格式的Word文档</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">上传并验证</button>
+                <a href="/download-demo-template" class="btn btn-secondary">下载标准模板</a>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>模板要求</h5>
+            </div>
+            <div class="card-body">
+                <p>模板文档需要满足以下格式要求：</p>
+                <ul>
+                    <li>使用Heading 1-5样式定义层级结构</li>
+                    <li>每个功能点计数项下需包含：
+                        <ul>
+                            <li>功能描述</li>
+                            <li>输入</li>
+                            <li>输出</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
