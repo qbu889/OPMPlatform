@@ -9,6 +9,12 @@
         <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">文档转换</button>
     </li>
     <li class="nav-item" role="presentation">
+        <button class="nav-link" id="formatter-tab" data-bs-toggle="tab" data-bs-target="#formatter" type="button" role="tab">文档格式化</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="clean-event-tab" data-bs-toggle="tab" data-bs-target="#clean-event" type="button" role="tab">事件数据清洗</button>
+    </li>
+    <li class="nav-item" role="presentation">
         <button class="nav-link" id="sql-tab" data-bs-toggle="tab" data-bs-target="#sql" type="button" role="tab">SQL工具</button>
     </li>
 </ul>
@@ -51,6 +57,53 @@
         </div>
     </div>
 
+    <!-- 文档格式化 Tab -->
+    <div class="tab-pane fade" id="formatter" role="tabpanel">
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <h2>文档格式化工具</h2>
+                <p>按照标准模板格式化文档，使其符合规范要求。</p>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5>功能说明</h5>
+                        <ul>
+                            <li>自动识别文档中的序号格式</li>
+                            <li>统一加粗规则</li>
+                            <li>标准化字号大小</li>
+                            <li>优化段落换行</li>
+                        </ul>
+
+                        {% if demo_exists %}
+                            <a href="/document-formatter" class="btn btn-primary">开始格式化文档</a>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <p>请先上传Demo模板以启用格式化功能</p>
+                                <a href="/upload-demo-page" class="btn btn-secondary">上传Demo模板</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>使用指南</h5>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>确保已上传标准Demo模板</li>
+                            <li>点击"开始格式化文档"按钮</li>
+                            <li>上传需要格式化的文档</li>
+                            <li>下载格式化后的文档</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SQL工具 Tab -->
     <div class="tab-pane fade" id="sql" role="tabpanel">
         <div class="row mt-4">
@@ -80,6 +133,20 @@ FJ-076-20251202-0323"></textarea>
             </div>
         </div>
     </div>
+    <div class="tab-pane fade" id="clean-event" role="tabpanel">
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2>事件数据清洗工具</h2>
+            <p>清洗和格式化事件数据，生成标准格式的JSON数据</p>
+
+            <div class="card">
+                <div class="card-body">
+                    <iframe src="/clean-event-page" width="100%" height="600" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <script>

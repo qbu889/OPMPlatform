@@ -3,18 +3,36 @@ from docx import Document
 
 from app import logger
 
-
+def validate_document_structure(doc):
+    """验证文档是否包含必要结构"""
+    # 检查文档是否具有预期的特征
+    # 例如：特定标题、表格格式等
+    pass
 # utils/document_parser.py
-def parse_source_doc(file_path):
-    """
-    解析源文档，提取功能需求信息
-    """
+def parse_source_doc(doc_path):
+    logger.info(f"开始解析文档: {doc_path}")
     try:
-        logger.info(f"开始解析文档: {file_path}")
-        doc = Document(file_path)
-        # 记录文档基本信息
-        logger.info(f"文档总段落数: {len(doc.paragraphs)}")
+        doc = Document(doc_path)
+
+        # 添加详细的文档结构信息日志
+        logger.info(f"文档段落数量: {len(doc.paragraphs)}")
+        logger.info(f"文档表格数量: {len(doc.tables)}")
+
+        # 记录前几个段落的内容（用于调试）
+        for i, paragraph in enumerate(doc.paragraphs[:10]):
+            logger.debug(f"段落{i}: {paragraph.text[:100]}...")
+
+        # 记录表格信息（如果有的话）
+        for i, table in enumerate(doc.tables[:3]):
+            logger.debug(f"表格{i}行列数: {len(table.rows)}x{len(table.columns)}")
+            if len(table.rows) > 0 and len(table.rows[0].cells) > 0:
+                logger.debug(f"表格{i}第一行第一列内容: {table.rows[0].cells[0].text[:50]}...")
+
         parsed_data = []
+
+        # 记录文档的基本信息
+        logger.info(f"文档段落数量: {len(doc.paragraphs)}")
+        logger.info(f"文档表格数量: {len(doc.tables)}")
 
         # 确保正确遍历所有段落
         for para in doc.paragraphs:
@@ -38,7 +56,6 @@ def parse_source_doc(file_path):
         logger.info(f"文档解析完成，共提取 {len(parsed_data)} 条数据")
         return parsed_data, None
     except Exception as e:
-        error_msg = f"文档解析过程中发生错误: {str(e)}"
-        logger.error(error_msg, exc_info=True)
-        return None, error_msg
+        logger.error(f"文档解析出错: {str(e)}", exc_info=True)
+        return None, str(e)
 

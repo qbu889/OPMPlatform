@@ -15,19 +15,37 @@
                 <a href="/upload-demo-page" class="btn btn-primary">上传Demo模板</a>
             </div>
         {% else %}
+        <!-- 在页面适当位置添加 -->
+        {% if not demo_exists %}
+            <div class="alert alert-info">
+                <p>或者您可以使用<a href="/document-formatter">文档格式化工具</a>来直接格式化文档</p>
+            </div>
+        {% endif %}
+
             {% if convert_result %}
-                {% if convert_result.success %}
-                    <div class="alert alert-success">
-                        <h4>{{ convert_result.msg }}</h4>
-                        <a href="{{ convert_result.download_url }}" class="btn btn-success">下载转换后的文档</a>
-                    </div>
-                {% else %}
-                    <div class="alert alert-danger">
-                        <h4>转换失败</h4>
-                        <p>{{ convert_result.msg }}</p>
-                    </div>
-                {% endif %}
-            {% endif %}
+    {% if convert_result.success %}
+        <div class="alert alert-success">
+            <h4>{{ convert_result.msg }}</h4>
+            <a href="{{ convert_result.download_url }}" class="btn btn-success">下载转换后的文档</a>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4>转换失败</h4>
+            <p>{{ convert_result.msg }}</p>
+            <!-- 在这里添加更多指导信息 -->
+            <div class="mt-2">
+                <small>
+                    <strong>常见问题及解决方法：</strong><br>
+                    1. 确保文档包含功能需求相关内容<br>
+                    2. 参考标准模板格式编写文档<br>
+                    3. 使用"格式检查"功能确认文档结构<br>
+                    4. 文档应包含标题、表格等结构化内容<br>
+                    5. 确保文档不是纯图片或扫描件
+                </small>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
 
             <form method="POST" action="/upload-and-convert" enctype="multipart/form-data">
                 <div class="mb-3">

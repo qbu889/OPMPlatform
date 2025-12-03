@@ -1,0 +1,69 @@
+<!-- templates/document_formatter.html -->
+{% extends "base.html" %}
+
+{% block title %}文档格式化 - 文档转换系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>文档格式化</h2>
+
+        {% if not template_exists %}
+            <div class="alert alert-warning">
+                <h4>请先上传格式模板</h4>
+                <p>需要先上传并验证格式模板才能进行文档格式化。</p>
+                <a href="/upload-demo-page" class="btn btn-primary">上传格式模板</a>
+            </div>
+        {% else %}
+            {% if format_result %}
+                {% if format_result.success %}
+                    <div class="alert alert-success">
+                        <h4>{{ format_result.msg }}</h4>
+                        <a href="{{ format_result.download_url }}" class="btn btn-success">下载格式化后的文档</a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <h4>格式化失败</h4>
+                        <p>{{ format_result.msg }}</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="POST" action="/format-document" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="source_file" class="form-label">选择待格式化文档</label>
+                    <input type="file" class="form-control" id="source_file" name="source_file" accept=".docx">
+                    <div class="form-text">请上传需要按照模板格式进行格式化的Word文档</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">上传并格式化</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>格式化说明</h5>
+            </div>
+            <div class="card-body">
+                <p>文档格式化过程：</p>
+                <ol>
+                    <li>分析模板文档的格式规范</li>
+                    <li>识别待格式化文档的内容结构</li>
+                    <li>应用模板格式到目标文档</li>
+                    <li>生成新的符合规范的文档</li>
+                </ol>
+                <p class="text-info">✓ 格式模板已准备就绪</p>
+                <p><strong>支持的格式化特性：</strong></p>
+                <ul>
+                    <li>序号格式化</li>
+                    <li>文字加粗</li>
+                    <li>字号调整</li>
+                    <li>段落换行</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
