@@ -4,18 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="bata1.0">
-      <change afterPath="$PROJECT_DIR$/templates/clean_event.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/demo模板.docx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/document_formatter.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/document_formatter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="bata 2.0">
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/document_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/event_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/sql_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/document_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/event_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/5_功能需求_Demo模板.docx" beforeDir="false" afterPath="$PROJECT_DIR$/templates/功能需求_Demo模板.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/convert_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/convert_upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/parse_source_doc.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/parse_source_doc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/sqlFotmat/format_sql_ids.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,8 +26,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -38,6 +39,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "qbu889"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:/qbu889/OPMPlatform.git",
+    "accountId": "09c92d07-a86d-4f2e-acff-ac193fa6dbe0"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
 }</component>
@@ -191,7 +204,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764662514028</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="bata 2.0">
+      <option name="closed" value="true" />
+      <created>1764734180734</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1764734180734</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -208,7 +229,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="1" />
     <MESSAGE value="bata1.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="bata1.0" />
+    <MESSAGE value="bata 2.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="bata 2.0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
