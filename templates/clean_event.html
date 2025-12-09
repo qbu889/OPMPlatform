@@ -125,16 +125,63 @@
             });
         });
         // 在现有的 script 标签中添加复制功能
+// 替换现有的复制功能代码
 document.getElementById('copyBtn').addEventListener('click', function() {
     const resultText = document.getElementById('resultData').textContent;
-    navigator.clipboard.writeText(resultText).then(() => {
-        const copySuccess = document.getElementById('copySuccess');
-        copySuccess.style.display = 'inline';
-        setTimeout(() => {
-            copySuccess.style.display = 'none';
-        }, 2000); // 2秒后隐藏提示
-    });
+    const copySuccess = document.getElementById('copySuccess');
+
+    // 检查是否支持现代clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        // 现代浏览器方式
+        navigator.clipboard.writeText(resultText).then(() => {
+            showCopySuccess(copySuccess);
+        }).catch(err => {
+            console.error('复制失败:', err);
+            fallbackCopyText(resultText, copySuccess);
+        });
+    } else {
+        // 降级处理方案
+        fallbackCopyText(resultText, copySuccess);
+    }
 });
+
+// 降级复制方法
+function fallbackCopyText(text, successElement) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // 避免滚动到底部
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess(successElement);
+        } else {
+            console.error('降级复制方法也失败了');
+        }
+    } catch (err) {
+        console.error('降级复制方法出错:', err);
+    }
+
+    document.body.removeChild(textArea);
+}
+
+// 显示复制成功提示
+function showCopySuccess(element) {
+    element.style.display = 'inline';
+    setTimeout(() => {
+        element.style.display = 'none';
+    }, 2000);
+}
+
 
     </script>
 </body>

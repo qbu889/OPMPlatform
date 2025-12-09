@@ -1,7 +1,7 @@
 <!-- templates/index.html -->
 {% extends "base.html" %}
 
-{% block title %}首页 - 文档转换系统{% endblock %}
+{% block title %}首页 - 转换系统{% endblock %}
 
 {% block content %}
 <ul class="nav nav-tabs" id="mainTabs" role="tablist">
@@ -17,6 +17,23 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="sql-tab" data-bs-toggle="tab" data-bs-target="#sql" type="button" role="tab">SQL工具</button>
     </li>
+    <!-- 新增Excel转Word Tab -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="excel2word-tab" data-bs-toggle="tab" data-bs-target="#excel2word" type="button" role="tab">Excel转Word</button>
+    </li>
+
+    <!-- 在标签页列表中添加 -->
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
+            <i class="fas fa-comments me-1"></i>AI助手
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="markdown-tab" data-bs-toggle="tab" data-bs-target="#markdown" type="button" role="tab">Markdown转Word</button>
+    </li>
+
+
+
 </ul>
 
 <div class="tab-content" id="mainTabsContent">
@@ -134,19 +151,73 @@ FJ-076-20251202-0323"></textarea>
         </div>
     </div>
     <div class="tab-pane fade" id="clean-event" role="tabpanel">
-    <div class="row mt-4">
-        <div class="col-12">
-            <h2>事件数据清洗工具</h2>
-            <p>清洗和格式化事件数据，生成标准格式的JSON数据</p>
+        <div class="row mt-4">
+            <div class="col-12">
+                <h2>事件数据清洗工具</h2>
+                <p>清洗和格式化事件数据，生成标准格式的JSON数据</p>
 
-            <div class="card">
-                <div class="card-body">
-                    <iframe src="/clean-event-page" width="100%" height="600" frameborder="0"></iframe>
+                <div class="card">
+                    <div class="card-body">
+                        <iframe src="/clean-event-page" width="100%" height="600" frameborder="0"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <!-- 新增Excel转Word Tab内容 -->
+    <div class="tab-pane fade" id="excel2word" role="tabpanel">
+        {% include 'excel2word_content.html' %}
+    </div>
+    <!-- 在 tab-content 中添加聊天区域 -->
+    <div class="tab-pane fade" id="chat" role="tabpanel">
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-robot me-2"></i>AI智能助手</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <iframe src="/chat" width="100%" height="600" frameborder="0" style="border-radius: 0 0 5px 5px;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    !-- Markdown转Word Tab -->
+    <div class="tab-pane fade" id="markdown" role="tabpanel">
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <h2>Markdown转Word工具</h2>
+            <p>将Markdown文件转换为标准Word文档格式。</p>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" action="/markdown-upload">
+                        <div class="mb-3">
+                            <label for="markdown_file" class="form-label">选择Markdown文件(.md)</label>
+                            <input type="file" class="form-control" id="markdown_file" name="markdown_file" accept=".md">
+                        </div>
+                        <button type="submit" class="btn btn-primary">转换并下载</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>使用说明</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>选择要转换的Markdown文件</li>
+                        <li>点击转换按钮</li>
+                        <li>下载生成的Word文档</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
 </div>
 
 <script>

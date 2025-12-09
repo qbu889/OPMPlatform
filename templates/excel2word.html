@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Excel转Word - 文档管理平台{% endblock %}
+
+{% block content %}
+<div class="card mt-3">
+    <div class="card-header">
+        <h5>Excel转Word工具</h5>
+    </div>
+    <div class="card-body">
+        <!-- 1. 文件上传区域 -->
+        <form action="{{ url_for('excel2word.upload_excel') }}" method="post" enctype="multipart/form-data" class="mb-4">
+            <div class="input-group">
+                <input type="file" class="form-control" name="excel_file" accept=".xlsx,.xls" required>
+                <button class="btn btn-primary" type="submit">上传Excel文件</button>
+            </div>
+        </form>
+
+        <!-- 2. 操作按钮区域（仅上传后显示） -->
+        {% if excel_uploaded %}
+        <div class="d-flex gap-2 mb-4">
+            <a href="{{ url_for('excel2word.convert_excel_to_word') }}" class="btn btn-success">开始转换</a>
+            <a href="{{ url_for('excel2word.verify_word_content') }}" class="btn btn-info">内容校对</a>
+        </div>
+
+        <!-- 3. 下载区域（仅转换后显示） -->
+        {% if converted %}
+        <div class="mb-4">
+            <a href="{{ url_for('excel2word.download_word') }}" class="btn btn-warning">下载Word文档</a>
+            {% if module_stats %}
+            <a href="{{ url_for('excel2word.download_stats') }}" class="btn btn-secondary">下载统计数据</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 4. 校对结果 -->
+        {% if verify_result is not none %}
+        <div class="alert {% if verify_result %}alert-success{% else %}alert-danger{% endif %}">
+            {% if verify_result %}
+            <i class="bi bi-check-circle"></i> 校对通过：Excel与Word内容一致
+            {% else %}
+            <i class="bi bi-exclamation-circle"></i> 校对失败：Excel与Word内容不一致
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 5. 模块统计表格 -->
+        {% if module_stats %}
+        <div class="mt-4">
+            <h6>模块统计</h6>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>一级模块名称</th>
+                        <th>二级模块数量</th>
+                        <th>子过程数量</th>
+                        <th>CFP总和</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in module_stats %}
+                    <tr>
+                        <td>{{ stat.一级模块名称 }}</td>
+                        <td>{{ stat.二级模块数量 }}</td>
+                        <td>{{ stat.子过程数量 }}</td>
+                        <td>{{ stat.CFP总和 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- 提示消息（复用现有flash样式） -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} mt-3">
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}
