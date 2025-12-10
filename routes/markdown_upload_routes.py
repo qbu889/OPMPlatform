@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import markdown
 from docx import Document
 from datetime import datetime
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from bs4 import BeautifulSoup
@@ -51,7 +51,7 @@ def markdown_upload():
 
             file.save(real_path)
 
-            word_filename = filename.replace('.md', '.docx')
+            word_filename = clean_filename(file.filename).replace('.md', '.docx').replace('.MD', '.docx')
             word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
 
             convert_md_to_docx(real_path, word_filepath)
@@ -82,7 +82,16 @@ def set_font(run, name='宋体', size=None, bold=False):
         run.font.size = Pt(size)
     if bold:
         run.bold = True
+    # 设置字体颜色为黑色
+    run.font.color.rgb = RGBColor(0, 0, 0)  # 明确设置为黑色
 
+def clean_filename(filename):
+    """清理文件名，移除特殊字符"""
+    # 移除或替换不合法的文件名字符
+    invalid_chars = '<>:"/\\|?*'
+    for char in invalid_chars:
+        filename = filename.replace(char, '_')
+    return filename.strip(' ._')  # 移除首尾的空格和点
 
 def create_style_mapping():
     return {
@@ -202,47 +211,238 @@ def load_template_styles(doc):
 
     return styles
 
+def get_heading_size(level):
+    """获取标题字体大小"""
+    sizes = {
+        1: 16,
+        2: 15,
+        3: 14,
+        4: 12,
+        5: 12,
+        6: 12
+    }
+    return sizes.get(level, 12)
+
 
 def convert_md_to_docx(md_path, docx_path):
-
     with open(md_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
+
+    # 更新文件统计数据
+    md_content = update_file_statistics(md_content)
 
     html = markdown.markdown(md_content, extensions=['tables'])
     soup = BeautifulSoup(html, 'html.parser')
 
-    # 加载模板
-    doc = Document(TEMPLATE_DOCX)
-
-    # 自动加载模板中的样式
-    style_map = load_template_styles(doc)
+    # 创建全新的空文档，而不是基于模板
+    doc = Document()  # 不使用模板
 
     processed = set()
 
-    for element in soup.find_all(['h1','h2','h3','h4','h5','h6','p','ul','ol','li']):
+    for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
         text = element.get_text().strip()
         if not text or text in processed:
             continue
         processed.add(text)
 
-        # 标题
-        if element.name in ['h1','h2','h3','h4','h5','h6']:
-            p = doc.add_paragraph(text, style=style_map[element.name])
+        # 标题处理
+        if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            level = int(element.name[1])
+            heading = doc.add_heading(level=min(level, 9))
+            # 处理标题文本，强制加粗，不使用斜体
+            text = element.get_text().strip()
+            if text:
+                run = heading.add_run(text)
+                set_font(run, size=get_heading_size(level), bold=True)  # 强制加粗
             continue
 
-        # 段落
+        # 段落处理
         if element.name == 'p':
-            doc.add_paragraph(text, style=style_map["p"])
+            paragraph = doc.add_paragraph()
+            add_formatted_text(paragraph, element)
             continue
 
-        # 列表
+        # 列表处理
         if element.name in ['ul', 'ol']:
-            list_style = style_map[element.name]
             for li in element.find_all('li'):
                 li_text = li.get_text().strip()
                 if not li_text or li_text in processed:
                     continue
                 processed.add(li_text)
-                doc.add_paragraph(li_text, style=list_style)
+                paragraph = doc.add_paragraph(style='List Bullet')
+                add_formatted_text(paragraph, li)
+
+    # 添加固定的功能需求描述
+    add_fixed_function_requirements(doc)
 
     doc.save(docx_path)
+
+
+def add_fixed_function_requirements(doc):
+    """添加固定的功能需求描述"""
+    # 检查文档中是否已包含相关功能需求描述
+    existing_content = ""
+    for paragraph in doc.paragraphs:
+        existing_content += paragraph.text + "\n"
+
+    # 如果已存在相关描述则不添加
+    if "按照FPA《集中故障管理系统-监控综合应用" in existing_content:
+        return
+
+    # 添加标题
+    heading = doc.add_heading('5. 功能需求', level=1)
+    set_font(heading.runs[0], size=16, bold=True)
+
+    # 添加第一段内容（FPA加粗）
+    paragraph1 = doc.add_paragraph()
+    run1 = paragraph1.add_run('按照FPA')
+    run1.bold = True
+    run2 = paragraph1.add_run(
+        '《集中故障管理系统-监控综合应用-关于集团事件工单省部接口数据上报保障的开发需求-15400_20250318-FPA预估2025版V3_厂家版本.xlsx》"2. 规模估算"生成，仅保留EI/EO/EQ类功能点，剔除ILF/EIF类')
+    set_font(run1, size=12)
+    set_font(run2, size=12)
+
+    # 添加第二段内容（写死的内容，FPA加粗）
+    paragraph2 = doc.add_paragraph()
+    run3 = paragraph2.add_run('按照FPA')
+    run3.bold = True
+    run4 = paragraph2.add_run(
+        '中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
+    set_font(run3, size=12)
+    set_font(run4, size=12)
+
+
+def add_formatted_text(paragraph, element):
+    """
+    递归处理HTML元素，保留格式（如加粗）和换行，但去除斜体
+    """
+    if element.name is None:  # 文本节点
+        text = str(element)
+        if text.strip() or text.isspace():
+            # 处理文本中的换行
+            lines = text.split('\n')
+            for i, line in enumerate(lines):
+                if line.strip():
+                    run = paragraph.add_run(line)
+                    set_font(run, size=12)
+                # 如果不是最后一行且有换行符，则添加换行
+                if i < len(lines) - 1:
+                    paragraph.add_run('\n')
+        return
+
+    # 处理子元素
+    for child in element.children:
+        if hasattr(child, 'name'):
+            if child.name in ['strong', 'b']:  # 加粗
+                # 处理加粗文本中的换行
+                text = child.get_text()
+                lines = text.split('\n')
+                for i, line in enumerate(lines):
+                    if line.strip():
+                        run = paragraph.add_run(line)
+                        run.bold = True
+                        set_font(run, size=12, bold=True)
+                    if i < len(lines) - 1:
+                        paragraph.add_run('\n')
+            elif child.name in ['em', 'i']:  # 斜体 - 转换为普通文本
+                # 处理斜体文本中的换行，但不应用斜体格式
+                text = child.get_text()
+                lines = text.split('\n')
+                for i, line in enumerate(lines):
+                    if line.strip():
+                        run = paragraph.add_run(line)
+                        set_font(run, size=12)  # 不应用斜体
+                    if i < len(lines) - 1:
+                        paragraph.add_run('\n')
+            elif child.name == 'br':  # 换行标签
+                paragraph.add_run('\n')
+            else:  # 其他标签，递归处理
+                add_formatted_text(paragraph, child)
+        else:  # 文本内容
+            text = str(child)
+            if text.strip() or text.isspace():
+                lines = text.split('\n')
+                for i, line in enumerate(lines):
+                    if line.strip():
+                        run = paragraph.add_run(line)
+                        set_font(run, size=12)
+                    if i < len(lines) - 1:
+                        paragraph.add_run('\n')
+
+
+def count_files_by_separators(text):
+    """根据分隔符数量统计文件个数，包含"（如适用）"的条目也计入统计"""
+    if text.strip() == '无' or not text.strip():
+        return 0
+
+    # 分割文件列表并计数所有条目（包括包含"（如适用）"的）
+    files = [f.strip() for f in text.split('、') if f.strip()]
+    return len(files)
+
+
+def update_file_statistics(content):
+    """更新文件统计数据"""
+    import re
+
+    # 先清理"（如适用）"文本
+    cleaned_content = content.replace('（如适用）', '')
+
+    # 匹配"本事务功能预计涉及到 2 个内部逻辑文件，0 个外部逻辑文件"这样的模式
+    pattern = r'本事务功能预计涉及到\s*(\d+)\s*个内部逻辑文件\s*，?\s*(\d+)\s*个外部逻辑文件'
+    match = re.search(pattern, cleaned_content)
+
+    if match:
+        # 统计实际的内部逻辑文件数量
+        internal_new_added_pattern = r'本期新增/变更的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
+        internal_existing_pattern = r'本期涉及原有但没修改的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
+
+        internal_new_added_match = re.search(internal_new_added_pattern, cleaned_content)
+        internal_existing_match = re.search(internal_existing_pattern, cleaned_content)
+
+        internal_new_count = 0
+        internal_existing_count = 0
+
+        if internal_new_added_match:
+            internal_new_text = internal_new_added_match.group(1).strip()
+            internal_new_count = count_files_by_separators(internal_new_text)
+
+        if internal_existing_match:
+            internal_existing_text = internal_existing_match.group(1).strip()
+            internal_existing_count = count_files_by_separators(internal_existing_text)
+
+        actual_internal_count = internal_new_count + internal_existing_count
+
+        # 统计实际的外部逻辑文件数量
+        external_new_added_pattern = r'本期新增/变更的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
+        external_existing_pattern = r'本期涉及原有但没修改的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
+
+        external_new_added_match = re.search(external_new_added_pattern, cleaned_content)
+        external_existing_match = re.search(external_existing_pattern, cleaned_content)
+
+        external_new_count = 0
+        external_existing_count = 0
+
+        if external_new_added_match:
+            external_new_text = external_new_added_match.group(1).strip()
+            external_new_count = count_files_by_separators(external_new_text)
+
+        if external_existing_match:
+            external_existing_text = external_existing_match.group(1).strip()
+            external_existing_count = count_files_by_separators(external_existing_text)
+
+        actual_external_count = external_new_count + external_existing_count
+
+        # 替换原来的统计数字
+        updated_content = re.sub(
+            pattern,
+            f'本事务功能预计涉及到{actual_internal_count}个内部逻辑文件，{actual_external_count}个外部逻辑文件',
+            cleaned_content
+        )
+
+        return updated_content
+
+    # 即使没有匹配到统计模式，也要返回清理后的文本
+    return cleaned_content
+
+
+
