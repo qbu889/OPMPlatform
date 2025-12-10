@@ -1,26 +1,8 @@
-<!DOCTYPE html>
 <html>
-<head>
-    <title>Markdown 转 Word</title>
-    <meta charset="UTF-8">
-</head>
 <body>
-    <h1>Markdown 转 Word 文档</h1>
-
+    <h1>Markdown Upload</h1>
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p style="color:red">{{ error }}</p>
     {% endif %}
-
-    <form method="post" enctype="multipart/form-data" action="/markdown-upload">
-    <div class="mb-3">
-        <label for="markdown_file" class="form-label">选择Markdown文件(.md)</label>
-        <input type="file" class="form-control" id="markdown_file" name="markdown_file" accept=".md">
-    </div>
-    <button type="submit" class="btn btn-primary">转换并下载</button>
-</form>
-
-
-    <br>
-    <a href="/">返回首页</a>
 </body>
 </html>

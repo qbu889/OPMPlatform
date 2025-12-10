@@ -206,16 +206,10 @@ def detect_paragraph_type(text):
     return 'normal'
 
 
+# 修改copy_and_format_heading函数中的字体设置
 def copy_and_format_heading(source_para, target_para, template_format):
-    """
-    格式化标题段落
-    """
-    # 复制内容
     target_para.text = source_para.text
-
-    # 应用标题样式
     level = 1  # 默认一级标题
-    # 根据文本特征判断标题级别
     text = source_para.text.strip()
     if '章' in text:
         level = 1
@@ -224,12 +218,11 @@ def copy_and_format_heading(source_para, target_para, template_format):
     else:
         level = 3
 
-    # 应用格式
     for run in target_para.runs:
         run.bold = True
-        run.font.size = Pt(16 - (level - 1) * 2)  # 标题级别越高，字号越小
-        run.font.name = '黑体'
-        run._element.rPr.rFonts.set(qn('w:eastAsia'), '黑体')
+        run.font.size = Pt(16 - (level - 1) * 2)
+        run.font.name = '宋体'  # 改为宋体
+        run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 确保中文字体
 
 
 def copy_and_format_numbered_item(source_para, target_para, template_format):

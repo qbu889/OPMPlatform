@@ -4,24 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="kafka推送">
-      <change afterPath="$PROJECT_DIR$/.env/deepseekapp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deepseekapp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/chatai_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/excel2word_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/chat.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/excel2word.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/excel2word_content.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/markdown_upload.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/cleanup_thread.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/excel_to_word_core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word">
+      <change afterPath="$PROJECT_DIR$/routes/mdtoword.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/template.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/clean_event.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/clean_event.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/demo模板.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/markdown_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/markdown_upload.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/功能需求_Demo模板.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/demo_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/demo_generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/document_formatter.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/document_formatter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +23,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Dockerfile" />
         <option value="HTML File" />
         <option value="Python Script" />
       </list>
@@ -56,6 +49,9 @@
     &quot;accountId&quot;: &quot;09c92d07-a86d-4f2e-acff-ac193fa6dbe0&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.venv/lib/python3.8/site-packages/flask/app.py" root0="SKIP_INSPECTION" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
 }</component>
@@ -68,18 +64,19 @@
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.app.executor": "Run",
+    "Python.app.executor": "Debug",
     "Python.app2.executor": "Run",
     "Python.cleanup_temp_files.executor": "Run",
     "Python.deepseekapp.executor": "Run",
     "Python.excel_to_word_core.executor": "Debug",
     "Python.format_sql_ids.executor": "Run",
+    "Python.mdtoword.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/static",
-    "settings.editor.selected.configurable": "configurable.group.project"
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -183,7 +180,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="format_sql_ids" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="mdtoword" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -192,11 +189,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils/sqlFotmat" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/sqlFotmat/format_sql_ids.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/mdtoword.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -206,19 +203,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.mdtoword" />
       <item itemvalue="Python.deepseekapp" />
       <item itemvalue="Python.excel_to_word_core" />
       <item itemvalue="Python.app" />
       <item itemvalue="Python.cleanup_temp_files" />
-      <item itemvalue="Python.format_sql_ids" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.app" />
+        <item itemvalue="Python.mdtoword" />
         <item itemvalue="Python.deepseekapp" />
         <item itemvalue="Python.excel_to_word_core" />
         <item itemvalue="Python.cleanup_temp_files" />
-        <item itemvalue="Python.format_sql_ids" />
       </list>
     </recent_temporary>
   </component>
@@ -285,7 +282,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765166293385</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="md转word">
+      <option name="closed" value="true" />
+      <created>1765273268787</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1765273268787</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -305,7 +310,8 @@
     <MESSAGE value="bata 2.0" />
     <MESSAGE value="bata 1.3" />
     <MESSAGE value="kafka推送" />
-    <option name="LAST_COMMIT_MESSAGE" value="kafka推送" />
+    <MESSAGE value="md转word" />
+    <option name="LAST_COMMIT_MESSAGE" value="md转word" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -321,6 +327,8 @@
       <configuration name="PythonConfigurationType">
         <watch expression="convert_file.filename" />
         <watch expression="os.path.join(app.config['UPLOAD_FOLDER'], 'source_doc.docx')" />
+        <watch expression="text.startswith('5.')" />
+        <watch expression="text" />
       </configuration>
     </watches-manager>
   </component>
