@@ -25,6 +25,23 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 
 TEMPLATE_DOCX = "templates/template.docx"
+FIELD_NAMES = [
+    "场景说明：",
+    "功能描述：",
+    "系统界面：",
+    "输入：",
+    "输出：",
+    "处理过程：",
+
+    # 关键字段：把常见变体都列全（含空格、含/不含冒号、全角/半角）
+    "本事务功能涉及到的数据文件（即FTR/RET）：",
+    "本事务功能涉及到的数据文件（即 FTR/RET）：",
+    "本事务功能涉及到的数据文件（即FTR/RET）:",
+    "本事务功能涉及到的数据文件（即 FTR/RET）:",
+    "本事务功能涉及到的数据文件（即FTR/RET）",
+    "本事务功能涉及到的数据文件（即 FTR/RET）",
+]
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -219,7 +236,8 @@ def get_heading_size(level):
         3: 14,
         4: 12,
         5: 12,
-        6: 12
+        6: 12,
+        7: 12  # 添加对7级标题的支持
     }
     return sizes.get(level, 12)
 
@@ -231,52 +249,49 @@ def convert_md_to_docx(md_path, docx_path):
     # 更新文件统计数据
     md_content = update_file_statistics(md_content)
 
+    # 预处理：规范化标题格式
+    import re
+    # 将过多的#符号规范化
+    md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
+
     html = markdown.markdown(md_content, extensions=['tables'])
     soup = BeautifulSoup(html, 'html.parser')
 
-    # 创建全新的空文档，而不是基于模板
-    doc = Document()  # 不使用模板
+    # 创建全新的空文档
+    doc = Document()
 
-    processed = set()
-
+    # 按顺序处理所有元素，不进行去重
     for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
-        text = element.get_text().strip()
-        if not text or text in processed:
-            continue
-        processed.add(text)
-
         # 标题处理
         if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
             level = int(element.name[1])
             heading = doc.add_heading(level=min(level, 9))
-            # 处理标题文本，强制加粗，不使用斜体
             text = element.get_text().strip()
             if text:
                 run = heading.add_run(text)
-                set_font(run, size=get_heading_size(level), bold=True)  # 强制加粗
+                set_font(run, size=get_heading_size(level), bold=True)
             continue
 
         # 段落处理
         if element.name == 'p':
-            paragraph = doc.add_paragraph()
-            add_formatted_text(paragraph, element)
+            text = element.get_text().strip()
+            if text:  # 只有非空段落才添加
+                paragraph = doc.add_paragraph()
+                add_formatted_text(paragraph, element)
             continue
 
         # 列表处理
         if element.name in ['ul', 'ol']:
             for li in element.find_all('li'):
                 li_text = li.get_text().strip()
-                if not li_text or li_text in processed:
-                    continue
-                processed.add(li_text)
-                paragraph = doc.add_paragraph(style='List Bullet')
-                add_formatted_text(paragraph, li)
+                if li_text:
+                    paragraph = doc.add_paragraph(style='List Bullet')
+                    add_formatted_text(paragraph, li)
 
     # 添加固定的功能需求描述
     add_fixed_function_requirements(doc)
 
     doc.save(docx_path)
-
 
 def add_fixed_function_requirements(doc):
     """添加固定的功能需求描述"""

@@ -5,12 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata1.0">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/uploads/监控综合应用事件全景优化_功能需求.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepseekapp.py" beforeDir="false" afterPath="$PROJECT_DIR$/deepseekapp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/templates/template.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,7 +26,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="fabb9db27d27865363c2bacc8fc9035a2f21e5c9" />
+        <entry key="$PROJECT_DIR$" value="6cf2178238b985821d9cf4187737b27c73ebf3b6" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -71,13 +68,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/static",
+    "git-widget-placeholder": "085b98e1",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/uploads",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/uploads" />
       <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/templates" />
       <recent name="$PROJECT_DIR$/tmp" />
@@ -273,13 +271,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>395</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
