@@ -11,7 +11,6 @@ from docx.oxml.ns import qn
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from bs4 import BeautifulSoup
 
-
 # 创建 Blueprint 实例
 markdown_upload_bp = Blueprint('markdown', __name__)
 
@@ -23,7 +22,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)
-
+KEYWORDS_FILE = os.path.join('config', 'keywords.json')
 TEMPLATE_DOCX = "templates/template.docx"
 FIELD_NAMES = [
     "场景说明：",
@@ -41,6 +40,7 @@ FIELD_NAMES = [
     "本事务功能涉及到的数据文件（即FTR/RET）",
     "本事务功能涉及到的数据文件（即 FTR/RET）",
 ]
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -102,6 +102,7 @@ def set_font(run, name='宋体', size=None, bold=False):
     # 设置字体颜色为黑色
     run.font.color.rgb = RGBColor(0, 0, 0)  # 明确设置为黑色
 
+
 def clean_filename(filename):
     """清理文件名，移除特殊字符"""
     # 移除或替换不合法的文件名字符
@@ -109,6 +110,7 @@ def clean_filename(filename):
     for char in invalid_chars:
         filename = filename.replace(char, '_')
     return filename.strip(' ._')  # 移除首尾的空格和点
+
 
 def create_style_mapping():
     return {
@@ -125,8 +127,8 @@ def apply_heading_style(doc, text, level, style_map):
     key_match = next(
         ((k, v) for k, v in style_map.items()
          if k[0] == f'h{level}' and
-            (not k[1] or text.startswith(k[1])) and
-            (not k[2] or k[2] in text)), None)
+         (not k[1] or text.startswith(k[1])) and
+         (not k[2] or k[2] in text)), None)
 
     if key_match:
         _, (size, bold) = key_match
@@ -184,6 +186,7 @@ def add_custom_paragraph(doc, text, bold=False, size=None):
     set_font(run, size=size, bold=bold)
     return paragraph
 
+
 def find_style(doc, targets):
     """
     在模板中查找一个匹配名称的样式（支持中英文、部分匹配）
@@ -196,6 +199,7 @@ def find_style(doc, targets):
                 return name
     return None
 
+
 def load_template_styles(doc):
     """
     自动读取模板中的 常规段落、标题、列表 样式
@@ -204,8 +208,8 @@ def load_template_styles(doc):
 
     # Normal / 正文
     styles["p"] = (
-        find_style(doc, ["Normal", "正文", "Body", "Normal Text"])
-        or doc.styles[0].name  # 兜底
+            find_style(doc, ["Normal", "正文", "Body", "Normal Text"])
+            or doc.styles[0].name  # 兜底
     )
 
     # 标题样式
@@ -218,15 +222,16 @@ def load_template_styles(doc):
 
     # 列表样式
     styles["ul"] = (
-        find_style(doc, ["List Bullet", "项目符号"])
-        or styles["p"]
+            find_style(doc, ["List Bullet", "项目符号"])
+            or styles["p"]
     )
     styles["ol"] = (
-        find_style(doc, ["List Number", "编号"])
-        or styles["p"]
+            find_style(doc, ["List Number", "编号"])
+            or styles["p"]
     )
 
     return styles
+
 
 def get_heading_size(level):
     """获取标题字体大小"""
@@ -242,30 +247,95 @@ def get_heading_size(level):
     return sizes.get(level, 12)
 
 
+def remove_extra_blank_lines(text):
+    """
+    去除文本中多余的空行，连续空行只保留一行空行，
+    并且去除开头和结尾的空行，使文本紧凑。
+    """
+    lines = text.split('\n')
+    new_lines = []
+    blank_line = False
+
+    for line in lines:
+        if line.strip() == '':
+            # 遇到空行，如果之前没空行则保留，否则跳过
+            if not blank_line:
+                new_lines.append('')
+                blank_line = True
+        else:
+            new_lines.append(line)
+            blank_line = False
+
+    # 去除开头和结尾的空行
+    while new_lines and new_lines[0].strip() == '':
+        new_lines.pop(0)
+    while new_lines and new_lines[-1].strip() == '':
+        new_lines.pop()
+
+    return '\n'.join(new_lines)
+
+
+def fix_header_and_remove_footer(content):
+    """
+    替换文档开头指定标题内容，
+    并删除尾部多余说明文字。
+    """
+
+    lines = content.split('\n')
+
+    # --- 处理开头 ---
+    # 找到“5.功能需求”所在行，替换下一行为指定描述
+    for i, line in enumerate(lines):
+        if line.strip().startswith('5.功能需求'):
+            # 保证下一行存在且是“5.1 按照FPA”，替换为新描述
+            if i + 1 < len(lines) and lines[i + 1].strip().startswith('5.1 按照FPA'):
+                lines[i + 1] = '按照FPA中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。'
+            break
+
+    # --- 处理尾部 ---
+    # 删除尾部包含“按照FPA《集中故障管理系统”或“仅保留EI/EO/EQ类功能点”等关键字的行及之后的所有行
+    footer_start_keywords = [
+        '按照FPA《集中故障管理系统',
+        '仅保留EI/EO/EQ类功能点',
+        '剔除ILF/EIF类',
+        '按照FPA中列出的本需求需改造的功能逐级'
+    ]
+
+    # 找到尾部起始行
+    footer_start_index = None
+    for i in range(len(lines) - 1, -1, -1):
+        if any(keyword in lines[i] for keyword in footer_start_keywords):
+            footer_start_index = i
+        # 如果已经找到尾部起始行，继续向上找第一行不属于尾部内容的行
+        elif footer_start_index is not None:
+            break
+
+    if footer_start_index is not None:
+        # 删除尾部多余内容，从footer_start_index开始到文件结尾
+        lines = lines[:footer_start_index]
+
+    return '\n'.join(lines)
+
+
 def convert_md_to_docx(md_path, docx_path):
     with open(md_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
-
-    # 更新文件统计数据
+    # # 先去除多余空行
+    # md_content = remove_extra_blank_lines(md_content)
+    # 剔除场景说明
+    md_content = remove_scenario_description_lines(md_content)
+    # 处理其他逻辑，如统计、功能描述等
     md_content = update_file_statistics(md_content)
-
-    # 处理功能描述字段
     md_content = process_function_description(md_content)
-
-    # 预处理：规范化标题格式
     import re
-    # 将过多的#符号规范化
     md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
 
     html = markdown.markdown(md_content, extensions=['tables'])
     soup = BeautifulSoup(html, 'html.parser')
 
-    # 创建全新的空文档
     doc = Document()
 
-    # 按顺序处理所有元素，不进行去重
     for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
-        # 标题处理
         if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
             level = int(element.name[1])
             heading = doc.add_heading(level=min(level, 9))
@@ -275,26 +345,34 @@ def convert_md_to_docx(md_path, docx_path):
                 set_font(run, size=get_heading_size(level), bold=True)
             continue
 
-        # 段落处理
         if element.name == 'p':
             text = element.get_text().strip()
-            if text:  # 只有非空段落才添加
-                paragraph = doc.add_paragraph()
-                add_formatted_text(paragraph, element)
+            if not text:
+                # 跳过空段落
+                continue
+            paragraph = doc.add_paragraph()
+            add_formatted_text(paragraph, element)
             continue
 
-        # 列表处理
         if element.name in ['ul', 'ol']:
             for li in element.find_all('li'):
                 li_text = li.get_text().strip()
-                if li_text:
-                    paragraph = doc.add_paragraph(style='List Bullet')
-                    add_formatted_text(paragraph, li)
+                if not li_text:
+                    continue
+                paragraph = doc.add_paragraph(style='List Bullet')
+                add_formatted_text(paragraph, li)
 
-    # 添加固定的功能需求描述
     add_fixed_function_requirements(doc)
-
     doc.save(docx_path)
+
+
+def remove_scenario_description_lines(content):
+    """
+    删除文本中所有包含“场景说明”的行
+    """
+    lines = content.split('\n')
+    filtered_lines = [line for line in lines if '场景说明' not in line]
+    return '\n'.join(filtered_lines)
 
 
 def process_function_description(content):
@@ -309,15 +387,20 @@ def process_function_description(content):
     person_keywords = keywords_config.get('person_keywords', [])
     system_keywords = keywords_config.get('system_keywords', [])
 
-    # 查找所有形如"5.x.x.x.x.xx.x. xxx（注：对应FPA功能点计数项）"的标题
-    pattern_title = r'^(#{5,})\s*([\d\.]+)\s*([^（\n]+)（注：对应FPA功能点计数项）'
+    # 更新标题匹配模式以支持新的格式和Markdown样式
+    pattern_title = r'^(#{5,})\s*\*\*\s*([\d\.]+)\s*(.+?)\s*\*\*$'
 
     lines = content.split('\n')
     i = 0
     while i < len(lines):
         line = lines[i]
         match = re.match(pattern_title, line)
-        if match:
+
+        # 检查标题是否已处理
+        title_processed = False
+
+        # 满足匹配的标题才进入下面逻辑
+        if match and not title_processed:
             # 提取功能名称
             func_name = match.group(3).strip()
 
@@ -332,8 +415,8 @@ def process_function_description(content):
 
             while j < len(lines):
                 desc_line = lines[j]
-                # 如果遇到下一个标题，则停止查找
-                if re.match(r'^#{1,}', desc_line):
+                # 如果遇到下一个更高层级的标题，则停止查找
+                if re.match(r'^#{1,5}\s*', desc_line) and title_processed:
                     break
 
                 # 如果找到功能描述行
@@ -350,7 +433,11 @@ def process_function_description(content):
                             new_desc = '进行' + func_name
                             lines[j] = f"{prefix} {new_desc}"
                             desc_processed = True
-
+                        # 如果描述内容是"进行"，则拼接 func_name
+                        elif '进行' not in suffix:
+                            new_desc = '进行' + func_name
+                            lines[j] = f"{prefix} {new_desc}"
+                            desc_processed = True
                 # 如果标题包含关键词且找到输入行，则修改输入值
                 if contains_keyword and not input_processed:
                     input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
@@ -371,42 +458,36 @@ def process_function_description(content):
                         lines[j] = f"{prefix} {new_input}"
                         input_processed = True
                 j += 1
+
+            # 标记当前标题为已处理
+            title_processed = True
+
         i += 1
 
     return '\n'.join(lines)
 
+
 def add_fixed_function_requirements(doc):
     """添加固定的功能需求描述"""
-    # 检查文档中是否已包含相关功能需求描述
+
+    # 检查文档中是否已包含相关功能需求描述，避免重复添加
     existing_content = ""
     for paragraph in doc.paragraphs:
         existing_content += paragraph.text + "\n"
 
-    # 如果已存在相关描述则不添加
-    if "按照FPA《集中故障管理系统-监控综合应用" in existing_content:
+    if "按照FPA中列出的本需求需改造的功能逐级" in existing_content:
         return
 
     # 添加标题
-    heading = doc.add_heading('5. 功能需求', level=1)
+    heading = doc.add_heading('5.功能需求', level=1)
     set_font(heading.runs[0], size=16, bold=True)
 
-    # 添加第一段内容（FPA加粗）
-    paragraph1 = doc.add_paragraph()
-    run1 = paragraph1.add_run('按照FPA')
-    run1.bold = True
-    run2 = paragraph1.add_run(
-        '《集中故障管理系统-监控综合应用-关于集团事件工单省部接口数据上报保障的开发需求-15400_20250318-FPA预估2025版V3_厂家版本.xlsx》"2. 规模估算"生成，仅保留EI/EO/EQ类功能点，剔除ILF/EIF类')
+    # 添加正文内容（只添加一段，替换之前多余的两段）
+    paragraph = doc.add_paragraph()
+    run1 = paragraph.add_run(
+        '按照FPA中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
     set_font(run1, size=12)
-    set_font(run2, size=12)
-
-    # 添加第二段内容（写死的内容，FPA加粗）
-    paragraph2 = doc.add_paragraph()
-    run3 = paragraph2.add_run('按照FPA')
-    run3.bold = True
-    run4 = paragraph2.add_run(
-        '中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
-    set_font(run3, size=12)
-    set_font(run4, size=12)
+    run1.bold = False  # 这里不加粗，如果需要加粗可以设置 True
 
 
 def add_formatted_text(paragraph, element):
@@ -483,7 +564,14 @@ def update_file_statistics(content):
 
     # 先清理"（如适用）"文本
     cleaned_content = content.replace('（如适用）', '')
+    # 格式化：去掉数字与“个”之间的空格，比如“涉及到 2 个” -> “涉及到2个”
+    cleaned_content = re.sub(r'(\d+)\s+个', r'\1个', cleaned_content)
 
+    # 格式化：去掉“新增 / 变更”中多余空格，变成“新增/变更”
+    cleaned_content = re.sub(r'新增\s*/\s*变更', '新增/变更', cleaned_content)
+
+    # 格式化：去掉冒号前后的多余空格
+    cleaned_content = re.sub(r'\s*：\s*', '：', cleaned_content)
     # 匹配"本事务功能预计涉及到 2 个内部逻辑文件，0 个外部逻辑文件"这样的模式
     pattern = r'本事务功能预计涉及到\s*(\d+)\s*个内部逻辑文件\s*，?\s*(\d+)\s*个外部逻辑文件'
     match = re.search(pattern, cleaned_content)
@@ -541,10 +629,6 @@ def update_file_statistics(content):
     # 即使没有匹配到统计模式，也要返回清理后的文本
     return cleaned_content
 
-# == 维护模块
-# 关键词配置文件路径
-KEYWORDS_FILE = os.path.join('config', 'keywords.json')
-
 
 # 初始化关键词配置文件
 def init_keywords_config():
@@ -554,17 +638,91 @@ def init_keywords_config():
     if not os.path.exists(KEYWORDS_FILE):
         default_config = {
             "person_keywords": [
-                '增加', '删除', '修改', '查询', '呈现', '列表', '渲染', '导出', '页面',
-                '自定义', '点击', '看板', '录入', '编辑', '查看', '搜索', '筛选', '排序',
-                '下载', '上传', '选择', '勾选', '取消', '确认', '提交', '保存', '刷新',
-                '切换', '拖拽', '复制', '粘贴', '撤销', '重做', '下钻', '钻取', '展开',
-                '收缩', '过滤', '钻探'
+                "增加",
+                "删除",
+                "修改",
+                "查询",
+                "呈现",
+                "列表",
+                "渲染",
+                "导出",
+                "页面",
+                "自定义",
+                "点击",
+                "看板",
+                "录入",
+                "编辑",
+                "查看",
+                "搜索",
+                "筛选",
+                "排序",
+                "下载",
+                "上传",
+                "选择",
+                "勾选",
+                "取消",
+                "确认",
+                "提交",
+                "保存",
+                "刷新",
+                "切换",
+                "拖拽",
+                "复制",
+                "粘贴",
+                "撤销",
+                "重做",
+                "下钻",
+                "钻取",
+                "展开",
+                "收缩",
+                "过滤",
+                "钻探",
+                "跳转",
+                "关联",
+                "流转",
+                "设置",
+                "控制"
             ],
             "system_keywords": [
-                '判定', '判断', '自动', '定时', '轮询', '监听', '检测', '校验', '验证',
-                '同步', '异步', '回调', '触发', '推送', '通知', '告警', '计算', '统计',
-                '分析', '识别', '匹配', '对比', '评估', '鉴权', '认证', '授权', '加密',
-                '解密', '签名', '验签', '审计', '监控', '日志', '备份', '恢复', '缓存'
+                "判断",
+                "自动",
+                "定时",
+                "轮询",
+                "监听",
+                "检测",
+                "校验",
+                "验证",
+                "同步",
+                "异步",
+                "回调",
+                "触发",
+                "推送",
+                "通知",
+                "告警",
+                "计算",
+                "统计",
+                "分析",
+                "识别",
+                "匹配",
+                "对比",
+                "评估",
+                "鉴权",
+                "认证",
+                "授权",
+                "加密",
+                "解密",
+                "签名",
+                "验签",
+                "审计",
+                "监控",
+                "日志",
+                "备份",
+                "恢复",
+                "缓存",
+                "对接",
+                "调用",
+                "判定",
+                "记录"
             ]
         }
         with open(KEYWORDS_FILE, 'w', encoding='utf-8') as f:
@@ -668,5 +826,3 @@ def delete_keywords_api():
         return {'status': 'success'}
     except Exception as e:
         return {'status': 'error', 'message': str(e)}, 500
-
-

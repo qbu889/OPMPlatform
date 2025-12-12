@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word：fix输出赋值">
-      <change afterPath="$PROJECT_DIR$/config/keywords2.json" afterDir="false" />
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word：new输出可配置化">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/markdown_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/markdown_upload.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +67,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "318bddca",
+    "git-widget-placeholder": "36555d60",
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/config",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
@@ -85,6 +81,7 @@
       <recent name="$PROJECT_DIR$/tmp" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/uploads" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/templates" />
@@ -265,7 +262,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765504536437</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="md转word：new输出可配置化">
+      <option name="closed" value="true" />
+      <created>1765510876201</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1765510876201</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -289,20 +294,26 @@
     <MESSAGE value="md转word bata1.0" />
     <MESSAGE value="md转word：fix标题7级时，导出的内容缺失" />
     <MESSAGE value="md转word：fix输出赋值" />
-    <option name="LAST_COMMIT_MESSAGE" value="md转word：fix输出赋值" />
+    <MESSAGE value="md转word：new输出可配置化" />
+    <option name="LAST_COMMIT_MESSAGE" value="md转word：new输出可配置化" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>621</line>
-          <option name="timeStamp" value="6" />
+          <line>489</line>
+          <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>624</line>
-          <option name="timeStamp" value="7" />
+          <line>589</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
+          <line>578</line>
+          <option name="timeStamp" value="44" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -315,11 +326,14 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="desc_pattern" />
-        <watch expression="lines[j]" />
-        <watch expression="contains_keyword" />
-        <watch expression="contains_keyword2" />
-        <watch expression="input_pattern" />
+        <watch expression="pattern_title" />
+        <watch expression="line" />
+        <watch expression="lines" />
+        <watch expression="not desc_processed" />
+        <watch expression="re.match(r'^##{1,5}\s*', desc_line)" />
+        <watch expression="new_desc" />
+        <watch expression="md_content" />
+        <watch expression="match" />
       </configuration>
     </watches-manager>
   </component>
