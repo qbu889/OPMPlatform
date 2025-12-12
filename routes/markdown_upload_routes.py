@@ -424,20 +424,11 @@ def process_function_description(content):
                     desc_pattern = r'^(\**功能描述[:：]\**)\s*(.*)$'
                     desc_match = re.match(desc_pattern, desc_line)
                     if desc_match:
-                        prefix = desc_match.group(1)  # "功能描述："部分
-                        suffix = desc_match.group(2).strip()  # 描述内容部分
-
-                        # 如果描述内容是"处理xxx相关业务"格式，则替换为"进行xxx"
-                        if (suffix.startswith('处理') and
-                                (suffix.endswith('相关业务') or suffix.endswith('相关数据'))):
-                            new_desc = '进行' + func_name
-                            lines[j] = f"{prefix} {new_desc}"
-                            desc_processed = True
-                        # 如果描述内容是"进行"，则拼接 func_name
-                        elif '进行' not in suffix:
-                            new_desc = '进行' + func_name
-                            lines[j] = f"{prefix} {new_desc}"
-                            desc_processed = True
+                        prefix = desc_match.group(1)
+                        # 无条件替换功能描述内容为“进行 + 功能名称”
+                        new_desc = '进行' + func_name
+                        lines[j] = f"{prefix} {new_desc}"
+                        desc_processed = True
                 # 如果标题包含关键词且找到输入行，则修改输入值
                 if contains_keyword and not input_processed:
                     input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
