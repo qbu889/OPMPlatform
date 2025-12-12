@@ -249,6 +249,9 @@ def convert_md_to_docx(md_path, docx_path):
     # 更新文件统计数据
     md_content = update_file_statistics(md_content)
 
+    # 处理功能描述字段
+    md_content = process_function_description(md_content)
+
     # 预处理：规范化标题格式
     import re
     # 将过多的#符号规范化
@@ -292,6 +295,77 @@ def convert_md_to_docx(md_path, docx_path):
     add_fixed_function_requirements(doc)
 
     doc.save(docx_path)
+
+
+def process_function_description(content):
+    """
+    处理功能描述字段，将"处理xxx相关业务"修改为"进行xxx"
+    同时处理输入字段，当标题包含特定关键词时修改输入值
+    """
+    import re
+
+    # 定义需要特殊处理的关键词
+    trigger_keywords = ['增加', '删除', '修改', '查询', '呈现', '列表', '渲染', '导出', '页面', '自定义', '点击']
+
+    # 查找所有形如"5.x.x.x.x.xx.x. xxx（注：对应FPA功能点计数项）"的标题
+    pattern_title = r'^(#{5,})\s*([\d\.]+)\s*([^（\n]+)（注：对应FPA功能点计数项）'
+
+    lines = content.split('\n')
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        match = re.match(pattern_title, line)
+        if match:
+            # 提取功能名称
+            func_name = match.group(3).strip()
+
+            # 检查标题是否包含触发关键词
+            contains_keyword = any(keyword in func_name for keyword in trigger_keywords)
+
+            # 查找接下来的"功能描述："行和"输入："行
+            j = i + 1
+            desc_processed = False
+            input_processed = False
+
+            while j < len(lines):
+                desc_line = lines[j]
+                # 如果遇到下一个标题，则停止查找
+                if re.match(r'^#{1,}', desc_line):
+                    break
+
+                # 如果找到功能描述行
+                if not desc_processed:
+                    desc_pattern = r'^(\**功能描述[:：]\**)\s*(.*)$'
+                    desc_match = re.match(desc_pattern, desc_line)
+                    if desc_match:
+                        prefix = desc_match.group(1)  # "功能描述："部分
+                        suffix = desc_match.group(2).strip()  # 描述内容部分
+
+                        # 如果描述内容是"处理xxx相关业务"格式，则替换为"进行xxx"
+                        if (suffix.startswith('处理') and
+                                (suffix.endswith('相关业务') or suffix.endswith('相关数据'))):
+                            new_desc = '进行' + func_name
+                            lines[j] = f"{prefix} {new_desc}"
+                            desc_processed = True
+
+                # 如果标题包含关键词且找到输入行，则修改输入值
+                if contains_keyword and not input_processed:
+                    input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
+                    input_match = re.match(input_pattern, desc_line)
+                    if input_match:
+                        prefix = input_match.group(1)  # "输入："部分
+                        # 修改输入值为"用户触发+功能名称"
+                        if contains_keyword:
+                            new_input = '用户触发' + func_name
+                        else:
+                            new_input = '系统判定' + func_name
+                        lines[j] = f"{prefix} {new_input}"
+                        input_processed = True
+                j += 1
+        i += 1
+
+    return '\n'.join(lines)
+
 
 def add_fixed_function_requirements(doc):
     """添加固定的功能需求描述"""
