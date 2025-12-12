@@ -1,6 +1,8 @@
 # routes/markdown_upload_routes.py
 import os
 import logging
+import re
+
 from flask import Blueprint, request, render_template, send_file, json
 from werkzeug.utils import secure_filename
 import markdown
@@ -375,67 +377,85 @@ def remove_scenario_description_lines(content):
     return '\n'.join(filtered_lines)
 
 
+def remove_numbering_from_process_line(line):
+    """
+    去除“处理过程”字段中数字序号，支持带加粗的Markdown格式。
+    """
+    prefix_match = re.match(r'^\**处理过程[:：]\**\s*(.*)$', line)
+    if not prefix_match:
+        return line
+
+    content = prefix_match.group(1)
+
+    # 按分号分割内容，去掉每部分开头的数字序号
+    parts = re.split(r'[；;]', content)
+    cleaned_parts = []
+    for part in parts:
+        cleaned = re.sub(r'^\s*\d+\.\s*', '', part).strip()
+        if cleaned:
+            cleaned_parts.append(cleaned)
+
+    new_content = '；'.join(cleaned_parts)
+
+    # 返回时保留原加粗格式的“处理过程：”
+    # 这里用 '**处理过程：**' 固定返回，如果你需要动态保留原格式可进一步处理
+    return f'**处理过程：**{new_content}'
+
 def process_function_description(content):
     """
     处理功能描述字段，将"处理xxx相关业务"修改为"进行xxx"
     同时处理输入字段，当标题包含特定关键词时修改输入值
+    并去除处理过程字段中的数字序号
     """
     import re
 
-    # 从配置文件动态加载关键词
     keywords_config = load_keywords_config()
     person_keywords = keywords_config.get('person_keywords', [])
     system_keywords = keywords_config.get('system_keywords', [])
 
-    # 更新标题匹配模式以支持新的格式和Markdown样式
     pattern_title = r'^(#{5,})\s*\*\*\s*([\d\.]+)\s*(.+?)\s*\*\*$'
 
     lines = content.split('\n')
     i = 0
     while i < len(lines):
         line = lines[i]
-        match = re.match(pattern_title, line)
 
-        # 检查标题是否已处理
+        # 新增：处理“处理过程”字段去除序号
+        if re.match(r'^\**处理过程[:：]\**', line):
+            lines[i] = remove_numbering_from_process_line(line)
+            line = lines[i]  # 更新当前行内容
+
+        match = re.match(pattern_title, line)
         title_processed = False
 
-        # 满足匹配的标题才进入下面逻辑
         if match and not title_processed:
-            # 提取功能名称
             func_name = match.group(3).strip()
-
-            # 检查标题是否包含触发关键词
             contains_keyword = any(keyword in func_name for keyword in person_keywords)
             contains_keyword2 = any(keyword in func_name for keyword in system_keywords)
 
-            # 查找接下来的"功能描述："行和"输入："行
             j = i + 1
             desc_processed = False
             input_processed = False
 
             while j < len(lines):
                 desc_line = lines[j]
-                # 如果遇到下一个更高层级的标题，则停止查找
                 if re.match(r'^#{1,5}\s*', desc_line) and title_processed:
                     break
 
-                # 如果找到功能描述行
                 if not desc_processed:
                     desc_pattern = r'^(\**功能描述[:：]\**)\s*(.*)$'
                     desc_match = re.match(desc_pattern, desc_line)
                     if desc_match:
                         prefix = desc_match.group(1)
-                        # 无条件替换功能描述内容为“进行 + 功能名称”
                         new_desc = '进行' + func_name
                         lines[j] = f"{prefix} {new_desc}"
                         desc_processed = True
-                # 如果标题包含关键词且找到输入行，则修改输入值
+
                 if contains_keyword and not input_processed:
                     input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
                     input_match = re.match(input_pattern, desc_line)
                     if input_match:
-                        prefix = input_match.group(1)  # "输入："部分
-                        # 修改输入值为"用户触发+功能名称"
+                        prefix = input_match.group(1)
                         new_input = '用户触发' + func_name
                         lines[j] = f"{prefix} {new_input}"
                         input_processed = True
@@ -444,13 +464,13 @@ def process_function_description(content):
                     input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
                     input_match = re.match(input_pattern, desc_line)
                     if input_match:
-                        prefix = input_match.group(1)  # "输入："部分
+                        prefix = input_match.group(1)
                         new_input = '系统判定' + func_name
                         lines[j] = f"{prefix} {new_input}"
                         input_processed = True
+
                 j += 1
 
-            # 标记当前标题为已处理
             title_processed = True
 
         i += 1
@@ -540,35 +560,45 @@ def add_formatted_text(paragraph, element):
 
 
 def count_files_by_separators(text):
-    """根据分隔符数量统计文件个数，包含"（如适用）"的条目也计入统计"""
-    if text.strip() == '无' or not text.strip():
+    """
+    根据分隔符统计文件数量。
+    分隔符可能有：逗号，分号，空格，换行等。
+    如果内容为“无”或空，返回0。
+    """
+    if not text or text == '无':
         return 0
+    # 用逗号、分号、空格、换行分割
+    import re
+    parts = re.split(r'[，,；;\s]+', text.strip())
+    # 过滤空字符串
+    parts = [p for p in parts if p]
+    return len(parts)
 
-    # 分割文件列表并计数所有条目（包括包含"（如适用）"的）
-    files = [f.strip() for f in text.split('、') if f.strip()]
-    return len(files)
-
+def count_files_by_separators(text):
+    if not text or text == '无':
+        return 0
+    parts = re.split(r'[，,；;\s]+', text.strip())
+    parts = [p for p in parts if p]
+    return len(parts)
 
 def update_file_statistics(content):
-    """更新文件统计数据"""
-    import re
+    """更新本事务功能预计涉及到的数据文件（即 FTR/RET）内容"""
 
-    # 先清理"（如适用）"文本
-    cleaned_content = content.replace('（如适用）', '')
     # 格式化：去掉数字与“个”之间的空格，比如“涉及到 2 个” -> “涉及到2个”
-    cleaned_content = re.sub(r'(\d+)\s+个', r'\1个', cleaned_content)
+    cleaned_content = re.sub(r'(\d+)\s+个', r'\1个', content)
 
     # 格式化：去掉“新增 / 变更”中多余空格，变成“新增/变更”
     cleaned_content = re.sub(r'新增\s*/\s*变更', '新增/变更', cleaned_content)
 
-    # 格式化：去掉冒号前后的多余空格
-    cleaned_content = re.sub(r'\s*：\s*', '：', cleaned_content)
+    # 格式化：去掉冒号前后的多余空格，但不影响换行
+    cleaned_content = re.sub(r'[ \t]*：[ \t]*', '：', cleaned_content)
+
     # 匹配"本事务功能预计涉及到 2 个内部逻辑文件，0 个外部逻辑文件"这样的模式
     pattern = r'本事务功能预计涉及到\s*(\d+)\s*个内部逻辑文件\s*，?\s*(\d+)\s*个外部逻辑文件'
     match = re.search(pattern, cleaned_content)
 
     if match:
-        # 统计实际的内部逻辑文件数量
+        # 统计内部逻辑文件数量
         internal_new_added_pattern = r'本期新增/变更的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
         internal_existing_pattern = r'本期涉及原有但没修改的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
 
@@ -588,7 +618,7 @@ def update_file_statistics(content):
 
         actual_internal_count = internal_new_count + internal_existing_count
 
-        # 统计实际的外部逻辑文件数量
+        # 统计外部逻辑文件数量
         external_new_added_pattern = r'本期新增/变更的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
         external_existing_pattern = r'本期涉及原有但没修改的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
 
@@ -608,11 +638,12 @@ def update_file_statistics(content):
 
         actual_external_count = external_new_count + external_existing_count
 
-        # 替换原来的统计数字
+        # 替换原来的统计数字，只替换第一个匹配
         updated_content = re.sub(
             pattern,
             f'本事务功能预计涉及到{actual_internal_count}个内部逻辑文件，{actual_external_count}个外部逻辑文件',
-            cleaned_content
+            cleaned_content,
+            count=1
         )
 
         return updated_content

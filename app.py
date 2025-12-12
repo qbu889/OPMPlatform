@@ -16,6 +16,7 @@ from routes.excel2word_routes import excel2word_bp
 from routes.markdown_upload_routes import markdown_upload_bp
 from routes.sql_routes import sql_bp
 from routes.event_routes import event_bp
+from routes.word_to_md_routes import word_to_md_bp
 from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 
 # 配置日志
@@ -40,8 +41,10 @@ def create_app(config_name='default'):
     app.register_blueprint(document_bp)
     app.register_blueprint(sql_bp)
     app.register_blueprint(event_bp)
-    app.register_blueprint(excel2word_bp)  # 新增
+    app.register_blueprint(excel2word_bp)
     app.register_blueprint(markdown_upload_bp)
+    app.register_blueprint(word_to_md_bp)
+
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()

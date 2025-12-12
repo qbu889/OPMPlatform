@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word转Markdown</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="p-3">
+  <h3>Word转Markdown文件</h3>
+
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="word_file" class="form-label">选择Word文件 (.docx)</label>
+      <input class="form-control" type="file" id="word_file" name="word_file" accept=".docx" required>
+    </div>
+    <button type="submit" class="btn btn-primary">上传并转换</button>
+  </form>
+
+  {% if markdown %}
+    <hr />
+    <h4>转换结果（Markdown格式）：</h4>
+    <textarea class="form-control" rows="20" readonly>{{ markdown }}</textarea>
+  {% endif %}
+</body>
+</html>
