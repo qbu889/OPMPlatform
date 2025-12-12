@@ -1,7 +1,7 @@
 # routes/markdown_upload_routes.py
 import os
 import logging
-from flask import Blueprint, request, render_template, send_file
+from flask import Blueprint, request, render_template, send_file, json
 from werkzeug.utils import secure_filename
 import markdown
 from docx import Document
@@ -304,8 +304,10 @@ def process_function_description(content):
     """
     import re
 
-    # 定义需要特殊处理的关键词
-    trigger_keywords = ['增加', '删除', '修改', '查询', '呈现', '列表', '渲染', '导出', '页面', '自定义', '点击']
+    # 从配置文件动态加载关键词
+    keywords_config = load_keywords_config()
+    person_keywords = keywords_config.get('person_keywords', [])
+    system_keywords = keywords_config.get('system_keywords', [])
 
     # 查找所有形如"5.x.x.x.x.xx.x. xxx（注：对应FPA功能点计数项）"的标题
     pattern_title = r'^(#{5,})\s*([\d\.]+)\s*([^（\n]+)（注：对应FPA功能点计数项）'
@@ -320,7 +322,8 @@ def process_function_description(content):
             func_name = match.group(3).strip()
 
             # 检查标题是否包含触发关键词
-            contains_keyword = any(keyword in func_name for keyword in trigger_keywords)
+            contains_keyword = any(keyword in func_name for keyword in person_keywords)
+            contains_keyword2 = any(keyword in func_name for keyword in system_keywords)
 
             # 查找接下来的"功能描述："行和"输入："行
             j = i + 1
@@ -355,17 +358,22 @@ def process_function_description(content):
                     if input_match:
                         prefix = input_match.group(1)  # "输入："部分
                         # 修改输入值为"用户触发+功能名称"
-                        if contains_keyword:
-                            new_input = '用户触发' + func_name
-                        else:
-                            new_input = '系统判定' + func_name
+                        new_input = '用户触发' + func_name
+                        lines[j] = f"{prefix} {new_input}"
+                        input_processed = True
+
+                if contains_keyword2 and not input_processed:
+                    input_pattern = r'^(\**输入[:：]\**)\s*(.*)$'
+                    input_match = re.match(input_pattern, desc_line)
+                    if input_match:
+                        prefix = input_match.group(1)  # "输入："部分
+                        new_input = '系统判定' + func_name
                         lines[j] = f"{prefix} {new_input}"
                         input_processed = True
                 j += 1
         i += 1
 
     return '\n'.join(lines)
-
 
 def add_fixed_function_requirements(doc):
     """添加固定的功能需求描述"""
@@ -533,5 +541,132 @@ def update_file_statistics(content):
     # 即使没有匹配到统计模式，也要返回清理后的文本
     return cleaned_content
 
+# == 维护模块
+# 关键词配置文件路径
+KEYWORDS_FILE = os.path.join('config', 'keywords.json')
+
+
+# 初始化关键词配置文件
+def init_keywords_config():
+    if not os.path.exists('config'):
+        os.makedirs('config')
+
+    if not os.path.exists(KEYWORDS_FILE):
+        default_config = {
+            "person_keywords": [
+                '增加', '删除', '修改', '查询', '呈现', '列表', '渲染', '导出', '页面',
+                '自定义', '点击', '看板', '录入', '编辑', '查看', '搜索', '筛选', '排序',
+                '下载', '上传', '选择', '勾选', '取消', '确认', '提交', '保存', '刷新',
+                '切换', '拖拽', '复制', '粘贴', '撤销', '重做', '下钻', '钻取', '展开',
+                '收缩', '过滤', '钻探'
+            ],
+            "system_keywords": [
+                '判定', '判断', '自动', '定时', '轮询', '监听', '检测', '校验', '验证',
+                '同步', '异步', '回调', '触发', '推送', '通知', '告警', '计算', '统计',
+                '分析', '识别', '匹配', '对比', '评估', '鉴权', '认证', '授权', '加密',
+                '解密', '签名', '验签', '审计', '监控', '日志', '备份', '恢复', '缓存'
+            ]
+        }
+        with open(KEYWORDS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(default_config, f, ensure_ascii=False, indent=2)
+
+
+# 加载关键词配置
+def load_keywords_config():
+    if not os.path.exists(KEYWORDS_FILE):
+        init_keywords_config()
+
+    with open(KEYWORDS_FILE, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
+# 保存关键词配置
+def save_keywords_config(config):
+    with open(KEYWORDS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(config, f, ensure_ascii=False, indent=2)
+
+
+# 获取关键词API
+@markdown_upload_bp.route('/api/keywords', methods=['GET'])
+def get_keywords_api():
+    """获取关键词配置API"""
+    try:
+        config = load_keywords_config()
+        return config
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}, 500
+
+
+# 更新关键词API
+@markdown_upload_bp.route('/api/keywords', methods=['POST'])
+def update_keywords_api():
+    """更新关键词配置API"""
+    try:
+        data = request.json
+        keyword_type = data.get('type')
+        keyword = data.get('keyword')
+        original = data.get('original')
+        # 类型映射
+        type_mapping = {
+            'person': 'person_keywords',
+            'system': 'system_keywords'
+        }
+        if keyword_type in type_mapping:
+            keyword_type = type_mapping[keyword_type]
+
+        if not keyword_type or not keyword:
+            return {'status': 'error', 'message': '缺少必要参数'}, 400
+
+        config = load_keywords_config()
+
+        # if keyword_type not in config:
+        #     return {'status': 'error', 'message': '无效的关键词类型'}, 400
+
+        if original:
+            # 编辑现有关键词
+            if original in config[keyword_type]:
+                config[keyword_type].remove(original)
+            config[keyword_type].append(keyword)
+        else:
+            # 添加新关键词
+            if keyword not in config[keyword_type]:
+                config[keyword_type].append(keyword)
+
+        save_keywords_config(config)
+        return {'status': 'success'}
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}, 500
+
+
+# 删除关键词API
+@markdown_upload_bp.route('/api/keywords', methods=['DELETE'])
+def delete_keywords_api():
+    """删除关键词配置API"""
+    try:
+        data = request.json
+        keyword_type = data.get('type')
+        keyword = data.get('keyword')
+        # 类型映射
+        type_mapping = {
+            'person': 'person_keywords',
+            'system': 'system_keywords'
+        }
+        if keyword_type in type_mapping:
+            keyword_type = type_mapping[keyword_type]
+        if not keyword_type or not keyword:
+            return {'status': 'error', 'message': '缺少必要参数'}, 400
+
+        config = load_keywords_config()
+
+        if keyword_type not in config:
+            return {'status': 'error', 'message': '无效的关键词类型'}, 400
+
+        if keyword in config[keyword_type]:
+            config[keyword_type].remove(keyword)
+            save_keywords_config(config)
+
+        return {'status': 'success'}
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}, 500
 
 

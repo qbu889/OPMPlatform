@@ -183,20 +183,16 @@ FJ-076-20251202-0323"></textarea>
             </div>
         </div>
     </div>
-    <div class="tab-pane fade" id="markdown" role="tabpanel">
+    <!-- 在 index.html 的 Markdown转Word Tab 中添加正确的页面引用 -->
+<div class="tab-pane fade" id="markdown" role="tabpanel">
     <div class="row mt-4">
         <div class="col-md-8">
             <h2>Markdown转Word工具</h2>
             <p>将Markdown文件转换为标准Word文档格式。</p>
             <div class="card">
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" action="/markdown-upload">
-                        <div class="mb-3">
-                            <label for="markdown_file" class="form-label">选择Markdown文件(.md)</label>
-                            <input type="file" class="form-control" id="markdown_file" name="markdown_file" accept=".md">
-                        </div>
-                        <button type="submit" class="btn btn-primary">转换并下载</button>
-                    </form>
+                    <!-- 使用iframe嵌入markdown上传页面 -->
+                    <iframe src="/markdown-upload" width="100%" height="600" frameborder="0"></iframe>
                 </div>
             </div>
         </div>
@@ -215,9 +211,9 @@ FJ-076-20251202-0323"></textarea>
                 </div>
             </div>
         </div>
-        </div>
     </div>
 </div>
+
 
 <script>
 function formatSqlIds() {

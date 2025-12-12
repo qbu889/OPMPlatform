@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata1.0">
-      <change afterPath="$PROJECT_DIR$/uploads/监控综合应用事件全景优化_功能需求.md" afterDir="false" />
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word：fix输出赋值">
+      <change afterPath="$PROJECT_DIR$/config/keywords2.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/markdown_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/markdown_upload.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +61,7 @@
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.app.executor": "Run",
+    "Python.app.executor": "Debug",
     "Python.app2.executor": "Run",
     "Python.cleanup_temp_files.executor": "Run",
     "Python.deepseekapp.executor": "Debug",
@@ -68,13 +71,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "085b98e1",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/uploads",
+    "git-widget-placeholder": "318bddca",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/config",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/config" />
       <recent name="$PROJECT_DIR$/uploads" />
       <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/templates" />
@@ -245,7 +249,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765337452327</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="md转word：fix标题7级时，导出的内容缺失">
+      <option name="closed" value="true" />
+      <created>1765444655811</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1765444655811</updated>
+    </task>
+    <task id="LOCAL-00010" summary="md转word：fix输出赋值">
+      <option name="closed" value="true" />
+      <created>1765504536437</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1765504536437</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -267,10 +287,24 @@
     <MESSAGE value="kafka推送" />
     <MESSAGE value="md转word" />
     <MESSAGE value="md转word bata1.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="md转word bata1.0" />
+    <MESSAGE value="md转word：fix标题7级时，导出的内容缺失" />
+    <MESSAGE value="md转word：fix输出赋值" />
+    <option name="LAST_COMMIT_MESSAGE" value="md转word：fix输出赋值" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
+          <line>621</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
+          <line>624</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -281,10 +315,11 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="convert_file.filename" />
-        <watch expression="os.path.join(app.config['UPLOAD_FOLDER'], 'source_doc.docx')" />
-        <watch expression="text.startswith('5.')" />
-        <watch expression="text" />
+        <watch expression="desc_pattern" />
+        <watch expression="lines[j]" />
+        <watch expression="contains_keyword" />
+        <watch expression="contains_keyword2" />
+        <watch expression="input_pattern" />
       </configuration>
     </watches-manager>
   </component>
