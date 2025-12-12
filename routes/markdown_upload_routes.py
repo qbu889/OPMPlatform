@@ -97,8 +97,6 @@ def set_font(run, name='宋体', size=None, bold=False):
     run._element.rPr.rFonts.set(qn('w:eastAsia'), name)
     if size:
         run.font.size = Pt(size)
-    elif size is None:  # 如果未指定大小，则默认使用5号字体(10.5pt)
-        run.font.size = Pt(10.5)
     if bold:
         run.bold = True
     # 设置字体颜色为黑色
@@ -319,53 +317,6 @@ def fix_header_and_remove_footer(content):
     return '\n'.join(lines)
 
 
-def format_markdown_content(content):
-    """对Markdown内容进行格式化处理"""
-    import re
-
-    # 1. 删除 cite 标记
-    content = re.sub(r'\[cite_start\]', '', content)
-    content = re.sub(r'\[cite:\s*\d+\]', '', content)
-
-    # 2. 把 "* **字段名：** 内容" → "**字段名：** 内容"
-    content = re.sub(r'^\*\s+(\*\*.+?\*\*.*)$', r'\1', content, flags=re.MULTILINE)
-
-    # ======= 3. 处理你的新需求：字段值“无”取消加粗 =======
-    # 例如:  **系统界面：** **无**  →  **系统界面：** 无
-    content = re.sub(
-        r'(\*\*[^\n：:]+[:：]\*\*)\s*\*\*无\*\*',
-        r'\1 无',
-        content
-    )
-
-    # ======= 4. 数据文件块：去掉项目符号 "*" =======
-    # 仅处理「本事务功能涉及到的数据文件」后的列表
-    pattern_files_block = (
-        r'(\*\*本事务功能涉及到的数据文件（即\s*FTR/RET\s*）\*\*)'
-        r'([\s\S]*?)(?=\n#{1,6}|\Z)'
-    )
-
-    def remove_stars_in_block(match):
-        header = match.group(1)
-        block = match.group(2)
-        # 删除每行前面的 "* "
-        block = re.sub(r'^\s*\*\s+', '', block, flags=re.MULTILINE)
-        return header + block
-
-    content = re.sub(pattern_files_block, remove_stars_in_block, content)
-
-    # 5. 清理多余空行
-    content = re.sub(r'\n{3,}', '\n\n', content)
-    # 修复“本事务功能涉及到的数据文件（即 FTR/RET）”后缺少换行的问题
-    content = re.sub(
-        r'(\*\*本事务功能涉及到的数据文件（即\s*FTR/RET\s*）\*\*)(\S)',
-        r'\1\n\2',
-        content
-    )
-
-    return content
-
-
 def convert_md_to_docx(md_path, docx_path):
     with open(md_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
@@ -378,9 +329,6 @@ def convert_md_to_docx(md_path, docx_path):
     md_content = process_function_description(md_content)
     import re
     md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
-
-    # 处理功能描述和处理过程
-    md_content = process_function_description(md_content)
 
     html = markdown.markdown(md_content, extensions=['tables'])
     soup = BeautifulSoup(html, 'html.parser')
@@ -398,29 +346,6 @@ def convert_md_to_docx(md_path, docx_path):
             continue
 
         if element.name == 'p':
-            text = element.get_text().strip()
-            #logging.info(f"Processing paragraph text: {text}")  # 添加调试日志
-
-            # 检查是否包含多个字段，如果是则拆分处理
-            field_matches = []
-            for field_name in FIELD_NAMES:
-                if field_name in text:
-                    field_matches.append(field_name)
-
-            #logging.info(f"Field matches found: {field_matches}")  # 添加调试日志
-
-            if len(field_matches) > 1:
-                # 包含多个字段，需要拆分处理
-                split_and_add_multiple_fields(doc, text)
-            elif any(text.startswith(f) for f in FIELD_NAMES):
-                add_field_paragraph(doc, text)
-            elif any(f in text for f in FIELD_NAMES):  # 添加这一条件来处理字段在段落中间的情况
-                # 即使字段不在段落开头，只要包含字段也需要特殊处理
-                split_and_add_multiple_fields(doc, text)
-            else:
-                # 保留你原有格式处理逻辑
-                paragraph = doc.add_paragraph()
-                add_formatted_text(paragraph, element)
             text = element.get_text().strip()
             if not text:
                 # 跳过空段落
@@ -869,102 +794,6 @@ def update_keywords_api():
         return {'status': 'success'}
     except Exception as e:
         return {'status': 'error', 'message': str(e)}, 500
-
-def add_field_paragraph(doc, full_text):
-    """
-    字段名：四号（12pt）+ 加粗
-    字段值：四号（12pt），不加粗
-    """
-
-    import re
-
-    # 支持所有“即FTR/RET”变体（即FTR/RET / 即 FTR/RET / 即  FTR/RET）
-    pattern_data_field = r"本事务功能涉及到的数据文件（即\s*FTR/RET\s*）"
-    match = re.search(pattern_data_field, full_text)
-
-    # 匹配统计数据
-    stats_key = "本事务功能预计涉及到"
-
-    # 如果字段和统计内容在同一段，则分行处理
-    if match and stats_key in full_text:
-        start = match.start()
-        end = match.end()
-
-        field_part = full_text[:end].strip()
-        stats_part = full_text[end:].strip()
-
-        # 1. 添加字段名（加粗）
-        paragraph1 = doc.add_paragraph()
-        run_name = paragraph1.add_run(field_part)
-        set_font(run_name, size=12, bold=True)
-
-        # 2. 添加统计信息（不加粗，自动换行了）
-        paragraph2 = doc.add_paragraph()
-        run_stats = paragraph2.add_run(stats_part)
-        set_font(run_stats, size=12, bold=False)
-        return
-
-    # 原有的处理逻辑
-    # 按 FIELD_NAMES 的顺序查找所有匹配的字段
-    field_positions = []
-    for field_name in FIELD_NAMES:
-        start = 0
-        while True:
-            pos = full_text.find(field_name, start)
-            if pos == -1:
-                break
-            field_positions.append((pos, field_name))
-            start = pos + 1
-
-    # 如果没有找到字段，按普通段落处理
-    if not field_positions:
-        paragraph = doc.add_paragraph()
-        run = paragraph.add_run(full_text)
-        set_font(run, size=12)
-        return paragraph
-
-    # 按位置排序
-    field_positions.sort(key=lambda x: x[0])
-
-    # 处理每个字段
-    last_end = 0
-    for i, (pos, field_name) in enumerate(field_positions):
-        # 添加字段前的文本（如果有）
-        if pos > last_end:
-            prev_text = full_text[last_end:pos]
-            if prev_text.strip():
-                paragraph = doc.add_paragraph()
-                run = paragraph.add_run(prev_text)
-                set_font(run, size=12)
-
-        # 计算字段值的结束位置
-        field_start = pos + len(field_name)
-        field_end = len(full_text)
-        if i + 1 < len(field_positions):
-            field_end = field_positions[i + 1][0]
-
-        field_value = full_text[field_start:field_end].strip()
-
-        # 添加字段名和字段值
-        paragraph = doc.add_paragraph()
-        run_name = paragraph.add_run(field_name)
-        set_font(run_name, size=12, bold=True)
-
-        if field_value:
-            run_val = paragraph.add_run(" " + field_value)
-            set_font(run_val, size=12, bold=False)
-
-        last_end = field_end
-
-    # 添加最后剩余的文本（如果有）
-    if last_end < len(full_text):
-        remaining_text = full_text[last_end:]
-        if remaining_text.strip():
-            paragraph = doc.add_paragraph()
-            run = paragraph.add_run(remaining_text)
-            set_font(run, size=12)
-
-
 
 
 # 删除关键词API
