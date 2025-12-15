@@ -128,29 +128,21 @@ def clean_filename(filename: str) -> str:
     return filename.strip(' ._')  # 去除首尾空格和点
 
 
-def convert_md_to_docx(md_path: str, docx_path: str):
-    """
-    将Markdown文件转换为Word文档
-    包含内容预处理、格式化转换、样式应用等
-    """
-    logging.info("开始读取Markdown文件: %s", md_path)
+def convert_md_to_docx(md_path, docx_path):
     with open(md_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
 
-    # 预处理内容：去除场景说明，更新文件统计，处理功能描述
     md_content = remove_scenario_description_lines(md_content)
     md_content = update_file_statistics(md_content)
     md_content = process_function_description(md_content)
-
-    # 限制Markdown标题最大级别为6级
     md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
 
-    # 转换为HTML，方便解析
     html = markdown.markdown(md_content, extensions=['tables'])
     soup = BeautifulSoup(html, 'html.parser')
 
     doc = Document()
-
+    # 添加固定功能需求描述，避免重复添加
+    add_fixed_function_requirements(doc)
     # 解析HTML元素，生成对应Word内容
     for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
         if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
@@ -178,8 +170,7 @@ def convert_md_to_docx(md_path: str, docx_path: str):
                 paragraph = doc.add_paragraph(style='List Bullet')
                 add_formatted_text(paragraph, li)
 
-    # 添加固定功能需求描述，避免重复添加
-    add_fixed_function_requirements(doc)
+
 
     # 保存Word文档
     doc.save(docx_path)
@@ -285,6 +276,8 @@ def process_function_description(content: str) -> str:
     return '\n'.join(lines)
 
 
+from docx.shared import Pt
+
 def add_fixed_function_requirements(doc: Document):
     """
     添加固定的功能需求描述，避免重复添加
@@ -293,14 +286,21 @@ def add_fixed_function_requirements(doc: Document):
     if "按照FPA中列出的本需求需改造的功能逐级" in existing_content:
         return
 
-    heading = doc.add_heading('5.功能需求', level=1)
+    heading = doc.add_heading('功能需求', level=1)
     set_font(heading.runs[0], size=16, bold=True)
 
     paragraph = doc.add_paragraph()
-    run = paragraph.add_run(
-        '按照FPA中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
-    set_font(run, size=12)
-    run.bold = False
+    run1 = paragraph.add_run('按照')
+    run1.font.bold = True  # 这里改用 run1.font.bold
+    run2 = paragraph.add_run('FPA')
+    run2.font.bold = True
+    run3 = paragraph.add_run('中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
+    run3.font.bold = False
+
+    # 统一设置字体大小
+    run1.font.size = Pt(12)
+    run2.font.size = Pt(12)
+    run3.font.size = Pt(12)
 
 
 def add_formatted_text(paragraph, element):
