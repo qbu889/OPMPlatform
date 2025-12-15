@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata2.2">
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
     </list>
@@ -69,7 +69,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "297be922",
+    "git-widget-placeholder": "db215350",
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/templates",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
@@ -262,7 +262,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765527640954</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题">
+      <option name="closed" value="true" />
+      <created>1765783307230</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1765783307230</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -298,25 +306,16 @@
     <MESSAGE value="md转word bata1.0" />
     <MESSAGE value="md转word bata 2.1" />
     <MESSAGE value="md转word bata2.2" />
-    <option name="LAST_COMMIT_MESSAGE" value="md转word bata2.2" />
+    <MESSAGE value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>425</line>
-          <option name="timeStamp" value="85" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>451</line>
-          <option name="timeStamp" value="87" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>439</line>
-          <option name="timeStamp" value="88" />
+          <line>50</line>
+          <option name="timeStamp" value="93" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -335,6 +334,9 @@
         <watch expression="re.match(pattern_title, line)" />
         <watch expression="match.group(3)" />
         <watch expression="match.group(3).strip()" />
+        <watch expression="len(lines)" />
+        <watch expression="keyword" />
+        <watch expression="func_name" />
       </configuration>
     </watches-manager>
   </component>
