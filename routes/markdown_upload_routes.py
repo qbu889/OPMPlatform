@@ -413,7 +413,9 @@ def process_function_description(content):
     person_keywords = keywords_config.get('person_keywords', [])
     system_keywords = keywords_config.get('system_keywords', [])
 
-    pattern_title = r'^(#{5,})\s*\*\*\s*([\d\.]+)\s*(.+?)\s*\*\*$'
+    # 匹配5或者6的标题：
+    pattern_title = r'^(#{6,7})\s*\*\*(.*?)\*\*$'
+
 
     lines = content.split('\n')
     i = 0
@@ -427,12 +429,17 @@ def process_function_description(content):
 
         match = re.match(pattern_title, line)
         title_processed = False
-
         if match and not title_processed:
-            func_name = match.group(3).strip()
+            # 兼容处理：如果是旧格式(有数字)，提取数字后的部分；如果是新格式，直接使用
+            full_title = match.group(2).strip()
+            # 尝试分离数字前缀和标题文本
+            number_prefix_match = re.match(r'^([\d\.]+)\s+(.*)$', full_title)
+            if number_prefix_match:
+                func_name = number_prefix_match.group(2).strip()  # 旧格式：提取数字后的文本
+            else:
+                func_name = full_title  # 新格式：直接使用整个标题文本
             contains_keyword = any(keyword in func_name for keyword in person_keywords)
             contains_keyword2 = any(keyword in func_name for keyword in system_keywords)
-
             j = i + 1
             desc_processed = False
             input_processed = False

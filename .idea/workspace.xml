@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata2.2">
-      <change afterPath="$PROJECT_DIR$/routes/word_to_md_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/word_to_md.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/templates/template.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +69,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "297be922",
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/templates",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
@@ -310,13 +305,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>321</line>
-          <option name="timeStamp" value="12" />
+          <line>425</line>
+          <option name="timeStamp" value="85" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>392</line>
-          <option name="timeStamp" value="54" />
+          <line>451</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
+          <line>439</line>
+          <option name="timeStamp" value="88" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -329,14 +329,12 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="FIELD_NAMES" />
         <watch expression="match" />
-        <watch expression="internal_new_added_pattern" />
-        <watch expression="line.startswith('处理过程')" />
-        <watch expression="lines[i]" />
-        <watch expression="internal_new_count" />
-        <watch expression="internal_new_text" />
-        <watch expression="internal_new_added_match" />
+        <watch expression="pattern_title" />
+        <watch expression="line" />
+        <watch expression="re.match(pattern_title, line)" />
+        <watch expression="match.group(3)" />
+        <watch expression="match.group(3).strip()" />
       </configuration>
     </watches-manager>
   </component>
