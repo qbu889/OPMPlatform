@@ -1,4 +1,3 @@
-# routes/markdown_upload_routes.py
 import os
 import logging
 import re
@@ -133,6 +132,7 @@ def convert_md_to_docx(md_path, docx_path):
         md_content = f.read()
 
     md_content = remove_scenario_description_lines(md_content)
+    md_content = remove_fpa_report_lines(md_content)  # 新增：移除包含“FPA功能点分析报告”的行
     md_content = update_file_statistics(md_content)
     md_content = process_function_description(md_content)
     md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
@@ -183,6 +183,15 @@ def remove_scenario_description_lines(content: str) -> str:
     """
     lines = content.split('\n')
     filtered_lines = [line for line in lines if '场景说明' not in line]
+    return '\n'.join(filtered_lines)
+
+
+def remove_fpa_report_lines(content: str) -> str:
+    """
+    删除所有包含“FPA功能点分析报告”的行
+    """
+    lines = content.split('\n')
+    filtered_lines = [line for line in lines if 'FPA功能点分析报告' not in line]
     return '\n'.join(filtered_lines)
 
 
