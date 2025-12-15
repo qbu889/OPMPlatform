@@ -4,6 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata2.2">
       <change afterPath="$PROJECT_DIR$/routes/word_to_md_routes.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/templates/word_to_md.html" afterDir="false" />
@@ -12,6 +13,10 @@
       <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/templates/template.docx" afterDir="false" />
+=======
+    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +35,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="6cf2178238b985821d9cf4187737b27c73ebf3b6" />
+        <entry key="$PROJECT_DIR$" value="33c08e1330401e7dac82e789719c187acafc2efb" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -74,7 +79,11 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
+<<<<<<< Updated upstream
     "git-widget-placeholder": "master",
+=======
+    "git-widget-placeholder": "33c08e13",
+>>>>>>> Stashed changes
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/templates",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
@@ -166,9 +175,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.cleanup_temp_files" />
         <item itemvalue="Python.app" />
         <item itemvalue="Python.excel_to_word_core" />
-        <item itemvalue="Python.cleanup_temp_files" />
+        <item itemvalue="Python.app" />
+        <item itemvalue="Python.excel_to_word_core" />
       </list>
     </recent_temporary>
   </component>
@@ -267,7 +278,35 @@
       <option name="project" value="LOCAL" />
       <updated>1765527640954</updated>
     </task>
+<<<<<<< Updated upstream
     <option name="localTasksCounter" value="11" />
+=======
+    <task id="LOCAL-00011" summary="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题">
+      <option name="closed" value="true" />
+      <created>1765783307230</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1765783307230</updated>
+    </task>
+    <task id="LOCAL-00012" summary="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题&#10;new：日志输出">
+      <option name="closed" value="true" />
+      <created>1765785087705</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1765785087705</updated>
+    </task>
+    <task id="LOCAL-00013" summary="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容">
+      <option name="closed" value="true" />
+      <created>1765785848267</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1765785848267</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+>>>>>>> Stashed changes
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -303,7 +342,14 @@
     <MESSAGE value="md转word bata1.0" />
     <MESSAGE value="md转word bata 2.1" />
     <MESSAGE value="md转word bata2.2" />
+<<<<<<< Updated upstream
     <option name="LAST_COMMIT_MESSAGE" value="md转word bata2.2" />
+=======
+    <MESSAGE value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题" />
+    <MESSAGE value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题&#10;new：日志输出" />
+    <MESSAGE value="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容" />
+>>>>>>> Stashed changes
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
