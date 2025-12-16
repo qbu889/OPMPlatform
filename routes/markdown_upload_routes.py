@@ -2,6 +2,7 @@ import os
 import logging
 import re
 
+import openpyxl
 from flask import Blueprint, request, render_template, send_file, json
 from werkzeug.utils import secure_filename
 import markdown
@@ -24,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 
 KEYWORDS_FILE = os.path.join('config', 'keywords.json')
 TEMPLATE_DOCX = "templates/template.docx"
-
+excel_path = "/Users/linziwang/PycharmProjects/wordToWord/templates/【2】集中故障管理系统-监控综合应用-关于事件工单的优化需求-B-FPA预估2025版V3_厂家版本.xlsx"
 # 关键字段列表，包含常见变体，方便后续匹配
 FIELD_NAMES = [
     "场景说明：",
@@ -44,6 +45,37 @@ FIELD_NAMES = [
 def allowed_file(filename: str) -> bool:
     """判断文件后缀是否允许"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def extract_ilf_fpci_list_from_excel(excel_path):
+    """
+    从Excel中提取H列中类别为ILF的功能点计数项列表
+    假设H列是类别，G列是功能点计数项（或根据实际调整列）
+    这里示例假设：
+      - F列是功能点计数项（F9开始）
+      - G列是类别（G9开始）
+    返回所有类别为 ILF 的功能点计数项列表
+    """
+    wb = openpyxl.load_workbook(excel_path, data_only=True)
+    if '2. 规模估算' not in wb.sheetnames:
+        raise ValueError("Excel中缺少sheet：2. 规模估算的数据")
+
+    ws = wb['2. 规模估算']
+
+    fpci_col = 'F'
+    category_col = 'G'
+    start_row = 9
+    max_row = ws.max_row
+
+    ilf_list = []
+    for row in range(start_row, max_row + 1):
+        fpci = ws[f'{fpci_col}{row}'].value
+        category = ws[f'{category_col}{row}'].value
+        if fpci is None or category is None:
+            continue
+        if str(category).strip().upper() == 'ILF':
+            ilf_list.append(str(fpci).strip())
+    return ilf_list
 
 
 @markdown_upload_bp.route('/markdown-upload', methods=['GET', 'POST'])
@@ -81,7 +113,10 @@ def markdown_upload():
             word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
 
             logging.info("开始转换Markdown为Word: %s -> %s", real_path, word_filepath)
-            convert_md_to_docx(real_path, word_filepath)
+            excel_path = os.path.join('path', 'to', '/Users/linziwang/PycharmProjects/wordToWord/templates/【2】集中故障管理系统-监控综合应用-关于事件工单的优化需求-B-FPA预估2025版V3_厂家版本.xlsx')
+            ilf_list = extract_ilf_fpci_list_from_excel(excel_path)
+
+            convert_md_to_docx(real_path, word_filepath,excel_path,ilf_list)
             logging.info("转换完成，准备发送文件: %s", word_filepath)
 
             response = send_file(word_filepath, as_attachment=True)
@@ -113,7 +148,7 @@ def set_font(run, name='宋体', size=None, bold=False):
     run._element.rPr.rFonts.set(qn('w:eastAsia'), name)
     if size:
         run.font.size = Pt(size)
-    run.bold = bold
+    run.font.bold = bold  # 修改为 run.font.bold
     run.font.color.rgb = RGBColor(0, 0, 0)  # 黑色字体
 
 
@@ -127,13 +162,19 @@ def clean_filename(filename: str) -> str:
     return filename.strip(' ._')  # 去除首尾空格和点
 
 
-def convert_md_to_docx(md_path, docx_path):
+def convert_md_to_docx(md_path, docx_path, excel_path=None, ilf_list=None):
     with open(md_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
 
     md_content = remove_scenario_description_lines(md_content)
-    md_content = remove_fpa_report_lines(md_content)  # 新增：移除包含“FPA功能点分析报告”的行
-    md_content = update_file_statistics(md_content)
+    md_content = remove_fpa_report_lines(md_content)  # 移除包含“FPA功能点分析报告”的行
+
+    # 传入excel_path和ilf_list调用更新统计和填充
+    if excel_path and ilf_list:
+        md_content = update_file_statistics(md_content, excel_path=excel_path, ilf_list=ilf_list)
+    else:
+        md_content = update_file_statistics(md_content)
+
     md_content = process_function_description(md_content)
     md_content = re.sub(r'^(#{7,})', '######', md_content, flags=re.MULTILINE)
 
@@ -141,9 +182,8 @@ def convert_md_to_docx(md_path, docx_path):
     soup = BeautifulSoup(html, 'html.parser')
 
     doc = Document()
-    # 添加固定功能需求描述，避免重复添加
     add_fixed_function_requirements(doc)
-    # 解析HTML元素，生成对应Word内容
+
     for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
         if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
             level = int(element.name[1])
@@ -157,7 +197,7 @@ def convert_md_to_docx(md_path, docx_path):
         if element.name == 'p':
             text = element.get_text().strip()
             if not text:
-                continue  # 跳过空段落
+                continue
             paragraph = doc.add_paragraph()
             add_formatted_text(paragraph, element)
             continue
@@ -170,11 +210,10 @@ def convert_md_to_docx(md_path, docx_path):
                 paragraph = doc.add_paragraph(style='List Bullet')
                 add_formatted_text(paragraph, li)
 
-
-
-    # 保存Word文档
     doc.save(docx_path)
     logging.info("Word文档保存成功: %s", docx_path)
+
+
 
 
 def remove_scenario_description_lines(content: str) -> str:
@@ -364,23 +403,101 @@ def add_formatted_text(paragraph, element):
                     if i < len(lines) - 1:
                         paragraph.add_run('\n')
 
-
 def count_files_by_separators(text: str) -> int:
-    """
-    根据逗号、分号、空格、换行等分隔符统计文件数量，'无'或空返回0
-    """
     if not text or text == '无':
         return 0
     parts = re.split(r'[，,；;\s]+', text.strip())
     parts = [p for p in parts if p]
     return len(parts)
 
+def extract_fpci_and_category_from_excel(excel_path):
+    """
+    从Excel中提取功能点计数项及对应类别，返回字典 {fpci_name: category}
+    """
+    wb = openpyxl.load_workbook(excel_path, data_only=True)
+    if '2. 规模估算' not in wb.sheetnames:
+        logging.error("Excel中缺少sheet：2. 规模估算的数据")
+        return {}
 
-def update_file_statistics(content: str) -> str:
+    ws = wb['2. 规模估算']
+    fpci_col = 'F'
+    category_col = 'G'
+    start_row = 9
+    max_row = ws.max_row
+    result = {}
+
+    for row in range(start_row, max_row + 1):
+        fpci_cell = ws[f'{fpci_col}{row}'].value
+        category_cell = ws[f'{category_col}{row}'].value
+
+        if fpci_cell is None and category_cell is None:
+            break
+
+        fpci_key = str(fpci_cell).strip() if fpci_cell else ''
+        category_val = str(category_cell).strip() if category_cell else ''
+
+        if fpci_key:
+            result[fpci_key] = category_val
+
+    return result
+
+
+def match_ilf_table(fpci_name, ilf_list):
+    # 简单示例匹配规则
+    for ilf in ilf_list:
+        if fpci_name == ilf or ilf in fpci_name or fpci_name in ilf:
+            return ilf
+    return '无'
+
+def fill_internal_logic_files(content: str, excel_path: str, ilf_list: list) -> str:
+    fpci_to_category = extract_fpci_and_category_from_excel(excel_path)
+    new_internal_files = []
+    existing_internal_files = []
+
+    for fpci, category in fpci_to_category.items():
+        if category == 'EI':
+            matched_ilf = match_ilf_table(fpci, ilf_list)
+            new_internal_files.append(matched_ilf if matched_ilf != '无' else '无')
+        elif category == 'EO':
+            # TODO: EO多表逻辑，这里简化处理
+            new_internal_files.append(fpci)
+        elif category == 'EQ':
+            matched_ilf = match_ilf_table(fpci, ilf_list)
+            new_internal_files.append(matched_ilf if matched_ilf != '无' else '无')
+        elif category == 'ILF':
+            if fpci not in ilf_list:
+                logging.warning(f"ILF表名未在需求规则中出现：{fpci}")
+            existing_internal_files.append(fpci)
+
+    # 去重并过滤无
+    new_internal_files = list(set([f for f in new_internal_files if f and f != '无']))
+    existing_internal_files = list(set([f for f in existing_internal_files if f and f != '无']))
+
+    if not new_internal_files:
+        new_internal_files = ['无']
+    if not existing_internal_files:
+        existing_internal_files = ['无']
+
+    content = re.sub(
+        r'(本期新增/变更的内部逻辑文件：)[^\n]*',
+        r'\1' + '，'.join(new_internal_files),
+        content
+    )
+    content = re.sub(
+        r'(本期涉及原有但没修改的内部逻辑文件：)[^\n]*',
+        r'\1' + '，'.join(existing_internal_files),
+        content
+    )
+    return content
+
+def update_file_statistics(content: str, excel_path: str = None, ilf_list: list = None) -> str:
     """
     更新本事务功能预计涉及的数据文件统计内容
-    格式化数字空格，计算实际文件数量并替换文本
+    如果传入excel_path和ilf_list，则先填充内部逻辑文件字段
     """
+    if excel_path and ilf_list:
+        content = fill_internal_logic_files(content, excel_path, ilf_list)
+
     cleaned_content = re.sub(r'(\d+)\s+个', r'\1个', content)
     cleaned_content = re.sub(r'新增\s*/\s*变更', '新增/变更', cleaned_content)
     cleaned_content = re.sub(r'[ \t]*：[ \t]*', '：', cleaned_content)
@@ -391,7 +508,6 @@ def update_file_statistics(content: str) -> str:
     if not match:
         return cleaned_content
 
-    # 内部逻辑文件统计
     internal_new_added_pattern = r'本期新增/变更的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
     internal_existing_pattern = r'本期涉及原有但没修改的内部逻辑文件[：:]([^\n]*?)(?=\n|$)'
 
@@ -402,7 +518,6 @@ def update_file_statistics(content: str) -> str:
     internal_existing_count = count_files_by_separators(internal_existing_match.group(1).strip()) if internal_existing_match else 0
     actual_internal_count = internal_new_count + internal_existing_count
 
-    # 外部逻辑文件统计
     external_new_added_pattern = r'本期新增/变更的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
     external_existing_pattern = r'本期涉及原有但没修改的外部逻辑文件[：:]([^\n]*?)(?=\n|$)'
 

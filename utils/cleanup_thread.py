@@ -31,11 +31,12 @@ def is_timestamp_file(path: Path) -> bool:
 
 
 # 在 utils/cleanup_thread.py 中修改类型注解
-def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple → 大写Tuple
+def cleanup_dir(directory: str, cutoff: datetime) -> Tuple[int, int]:
     """清理指定目录下过期的文件"""
     # 转换为Path对象
     directory_path = Path(directory)
-    cutoff_datetime = datetime.fromisoformat(cutoff)
+    # 删除这行，因为 cutoff 已经是 datetime 类型
+    # cutoff_datetime = datetime.fromisoformat(cutoff)
 
     deleted_count = 0
     freed_bytes = 0
@@ -47,7 +48,7 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
             continue
         try:
             last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)
-            if last_modified < cutoff_datetime:
+            if last_modified < cutoff:  # 直接使用 cutoff
                 size = file_path.stat().st_size
                 file_path.unlink()
                 deleted_count += 1
@@ -56,12 +57,13 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
             print(f"清理文件失败 {file_path}: {e}")
     return deleted_count, freed_bytes
 
-def run_cleanup_loop(app):
+
+def run_cleanup_loop(app, cleanup_interval=1800, retention_hours=1):
     """后台清理循环"""
-    print(f"[清理线程] 启动，保留时长：{RETENTION_HOURS}小时，清理间隔：{INTERVAL_SECONDS}秒")
+    print(f"[清理线程] 启动，保留时长：{retention_hours}小时，清理间隔：{cleanup_interval}秒")
     while True:
         now = datetime.now()
-        cutoff = now - timedelta(hours=RETENTION_HOURS)
+        cutoff = now - timedelta(hours=retention_hours)
 
         # 使用应用上下文访问配置
         with app.app_context():
@@ -74,4 +76,5 @@ def run_cleanup_loop(app):
 
             if in_del + out_del > 0:
                 print(f"[{now}] 清理完成：删除Excel文件{in_del}个，Word文件{out_del}个")
-        time.sleep(INTERVAL_SECONDS)
+        time.sleep(cleanup_interval)
+
