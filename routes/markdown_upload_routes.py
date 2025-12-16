@@ -142,7 +142,7 @@ def convert_md_to_docx(md_path, docx_path):
 
     doc = Document()
     # 添加固定功能需求描述，避免重复添加
-    add_fixed_function_requirements(doc)
+    # add_fixed_function_requirements(doc)
     # 解析HTML元素，生成对应Word内容
     for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li']):
         if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
@@ -150,6 +150,8 @@ def convert_md_to_docx(md_path, docx_path):
             heading = doc.add_heading(level=min(level, 9))
             text = element.get_text().strip()
             if text:
+                # 去除标题序号
+                text = re.sub(r'^\d+(\.\d+)*\.\s*', '', text)
                 run = heading.add_run(text)
                 set_font(run, size=get_heading_size(level), bold=True)
             continue
@@ -224,7 +226,8 @@ def process_function_description(content: str) -> str:
     person_keywords = keywords_config.get('person_keywords', [])
     system_keywords = keywords_config.get('system_keywords', [])
 
-    pattern_title = r'^(#{6,7})\s*\*\*(.*?)\*\*$'
+    # pattern_title = r'^(#{6,7})\s*\*\*(.*?)\*\*$'
+    pattern_title = r'^(#{5,7})\s*(?:\*\*)?(.*?)(?:\*\*)?\s*$'
     lines = content.split('\n')
 
     func_desc_updated_count = 0
@@ -288,11 +291,8 @@ def process_function_description(content: str) -> str:
 from docx.shared import Pt
 
 def add_fixed_function_requirements(doc: Document):
-    """
-    添加固定的功能需求描述，避免重复添加
-    """
     existing_content = "\n".join(p.text for p in doc.paragraphs)
-    if "按照FPA中列出的本需求需改造的功能逐级" in existing_content:
+    if "按照FPA中列出的本需求需改造的功能逐级" in existing_content or "功能需求" in existing_content:
         return
 
     heading = doc.add_heading('功能需求', level=1)
@@ -300,16 +300,15 @@ def add_fixed_function_requirements(doc: Document):
 
     paragraph = doc.add_paragraph()
     run1 = paragraph.add_run('按照')
-    run1.font.bold = True  # 这里改用 run1.font.bold
-    run2 = paragraph.add_run('FPA')
-    run2.font.bold = True
-    run3 = paragraph.add_run('中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
-    run3.font.bold = False
+    run1.bold = True
+    set_font(run1, size=12, bold=True)
 
-    # 统一设置字体大小
-    run1.font.size = Pt(12)
-    run2.font.size = Pt(12)
-    run3.font.size = Pt(12)
+    run2 = paragraph.add_run('FPA')
+    run2.bold = True
+    set_font(run2, size=12, bold=True)
+
+    run3 = paragraph.add_run('中列出的本需求需改造的功能逐级（即按一级分类、二级分类、三级分类、功能点名称、功能点计数项结构）描述功能需求。')
+    set_font(run3, size=12, bold=False)
 
 
 def add_formatted_text(paragraph, element):
