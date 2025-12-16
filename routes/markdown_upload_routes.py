@@ -224,7 +224,8 @@ def process_function_description(content: str) -> str:
     person_keywords = keywords_config.get('person_keywords', [])
     system_keywords = keywords_config.get('system_keywords', [])
 
-    pattern_title = r'^(#{6,7})\s*\*\*(.*?)\*\*$'
+    # pattern_title = r'^(#{5,7})\s*\*\*(.*?)\*\*$'
+    pattern_title = r'^(#{5,7})\s*(?:\*\*)?(.*?)(?:\*\*)?(?:\s*（注：.*?）)?\s*$'
     lines = content.split('\n')
 
     func_desc_updated_count = 0
