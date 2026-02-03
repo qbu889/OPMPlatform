@@ -35,7 +35,10 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
     """清理指定目录下过期的文件"""
     # 转换为Path对象
     directory_path = Path(directory)
-    cutoff_datetime = datetime.fromisoformat(cutoff)
+    if isinstance(cutoff, datetime):
+        cutoff_datetime = cutoff
+    else:
+        cutoff_datetime = datetime.fromisoformat(cutoff)
 
     deleted_count = 0
     freed_bytes = 0
@@ -56,7 +59,9 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
             print(f"清理文件失败 {file_path}: {e}")
     return deleted_count, freed_bytes
 
-def run_cleanup_loop(app):
+# 需要修改 utils/cleanup_thread.py 中的函数定义
+def run_cleanup_loop(app, cleanup_interval=3600, retention_hours=24):
+    # 实现清理逻辑
     """后台清理循环"""
     print(f"[清理线程] 启动，保留时长：{RETENTION_HOURS}小时，清理间隔：{INTERVAL_SECONDS}秒")
     while True:

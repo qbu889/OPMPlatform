@@ -65,8 +65,9 @@
                 <input type="text" id="fpValue" name="fpValue" required>
             </div>
             <div class="form-group">
-                <label for="eventTime">事件时间 (格式: YYYY/MM/DD HH:MM):</label>
-                <input type="text" id="eventTime" name="eventTime" placeholder="例如: 2025/11/28 08:26" required>
+                <label for="eventTime">事件时间 (格式: YYYY/MM/DD HH:MM,例如：2025/01/12 16:00):</label>
+                <input type="text" id="eventTime" name="eventTime" placeholder="例如: 2025/11/28 08:26 或 2025/11/28 08:26:03" required>
+
             </div>
             <button type="submit">清洗数据</button>
         </form>
@@ -82,48 +83,54 @@
 
     <script>
         document.getElementById('cleanForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        e.preventDefault();
 
-            const fpValue = document.getElementById('fpValue').value;
-            const eventTime = document.getElementById('eventTime').value;
-            const errorDiv = document.getElementById('error');
-            const resultDiv = document.getElementById('result');
-            const resultData = document.getElementById('resultData');
+        const fpValue = document.getElementById('fpValue').value;
+        const eventTime = document.getElementById('eventTime').value;
+        const errorDiv = document.getElementById('error');
+        const resultDiv = document.getElementById('result');
+        const resultData = document.getElementById('resultData');
 
-            // 清空之前的错误和结果
-            errorDiv.textContent = '';
-            resultDiv.style.display = 'none';
+        // 清空之前的错误和结果
+        errorDiv.textContent = '';
+        resultDiv.style.display = 'none';
 
-            // 基本验证
-            if (!fpValue || !eventTime) {
-                errorDiv.textContent = '请填写所有字段';
-                return;
+        // 基本验证
+        if (!fpValue || !eventTime) {
+            errorDiv.textContent = '请填写所有字段';
+            return;
+        }
+
+        // 时间格式验证
+        if (!validateDateTimeFormat(eventTime)) {
+            errorDiv.textContent = '时间格式不正确，请使用格式: YYYY/MM/DD HH:MM 或 YYYY-MM-DD HH:MM (支持带秒格式: HH:MM:SS)';
+            return;
+        }
+
+        // 发送到后端处理
+        fetch('/clean-event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                fp_value: fpValue,
+                event_time: eventTime
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                errorDiv.textContent = data.error;
+            } else {
+                resultData.textContent = JSON.stringify(data.result, null, 2);
+                resultDiv.style.display = 'block';
             }
-
-            // 发送到后端处理
-            fetch('/clean-event', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fp_value: fpValue,
-                    event_time: eventTime
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    errorDiv.textContent = data.error;
-                } else {
-                    resultData.textContent = JSON.stringify(data.result, null, 2);
-                    resultDiv.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                errorDiv.textContent = '处理数据时发生错误: ' + error.message;
-            });
+        })
+        .catch(error => {
+            errorDiv.textContent = '处理数据时发生错误: ' + error.message;
         });
+    });
         // 在现有的 script 标签中添加复制功能
 // 替换现有的复制功能代码
 document.getElementById('copyBtn').addEventListener('click', function() {
@@ -144,6 +151,12 @@ document.getElementById('copyBtn').addEventListener('click', function() {
         fallbackCopyText(resultText, copySuccess);
     }
 });
+function validateDateTimeFormat(dateTimeStr) {
+    // 支持 YYYY/MM/DD HH:MM, YYYY-MM-DD HH:MM, YYYY/MM/DD HH:MM:SS, YYYY-MM-DD HH:MM:SS
+    const regex = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\s(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
+
+    return regex.test(dateTimeStr);
+}
 
 // 降级复制方法
 function fallbackCopyText(text, successElement) {

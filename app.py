@@ -1,5 +1,7 @@
 # app.py
 from datetime import datetime
+from http import client
+
 from flask import send_file
 import markdown
 from docx import Document
@@ -10,7 +12,6 @@ import logging
 from werkzeug.utils import secure_filename
 
 from config import config
-from deepseekapp import client
 from routes.document_routes import document_bp
 from routes.excel2word_routes import excel2word_bp
 from routes.markdown_upload_routes import markdown_upload_bp
@@ -76,36 +77,6 @@ def chat_page():
     now = datetime.now()
     return render_template('chat.html', now=now)
 
-@app.route('/call-deepseek', methods=['POST'])
-def call_deepseek_api():
-    """调用 DeepSeek API 的 Flask 接口"""
-    try:
-        # 获取请求数据
-        data = request.get_json()
-        model = data.get('model', 'deepseek-chat')
-        messages = data.get('messages', [])
-        stream = data.get('stream', False)
-
-        # 调用 DeepSeek API
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            stream=stream
-        )
-
-        # 返回响应
-        return jsonify({
-            "choices": [{
-                "message": {
-                    "content": response.choices[0].message.content,
-                    "role": response.choices[0].message.role
-                }
-            }]
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 if __name__ == '__main__':
     logger.info("启动Flask应用")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5002)

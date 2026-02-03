@@ -27,13 +27,16 @@ def clean_event():
             return jsonify({'error': 'FP值不能为空且长度不能超过1000个字符'}), 400
 
         # 时间格式验证，支持多种格式
-        time_pattern1 = r'^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{1,2}$'  # YYYY/MM/DD HH:MM
-        time_pattern2 = r'^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}$'   # YYYY-MM-DD HH:MM
-        time_pattern3 = r'^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$'  # YYYY-MM-DD HH:MM:SS
+        # 在 event_routes.py 中修改时间格式验证
+        time_pattern1 = r'^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{1,2}$'           # YYYY/MM/DD HH:MM
+        time_pattern2 = r'^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}$'            # YYYY-MM-DD HH:MM
+        time_pattern3 = r'^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$'    # YYYY-MM-DD HH:MM:SS
+        time_pattern4 = r'^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$'    # YYYY/MM/DD HH:MM:SS
 
         if not (re.match(time_pattern1, event_time) or
-                re.match(time_pattern2, event_time) or
-                re.match(time_pattern3, event_time)):
+            re.match(time_pattern2, event_time) or
+            re.match(time_pattern3, event_time) or
+            re.match(time_pattern4, event_time)):
             return jsonify({'error': '时间格式不正确，支持格式: YYYY/MM/DD HH:MM 或 YYYY-MM-DD HH:MM'}), 400
 
         # 处理数据

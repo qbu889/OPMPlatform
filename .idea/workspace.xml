@@ -1,45 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
   <component name="ChangeListManager">
-<<<<<<< Updated upstream
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="md转word bata2.2">
-      <change afterPath="$PROJECT_DIR$/routes/word_to_md_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/word_to_md.html" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/requirements-linux.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements-windows.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env/deepseekapp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/_2025_12_11_17_05____.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/_2025_12_12_15_48____.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/___.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/在进行更新之前于_2025_12_12_15_48_取消提交了更改_[更改]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/在进行签出之前于_2025_12_11_17_05_取消提交了更改_[更改]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/markdown_upload_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/keywords.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/keywords.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/keywords2.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/keywords2.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deepseekapp.py" beforeDir="false" afterPath="$PROJECT_DIR$/deepseekapp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/event_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/event_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/clean_event.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/clean_event.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/template.docx" beforeDir="false" afterPath="$PROJECT_DIR$/templates/template.docx" afterDir="false" />
-=======
-    <list default="true" id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
->>>>>>> Stashed changes
+      <change beforePath="$PROJECT_DIR$/uploads/3.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output_filled (1).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/【3】集中故障管理系统-监控综合应用-关于事件工单运营报表的开发需求-60300_20250826.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/无标题(1).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/监控综合应用事件全景优化_功能需求.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/集中故障管理系统-监控综合应用-关于监控综合应用事件识别、事件处理及信息丰富的需求-58300_20250816-需求规格说明书(1).docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cleanup_thread.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cleanup_thread.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Dockerfile" />
-        <option value="Python Script" />
-        <option value="HTML File" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="33c08e1330401e7dac82e789719c187acafc2efb" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -53,56 +52,31 @@
     &quot;accountId&quot;: &quot;09c92d07-a86d-4f2e-acff-ac193fa6dbe0&quot;
   }
 }</component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/.venv/lib/python3.8/site-packages/flask/app.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/templates/index.html" root0="SKIP_INSPECTION" />
-  </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 8
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
 }</component>
-  <component name="ProjectId" id="36Ei5ShyQIOENF3OL2SccZ9JxwL" />
+  <component name="ProjectId" id="37aciwsDXXDgfuDNhy31z8KsodE" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.app.executor": "Debug",
-    "Python.app2.executor": "Run",
-    "Python.cleanup_temp_files.executor": "Run",
-    "Python.deepseekapp.executor": "Debug",
-    "Python.excel_to_word_core.executor": "Debug",
-    "Python.format_sql_ids.executor": "Run",
-    "Python.mdtoword.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-<<<<<<< Updated upstream
-    "git-widget-placeholder": "master",
-=======
-    "git-widget-placeholder": "33c08e13",
->>>>>>> Stashed changes
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/templates",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/templates" />
-      <recent name="$PROJECT_DIR$/tmp" />
-      <recent name="$PROJECT_DIR$/static" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/uploads" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/static" />
-      <recent name="$PROJECT_DIR$/templates" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.app">
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+}</component>
+  <component name="RunManager" selected="Flask 服务器.Flask (app.py)">
+    <configuration name="wordToWord" type="PythonConfigurationType" factoryName="Python">
       <module name="wordToWord" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -111,11 +85,13 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/deepseekapp.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -124,266 +100,73 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="cleanup_temp_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Flask (app.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
+      <option name="target" value="$PROJECT_DIR$/app.py" />
+      <option name="targetType" value="PATH" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/cleanup_temp_files.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="excel_to_word_core" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="wordToWord" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/excel_to_word_core.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.excel_to_word_core" />
-      <item itemvalue="Python.app" />
-      <item itemvalue="Python.cleanup_temp_files" />
+      <item itemvalue="Flask 服务器.Flask (app.py)" />
+      <item itemvalue="Python.wordToWord" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.cleanup_temp_files" />
-        <item itemvalue="Python.app" />
-        <item itemvalue="Python.excel_to_word_core" />
-        <item itemvalue="Python.app" />
-        <item itemvalue="Python.excel_to_word_core" />
+        <item itemvalue="Flask 服务器.Flask (app.py)" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.29346.142" />
+        <option value="bundled-python-sdk-f2b7a9f6281b-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.142" />
       </set>
     </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
-      <changelist id="aa4340fb-2420-42a8-a28d-dfa0facd7e5e" name="更改" comment="" />
-      <created>1764577947384</created>
+      <changelist id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="" />
+      <created>1767144754713</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1764577947384</updated>
+      <updated>1767144754713</updated>
+      <workItem from="1767144756292" duration="150000" />
+      <workItem from="1767145395453" duration="57321000" />
+      <workItem from="1768444644740" duration="5997000" />
+      <workItem from="1769147250516" duration="12459000" />
+      <workItem from="1769737936658" duration="957000" />
+      <workItem from="1769998704236" duration="649000" />
     </task>
-    <task id="LOCAL-00001" summary="1">
-      <option name="closed" value="true" />
-      <created>1764655214151</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1764655214151</updated>
-    </task>
-    <task id="LOCAL-00002" summary="bata1.0">
-      <option name="closed" value="true" />
-      <created>1764662095219</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1764662095219</updated>
-    </task>
-    <task id="LOCAL-00003" summary="bata1.0">
-      <option name="closed" value="true" />
-      <created>1764662514027</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1764662514028</updated>
-    </task>
-    <task id="LOCAL-00004" summary="bata 2.0">
-      <option name="closed" value="true" />
-      <created>1764734180734</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1764734180734</updated>
-    </task>
-    <task id="LOCAL-00005" summary="bata 1.3">
-      <option name="closed" value="true" />
-      <created>1764742073630</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1764742073630</updated>
-    </task>
-    <task id="LOCAL-00006" summary="kafka推送">
-      <option name="closed" value="true" />
-      <created>1765166293385</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1765166293385</updated>
-    </task>
-    <task id="LOCAL-00007" summary="md转word">
-      <option name="closed" value="true" />
-      <created>1765273268787</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1765273268787</updated>
-    </task>
-    <task id="LOCAL-00008" summary="md转word bata1.0">
-      <option name="closed" value="true" />
-      <created>1765337452327</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1765337452327</updated>
-    </task>
-    <task id="LOCAL-00009" summary="md转word bata 2.1">
-      <option name="closed" value="true" />
-      <created>1765357450952</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1765357450952</updated>
-    </task>
-    <task id="LOCAL-00010" summary="md转word bata2.2">
-      <option name="closed" value="true" />
-      <created>1765527640954</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1765527640954</updated>
-    </task>
-<<<<<<< Updated upstream
-    <option name="localTasksCounter" value="11" />
-=======
-    <task id="LOCAL-00011" summary="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题">
-      <option name="closed" value="true" />
-      <created>1765783307230</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1765783307230</updated>
-    </task>
-    <task id="LOCAL-00012" summary="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题&#10;new：日志输出">
-      <option name="closed" value="true" />
-      <created>1765785087705</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1765785087705</updated>
-    </task>
-    <task id="LOCAL-00013" summary="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容">
-      <option name="closed" value="true" />
-      <created>1765785848267</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1765785848267</updated>
-    </task>
-    <option name="localTasksCounter" value="14" />
->>>>>>> Stashed changes
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="origin/detached2" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
   </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="1" />
-    <MESSAGE value="bata1.0" />
-    <MESSAGE value="bata 2.0" />
-    <MESSAGE value="bata 1.3" />
-    <MESSAGE value="kafka推送" />
-    <MESSAGE value="md转word" />
-    <MESSAGE value="md转word bata1.0" />
-    <MESSAGE value="md转word bata 2.1" />
-    <MESSAGE value="md转word bata2.2" />
-<<<<<<< Updated upstream
-    <option name="LAST_COMMIT_MESSAGE" value="md转word bata2.2" />
-=======
-    <MESSAGE value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题" />
-    <MESSAGE value="【md转word】fix：功能描述处理逻辑：标题非数字匹配不上的的问题&#10;new：日志输出" />
-    <MESSAGE value="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix1:功能头部的内容修正&#10;fix2:加粗头部的内容" />
->>>>>>> Stashed changes
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>321</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/markdown_upload_routes.py</url>
-          <line>392</line>
-          <option name="timeStamp" value="54" />
-        </line-breakpoint>
-      </breakpoints>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
-    </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="FIELD_NAMES" />
-        <watch expression="match" />
-        <watch expression="internal_new_added_pattern" />
-        <watch expression="line.startswith('处理过程')" />
-        <watch expression="lines[i]" />
-        <watch expression="internal_new_count" />
-        <watch expression="internal_new_text" />
-        <watch expression="internal_new_added_match" />
-      </configuration>
-    </watches-manager>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/wordToWord$wordToWord.coverage" NAME="wordToWord 覆盖结果" MODIFIED="1767149221234" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1769161155716" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
