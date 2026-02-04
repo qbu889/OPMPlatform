@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>生成 Kafka 消息</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            padding: 20px;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result-area {
+            margin-top: 20px;
+        }
+        #kafka-msg {
+            width: 100%;
+            min-height: 500px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            resize: vertical;
+            background-color: #f9f9f9;
+        }
+        .copy-btn {
+            background-color: #28a745;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        .tip {
+            margin-top: 10px;
+            color: #666;
+            font-size: 12px;
+        }
+        .success-tip {
+            color: #28a745;
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Kafka消息生成器</h2>
+        <div class="input-group">
+            <label for="room_id">ROOM_ID</label>
+            <input type="text" id="room_id" placeholder="请输入ROOM_ID，例如：ROOM-ff4640d53b964c558ab4557eda28e238">
+        </div>
+        <div class="input-group">
+            <label for="machine_room_info">MACHINE_ROOM_INFO</label>
+            <input type="text" id="machine_room_info" placeholder="请输入机房信息，例如：莆田涵江埭里局楼三楼310配电室机房">
+        </div>
+        <button id="generate-btn">生成Kafka消息</button>
+        <button id="copy-btn" class="copy-btn">一键复制</button>
+        <div class="success-tip" id="success-tip">✓ 复制成功！</div>
+
+        <div class="result-area">
+            <label>Kafka消息结果</label>
+            <textarea id="kafka-msg" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        // 生成按钮点击事件
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            const roomId = document.getElementById('room_id').value.trim();
+            const machineRoomInfo = document.getElementById('machine_room_info').value.trim();
+
+            if (!roomId || !machineRoomInfo) {
+                alert('ROOM_ID和MACHINE_ROOM_INFO不能为空！');
+                return;
+            }
+
+            try {
+                const response = await fetch('/generate_kafka_msg', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `room_id=${encodeURIComponent(roomId)}&machine_room_info=${encodeURIComponent(machineRoomInfo)}`
+                });
+
+                const result = await response.json();
+                if (result.code === 200) {
+                    document.getElementById('kafka-msg').value = result.data;
+                } else {
+                    alert(result.msg);
+                }
+            } catch (error) {
+                alert('请求失败：' + error.message);
+            }
+        });
+
+        // 复制按钮点击事件
+        document.getElementById('copy-btn').addEventListener('click', function() {
+            const msgTextarea = document.getElementById('kafka-msg');
+            if (!msgTextarea.value) {
+                alert('暂无可复制的消息内容！');
+                return;
+            }
+
+            // 选中文本并复制
+            msgTextarea.select();
+            document.execCommand('copy');
+
+            // 显示复制成功提示
+            const successTip = document.getElementById('success-tip');
+            successTip.style.display = 'block';
+            setTimeout(() => {
+                successTip.style.display = 'none';
+            }, 2000);
+        });
+
+        // 初始化 ClipboardJS
+        new ClipboardJS('#copy-btn');
+    </script>
+</body>
+</html>

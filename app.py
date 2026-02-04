@@ -2,6 +2,9 @@
 from datetime import datetime
 from http import client
 
+import uuid
+
+import json
 from flask import send_file
 import markdown
 from docx import Document
@@ -11,9 +14,11 @@ import logging
 
 from werkzeug.utils import secure_filename
 
+from app2 import get_today_time, get_time_minus_minutes
 from config import config
 from routes.document_routes import document_bp
 from routes.excel2word_routes import excel2word_bp
+from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
 from routes.markdown_upload_routes import markdown_upload_bp
 from routes.sql_routes import sql_bp
 from routes.event_routes import event_bp
@@ -45,7 +50,7 @@ def create_app(config_name='default'):
     app.register_blueprint(excel2word_bp)
     app.register_blueprint(markdown_upload_bp)
     app.register_blueprint(word_to_md_bp)
-
+    app.register_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
@@ -64,19 +69,8 @@ def index():
     logger.info(f"Demo模板存在状态: {demo_exists}")
     return render_template('index.html', demo_exists=demo_exists)
 
-
-@app.route('/upload-demo-page')
-def upload_demo_page():
-    """跳转Demo上传页面"""
-    logger.info("访问Demo上传页面")
-    return render_template('demo_upload.html', success=False, msg='')
-
-@app.route('/chat')
-def chat_page():
-    """提供聊天页面访问"""
-    now = datetime.now()
-    return render_template('chat.html', now=now)
-
 if __name__ == '__main__':
-    logger.info("启动Flask应用")
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    import os
+    port = int(os.environ.get("PORT", 5004))  # 优先使用环境变量，否则默认 5004
+    logger.info(f"启动Flask应用，端口: {port}")
+    app.run(debug=True, host='0.0.0.0', port=port)
