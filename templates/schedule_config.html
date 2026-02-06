@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班配置</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .staff-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .core-staff {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .test-staff {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .leave-record {
+            border-left: 4px solid #ffc107;
+            padding-left: 15px;
+            margin-bottom: 10px;
+        }
+
+        .full-day-leave {
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid mt-4">
+    <h2><i class="fas fa-calendar-alt me-2"></i>排班配置管理系统</h2>
+
+    <ul class="nav nav-tabs" id="configTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="staff-config-tab" data-bs-toggle="tab" data-bs-target="#staff-config"
+                    type="button" role="tab">
+                <i class="fas fa-users me-1"></i>人员配置
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="leave-config-tab" data-bs-toggle="tab" data-bs-target="#leave-config"
+                    type="button" role="tab">
+                <i class="fas fa-user-clock me-1"></i>请假配置
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="schedule-gen-tab" data-bs-toggle="tab" data-bs-target="#schedule-gen"
+                    type="button" role="tab">
+                <i class="fas fa-cogs me-1"></i>生成排班
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="schedule-query-tab" data-bs-toggle="tab" data-bs-target="#schedule-query"
+                    type="button" role="tab">
+                <i class="fas fa-table me-1"></i>排班查询
+            </button>
+        </li>
+    </ul>
+
+
+    <div class="tab-content" id="configTabContent">
+        <!-- 人员配置标签页 -->
+        <div class="tab-pane fade show active" id="staff-config" role="tabpanel">
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-tie me-2"></i>核心人员配置</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="coreStaff" class="form-label">核心人员</label>
+                                <input type="text" class="form-control" id="coreStaff" placeholder="输入核心人员姓名">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-user-friends me-2"></i>测试人员配置</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addTestStaffBtn">
+                                <i class="fas fa-plus me-1"></i>添加
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="testStaffList">
+                                <!-- 测试人员列表将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle me-2"></i>配置说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h6>配置说明：</h6>
+                                <ul>
+                                    <li>核心人员通常为主班人员</li>
+                                    <li>测试人员参与轮班和辅助工作</li>
+                                    <li>至少需要一名核心人员和一名测试人员</li>
+                                    <li>修改配置后记得保存</li>
+                                </ul>
+                            </div>
+
+                            <button type="button" class="btn btn-primary w-100" id="saveStaffConfigBtn">
+                                <i class="fas fa-save me-2"></i>保存人员配置
+                            </button>
+
+                            <button type="button" class="btn btn-success w-100 mt-2" id="loadStaffConfigBtn">
+                                <i class="fas fa-sync-alt me-2"></i>加载当前配置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 请假配置标签页 -->
+        <div class="tab-pane fade" id="leave-config" role="tabpanel">
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-plus-circle me-2"></i>添加请假记录</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="leaveForm">
+                                <div class="mb-3">
+                                    <label for="leaveStaff" class="form-label">请假人员</label>
+                                    <select class="form-select" id="leaveStaff" required>
+                                        <option value="">请选择人员</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="leaveDate" class="form-label">请假日期</label>
+                                    <input type="date" class="form-control" id="leaveDate" required>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="isFullDay">
+                                    <label class="form-check-label" for="isFullDay">全天请假</label>
+                                </div>
+
+                                <div id="timeSection">
+                                    <div class="mb-3">
+                                        <label for="startTime" class="form-label">开始时间</label>
+                                        <input type="time" class="form-control" id="startTime">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="endTime" class="form-label">结束时间</label>
+                                        <input type="time" class="form-control" id="endTime">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="leaveReason" class="form-label">请假原因</label>
+                                    <textarea class="form-control" id="leaveReason" rows="2"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-calendar-plus me-2"></i>添加请假
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-list me-2"></i>请假记录查询</h5>
+                            <div>
+                                <input type="date" class="form-control d-inline-block" id="queryStartDate"
+                                       style="width: auto;">
+                                <span class="mx-1">至</span>
+                                <input type="date" class="form-control d-inline-block" id="queryEndDate"
+                                       style="width: auto;">
+                                <button type="button" class="btn btn-outline-primary ms-2" id="searchLeaveBtn">
+                                    <i class="fas fa-search me-1"></i>查询
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="leaveRecordsList">
+                                <!-- 请假记录将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成排班标签页 -->
+        <div class="tab-pane fade" id="schedule-gen" role="tabpanel">
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-cogs me-2"></i>排班生成设置</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="genStartDate" class="form-label">开始日期</label>
+                                <input type="date" class="form-control" id="genStartDate" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="genEndDate" class="form-label">结束日期</label>
+                                <input type="date" class="form-control" id="genEndDate" required>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                注意：生成排班会根据当前人员配置和请假记录自动生成排班表
+                            </div>
+
+                            <button type="button" class="btn btn-success w-100" id="generateScheduleBtn">
+                                <i class="fas fa-calendar-check me-2"></i>生成排班表
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle me-2"></i>生成说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h6>排班生成规则：</h6>
+                                <ul>
+                                    <li>根据设定的时段自动分配人员</li>
+                                    <li>考虑请假记录，自动调整排班</li>
+                                    <li>节假日早班避开前一日同时段人员</li>
+                                    <li>轮换机制确保公平分配</li>
+                                </ul>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-clock me-2"></i>时段配置</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>日常时段：</strong></p>
+                                    <ul>
+                                        <li>8:00～9:00</li>
+                                        <li>9:00～12:00</li>
+                                        <li>13:30～18:00</li>
+                                        <li>18:00～21:00</li>
+                                    </ul>
+
+                                    <p><strong>节假日时段：</strong></p>
+                                    <ul>
+                                        <li>8:00～12:00</li>
+                                        <li>13:30～17:30</li>
+                                        <li>17:30～21:30</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 排班查询标签页 -->
+        <div class="tab-pane fade" id="schedule-query" role="tabpanel">
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-search me-2"></i>排班查询</h5>
+                            <div>
+                                <input type="date" class="form-control d-inline-block" id="queryScheduleStartDate"
+                                       style="width: auto;">
+                                <span class="mx-1">至</span>
+                                <input type="date" class="form-control d-inline-block" id="queryScheduleEndDate"
+                                       style="width: auto;">
+                                <button type="button" class="btn btn-outline-primary ms-2" id="searchScheduleBtn">
+                                    <i class="fas fa-search me-1"></i>查询
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" id="exportScheduleBtn">
+                                    <i class="fas fa-download me-1"></i>导出
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover" id="scheduleTable">
+                                    <thead class="table-dark">
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>星期</th>
+                                        <th>时段</th>
+                                        <th>人员</th>
+                                        <th>人员类型</th>
+                                        <th>角色</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="scheduleTableBody">
+                                    <!-- 排班记录将在这里显示 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="noScheduleMessage" class="alert alert-info text-center" style="display: none;">
+                                暂无排班记录
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 页面初始化
+    document.addEventListener('DOMContentLoaded', function () {
+        loadStaffConfig();
+        setupEventListeners();
+    });
+
+    // 设置事件监听器
+    function setupEventListeners() {
+        // 人员配置相关
+        document.getElementById('saveStaffConfigBtn').addEventListener('click', saveStaffConfig);
+        document.getElementById('loadStaffConfigBtn').addEventListener('click', loadStaffConfig);
+        document.getElementById('addTestStaffBtn').addEventListener('click', addTestStaffInput);
+
+        // 请假配置相关
+        document.getElementById('leaveForm').addEventListener('submit', submitLeaveRecord);
+        document.getElementById('isFullDay').addEventListener('change', toggleTimeInputs);
+        document.getElementById('searchLeaveBtn').addEventListener('click', searchLeaveRecords);
+
+        // 排班生成相关
+        document.getElementById('generateScheduleBtn').addEventListener('click', generateSchedule);
+
+        // 排班查询相关
+        document.getElementById('searchScheduleBtn').addEventListener('click', searchSchedule);
+
+        // 排班导出相关
+       document.getElementById('exportScheduleBtn').addEventListener('click', exportSchedule);
+    }
+
+    // 加载人员配置
+    async function loadStaffConfig() {
+        try {
+            const response = await fetch('/schedule-config/api/staff-config');
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById('coreStaff').value = result.data.core_staff || '';
+
+                // 清空测试人员列表
+                document.getElementById('testStaffList').innerHTML = '';
+
+                // 添加测试人员
+                result.data.test_staffs.forEach(staff => {
+                    addTestStaffToList(staff);
+                });
+
+                // 更新请假人员下拉框
+                updateLeaveStaffSelect([...result.data.test_staffs, result.data.core_staff]);
+
+                showMessage('人员配置加载成功', 'success');
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('加载人员配置失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 保存人员配置
+    async function saveStaffConfig() {
+        const coreStaff = document.getElementById('coreStaff').value.trim();
+        const testStaffElements = document.querySelectorAll('#testStaffList input[type="text"]');
+        const testStaffs = [];
+
+        testStaffElements.forEach(input => {
+            const value = input.value.trim();
+            if (value) {
+                testStaffs.push(value);
+            }
+        });
+
+        if (!coreStaff) {
+            showMessage('请填写核心人员姓名', 'warning');
+            return;
+        }
+
+        if (testStaffs.length === 0) {
+            showMessage('请至少添加一名测试人员', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/schedule-config/api/staff-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    core_staff: coreStaff,
+                    test_staffs: testStaffs
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage(result.msg, 'success');
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('保存人员配置失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 添加测试人员输入框
+    function addTestStaffInput() {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-2';
+        inputGroup.innerHTML = `
+                <input type="text" class="form-control" placeholder="输入测试人员姓名" required>
+                <button class="btn btn-outline-danger remove-staff-btn" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        document.getElementById('testStaffList').appendChild(inputGroup);
+
+        // 添加删除按钮事件
+        inputGroup.querySelector('.remove-staff-btn').addEventListener('click', function () {
+            inputGroup.remove();
+        });
+    }
+
+    // 将测试人员添加到列表显示
+    function addTestStaffToList(name) {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-2';
+        inputGroup.innerHTML = `
+                <input type="text" class="form-control" value="${name}" required>
+                <button class="btn btn-outline-danger remove-staff-btn" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        document.getElementById('testStaffList').appendChild(inputGroup);
+
+        // 添加删除按钮事件
+        inputGroup.querySelector('.remove-staff-btn').addEventListener('click', function () {
+            inputGroup.remove();
+        });
+    }
+
+    // 更新请假人员下拉框
+    function updateLeaveStaffSelect(staffList) {
+        const select = document.getElementById('leaveStaff');
+        select.innerHTML = '<option value="">请选择人员</option>';
+
+        staffList.forEach(staff => {
+            const option = document.createElement('option');
+            option.value = staff;
+            option.textContent = staff;
+            select.appendChild(option);
+        });
+    }
+
+    // 时间输入切换
+    function toggleTimeInputs() {
+        const isFullDay = document.getElementById('isFullDay').checked;
+        const timeSection = document.getElementById('timeSection');
+
+        if (isFullDay) {
+            timeSection.style.display = 'none';
+        } else {
+            timeSection.style.display = 'block';
+        }
+    }
+
+    // 提交请假记录
+    async function submitLeaveRecord(e) {
+        e.preventDefault();
+
+        const staffName = document.getElementById('leaveStaff').value;
+        const leaveDate = document.getElementById('leaveDate').value;
+        const isFullDay = document.getElementById('isFullDay').checked;
+        const startTime = document.getElementById('startTime').value || '00:00';
+        const endTime = document.getElementById('endTime').value || '23:59';
+        const reason = document.getElementById('leaveReason').value;
+
+        if (!staffName || !leaveDate) {
+            showMessage('请填写必填项', 'warning');
+            return;
+        }
+
+        if (!isFullDay && (!startTime || !endTime)) {
+            showMessage('时段请假需填写开始和结束时间', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/schedule-config/api/leave-records', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    staff_name: staffName,
+                    leave_date: leaveDate,
+                    is_full_day: isFullDay,
+                    start_time: startTime,
+                    end_time: endTime,
+                    reason: reason
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage(result.msg, 'success');
+                document.getElementById('leaveForm').reset();
+                toggleTimeInputs(); // 重置时间显示
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('添加请假记录失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 搜索请假记录
+    async function searchLeaveRecords() {
+        const startDate = document.getElementById('queryStartDate').value;
+        const endDate = document.getElementById('queryEndDate').value;
+
+        if (!startDate || !endDate) {
+            showMessage('请填写查询日期范围', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/schedule-config/api/leave-records?start_date=${startDate}&end_date=${endDate}`);
+            const result = await response.json();
+
+            if (result.success) {
+                displayLeaveRecords(result.data);
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('查询请假记录失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 显示请假记录
+    function displayLeaveRecords(records) {
+        const container = document.getElementById('leaveRecordsList');
+
+        if (records.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">暂无请假记录</div>';
+            return;
+        }
+
+        let html = '';
+        records.forEach(record => {
+            const isFullDayClass = record.is_full_day ? 'full-day-leave' : '';
+            const timeDisplay = record.is_full_day ?
+                '全天' :
+                `${record.start_time || '00:00'} - ${record.end_time || '23:59'}`;
+
+            html += `
+                    <div class="leave-record ${isFullDayClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${record.staff_name}</strong>
+                                <span class="badge bg-${record.staff_type === 'CORE' ? 'danger' : 'primary'} ms-2">${record.staff_type === 'CORE' ? '核心' : '测试'}</span>
+                                <br>
+                                <small class="text-muted">${formatDate(record.leave_date)}</small>
+                                <br>
+                                <small>时段: ${timeDisplay}</small>
+                                ${record.reason ? `<br><small>原因: ${record.reason}</small>` : ''}
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger delete-leave-btn" data-id="${record.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+        });
+
+        container.innerHTML = html;
+
+        // 添加删除按钮事件
+        document.querySelectorAll('.delete-leave-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const recordId = this.getAttribute('data-id');
+                deleteLeaveRecord(recordId);
+            });
+        });
+    }
+
+    // 删除请假记录
+    async function deleteLeaveRecord(id) {
+        if (!confirm('确定要删除这条请假记录吗？')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/schedule-config/api/leave-records', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: id})
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage(result.msg, 'success');
+                searchLeaveRecords(); // 重新查询
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('删除请假记录失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 生成排班表
+    async function generateSchedule() {
+        const startDate = document.getElementById('genStartDate').value;
+        const endDate = document.getElementById('genEndDate').value;
+
+        if (!startDate || !endDate) {
+            showMessage('请填写排班日期范围', 'warning');
+            return;
+        }
+
+        if (new Date(startDate) > new Date(endDate)) {
+            showMessage('开始日期不能晚于结束日期', 'warning');
+            return;
+        }
+
+        if (!confirm(`确定要生成 ${startDate} 至 ${endDate} 的排班表吗？`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/schedule-config/api/generate-schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage(result.msg, 'success');
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('生成排班表失败: ' + error.message, 'danger');
+        }
+    }
+
+
+    // 格式化日期显示
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('zh-CN');
+    }
+
+    // 显示消息
+    function showMessage(message, type = 'info') {
+        // 创建消息元素
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.setAttribute('role', 'alert');
+        alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+        // 添加到页面顶部
+        const container = document.querySelector('.container-fluid');
+        container.insertBefore(alert, container.firstChild);
+
+        // 自动移除消息
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
+    }
+
+    // 搜索排班记录
+    async function searchSchedule() {
+        const startDate = document.getElementById('queryScheduleStartDate').value;
+        const endDate = document.getElementById('queryScheduleEndDate').value;
+
+        if (!startDate || !endDate) {
+            showMessage('请填写查询日期范围', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
+            const result = await response.json();
+
+            if (result.success) {
+                displayScheduleRecords(result.data);
+            } else {
+                showMessage(result.msg, 'danger');
+            }
+        } catch (error) {
+            showMessage('查询排班记录失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 显示排班记录
+    function displayScheduleRecords(records) {
+        const tbody = document.getElementById('scheduleTableBody');
+        const noMessage = document.getElementById('noScheduleMessage');
+
+        if (records.length === 0) {
+            tbody.innerHTML = '';
+            noMessage.style.display = 'block';
+            return;
+        }
+
+        noMessage.style.display = 'none';
+        tbody.innerHTML = '';
+
+        // 按日期和时段分组显示
+        const groupedData = {};
+        records.forEach(record => {
+            const dateKey = record.date;
+            if (!groupedData[dateKey]) {
+                groupedData[dateKey] = {};
+            }
+
+            if (!groupedData[dateKey][record.time_slot]) {
+                groupedData[dateKey][record.time_slot] = [];
+            }
+
+            groupedData[dateKey][record.time_slot].push(record);
+        });
+
+        // 按日期排序
+        const sortedDates = Object.keys(groupedData).sort();
+
+        sortedDates.forEach(date => {
+            const dayRecords = groupedData[date];
+            const sortedSlots = Object.keys(dayRecords).sort(); // 按时段排序
+
+            sortedSlots.forEach(timeSlot => {
+                const slotRecords = dayRecords[timeSlot];
+
+                // 按主班人员优先排序
+                slotRecords.sort((a, b) => {
+                    if (a.is_main && !b.is_main) return -1;
+                    if (!a.is_main && b.is_main) return 1;
+                    return 0;
+                });
+
+                slotRecords.forEach(record => {
+                    const row = document.createElement('tr');
+
+                    // 计算星期几
+                    const dateObj = new Date(record.date);
+                    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    const weekday = weekdays[dateObj.getDay()];
+
+                    row.innerHTML = `
+                            <td>${record.date}</td>
+                            <td>${weekday}</td>
+                            <td>${record.time_slot}</td>
+                            <td>
+                                <span class="badge bg-${record.staff_type === 'CORE' ? 'danger' : 'primary'}">
+                                    ${record.staff_name}
+                                </span>
+                            </td>
+                            <td>${record.staff_type === 'CORE' ? '核心' : '测试'}</td>
+                            <td>${record.is_main ? '主班' : '辅班'}</td>
+                        `;
+
+                    tbody.appendChild(row);
+                });
+            });
+        });
+    }
+
+    // 导出排班数据
+    function exportSchedule() {
+        const startDate = document.getElementById('queryScheduleStartDate').value;
+        const endDate = document.getElementById('queryScheduleEndDate').value;
+
+        if (!startDate || !endDate) {
+            showMessage('请填写查询日期范围', 'warning');
+            return;
+        }
+
+        // 构建CSV内容
+        const table = document.getElementById('scheduleTable');
+        let csvContent = "日期,星期,时段,人员,人员类型,角色\n";
+
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowData = Array.from(cells).map(cell => {
+                // 处理带标签的内容
+                const span = cell.querySelector('span');
+                if (span) {
+                    return `"${span.textContent}"`;
+                }
+                return `"${cell.textContent}"`;
+            });
+            csvContent += rowData.join(',') + '\n';
+        });
+
+        if (rows.length === 0) {
+            showMessage('没有数据可导出', 'warning');
+            return;
+        }
+
+        // 创建下载链接
+        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `排班表_${startDate}_to_${endDate}.csv`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+</script>
+</body>
+</html>

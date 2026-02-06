@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.header h1 {
+    color: #2c3e50;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.controls input, .controls button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    background: #f0f0f0;
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.calendar-table th {
+    background: #34495e;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.calendar-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: top;
+    min-width: 120px;
+}
+
+.date-cell {
+    background: #ecf0f1;
+    font-weight: bold;
+    text-align: center;
+}
+
+.weekday-cell {
+    background: #ecf0f1;
+    text-align: center;
+    font-weight: bold;
+}
+
+.slot-cell {
+    padding: 5px;
+    min-height: 80px;
+}
+
+.staff-item {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 2px 1px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.core-staff {
+    background: #e74c3c;
+    color: white;
+}
+
+.regular-staff {
+    background: #3498db;
+    color: white;
+}
+
+.holiday-row {
+    background: #fff3cd;
+}
+
+.weekend-row {
+    background: #f8f9fa;
+}
+
+.legend {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+}
+
+.legend-color.core-staff {
+    background: #e74c3c;
+}
+
+.legend-color.regular-staff {
+    background: #3498db;
+}
+
+@media (max-width: 1200px) {
+    .calendar-table {
+        font-size: 12px;
+    }
+
+    .calendar-table th, .calendar-table td {
+        padding: 5px;
+    }
+}

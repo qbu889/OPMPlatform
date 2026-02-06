@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班管理系统</title>
+    <link rel="stylesheet" href="schedule.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>排班管理系统</h1>
+            <div class="controls">
+                <input type="month" id="monthPicker" value="2026-02">
+                <button id="prevMonth">上个月</button>
+                <button id="nextMonth">下个月</button>
+                <button id="refreshData">刷新数据</button>
+            </div>
+        </header>
+
+        <div class="calendar-container">
+            <table class="calendar-table">
+                <thead>
+                    <tr class="weekdays">
+                        <th>日期</th>
+                        <th>星期</th>
+                        <th>8:00～9:00</th>
+                        <th>9:00～12:00</th>
+                        <th>13:30～18:00</th>
+                        <th>18:00～21:00</th>
+                        <th>8:00～12:00</th>
+                        <th>13:30～17:30</th>
+                        <th>17:30～21:30</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody">
+                    <!-- 动态生成日历内容 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-color core-staff"></span>
+                <span>核心人员</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color regular-staff"></span>
+                <span>普通人员</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="schedule.js"></script>
+</body>
+</html>

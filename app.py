@@ -12,6 +12,7 @@ from flask import Flask, render_template, request, jsonify
 import os
 import logging
 
+from openai import chat
 from werkzeug.utils import secure_filename
 
 from app2 import get_today_time, get_time_minus_minutes
@@ -20,6 +21,7 @@ from routes.document_routes import document_bp
 from routes.excel2word_routes import excel2word_bp
 from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
 from routes.markdown_upload_routes import markdown_upload_bp
+from routes.schedule_config_routes import schedule_config_bp
 from routes.sql_routes import sql_bp
 from routes.event_routes import event_bp
 from routes.word_to_md_routes import word_to_md_bp
@@ -51,6 +53,7 @@ def create_app(config_name='default'):
     app.register_blueprint(markdown_upload_bp)
     app.register_blueprint(word_to_md_bp)
     app.register_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
+    app.register_blueprint(schedule_config_bp)
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
