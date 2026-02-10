@@ -145,13 +145,14 @@ def leave_records():
         try:
             data = request.get_json()
             staff_name = data.get('staff_name')
-            leave_date = data.get('leave_date')
+            start_date_str = data.get('start_date')
+            end_date_str = data.get('end_date')
             is_full_day = data.get('is_full_day', False)
             start_time = data.get('start_time')
             end_time = data.get('end_time')
 
-            if not staff_name or not leave_date:
-                return jsonify({"success": False, "msg": "人员姓名和请假日期不能为空"})
+            if not staff_name or not start_date_str or not end_date_str:
+                return jsonify({"success": False, "msg": "人员姓名、开始日期和结束日期不能为空"})
 
             db = RosterDB(DB_CONFIG)
             if not db.connect():
@@ -177,12 +178,23 @@ def leave_records():
             )
             """
 
-            conflict_check = db.query(check_sql, (
-                staff_name, leave_date,
-                start_time, start_time,
-                end_time, end_time,
-                start_time, start_time
-            ))
+            # 检查整个日期范围内的冲突
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            
+            # 逐天检查冲突
+            current_date = start_date
+            while current_date <= end_date:
+                conflict_check = db.query(check_sql, (
+                    staff_name, current_date.strftime('%Y-%m-%d'),
+                    start_time, start_time,
+                    end_time, end_time,
+                    start_time, start_time
+                ))
+                if conflict_check:
+                    db.close()
+                    return jsonify({"success": False, "msg": f"在 {current_date} 存在冲突的请假记录"})
+                current_date += timedelta(days=1)
 
             if conflict_check:
                 db.close()
@@ -193,7 +205,24 @@ def leave_records():
             VALUES (%s, %s, %s, %s, %s)
             """
 
-            success = db.execute(sql, (staff_name, leave_date, is_full_day, start_time, end_time))
+            # 批量插入多天请假记录
+            success_count = 0
+            current_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            
+            while current_date <= end_date_obj:
+                insert_success = db.execute(sql, (
+                    staff_name, 
+                    current_date.strftime('%Y-%m-%d'), 
+                    is_full_day, 
+                    start_time, 
+                    end_time
+                ))
+                if insert_success:
+                    success_count += 1
+                current_date += timedelta(days=1)
+            
+            success = success_count > 0
             db.close()
 
             if success:

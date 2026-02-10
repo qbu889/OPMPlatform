@@ -260,8 +260,13 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="leaveDate" class="form-label">请假日期</label>
-                                    <input type="date" class="form-control" id="leaveDate" required>
+                                    <label for="leaveStartDate" class="form-label">开始日期</label>
+                                    <input type="date" class="form-control" id="leaveStartDate" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="leaveEndDate" class="form-label">结束日期</label>
+                                    <input type="date" class="form-control" id="leaveEndDate" required>
                                 </div>
 
                                 <div class="mb-3 form-check">
@@ -618,16 +623,18 @@
         e.preventDefault();
 
         const staffName = document.getElementById('leaveStaff').value;
-        const leaveDate = document.getElementById('leaveDate').value;
+        const startDate = document.getElementById('leaveStartDate').value;
+        const endDate = document.getElementById('leaveEndDate').value;
         const isFullDay = document.getElementById('isFullDay').checked;
         const startTime = document.getElementById('startTime').value || '00:00';
         const endTime = document.getElementById('endTime').value || '23:59';
         const reason = document.getElementById('leaveReason').value;
 
-        if (!staffName || !leaveDate) {
+        if (!staffName || !startDate || !endDate) {
             showMessage('请填写必填项', 'warning');
             return;
         }
+
 
         if (!isFullDay && (!startTime || !endTime)) {
             showMessage('时段请假需填写开始和结束时间', 'warning');
@@ -642,7 +649,8 @@
                 },
                 body: JSON.stringify({
                     staff_name: staffName,
-                    leave_date: leaveDate,
+                    start_date: startDate,
+                    end_date: endDate,
                     is_full_day: isFullDay,
                     start_time: startTime,
                     end_time: endTime,
