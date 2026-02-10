@@ -630,15 +630,18 @@
         const endTime = document.getElementById('endTime').value || '23:59';
         const reason = document.getElementById('leaveReason').value;
 
-        if (!staffName || !leaveDate) {
+        // 在 submitLeaveRecord 函数中找到：
+        if (!staffName || !startDate) {
             showMessage('请填写必填项', 'warning');
             return;
         }
 
-        if (!isFullDay && (!startTime || !endTime)) {
-            showMessage('时段请假需填写开始和结束时间', 'warning');
+        // 修改为：
+        if (!staffName || !startDate) {
+            showMessage('请填写必填项', 'warning');
             return;
         }
+
 
         try {
             const response = await fetch('/schedule-config/api/leave-records', {
@@ -1214,7 +1217,6 @@
             showMessage('导出失败: ' + error.message, 'danger');
         }
     }
-
 
 
 </script>
