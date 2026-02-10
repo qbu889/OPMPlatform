@@ -1000,18 +1000,26 @@
             let staffDisplay = staffs.map(s => s.staff_name).join('、') || '空闲';
 
             // 时段颜色类
+            // 在 displayScheduleRecords 函数中，替换原有的 timeSlotClass 生成逻辑：
             let timeSlotClass = '';
-            if (isHoliday) {
-                // 节假日时段颜色
-                if (timeSlot === '8:00～12:00') timeSlotClass = 'time-slot-holiday-early';
-                else if (timeSlot === '13:30～17:30') timeSlotClass = 'time-slot-holiday-mid';
-                else if (timeSlot === '17:30～21:30') timeSlotClass = 'time-slot-holiday-evening';
-            } else {
-                // 日常时段颜色
-                if (timeSlot === '8:00～9:00') timeSlotClass = 'time-slot-early';
-                else if (timeSlot === '13:30～18:00') timeSlotClass = 'time-slot-mid';
-                else if (timeSlot === '18:00～21:00') timeSlotClass = 'time-slot-evening';
+            switch (timeSlot) {
+                case '8:00～9:00':
+                case '8:00～12:00':
+                    timeSlotClass = 'time-slot-early';
+                    break;
+                case '9:00～12:00':
+                case '13:30～17:30':
+                case '13:30～18:00':
+                    timeSlotClass = 'time-slot-mid';
+                    break;
+                case '17:30～21:30':
+                case '18:00～21:00':
+                    timeSlotClass = 'time-slot-evening';
+                    break;
+                default:
+                    timeSlotClass = '';
             }
+
 
             // 创建行
             const row = document.createElement('tr');
@@ -1114,7 +1122,7 @@
             }
 
             // 构建CSV内容，使用原始API数据
-            let csvContent = "日期,星期,时段,人员,人员类型,角色\n";
+            let csvContent = "日期,星期,时段,人员\n";
 
             // 按日期和时段分组处理数据
             const groupedData = {};
@@ -1195,7 +1203,8 @@
                     const roles = uniqueStaffs.map(r => r.displayType).join('、') || '无';
 
                     // 构建CSV行
-                    csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}","${staffTypes}","${roles}"\n`;
+                    csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}"\n`;
+
                 });
             });
 

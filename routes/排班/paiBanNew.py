@@ -176,25 +176,24 @@ class RosterGenerator:
 
     def _get_date_type(self, target_date: date) -> str:
         """判断日期类型：日常/节假日"""
-        # 先查询 holiday_config 表
+        # 先查询 holiday_config 表（使用标准日期格式）
         sql = """
         SELECT is_working_day 
         FROM holiday_config 
         WHERE holiday_date = %s
         """
-        result = self.db.query(sql, (target_date,))
+        # 使用标准日期格式查询
+        result = self.db.query(sql, (target_date.strftime('%Y-%m-%d'),))
 
-        # 如果在 holiday_config 中有记录，按 is_working_day 判断
+        # 如果在 holiday_config 中有记录
         if result:
             is_working = result[0]["is_working_day"]
-            return "日常" if is_working == "1" else "节假日"
+            return "日常" if is_working == 1 else "节假日"
 
-        # 如果不在 holiday_config 中，判断是否为周末（周六、周日）
-        weekday = target_date.weekday()  # 0=周一, 6=周日
-        if weekday == 5 or weekday == 6:  # 周六或周日
-            return "节假日"  # 默认周末为节假日
-        else:
-            return "日常"  # 工作日
+        # 如果不在 holiday_config 中，判断是否为周末
+        weekday = target_date.weekday()
+        return "节假日" if weekday == 5 or weekday == 6 else "日常"
+
 
 
     def _get_leave_staffs(self, target_date: date, time_slot: str = None) -> Set[str]:
@@ -428,8 +427,8 @@ if __name__ == "__main__":
     generator = RosterGenerator(db)
 
     # 3. 生成指定日期范围的排班（示例：2026-02-10 至 2026-02-13）
-    start = date(2026, 1, 1)
-    end = date(2026, 2, 14)
+    start = date(2026, 2, 28)
+    end = date(2026, 3, 1)
     generator.generate_roster(start, end)
 
     # 4. 关闭连接
