@@ -907,151 +907,166 @@
 
     // 显示排班记录
     function displayScheduleRecords(records) {
-        const tbody = document.getElementById('scheduleTableBody');
-        const noMessage = document.getElementById('noScheduleMessage');
+    const tbody = document.getElementById('scheduleTableBody');
+    const noMessage = document.getElementById('noScheduleMessage');
 
-        if (records.length === 0) {
-            tbody.innerHTML = '';
-            noMessage.style.display = 'block';
-            return;
+    if (records.length === 0) {
+        tbody.innerHTML = '';
+        noMessage.style.display = 'block';
+        return;
+    }
+
+    noMessage.style.display = 'none';
+    tbody.innerHTML = '';
+
+    // 按日期分组
+    const groupedData = {};
+    records.forEach(record => {
+        const dateKey = record.date;
+        if (!groupedData[dateKey]) {
+            groupedData[dateKey] = [];
+        }
+        groupedData[dateKey].push(record);
+    });
+
+    // 按日期排序
+    const sortedDates = Object.keys(groupedData).sort();
+
+    sortedDates.forEach(date => {
+        const dayRecords = groupedData[date];
+
+        // 判断是否为节假日或周末
+        const dateObj = new Date(date);
+        const weekday = dateObj.getDay(); // 0=周日, 6=周六
+
+        // 查询 holiday_config 表判断是否为节假日（这里简化处理）
+        // 实际应通过API获取，这里用简单逻辑：非工作日且不在holiday_config中视为周末
+        const isHoliday = weekday === 5 || weekday === 6; // 周六、周日视为周末
+        const isWeekend = weekday === 5 || weekday === 6;
+
+        // 按时段分组并合并相同人员
+        const timeSlotGroups = {};
+        dayRecords.forEach(record => {
+            const timeSlot = record.time_slot;
+            if (!timeSlotGroups[timeSlot]) {
+                timeSlotGroups[timeSlot] = {
+                    staffs: [],
+                    staffNamesSet: new Set()
+                };
+            }
+
+            // 合并人员（去重，主班优先）
+            if (!timeSlotGroups[timeSlot].staffNamesSet.has(record.staff_name)) {
+                timeSlotGroups[timeSlot].staffs.push({
+                    ...record,
+                    displayType: record.is_main ? '主' : (record.staff_type === 'CORE' ? '核心' : '辅')
+                });
+                timeSlotGroups[timeSlot].staffNamesSet.add(record.staff_name);
+            }
+        });
+
+        // 按时段顺序排序
+        const timeSlotOrder = [
+            '8:00～12:00',      // 节假日时段
+            '13:30～17:30',
+            '17:30～21:30',
+            '8:00～9:00',       // 日常时段
+            '9:00～12:00',
+            '13:30～18:00',
+            '18:00～21:00'
+        ];
+
+        const sortedSlots = Object.keys(timeSlotGroups).sort((a, b) => {
+            const indexA = timeSlotOrder.indexOf(a);
+            const indexB = timeSlotOrder.indexOf(b);
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        // 计算该日期的时段数量
+        const slotCount = sortedSlots.length;
+
+        // 生成表格行
+        sortedSlots.forEach((timeSlot, slotIndex) => {
+            const slotGroup = timeSlotGroups[timeSlot];
+            const staffs = slotGroup.staffs;
+
+            // 人员显示
+            let staffDisplay = staffs.map(s => s.staff_name).join('、') || '空闲';
+
+            // 时段颜色类
+            let timeSlotClass = '';
+            if (isHoliday) {
+                // 节假日时段颜色
+                if (timeSlot === '8:00～12:00') timeSlotClass = 'time-slot-holiday-early';
+                else if (timeSlot === '13:30～17:30') timeSlotClass = 'time-slot-holiday-mid';
+                else if (timeSlot === '17:30～21:30') timeSlotClass = 'time-slot-holiday-evening';
+            } else {
+                // 日常时段颜色
+                if (timeSlot === '8:00～9:00') timeSlotClass = 'time-slot-early';
+                else if (timeSlot === '13:30～18:00') timeSlotClass = 'time-slot-mid';
+                else if (timeSlot === '18:00～21:00') timeSlotClass = 'time-slot-evening';
+            }
+
+            // 创建行
+            const row = document.createElement('tr');
+
+            // 星期显示
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            const weekdayStr = weekdays[dateObj.getDay()];
+
+            // 只有第一个时段显示日期和星期
+            if (slotIndex === 0) {
+                row.innerHTML = `
+                    <td rowspan="${slotCount}">${date}</td>
+                    <td rowspan="${slotCount}">${weekdayStr}</td>
+                    <td class="${timeSlotClass}">${timeSlot}</td>
+                    <td class="staff-arrangement">${staffDisplay}</td>
+                    <td class="note-column"></td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td class="${timeSlotClass}">${timeSlot}</td>
+                    <td class="staff-arrangement">${staffDisplay}</td>
+                    <td class="note-column"></td>
+                `;
+            }
+
+            tbody.appendChild(row);
+        });
+    });
+
+    // 添加CSS样式
+    const style = document.createElement('style');
+    style.textContent = `
+         /* 节假日时段颜色 */
+        .time-slot-holiday-early {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: 500;
+        }
+        .time-slot-holiday-mid {
+            background-color: #cce5ff;
+            color: #004085;
+            font-weight: 500;
+        }
+        .time-slot-holiday-evening {
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: 500;
         }
 
-        noMessage.style.display = 'none';
-        tbody.innerHTML = '';
+        /* 周末时段标识 */
+        .weekend-row {
+            background-color: #f8f9fa !important;
+        }
 
-        // 按日期和时段分组显示
-        const groupedData = {};
-        records.forEach(record => {
-            const dateKey = record.date;
-            if (!groupedData[dateKey]) {
-                groupedData[dateKey] = {};
-            }
-
-            if (!groupedData[dateKey][record.time_slot]) {
-                groupedData[dateKey][record.time_slot] = [];
-            }
-
-            groupedData[dateKey][record.time_slot].push(record);
-        });
-
-        // 按日期排序
-        const sortedDates = Object.keys(groupedData).sort();
-
-        sortedDates.forEach((date, dateIndex) => {
-            const dayRecords = groupedData[date];
-            // 按时段顺序排序：8:00～9:00 → 9:00～12:00 → 13:30～18:00 → 18:00～21:00
-            const timeSlotOrder = [
-                '8:00～9:00',
-                '9:00～12:00',
-                '13:30～18:00',
-                '18:00～21:00'
-            ];
-            const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
-                const indexA = timeSlotOrder.indexOf(a);
-                const indexB = timeSlotOrder.indexOf(b);
-                if (indexA === -1 && indexB === -1) return 0;
-                if (indexA === -1) return 1;
-                if (indexB === -1) return -1;
-                return indexA - indexB;
-            });
-
-            // 计算该日期有多少个时段
-            const slotCount = sortedSlots.length;
-            
-            sortedSlots.forEach((timeSlot, slotIndex) => {
-                const slotRecords = dayRecords[timeSlot];
-
-                // 合并同一时段的人员安排并去重
-                const allStaffs = [...slotRecords];
-                // 去重：相同人员只显示一次，优先显示主班人员
-                const uniqueStaffs = [];
-                const staffNamesSet = new Set();
-                
-                // 先处理主班人员（优先级高）
-                slotRecords.filter(r => r.is_main).forEach(record => {
-                    if (!staffNamesSet.has(record.staff_name)) {
-                        uniqueStaffs.push({
-                            ...record,
-                            displayType: '主'
-                        });
-                        staffNamesSet.add(record.staff_name);
-                    }
-                });
-                
-                // 再处理辅助人员
-                slotRecords.filter(r => !r.is_main).forEach(record => {
-                    if (!staffNamesSet.has(record.staff_name)) {
-                        uniqueStaffs.push({
-                            ...record,
-                            displayType: record.staff_type === 'CORE' ? '核心' : '辅'
-                        });
-                        staffNamesSet.add(record.staff_name);
-                    }
-                });
-                
-                let staffDisplay = '';
-                if (uniqueStaffs.length > 0) {
-                    const staffNames = uniqueStaffs.map(r => r.staff_name).join('、');
-                    staffDisplay = staffNames;
-                }
-                
-                // 如果没有人员安排，显示空闲
-                if (!staffDisplay) {
-                    staffDisplay = '空闲';
-                }
-                
-                // 如果没有人员安排，显示空闲
-                if (!staffDisplay) {
-                    staffDisplay = '空闲';
-                }
-                
-                // 获取备注信息（请假信息）
-                let noteText = '';
-                // 这里可以添加从数据库获取请假信息的逻辑，目前先用简单方式
-                if (slotRecords.some(r => r.staff_name.includes('请假'))) {
-                    noteText = '相关人员请假';
-                }
-                
-                // 创建行
-                const row = document.createElement('tr');
-                
-                // 计算星期几
-                const dateObj = new Date(date);
-                const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-                const weekday = weekdays[dateObj.getDay()];
-                
-                // 为时段添加颜色类
-                let timeSlotClass = '';
-                if (timeSlot === '8:00～9:00') {
-                    timeSlotClass = 'time-slot-early';
-                } else if (timeSlot === '13:30～18:00') {
-                    timeSlotClass = 'time-slot-mid';
-                } else if (timeSlot === '18:00～21:00') {
-                    timeSlotClass = 'time-slot-evening';
-                }
-                
-                // 只有第一个时段才显示日期和星期
-                if (slotIndex === 0) {
-                    row.innerHTML = `
-                        <td rowspan="${slotCount}">${date}</td>
-                        <td rowspan="${slotCount}">${weekday}</td>
-                        <td class="${timeSlotClass}">${timeSlot}</td>
-                        <td class="staff-arrangement">${staffDisplay || '空闲'}</td>
-                        <td class="note-column">${noteText || ''}</td>
-                    `;
-                } else {
-                    // 后续时段隐藏日期和星期列
-                    row.innerHTML = `
-                        <td class="${timeSlotClass}">${timeSlot}</td>
-                        <td class="staff-arrangement">${staffDisplay || '空闲'}</td>
-                        <td class="note-column">${noteText || ''}</td>
-                    `;
-                }
-                
-                tbody.appendChild(row);
-            });
-        });
+        `;
+        document.head.appendChild(style);
     }
+
 
     // 设置默认查询日期（当天到30天后，从00:00开始）
     function setDefaultQueryDates() {
@@ -1076,7 +1091,7 @@
     }
 
     // 导出排班数据
-    function exportSchedule() {
+    async function exportSchedule() {
         const startDate = document.getElementById('queryScheduleStartDate').value;
         const endDate = document.getElementById('queryScheduleEndDate').value;
 
@@ -1085,41 +1100,119 @@
             return;
         }
 
-        // 构建CSV内容
-        const table = document.getElementById('scheduleTable');
-        let csvContent = "日期,星期,时段,人员,人员类型,角色\n";
+        try {
+            // 直接从API获取原始数据进行导出
+            const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
+            const result = await response.json();
 
-        const rows = table.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const rowData = Array.from(cells).map(cell => {
-                // 处理带标签的内容
-                const span = cell.querySelector('span');
-                if (span) {
-                    return `"${span.textContent}"`;
+            if (!result.success || !result.data || result.data.length === 0) {
+                showMessage('没有数据可导出', 'warning');
+                return;
+            }
+
+            // 构建CSV内容，使用原始API数据
+            let csvContent = "日期,星期,时段,人员,人员类型,角色\n";
+
+            // 按日期和时段分组处理数据
+            const groupedData = {};
+            result.data.forEach(record => {
+                const dateKey = record.date;
+                if (!groupedData[dateKey]) {
+                    groupedData[dateKey] = {};
                 }
-                return `"${cell.textContent}"`;
+
+                if (!groupedData[dateKey][record.time_slot]) {
+                    groupedData[dateKey][record.time_slot] = [];
+                }
+
+                groupedData[dateKey][record.time_slot].push(record);
             });
-            csvContent += rowData.join(',') + '\n';
-        });
 
-        if (rows.length === 0) {
-            showMessage('没有数据可导出', 'warning');
-            return;
+            // 按日期排序
+            const sortedDates = Object.keys(groupedData).sort();
+
+            sortedDates.forEach(date => {
+                const dayRecords = groupedData[date];
+                // 按时段顺序排序
+                const timeSlotOrder = [
+                    '8:00～9:00',
+                    '9:00～12:00',
+                    '13:30～18:00',
+                    '18:00～21:00'
+                ];
+                const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
+                    const indexA = timeSlotOrder.indexOf(a);
+                    const indexB = timeSlotOrder.indexOf(b);
+                    if (indexA === -1 && indexB === -1) return 0;
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
+                });
+
+                sortedSlots.forEach(timeSlot => {
+                    const slotRecords = dayRecords[timeSlot];
+
+                // 在 exportSchedule() 函数中，人员合并逻辑保持一致
+                const uniqueStaffs = [];
+                const staffNamesSet = new Set();
+
+                // 主班人员优先
+                slotRecords.filter(r => r.is_main).forEach(record => {
+                    if (!staffNamesSet.has(record.staff_name)) {
+                        uniqueStaffs.push(record);
+                        staffNamesSet.add(record.staff_name);
+                    }
+                });
+
+                // 辅助人员
+                slotRecords.filter(r => !r.is_main).forEach(record => {
+                    if (!staffNamesSet.has(record.staff_name)) {
+                        uniqueStaffs.push(record);
+                        staffNamesSet.add(record.staff_name);
+                    }
+                });
+
+
+                    let staffDisplay = '';
+                    if (uniqueStaffs.length > 0) {
+                        staffDisplay = uniqueStaffs.map(r => r.staff_name).join('、');
+                    } else {
+                        staffDisplay = '空闲';
+                    }
+
+                    // 计算星期几
+                    const dateObj = new Date(date);
+                    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    const weekday = weekdays[dateObj.getDay()];
+
+                    // 人员类型
+                    const staffTypes = uniqueStaffs.map(r => r.staff_type === 'CORE' ? '核心' : '测试').join('、') || '无';
+
+                    // 角色显示
+                    const roles = uniqueStaffs.map(r => r.displayType).join('、') || '无';
+
+                    // 构建CSV行
+                    csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}","${staffTypes}","${roles}"\n`;
+                });
+            });
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', `排班表_${startDate}_to_${endDate}.csv`);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showMessage('导出成功', 'success');
+        } catch (error) {
+            showMessage('导出失败: ' + error.message, 'danger');
         }
-
-        // 创建下载链接
-        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', `排班表_${startDate}_to_${endDate}.csv`);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 
 

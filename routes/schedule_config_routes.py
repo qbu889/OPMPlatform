@@ -4,8 +4,10 @@
 排班配置管理路由
 """
 from flask import Blueprint, render_template, request, jsonify
-from routes.排班.paiBanNew import DB_CONFIG, RosterDB
+from routes.排班.paiBanNew import DB_CONFIG, RosterDB, CORE_STAFF, TEST_STAFFS
 from datetime import datetime, date, timedelta
+from typing import List, Dict
+
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
 
 
@@ -304,12 +306,26 @@ def schedule_records():
             if not db.connect():
                 return jsonify({"success": False, "msg": "数据库连接失败"})
 
+            # sql = """
+            # SELECT r.*, sc.staff_type
+            # FROM roster r
+            # LEFT JOIN staff_config sc ON r.staff_name = sc.staff_name
+            # WHERE r.date BETWEEN %s AND %s
+            # ORDER BY r.date, r.time_slot, r.is_main DESC
+            # """
             sql = """
             SELECT r.*, sc.staff_type
             FROM roster r
             LEFT JOIN staff_config sc ON r.staff_name = sc.staff_name
             WHERE r.date BETWEEN %s AND %s
-            ORDER BY r.date, r.time_slot, r.is_main DESC
+            ORDER BY r.date,
+                     CASE r.time_slot
+                         WHEN '8:00～12:00' THEN 1
+                         WHEN '13:30～17:30' THEN 2
+                         WHEN '17:30～21:30' THEN 3
+                         ELSE 4
+                     END,
+                     r.is_main DESC
             """
 
             results = db.query(sql, (start_date, end_date))
@@ -324,6 +340,55 @@ def schedule_records():
             })
         except Exception as e:
             return jsonify({"success": False, "msg": "获取排班记录失败: " + str(e)})
+
+def _get_holiday_roster(self, target_date: date) -> List[Dict]:
+    """生成节假日排班数据（13:30-17:30和17:30-21:30固定5人）"""
+    roster_list = []
+
+    # 获取当天请假人员
+    all_leave_staffs = self._get_leave_staffs(target_date)
+
+    # 固定人员列表（5人）
+    fixed_staffs = [CORE_STAFF] + TEST_STAFFS
+
+    # 过滤请假人员
+    available_fixed_staffs = [s for s in fixed_staffs if s not in all_leave_staffs]
+
+    # 8:00～12:00（保持原有逻辑：一天一人）
+    slot_8_12 = "8:00～12:00"
+    if available_fixed_staffs:
+        staff_index = self.rotation_config["节假日"]["index"] % len(available_fixed_staffs)
+        selected_staff = available_fixed_staffs[staff_index]
+        roster_list.append({
+            "date": target_date,
+            "time_slot": slot_8_12,
+            "staff_name": selected_staff,
+            "is_main": False
+        })
+        self._update_rotation_index("节假日")
+
+    # 13:30～17:30（固定5人）
+    slot_13_17 = "13:30～17:30"
+    for staff in available_fixed_staffs:
+        roster_list.append({
+            "date": target_date,
+            "time_slot": slot_13_17,
+            "staff_name": staff,
+            "is_main": False
+        })
+
+    # 17:30～21:30（固定5人）
+    slot_17_21 = "17:30～21:30"
+    for staff in available_fixed_staffs:
+        roster_list.append({
+            "date": target_date,
+            "time_slot": slot_17_21,
+            "staff_name": staff,
+            "is_main": False
+        })
+
+    return roster_list
+
 
 @schedule_config_bp.route('/api/check-existing-roster', methods=['GET'])
 def check_existing_roster():
