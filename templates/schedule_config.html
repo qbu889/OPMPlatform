@@ -630,11 +630,10 @@
         const endTime = document.getElementById('endTime').value || '23:59';
         const reason = document.getElementById('leaveReason').value;
 
-        if (!staffName || !startDate || !endDate) {
+        if (!staffName || !leaveDate) {
             showMessage('请填写必填项', 'warning');
             return;
         }
-
 
         if (!isFullDay && (!startTime || !endTime)) {
             showMessage('时段请假需填写开始和结束时间', 'warning');
@@ -992,7 +991,7 @@
                 
                 let staffDisplay = '';
                 if (uniqueStaffs.length > 0) {
-                    const staffNames = uniqueStaffs.map(r => `${r.staff_name}（${r.displayType}）`).join('、');
+                    const staffNames = uniqueStaffs.map(r => r.staff_name).join('、');
                     staffDisplay = staffNames;
                 }
                 

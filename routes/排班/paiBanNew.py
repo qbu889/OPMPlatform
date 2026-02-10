@@ -8,6 +8,8 @@ Python 3.8.10 排班程序
 3. 节假日早班避开前一日同时段人员
 4. 排班数据写入MySQL数据库
 """
+from logging import debug
+
 import pymysql
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Set
@@ -368,7 +370,7 @@ class RosterGenerator:
                 ))
             # 4. 日期+1
             current_date += timedelta(days=1)
-        print(f"排班生成完成：{start_date} 至 {end_date}")
+        debug("排班生成完成：{start_date} 至 {end_date}")
 
 # ===================== 主程序 =====================
 if __name__ == "__main__":
