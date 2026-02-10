@@ -109,6 +109,24 @@ class RosterGenerator:
                 "order": item["rotation_order"].split(","),
                 "index": item["current_index"]
             }
+        
+        # 确保必要的轮换配置存在（包含所有5名人员）
+        required_configs = [
+            ("日常8-9", ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"]),
+            ("日常18-21", ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"]),
+            ("节假日", ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"])
+        ]
+        
+        for config_type, default_order in required_configs:
+            if config_type not in config:
+                # 初始化轮换配置（确保所有5人参与轮换）
+                sql_insert = "INSERT INTO rotation_config (time_slot_type, rotation_order, current_index) VALUES (%s, %s, %s)"
+                self.db.execute(sql_insert, (config_type, ",".join(default_order), 0))
+                config[config_type] = {
+                    "order": default_order,
+                    "index": 0
+                }
+        
         return config
 
     def _update_rotation_index(self, slot_type: str):
@@ -187,21 +205,23 @@ class RosterGenerator:
     def _get_daily_roster(self, target_date: date) -> List[Dict]:
         """生成日常排班数据"""
         roster_list = []
-        # 1. 8:00～9:00 轮换
+        # 1. 8:00～9:00 轮换（所有人员轮流，不分主辅）
         slot_8_9 = "8:00～9:00"
         leave_8_9 = self._get_leave_staffs(target_date, slot_8_9)
-        # 筛选可用人员
+        # 筛选可用人员（所有人员，包括核心和测试人员）
         rotation_8_9 = self.rotation_config["日常8-9"]
-        candidate = rotation_8_9["order"][rotation_8_9["index"]]
-        # 若候选人请假，顺延（简单处理：取第一个未请假的）
-        available = [s for s in rotation_8_9["order"] if s not in leave_8_9]
+        # 获取所有可用人员：核心人员 + 测试人员
+        all_staffs = [CORE_STAFF] + TEST_STAFFS  # 修复：TEST_STAFFS 而不是 TEST_STAFF
+        available = [s for s in all_staffs if s not in leave_8_9]
         if available:
-            staff_8_9 = available[0]
+            # 使用轮换索引获取人员
+            staff_index = rotation_8_9["index"] % len(available)
+            staff_8_9 = available[staff_index]
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_8_9,
                 "staff_name": staff_8_9,
-                "is_main": False
+                "is_main": False  # 不区分主辅，统一为False
             })
             self._update_rotation_index("日常8-9")
 
@@ -236,18 +256,22 @@ class RosterGenerator:
                     "is_main": False
                 })
 
-        # 3. 18:00～21:00 轮换
+        # 3. 18:00～21:00 轮换（所有人员轮流，不分主辅）
         slot_18_21 = "18:00～21:00"
         leave_18_21 = self._get_leave_staffs(target_date, slot_18_21)
         rotation_18_21 = self.rotation_config["日常18-21"]
-        available = [s for s in rotation_18_21["order"] if s not in leave_18_21]
+        # 获取所有可用人员：核心人员 + 测试人员  
+        all_staffs_18_21 = [CORE_STAFF] + TEST_STAFFS  # 修复：TEST_STAFFS 而不是 TEST_STAFF
+        available = [s for s in all_staffs_18_21 if s not in leave_18_21]
         if available:
-            staff_18_21 = available[0]
+            # 使用轮换索引获取人员
+            staff_index = rotation_18_21["index"] % len(available)
+            staff_18_21 = available[staff_index]
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_18_21,
                 "staff_name": staff_18_21,
-                "is_main": False
+                "is_main": False  # 不区分主辅
             })
             self._update_rotation_index("日常18-21")
 
@@ -292,6 +316,27 @@ class RosterGenerator:
         :param start_date: 开始日期（date对象）
         :param end_date: 结束日期（date对象）
         """
+        # 强制重置轮换索引为0（首次生成时）
+        # 检查是否有轮换配置，如果没有则初始化
+        if not self.rotation_config:
+            # 初始化轮换配置
+            default_rotation = {
+                "日常8-9": ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"],
+                "日常18-21": ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"],
+                "节假日": ["郑晨昊", "林子旺", "曾婷婷", "陈伟强", "吴绍烨"]
+            }
+            
+            for config_type, order in default_rotation.items():
+                sql_check = "SELECT COUNT(*) as count FROM rotation_config WHERE time_slot_type = %s"
+                result = self.db.query(sql_check, (config_type,))
+                if result[0]['count'] == 0:
+                    sql_insert = "INSERT INTO rotation_config (time_slot_type, rotation_order, current_index) VALUES (%s, %s, %s)"
+                    self.db.execute(sql_insert, (config_type, ",".join(order), 0))
+        
+        # 确保轮换索引正确（重置为0用于测试）
+        # 实际生产环境应保留原有索引，这里为了快速验证问题
+        # self._reset_rotation_indices()  # 可选：重置所有索引为0
+
         current_date = start_date
         while current_date <= end_date:
             # 1. 判断日期类型

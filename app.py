@@ -14,8 +14,7 @@ import logging
 
 from openai import chat
 from werkzeug.utils import secure_filename
-
-from app2 import get_today_time, get_time_minus_minutes
+from flask import send_from_directory
 from config import config
 from routes.document_routes import document_bp
 from routes.excel2word_routes import excel2word_bp
@@ -64,6 +63,11 @@ def create_app(config_name='default'):
 app = create_app()
 
 
+
+@app.route('/favicon.ico')
+def favicon():
+ return send_from_directory(app.static_folder, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 @app.route('/')
 def index():
     """系统首页：提供步骤导航"""
@@ -74,6 +78,6 @@ def index():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get("PORT", 5004))  # 优先使用环境变量，否则默认 5004
+    port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5004
     logger.info(f"启动Flask应用，端口: {port}")
     app.run(debug=True, host='0.0.0.0', port=port)

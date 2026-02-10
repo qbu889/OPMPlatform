@@ -4,7 +4,6 @@
 排班配置管理路由
 """
 from flask import Blueprint, render_template, request, jsonify
-import pymysql
 from routes.排班.paiBanNew import DB_CONFIG, RosterDB
 from datetime import datetime, date, timedelta
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
@@ -67,7 +66,7 @@ def staff_config():
                 }
             })
         except Exception as e:
-            return jsonify({"success": False, "msg": f"获取人员配置失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "获取人员配置失败: " + str(e)})
 
     elif request.method == 'POST':
         # 更新人员配置
@@ -103,7 +102,7 @@ def staff_config():
 
             return jsonify({"success": True, "msg": "人员配置更新成功"})
         except Exception as e:
-            return jsonify({"success": False, "msg": f"更新人员配置失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "更新人员配置失败: " + str(e)})
 
 
 @schedule_config_bp.route('/api/leave-records', methods=['GET', 'POST', 'DELETE'])
@@ -139,7 +138,7 @@ def leave_records():
                 "data": processed_results
             })
         except Exception as e:
-            return jsonify({"success": False, "msg": f"获取请假记录失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "获取请假记录失败: " + str(e)})
 
     elif request.method == 'POST':
         # 添加请假记录
@@ -202,7 +201,7 @@ def leave_records():
             else:
                 return jsonify({"success": False, "msg": "请假记录添加失败"})
         except Exception as e:
-            return jsonify({"success": False, "msg": f"添加请假记录失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "添加请假记录失败: " + str(e)})
 
     elif request.method == 'DELETE':
         # 删除请假记录
@@ -226,7 +225,7 @@ def leave_records():
             else:
                 return jsonify({"success": False, "msg": "请假记录删除失败"})
         except Exception as e:
-            return jsonify({"success": False, "msg": f"删除请假记录失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "删除请假记录失败: " + str(e)})
 
 @schedule_config_bp.route('/api/generate-schedule', methods=['POST'])
 def generate_schedule():
@@ -259,7 +258,7 @@ def generate_schedule():
 
         return jsonify({"success": True, "msg": f"排班表生成成功：{start_date_str} 至 {end_date_str}"})
     except Exception as e:
-        return jsonify({"success": False, "msg": f"生成排班表失败: {str(e)}"})
+        return jsonify({"success": False, "msg": "生成排班表失败: " + str(e)})
 
 @schedule_config_bp.route('/api/schedule-records', methods=['GET'])
 def schedule_records():
@@ -295,4 +294,75 @@ def schedule_records():
                 "data": processed_results
             })
         except Exception as e:
-            return jsonify({"success": False, "msg": f"获取排班记录失败: {str(e)}"})
+            return jsonify({"success": False, "msg": "获取排班记录失败: " + str(e)})
+
+@schedule_config_bp.route('/api/check-existing-roster', methods=['GET'])
+def check_existing_roster():
+    """检查指定日期范围内是否存在排班记录"""
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+
+        if not start_date or not end_date:
+            return jsonify({"success": False, "msg": "开始日期和结束日期不能为空"})
+
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+
+        # 查询指定日期范围内的排班记录
+        sql = "SELECT COUNT(*) as count FROM roster WHERE date BETWEEN %s AND %s"
+        result = db.query(sql, (start_date, end_date))
+        
+        count = result[0]['count'] if result else 0
+        
+        # 如果有记录，返回详细信息
+        if count > 0:
+            detail_sql = "SELECT DISTINCT date, time_slot FROM roster WHERE date BETWEEN %s AND %s ORDER BY date, time_slot"
+            details = db.query(detail_sql, (start_date, end_date))
+            
+            db.close()
+            
+            return jsonify({
+                "success": True,
+                "data": details,
+                "total": count
+            })
+        else:
+            db.close()
+            return jsonify({
+                "success": True,
+                "data": [],
+                "total": 0
+            })
+    except Exception as e:
+        return jsonify({"success": False, "msg": "检查现有排班失败: " + str(e)})
+
+
+@schedule_config_bp.route('/api/delete-existing-roster', methods=['POST'])
+def delete_existing_roster():
+    """删除指定日期范围内的排班记录"""
+    try:
+        data = request.get_json()
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        if not start_date or not end_date:
+            return jsonify({"success": False, "msg": "开始日期和结束日期不能为空"})
+
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+
+        # 删除指定日期范围内的排班记录
+        sql = "DELETE FROM roster WHERE date BETWEEN %s AND %s"
+        success = db.execute(sql, (start_date, end_date))
+        
+        db.close()
+        
+        if success:
+            return jsonify({"success": True, "msg": "现有排班记录已清除"})
+        else:
+            return jsonify({"success": False, "msg": "清除排班记录失败"})
+    except Exception as e:
+        return jsonify({"success": False, "msg": "清除排班记录失败: " + str(e)})

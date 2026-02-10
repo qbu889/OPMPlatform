@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>ES转Kafka消息生成器</title>
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        .container {width: 90%; margin: 20px auto;}
+        .form-group {margin: 15px 0;}
+        label {display: block; margin-bottom: 8px; font-weight: bold;}
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {min-height: 150px; resize: vertical;}
+        .btn-group {margin: 20px 0;}
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {background: #0056b3;}
+        #result {min-height: 200px; font-family: monospace;}
+        .tip {color: green; margin-top: 10px; display: none;}
+        .field-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .field-item {flex: 1 1 200px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ES转Kafka消息生成器</h1>
+
+        <!-- 1. ES _source数据输入 -->
+        <div class="form-group">
+            <label>ES _source 数据（JSON格式）：</label>
+            <textarea id="esSource" placeholder='示例：{"ROOM_ID":"ROOM_001","MACHINE_ROOM_INFO":"北京机房-一区"}'></textarea>
+        </div>
+
+        <!-- 2. 前端覆盖参数输入 -->
+        <div class="form-group">
+            <label>前端覆盖参数（可选，填写后替换ES默认值）：</label>
+            <div class="field-group">
+                <div class="field-item">
+                    <label>ROOM_ID：</label>
+                    <input type="text" id="roomId" placeholder="不填则用ES数据">
+                </div>
+                <div class="field-item">
+                    <label>MACHINE_ROOM_INFO：</label>
+                    <input type="text" id="machineRoomInfo" placeholder="不填则用ES数据">
+                </div>
+                <div class="field-item">
+                    <label>时间格式（匹配样例）：</label>
+                    <input type="text" id="timeFormat" value="%Y-%m-%d %H:%M:%S" placeholder="如%Y-%m-%dT%H:%M:%S+08:00">
+                </div>
+            </div>
+            <!-- 可扩展更多字段输入框 -->
+        </div>
+
+        <!-- 3. 操作按钮 -->
+        <div class="btn-group">
+            <button onclick="generateMsg()">生成Kafka消息</button>
+            <button onclick="copyResult()">一键复制</button>
+        </div>
+
+        <!-- 4. 结果展示 -->
+        <div class="form-group">
+            <label>Kafka消息体（JSON格式）：</label>
+            <textarea id="result" readonly></textarea>
+            <div class="tip" id="copyTip">复制成功！</div>
+        </div>
+    </div>
+
+    <script>
+        // 生成Kafka消息
+        function generateMsg() {
+            try {
+                // 解析ES source数据
+                let esSource = JSON.parse(document.getElementById('esSource').value.trim() || "{}");
+                // 收集前端覆盖参数
+                let frontParams = {
+                    ROOM_ID: document.getElementById('roomId').value,
+                    MACHINE_ROOM_INFO: document.getElementById('machineRoomInfo').value
+                    // 可扩展更多字段
+                };
+                // 时间格式
+                let timeFormat = document.getElementById('timeFormat').value.trim() || "%Y-%m-%d %H:%M:%S";
+
+                // 调用后端接口
+                fetch('/kafka/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        es_source: esSource,
+                        front_params: frontParams,
+                        time_format: timeFormat
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        // 格式化JSON输出
+                        document.getElementById('result').value = JSON.stringify(data.data, null, 4);
+                    } else {
+                        alert(data.msg);
+                    }
+                })
+                .catch(err => {
+                    alert("接口调用失败：" + err);
+                });
+            } catch (e) {
+                alert("输入格式错误：" + e);
+            }
+        }
+
+        // 一键复制功能
+        function copyResult() {
+            const resultDom = document.getElementById('result');
+            if (!resultDom.value) {
+                alert("暂无可复制的消息体！");
+                return;
+            }
+            resultDom.select();
+            document.execCommand('copy');
+            // 显示复制提示
+            const tipDom = document.getElementById('copyTip');
+            tipDom.style.display = 'block';
+            setTimeout(() => tipDom.style.display = 'none', 2000);
+        }
+    </script>
+</body>
+</html>

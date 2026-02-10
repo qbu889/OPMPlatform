@@ -60,7 +60,7 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
     return deleted_count, freed_bytes
 
 # 需要修改 utils/cleanup_thread.py 中的函数定义
-def run_cleanup_loop(app, cleanup_interval=3600, retention_hours=24):
+def run_cleanup_loop(app):
     # 实现清理逻辑
     """后台清理循环"""
     print(f"[清理线程] 启动，保留时长：{RETENTION_HOURS}小时，清理间隔：{INTERVAL_SECONDS}秒")

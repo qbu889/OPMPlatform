@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="kafka消息生成">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/schedule_config_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/holidaySys.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/paiBan.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/paiBanNew.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/sch.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/schedule_config.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/排班/schedule.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/排班/schedule.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/排班/schedule.js" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="排班系统1.0">
+      <change afterPath="$PROJECT_DIR$/routes/esToKafka/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/es_to_kafka.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/kafka_bp_new.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/kafka/TestKafkaRoutes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/kafka/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/kafka/converter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/schedule_config_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/schedule_config_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/paiBan.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/paiBanNew.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/paiBanNew.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/schedule_config.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/schedule_config.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cleanup_thread.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cleanup_thread.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +46,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -65,47 +74,98 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask 服务器.Flask (app.py).executor": "Debug",
-    "Flask 服务器.Flask (app2.py).executor": "Run",
-    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
-    "JavaScript 调试.schedule.html.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.holidaySys.executor": "Run",
-    "Python.paiBan.executor": "Run",
-    "Python.paiBanNew.executor": "Run",
-    "Python.wordToWord.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/templates",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Debug&quot;,
+    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
+    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
+    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/tmp&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql_aurora"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql_aurora&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tmp" />
       <recent name="$PROJECT_DIR$/templates" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/routes" />
+      <recent name="$PROJECT_DIR$/templates" />
+      <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/templates/排班" />
       <recent name="$PROJECT_DIR$/routes/排班" />
     </key>
   </component>
-  <component name="RunManager" selected="Flask 服务器.Flask (app.py)">
-    <configuration name="schedule.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/wordToWord/templates/排班/schedule.html" useBuiltInWebServerPort="true">
+  <component name="RunManager" selected="Python.app">
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="wordToWord" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="app2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="wordToWord" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <configuration name="holidaySys" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -132,7 +192,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="paiBanNew" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="kafka_routes" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -141,13 +201,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes/排班" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/排班/paiBanNew.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/kafka_routes.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -180,27 +239,8 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Flask (app.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+    <configuration name="Python 测试 (TestKafkaRoutes.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
-      <option name="target" value="$PROJECT_DIR$/app.py" />
-      <option name="targetType" value="PATH" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="RUN_TOOL" value="" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Flask (routes/排班/paiBanNew.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
-      <module name="wordToWord" />
-      <option name="target" value="$PROJECT_DIR$/routes/排班/paiBanNew.py" />
-      <option name="targetType" value="PATH" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -209,33 +249,33 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
-      <option name="launchJavascriptDebuger" value="false" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/test/kafka/TestKafkaRoutes.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Flask 服务器.Flask (app.py)" />
-      <item itemvalue="Flask 服务器.Flask (routes/排班/paiBanNew.py)" />
-      <item itemvalue="JavaScript 调试.schedule.html" />
       <item itemvalue="Python.wordToWord" />
+      <item itemvalue="Python.app" />
+      <item itemvalue="Python.app2" />
+      <item itemvalue="Python.kafka_routes" />
       <item itemvalue="Python.holidaySys" />
-      <item itemvalue="Python.paiBanNew" />
+      <item itemvalue="Python 测试.Python 测试 (TestKafkaRoutes.py 内)" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Flask 服务器.Flask (app.py)" />
-        <item itemvalue="JavaScript 调试.schedule.html" />
+        <item itemvalue="Python.app" />
+        <item itemvalue="Python.app2" />
+        <item itemvalue="Python.kafka_routes" />
+        <item itemvalue="Python 测试.Python 测试 (TestKafkaRoutes.py 内)" />
         <item itemvalue="Python.holidaySys" />
-        <item itemvalue="Flask 服务器.Flask (routes/排班/paiBanNew.py)" />
-        <item itemvalue="Python.paiBanNew" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.29346.142" />
         <option value="bundled-python-sdk-f2b7a9f6281b-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.142" />
       </set>
     </attachedChunks>
@@ -255,7 +295,8 @@
       <workItem from="1769998704236" duration="649000" />
       <workItem from="1770094811746" duration="1289000" />
       <workItem from="1770184740931" duration="27454000" />
-      <workItem from="1770363316685" duration="6874000" />
+      <workItem from="1770363316685" duration="9185000" />
+      <workItem from="1770601547649" duration="210000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -273,7 +314,15 @@
       <option name="project" value="LOCAL" />
       <updated>1770196597884</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="排班系统1.0">
+      <option name="closed" value="true" />
+      <created>1770371106436</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1770371106436</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -293,18 +342,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="推送" />
     <MESSAGE value="kafka消息生成" />
-    <option name="LAST_COMMIT_MESSAGE" value="kafka消息生成" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/schedule_config_routes.py</url>
-          <line>140</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="排班系统1.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="排班系统1.0" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/wordToWord$wordToWord.coverage" NAME="wordToWord 覆盖结果" MODIFIED="1767149221234" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
