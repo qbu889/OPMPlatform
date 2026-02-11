@@ -250,7 +250,7 @@ class RosterGenerator:
         return ""
 
     def _get_daily_roster(self, target_date: date) -> List[Dict]:
-        """生成日常排班数据（13:30-18:00和18:00-21:00固定5人）"""
+        """生成日常排班数据（8:00～9:00和18:00～21:00排同一个人）"""
         roster_list = []
 
         # 获取当天请假人员
@@ -262,21 +262,32 @@ class RosterGenerator:
         # 过滤请假人员
         available_fixed_staffs = [s for s in fixed_staffs if s not in all_leave_staffs]
 
-        # 1. 8:00～9:00 轮换（保持原有逻辑）
+        # 1. 8:00～9:00 和 18:00～21:00 轮换（同一个人）
         slot_8_9 = "8:00～9:00"
+        slot_18_21 = "18:00～21:00"
         leave_8_9 = self._get_leave_staffs(target_date, slot_8_9)
         rotation_8_9 = self.rotation_config["日常8-9"]
         available_8_9 = [s for s in rotation_8_9["order"] if s not in leave_8_9]
 
         if available_8_9:
             staff_index = rotation_8_9["index"] % len(available_8_9)
-            staff_8_9 = available_8_9[staff_index]
+            selected_staff = available_8_9[staff_index]
+            
+            # 为两个时段安排同一个人
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_8_9,
-                "staff_name": staff_8_9,
+                "staff_name": selected_staff,
                 "is_main": False
             })
+            roster_list.append({
+                "date": target_date,
+                "time_slot": slot_18_21,
+                "staff_name": selected_staff,
+                "is_main": False
+            })
+            
+            # 更新轮换索引
             self._update_rotation_index("日常8-9")
 
         # 2. 9:00～12:00（保持原有主辅逻辑）
@@ -307,16 +318,6 @@ class RosterGenerator:
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_13_18,
-                "staff_name": staff,
-                "is_main": False
-            })
-
-        # 4. 18:00～21:00（固定5人，除非请假）
-        slot_18_21 = "18:00～21:00"
-        for staff in available_fixed_staffs:
-            roster_list.append({
-                "date": target_date,
-                "time_slot": slot_18_21,
                 "staff_name": staff,
                 "is_main": False
             })
