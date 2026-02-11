@@ -187,13 +187,16 @@
             <div class="row mt-4">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-user-tie me-2"></i>核心人员配置</h5>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleCoreEditBtn">
+                                <i class="fas fa-edit me-1"></i>编辑
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
                                 <label for="coreStaff" class="form-label">核心人员</label>
-                                <input type="text" class="form-control" id="coreStaff" placeholder="输入核心人员姓名">
+                                <input type="text" class="form-control" id="coreStaff" placeholder="输入核心人员姓名" readonly>
                             </div>
                         </div>
                     </div>
@@ -201,14 +204,17 @@
                     <div class="card mt-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-user-friends me-2"></i>测试人员配置</h5>
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="addTestStaffBtn">
-                                <i class="fas fa-plus me-1"></i>添加
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleTestEditBtn">
+                                <i class="fas fa-edit me-1"></i>编辑
                             </button>
                         </div>
                         <div class="card-body">
                             <div id="testStaffList">
                                 <!-- 测试人员列表将在这里显示 -->
                             </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addTestStaffBtn" disabled>
+                                <i class="fas fa-plus me-1"></i>添加测试人员
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -463,6 +469,8 @@
         document.getElementById('saveStaffConfigBtn').addEventListener('click', saveStaffConfig);
         document.getElementById('loadStaffConfigBtn').addEventListener('click', loadStaffConfig);
         document.getElementById('addTestStaffBtn').addEventListener('click', addTestStaffInput);
+        document.getElementById('toggleCoreEditBtn').addEventListener('click', toggleCoreEditMode);
+        document.getElementById('toggleTestEditBtn').addEventListener('click', toggleTestEditMode);
 
         // 请假配置相关
         document.getElementById('leaveForm').addEventListener('submit', submitLeaveRecord);
@@ -547,6 +555,13 @@
 
             if (result.success) {
                 showMessage(result.msg, 'success');
+                // 保存成功后自动退出编辑模式
+                if (isCoreEditing) {
+                    toggleCoreEditMode();
+                }
+                if (isTestEditing) {
+                    toggleTestEditMode();
+                }
             } else {
                 showMessage(result.msg, 'danger');
             }
@@ -557,11 +572,17 @@
 
     // 添加测试人员输入框
     function addTestStaffInput() {
+        // 检查是否处于编辑模式
+        if (!isTestEditing) {
+            showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
+            return;
+        }
+        
         const inputGroup = document.createElement('div');
         inputGroup.className = 'input-group mb-2';
         inputGroup.innerHTML = `
                 <input type="text" class="form-control" placeholder="输入测试人员姓名" required>
-                <button class="btn btn-outline-danger remove-staff-btn" type="button">
+                <button class="btn btn-outline-danger remove-staff-btn" type="button" disabled>
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -569,18 +590,26 @@
         document.getElementById('testStaffList').appendChild(inputGroup);
 
         // 添加删除按钮事件
-        inputGroup.querySelector('.remove-staff-btn').addEventListener('click', function () {
-            inputGroup.remove();
+        const removeBtn = inputGroup.querySelector('.remove-staff-btn');
+        removeBtn.addEventListener('click', function () {
+            confirmDeleteTestStaff(inputGroup);
         });
+        
+        // 如果当前处于编辑模式，启用新添加的删除按钮
+        if (isTestEditing) {
+            removeBtn.disabled = false;
+            removeBtn.classList.remove('btn-outline-secondary');
+            removeBtn.classList.add('btn-outline-danger');
+        }
     }
 
-    // 将测试人员添加到列表显示
-    function addTestStaffToList(name) {
+    // 添加测试人员到列表（用于加载现有配置）
+    function addTestStaffToList(staffName) {
         const inputGroup = document.createElement('div');
         inputGroup.className = 'input-group mb-2';
         inputGroup.innerHTML = `
-                <input type="text" class="form-control" value="${name}" required>
-                <button class="btn btn-outline-danger remove-staff-btn" type="button">
+                <input type="text" class="form-control" value="${staffName}" readonly>
+                <button class="btn btn-outline-secondary remove-staff-btn" type="button" disabled>
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -588,8 +617,9 @@
         document.getElementById('testStaffList').appendChild(inputGroup);
 
         // 添加删除按钮事件
-        inputGroup.querySelector('.remove-staff-btn').addEventListener('click', function () {
-            inputGroup.remove();
+        const removeBtn = inputGroup.querySelector('.remove-staff-btn');
+        removeBtn.addEventListener('click', function () {
+            confirmDeleteTestStaff(inputGroup);
         });
     }
 
@@ -1099,6 +1129,84 @@
         // 设置请假查询的默认日期
         document.getElementById('queryStartDate').value = formatDate(today);
         document.getElementById('queryEndDate').value = formatDate(thirtyDaysLater);
+    }
+
+    // 编辑模式状态
+    let isCoreEditing = false;
+    let isTestEditing = false;
+
+    // 切换核心人员编辑模式
+    function toggleCoreEditMode() {
+        isCoreEditing = !isCoreEditing;
+        const coreInput = document.getElementById('coreStaff');
+        const editBtn = document.getElementById('toggleCoreEditBtn');
+        
+        if (isCoreEditing) {
+            coreInput.removeAttribute('readonly');
+            coreInput.classList.add('editable');
+            editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
+            editBtn.classList.remove('btn-outline-secondary');
+            editBtn.classList.add('btn-outline-success');
+        } else {
+            coreInput.setAttribute('readonly', 'readonly');
+            coreInput.classList.remove('editable');
+            editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
+            editBtn.classList.remove('btn-outline-success');
+            editBtn.classList.add('btn-outline-secondary');
+        }
+    }
+
+    // 切换测试人员编辑模式
+    function toggleTestEditMode() {
+        isTestEditing = !isTestEditing;
+        const addBtn = document.getElementById('addTestStaffBtn');
+        const editBtn = document.getElementById('toggleTestEditBtn');
+        const removeButtons = document.querySelectorAll('.remove-staff-btn');
+        
+        if (isTestEditing) {
+            addBtn.disabled = false;
+            addBtn.classList.remove('btn-outline-secondary');
+            addBtn.classList.add('btn-outline-primary');
+            editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
+            editBtn.classList.remove('btn-outline-secondary');
+            editBtn.classList.add('btn-outline-success');
+            
+            // 启用所有删除按钮
+            removeButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-outline-danger');
+            });
+        } else {
+            addBtn.disabled = true;
+            addBtn.classList.remove('btn-outline-primary');
+            addBtn.classList.add('btn-outline-secondary');
+            editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
+            editBtn.classList.remove('btn-outline-success');
+            editBtn.classList.add('btn-outline-secondary');
+            
+            // 禁用所有删除按钮
+            removeButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('btn-outline-danger');
+                btn.classList.add('btn-outline-secondary');
+            });
+        }
+    }
+
+    // 确认删除测试人员
+    function confirmDeleteTestStaff(element) {
+        // 检查是否处于编辑模式
+        if (!isTestEditing) {
+            showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
+            return;
+        }
+        
+        const staffName = element.querySelector('input').value || '该人员';
+        if (confirm(`确定要删除"${staffName}"吗？此操作不可撤销。`)) {
+            element.remove();
+            showMessage(`已删除"${staffName}"`, 'success');
+        }
     }
 
     // 导出排班数据

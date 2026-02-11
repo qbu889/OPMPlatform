@@ -287,44 +287,6 @@ FJ-076-20251202-0323"></textarea>
                 </div>
             </div>
         </div> <!-- 这里闭合 word2md tab-pane -->
-
-<!--        <div class="tab-pane fade" id="kafka-generator" role="tabpanel">-->
-<!--            <div class="row mt-4">-->
-<!--                <div class="col-12">-->
-<!--                    <h2>Kafka消息生成器</h2>-->
-<!--                    <p>通过填写关键信息，动态生成符合规范的 Kafka 消息。</p>-->
-<!--                    <div class="card">-->
-<!--                        <div class="card-body">-->
-<!--                            <form id="kafkaForm">-->
-<!--                                <div class="mb-3">-->
-<!--                                    <label for="roomId" class="form-label">ROOM_ID</label>-->
-<!--                                    <input type="text" class="form-control" id="roomId" placeholder="请输入ROOM_ID">-->
-<!--                                </div>-->
-<!--                                <div class="mb-3">-->
-<!--                                    <label for="machineRoomInfo" class="form-label">MACHINE_ROOM_INFO</label>-->
-<!--                                    <input type="text" class="form-control" id="machineRoomInfo"-->
-<!--                                           placeholder="请输入机房信息">-->
-<!--                                </div>-->
-<!--                                <button type="submit" class="btn btn-primary">生成消息</button>-->
-<!--                            </form>-->
-
-<!--                            <div id="loading" class="mt-3" style="display:none;">-->
-<!--                                <div class="spinner-border text-primary" role="status">-->
-<!--                                    <span class="visually-hidden">加载中...</span>-->
-<!--                                </div>-->
-<!--                            </div>-->
-
-<!--                            <div id="result" class="mt-3" style="display:none;">-->
-<!--                                <pre id="kafkaMsgOutput" class="bg-light p-3"></pre>-->
-<!--                                <button class="btn btn-sm btn-outline-primary" onclick="copyResult()">复制结果</button>-->
-<!--                            </div>-->
-
-<!--                            <div id="error" class="mt-3 text-danger" style="display:none;"></div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
         <div class="tab-pane fade" id="es-to-kafka" role="tabpanel">
         <div class="row mt-4">
             <div class="col-12">
@@ -356,191 +318,223 @@ FJ-076-20251202-0323"></textarea>
 
 
 <script>
-    function formatSqlIds() {
-        const idsText = document.getElementById('sqlIds').value;
-        const resultDiv = document.getElementById('sqlResult');
-        const outputPre = document.getElementById('formattedOutput');
+function formatSqlIds() {
+    const idsText = document.getElementById('sqlIds').value;
+    const resultDiv = document.getElementById('sqlResult');
+    const outputPre = document.getElementById('formattedOutput');
 
-        // 按行分割并清理空白字符
-        const idsList = idsText.split('\n').filter(id => id.trim());
+    // 按行分割并清理空白字符
+    const idsList = idsText.split('\n').filter(id => id.trim());
 
-        if (idsList.length === 0) {
-            alert('请输入至少一个ID');
-            return;
-        }
-
-        // 格式化为SQL格式
-        const formattedIds = idsList.map(id => `'${id.trim()}'`);
-
-        let result;
-        if (idsList.length === 1) {
-            result = formattedIds[0];
-        } else {
-            result = formattedIds.join(',\n');
-        }
-
-        outputPre.textContent = result;
-        resultDiv.style.display = 'block';
+    if (idsList.length === 0) {
+        alert('请输入至少一个ID');
+        return;
     }
 
-    function copyResult() {
-        const resultText = document.getElementById('formattedOutput').textContent;
+    // 格式化为SQL格式
+    const formattedIds = idsList.map(id => `'${id.trim()}'`);
 
-        // 检查是否支持 Clipboard API
-        if (navigator.clipboard && window.isSecureContext) {
-            // 现代浏览器支持的 Clipboard API
-            navigator.clipboard.writeText(resultText).then(() => {
-                alert('已复制到剪贴板!');
-            }).catch((err) => {
-                console.error('复制失败:', err);
-                // 如果 Clipboard API 失败，回退到传统方法
-                fallbackCopyTextToClipboard(resultText);
+    let result;
+    if (idsList.length === 1) {
+        result = formattedIds[0];
+    } else {
+        result = formattedIds.join(',\n');
+    }
+
+    outputPre.textContent = result;
+    resultDiv.style.display = 'block';
+}
+
+function copyResult() {
+    // 正确的目标元素ID是 'formattedOutput'，不是 'result-content'
+    const element = document.getElementById('formattedOutput');
+    if (!element) {
+        console.error('复制目标元素 #formattedOutput 未找到');
+        showMessage('复制目标未找到', 'danger');
+        return;
+    }
+
+    const text = element.textContent || '';
+
+    // 检查是否支持现代 clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        // 使用现代 API
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                showMessage('复制成功', 'success');
+            })
+            .catch(err => {
+                console.error('Clipboard API 复制失败:', err);
+                // 降级到传统方法
+                fallbackCopyTextToClipboard(text);
             });
-        } else {
-            // 回退到传统的复制方法
-            fallbackCopyTextToClipboard(resultText);
-        }
+    } else {
+        // 不支持 Clipboard API 或非安全上下文，使用传统方法
+        console.warn('Clipboard API 不可用，使用传统复制方法');
+        fallbackCopyTextToClipboard(text);
     }
 
-    function fallbackCopyTextToClipboard(text) {
-        // 创建一个 textarea 元素用于复制文本
+}
+function showMessage(message, type = 'info') {
+    // 创建 Bootstrap alert 消息
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // 添加到页面并自动移除
+    const container = document.querySelector('.container');
+    container.insertBefore(alert, container.firstChild);
+
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', copyResult);
+    }
+});
+
+function fallbackCopyTextToClipboard(text) {
+    try {
+        // 创建临时 textarea 元素
         const textArea = document.createElement("textarea");
         textArea.value = text;
 
-        // 避免滚动到底部
-        textArea.style.top = "0";
-        textArea.style.left = "0";
+        // 设置样式使其不可见但可选择
         textArea.style.position = "fixed";
         textArea.style.opacity = "0";
+        // ... 其他样式设置
 
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
 
-        try {
-            // 执行复制命令
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showCopySuccess(); // 显示复制成功的提示
-            } else {
-                alert('复制失败，请手动复制');
-            }
-        } catch (err) {
-            console.error('复制操作不被支持或发生错误:', err);
-            alert('复制失败，请手动复制文本');
-        }
-
-        // 移除临时的 textarea 元素
+        // 执行复制命令
+        const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
+
+        if (successful) {
+            showMessage('复制成功', 'success');
+        } else {
+            showMessage('复制失败，请手动复制', 'danger');
+        }
+    } catch (err) {
+        console.error('传统复制方法失败:', err);
+        showMessage('复制失败，请手动复制内容', 'danger');
+
+        // 最后备选方案
+        alert('无法自动复制，请手动选择以下内容进行复制：\n\n' + text);
+    }
+}
+
+
+function showCopySuccess() {
+    // 创建提示元素
+    let notification = document.getElementById('copy-notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'copy-notification';
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #28a745;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s;
+    `;
+        document.body.appendChild(notification);
     }
 
-    function showCopySuccess() {
-        // 创建提示元素
-        let notification = document.getElementById('copy-notification');
-        if (!notification) {
-            notification = document.createElement('div');
-            notification.id = 'copy-notification';
-            notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 4px;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s;
-        `;
-            document.body.appendChild(notification);
-        }
+    notification.textContent = '已复制到剪贴板!';
+    notification.style.opacity = '1';
 
-        notification.textContent = '已复制到剪贴板!';
-        notification.style.opacity = '1';
-
-        // 3秒后淡出提示
+    // 3秒后淡出提示
+    setTimeout(() => {
+        notification.style.opacity = '0';
         setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    document.getElementById('kafkaForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const roomId = document.getElementById('roomId').value.trim();
-        const machineRoomInfo = document.getElementById('machineRoomInfo').value.trim();
-
-        if (!roomId || !machineRoomInfo) {
-            showError('请输入完整的ROOM_ID和MACHINE_ROOM_INFO');
-            return;
-        }
-
-        showLoading(true);
-        hideError();
-
-        try {
-            const response = await fetch('/kafka/generate_kafka_msg', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `room_id=${encodeURIComponent(roomId)}&machine_room_info=${encodeURIComponent(machineRoomInfo)}`
-            });
-
-            const result = await response.json();
-            if (result.code === 200) {
-                document.getElementById('kafkaMsgOutput').textContent = result.data;
-                document.getElementById('result').style.display = 'block';
-            } else {
-                showError(result.msg);
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
             }
-        } catch (err) {
-            showError('请求失败，请稍后重试');
-        } finally {
-            showLoading(false);
-        }
-    });
+        }, 300);
+    }, 3000);
+}
 
-    function showLoading(show) {
-        document.getElementById('loading').style.display = show ? 'block' : 'none';
+document.getElementById('kafkaForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const roomId = document.getElementById('roomId').value.trim();
+    const machineRoomInfo = document.getElementById('machineRoomInfo').value.trim();
+
+    if (!roomId || !machineRoomInfo) {
+        showError('请输入完整的ROOM_ID和MACHINE_ROOM_INFO');
+        return;
     }
 
-    function showError(message) {
-        const errorDiv = document.getElementById('error');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        document.getElementById('result').style.display = 'none';
-    }
+    showLoading(true);
+    hideError();
 
-    function hideError() {
-        document.getElementById('error').style.display = 'none';
-    }
-
-    function copyResult() {
-        const text = document.getElementById('kafkaMsgOutput').textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            alert('已复制到剪贴板!');
-        }).catch(() => {
-            fallbackCopyTextToClipboard(text);
+    try {
+        const response = await fetch('/kafka/generate_kafka_msg', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `room_id=${encodeURIComponent(roomId)}&machine_room_info=${encodeURIComponent(machineRoomInfo)}`
         });
-    }
 
-    function fallbackCopyTextToClipboard(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert('已复制到剪贴板!');
+        const result = await response.json();
+        if (result.code === 200) {
+            document.getElementById('kafkaMsgOutput').textContent = result.data;
+            document.getElementById('result').style.display = 'block';
+        } else {
+            showError(result.msg);
+        }
+    } catch (err) {
+        showError('请求失败，请稍后重试');
+    } finally {
+        showLoading(false);
     }
+});
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+}
+
+function hideError() {
+    document.getElementById('error').style.display = 'none';
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('已复制到剪贴板!');
+}
 
 </script>
 {% endblock %}

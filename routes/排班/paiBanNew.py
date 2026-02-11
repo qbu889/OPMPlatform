@@ -194,8 +194,6 @@ class RosterGenerator:
         weekday = target_date.weekday()
         return "节假日" if weekday == 5 or weekday == 6 else "日常"
 
-
-
     def _get_leave_staffs(self, target_date: date, time_slot: str = None) -> Set[str]:
         """获取指定日期/时段的请假人员"""
         leave_staffs = set()
