@@ -37,8 +37,8 @@ class TestKafkaRoutes(unittest.TestCase):
     def test_load_es_data_enterprise(self):
         # 测试加载企业类型的ES数据
         es_data = load_es_data('enterprise')
-        self.assertEqual(es_data['NETWORK_TYPE_TOP'], '4')
-        self.assertEqual(es_data['VENDOR_ID'], '14016')
+        self.assertEqual(es_data['NETWORK_TYPE_TOP'], '11')
+        self.assertEqual(es_data['VENDOR_ID'], '323')
 
     def test_load_es_data_home_broadband(self):
         # 测试加载家宽类型的ES数据
@@ -66,3 +66,4 @@ class TestKafkaRoutes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+''

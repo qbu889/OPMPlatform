@@ -677,6 +677,9 @@ def es_to_kafka_msg():
         kafka_msg = generate_kafka_from_es(es_data, room_id, machine_room_info)
         logger.debug(f"生成的 Kafka 消息: {kafka_msg}")
 
+        # 预处理数据确保JSON序列化安全
+        kafka_msg = preprocess_for_json(kafka_msg)
+        
         # 格式化JSON（缩进4个空格，保证可读性）
         kafka_msg_str = json.dumps(kafka_msg, ensure_ascii=False, indent=4)
         logger.info("成功生成Kafka消息")
@@ -698,6 +701,28 @@ def es_to_kafka_msg():
 @kafka_bp.route('/generate_kafka_msg', methods=['GET'])
 def generate_kafka_page():
     return render_template('generate_kafka.html')
+
+
+def preprocess_for_json(data):
+    """
+    预处理数据以确保可以正确序列化为JSON
+    :param data: 要处理的数据
+    :return: 处理后的数据
+    """
+    if isinstance(data, dict):
+        return {key: preprocess_for_json(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [preprocess_for_json(item) for item in data]
+    elif isinstance(data, (int, float, bool)):
+        return data
+    elif data is None:
+        return ""
+    else:
+        # 将所有其他类型转换为字符串
+        str_value = str(data)
+        # 处理特殊字符
+        str_value = str_value.replace('\u003c', '<').replace('\u003e', '>')
+        return str_value
 
 
 def generate_kafka_from_es(es_data, room_id, machine_room_info):
@@ -739,6 +764,9 @@ def generate_kafka_from_es(es_data, room_id, machine_room_info):
     for key, value in es_data.items():
         if key not in ["SPECIAL_FIELD14", "MACHINE_ROOM_INFO"]:  # 排除这两个字段
             kafka_msg[key] = value if value is not None else ""
+    
+    # 对整个消息进行预处理，确保JSON序列化安全
+    kafka_msg = preprocess_for_json(kafka_msg)
 
     logger.debug(f"生成的 Kafka 消息: {kafka_msg}")
     logger.info("Kafka 消息构造完成")

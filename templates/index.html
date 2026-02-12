@@ -51,12 +51,12 @@
                     role="tab">Markdown转Word
             </button>
         </li>
-<!--        <li class="nav-item" role="presentation">-->
-<!--            <button class="nav-link" id="kafka-generator-tab" data-bs-toggle="tab" data-bs-target="#kafka-generator"-->
-<!--                    type="button" role="tab">-->
-<!--                Kafka消息生成器-->
-<!--            </button>-->
-<!--        </li>-->
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="kafka-generator-tab" data-bs-toggle="tab" data-bs-target="#kafka-generator"
+                    type="button" role="tab">
+                Kafka消息生成器
+            </button>
+        </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="es-to-kafka-tab" data-bs-toggle="tab" data-bs-target="#es-to-kafka" type="button" role="tab">
                 ES转Kafka消息
@@ -288,6 +288,19 @@ FJ-076-20251202-0323"></textarea>
                 </div>
             </div>
         </div> <!-- 这里闭合 word2md tab-pane -->
+        <div class="tab-pane fade" id="kafka-generator" role="tabpanel">
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h2>Kafka消息生成器</h2>
+                    <p>根据ES数据生成对应的Kafka消息</p>
+                    <div class="card">
+                        <div class="card-body">
+                            <iframe src="/kafka-generator/" width="100%" height="800" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="tab-pane fade" id="es-to-kafka" role="tabpanel">
         <div class="row mt-4">
             <div class="col-12">

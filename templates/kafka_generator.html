@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka消息生成器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-section {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .copy-btn {
+            margin-top: 10px;
+        }
+        textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .field-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .field-item label {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .field-item input {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4"><i class="fas fa-exchange-alt me-2"></i>Kafka消息生成器</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-database me-2"></i>ES源数据输入</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="esSource" class="form-label">请输入ES _source 数据 (JSON格式):</label>
+                    <textarea class="form-control" id="esSource" rows="10" placeholder='{"EVENT_ID": 12345, "EVENT_NAME": "测试事件", ...}'></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="generateMessage()">
+                        <i class="fas fa-cogs me-1"></i>生成Kafka消息
+                    </button>
+                    <button class="btn btn-secondary" onclick="preprocessData()">
+                        <i class="fas fa-wrench me-1"></i>预处理数据
+                    </button>
+                    <button class="btn btn-info" onclick="loadSampleData()">
+                        <i class="fas fa-file-import me-1"></i>加载示例数据
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
+                <small class="text-muted">可选择性覆盖自动生成的字段值</small>
+            </div>
+            <div class="card-body">
+                <div class="field-grid" id="customFields">
+                    <!-- 自定义字段将在这里动态生成 -->
+                </div>
+                <button class="btn btn-secondary btn-sm mt-3" onclick="toggleAllFields()">
+                    <i class="fas fa-eye me-1"></i>显示/隐藏所有字段
+                </button>
+            </div>
+        </div>
+
+        <div class="card" id="resultCard" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-file-code me-2"></i>生成结果</h5>
+                <button class="btn btn-success btn-sm copy-btn" onclick="copyResult()">
+                    <i class="fas fa-copy me-1"></i>复制结果
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="result-section">
+                    <pre id="resultOutput" class="mb-0"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-info-circle me-2"></i>使用说明:</h6>
+            <ul class="mb-0">
+                <li>粘贴ES数据中 <code>_source</code> 对象的完整JSON内容</li>
+                <li>如遇到格式错误，可先点击"预处理数据"按钮自动修复常见问题</li>
+                <li>系统会自动映射生成对应的Kafka消息格式</li>
+                <li>可通过自定义字段面板覆盖特定字段的值</li>
+                <li>FP相关字段会自动生成唯一值</li>
+                <li>时间字段会自动设置为当前时间减15分钟</li>
+            </ul>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <strong>常见问题处理：</strong><br>
+                    • 三重引号("""")会自动转换为双引号<br>
+                    • HTML实体(&lt; &gt;)会自动解码<br>
+                    • 多余的尾随逗号会被自动移除
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 常用字段列表
+        const commonFields = [
+            'ID', 'NETWORK_TYPE_TOP', 'ORG_SEVERITY', 'REGION_NAME', 'CITY_NAME',
+            'EQP_LABEL', 'NE_LABEL', 'VENDOR_NAME', 'TITLE_TEXT', 'STANDARD_ALARM_NAME',
+            'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
+        ];
+
+        // 所有字段列表
+        const allFields = [
+            'ID', 'NETWORK_TYPE_TOP', 'ORG_SEVERITY', 'REGION_NAME', 'ACTIVE_STATUS',
+            'CITY_NAME', 'EQP_LABEL', 'EQP_OBJECT_CLASS', 'VENDOR_NAME', 'VENDOR_ID',
+            'ALARM_RESOURCE_STATUS', 'LOCATE_INFO', 'NE_LABEL', 'OBJECT_LEVEL',
+            'PROFESSIONAL_TYPE', 'NETWORK_TYPE', 'ORG_TYPE', 'VENDOR_TYPE',
+            'SEND_JT_FLAG', 'TITLE_TEXT', 'STANDARD_ALARM_NAME', 'STANDARD_ALARM_ID',
+            'STANDARD_FLAG', 'VENDOR_SEVERITY', 'PROBABLE_CAUSE', 'NMS_ALARM_ID',
+            'PROBABLE_CAUSE_TXT', 'PREPROCESS_MANNER', 'EVENT_TIME', 'TIME_STAMP',
+            'FP0_FP1_FP2_FP3', 'CFP0_CFP1_CFP2_CFP3', 'MACHINE_ROOM_INFO', 'INT_ID',
+            'REDEFINE_SEVERITY', 'TYPE_KEYCODE', 'NE_LOCATION', 'ALARM_EXPLANATION',
+            'ALARM_EXPLANATION_ADDITION', 'MAINTAIN_GROUP', 'SITE_TYPE', 'SUB_ALARM_TYPE',
+            'EVENT_CAT', 'NMS_NAME', 'CITY_ID', 'REMOTE_EQP_LABEL', 'REMOTE_RESOURCE_STATUS',
+            'REMOTE_PROJ_SUB_STATUS', 'REMOTE_INT_ID', 'PROJ_NAME', 'PROJ_OA_FILE_CONTENT',
+            'BUSINESS_REGION_IDS', 'BUSINESS_REGIONS', 'REMOTE_OBJECT_CLASS', 'ALARM_REASON',
+            'GCSS_CLIENT', 'GCSS_CLIENT_NAME', 'GCSS_CLIENT_NUM', 'GCSS_CLIENT_LEVEL',
+            'GCSS_SERVICE', 'GCSS_SERVICE_NUM', 'GCSS_SERVICE_LEVEL', 'GCSS_SERVICE_TYPE',
+            'BUSINESS_SYSTEM', 'NE_IP', 'LAYER_RATE', 'CIRCUIT_ID', 'ALARM_ABNORMAL_TYPE',
+            'PROJ_OA_FILE_ID', 'GCSS_CLIENT_GRADE', 'EFFECT_CIRCUIT_NUM', 'PREHANDLE',
+            'OBJECT_CLASS_TEXT', 'BOARD_TYPE', 'OBJECT_CLASS', 'LOGIC_ALARM_TYPE',
+            'LOGIC_SUB_ALARM_TYPE', 'EFFECT_NE', 'EFFECT_SERVICE', 'SPECIAL_FIELD14',
+            'SPECIAL_FIELD7', 'SPECIAL_FIELD21', 'ALARM_SOURCE', 'BUSINESS_LAYER',
+            'ALARM_TEXT', 'CIRCUIT_NO', 'PRODUCT_TYPE', 'CIRCUIT_LEVEL', 'BUSINESS_TYPE',
+            'IRMS_GRID_NAME', 'ADMIN_GRID_ID', 'HOME_CLIENT_NUM', 'SRC_ID', 'SRC_IS_TEST',
+            'SRC_APP_ID', 'SRC_ORG_ID', 'ORG_TEXT', 'TOPIC_PREFIX', 'TOPIC_PARTITION',
+            'SPECIAL_FIELD17', 'EXTRA_ID2', 'EXTRA_STRING1', 'PORT_NUM', 'NE_ADMIN_STATUS',
+            'SPECIAL_FIELD18', 'SPECIAL_FIELD20', 'TMSC_CAT', 'ALARM_NE_STATUS',
+            'ALARM_EQP_STATUS', 'INTERFERENCE_FLAG', 'SPECIAL_FIELD2', 'custGroupFeature',
+            'industryCustType', 'strategicCustTypeFL', 'strategicCustTypeSL', 'FAULT_LOCATION',
+            'SPECIAL_FIELD0', 'EVENT_SOURCE', 'ORIG_ALARM_CLEAR_FP', 'ORIG_ALARM_FP',
+            'EVENT_ARRIVAL_TIME', 'CREATION_EVENT_TIME'
+        ];
+
+        let showAllFields = false;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCustomFields();
+        });
+
+        // 渲染自定义字段面板
+        function renderCustomFields() {
+            const container = document.getElementById('customFields');
+            const fieldsToShow = showAllFields ? allFields : commonFields;
+            
+            container.innerHTML = '';
+            
+            fieldsToShow.forEach(field => {
+                const fieldItem = document.createElement('div');
+                fieldItem.className = 'field-item';
+                fieldItem.innerHTML = `
+                    <label for="field_${field}" class="form-label">${field}:</label>
+                    <input type="text" class="form-control form-control-sm" id="field_${field}" 
+                           placeholder="留空则使用自动映射值">
+                `;
+                container.appendChild(fieldItem);
+            });
+        }
+
+        // 切换字段显示
+        function toggleAllFields() {
+            showAllFields = !showAllFields;
+            renderCustomFields();
+        }
+
+        // 增强的预处理函数，专门处理控制字符问题
+        function preprocessEsData(rawData) {
+            console.log('开始预处理数据...');
+            let processed = rawData;
+            
+            // 记录原始长度
+            const originalLength = processed.length;
+            console.log('原始数据长度:', originalLength);
+            
+            // 1. 处理三重引号（最重要的修复）
+            const tripleQuoteCount = (processed.match(/"""/g) || []).length;
+            if (tripleQuoteCount > 0) {
+                console.log(`发现 ${tripleQuoteCount} 个三重引号，进行替换`);
+                processed = processed.replace(/"""/g, '"');
+            }
+            
+            // 2. 处理HTML实体
+            const htmlEntities = {
+                '&lt;': '<',
+                '&gt;': '>',
+                '&amp;': '&',
+                '&quot;': '"',
+                '&#39;': "'",
+                '&nbsp;': ' '
+            };
+            
+            Object.entries(htmlEntities).forEach(([entity, replacement]) => {
+                const count = (processed.match(new RegExp(entity.replace(/[&<>]/g, '\\$&'), 'g')) || []).length;
+                if (count > 0) {
+                    console.log(`处理了 ${count} 个 '${entity}' HTML实体`);
+                    processed = processed.replace(new RegExp(entity.replace(/[&<>]/g, '\\$&'), 'g'), replacement);
+                }
+            });
+            
+            // 3. 处理可能的多余逗号
+            const trailingCommaCount = (processed.match(/,\s*([\}\]])/g) || []).length;
+            if (trailingCommaCount > 0) {
+                console.log(`发现 ${trailingCommaCount} 个尾随逗号，进行清理`);
+                processed = processed.replace(/,\s*([\}\]])/g, '$1');
+            }
+            
+            // 4. 处理控制字符（重点修复）
+            console.log('检查控制字符...');
+            const controlCharRegex = /[\x00-\x1F\x7F]/g;
+            const controlChars = processed.match(controlCharRegex);
+            if (controlChars) {
+                console.log(`发现 ${controlChars.length} 个控制字符`);
+                // 移除控制字符
+                processed = processed.replace(controlCharRegex, '');
+            }
+            
+            // 5. 处理特殊Unicode字符
+            processed = processed.replace(/\u003c/g, '<').replace(/\u003e/g, '>');
+            
+            // 6. 处理换行符标准化
+            processed = processed.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            console.log('预处理完成，处理后长度:', processed.length);
+            return processed;
+        }
+
+        // 调试函数：定位具体错误位置
+        function debugJsonPosition(jsonString, errorPosition) {
+            console.log('=== JSON调试信息 ===');
+            console.log('错误位置:', errorPosition);
+            
+            // 显示错误位置附近的字符
+            const start = Math.max(0, errorPosition - 30);
+            const end = Math.min(jsonString.length, errorPosition + 30);
+            const context = jsonString.substring(start, end);
+            
+            console.log('错误位置上下文:');
+            console.log(context);
+            console.log('错误字符:', jsonString.charAt(errorPosition));
+            console.log('错误字符码:', jsonString.charCodeAt(errorPosition));
+            
+            // 显示行号信息
+            const lines = jsonString.substring(0, errorPosition).split('\n');
+            const lineNumber = lines.length;
+            const columnNumber = lines[lines.length - 1].length + 1;
+            
+            console.log(`估计位置: 第${lineNumber}行，第${columnNumber}列`);
+            
+            // 检查常见的问题字符
+            const problematicChars = [
+                { char: '\"""', desc: '三重引号' },
+                { char: String.fromCharCode(0), desc: '空字符' },
+                { char: String.fromCharCode(10), desc: '换行符' },
+                { char: String.fromCharCode(13), desc: '回车符' }
+            ];
+            
+            problematicChars.forEach(pc => {
+                if (jsonString.charAt(errorPosition) === pc.char) {
+                    console.log(`发现问题字符: ${pc.desc}`);
+                }
+            });
+            
+            return {
+                line: lineNumber,
+                column: columnNumber,
+                context: context,
+                charCode: jsonString.charCodeAt(errorPosition)
+            };
+        }
+
+        // 简化版生成函数 - 不做JSON格式校验，直接传递
+        async function generateMessage() {
+            const esSourceText = document.getElementById('esSource').value.trim();
+            
+            if (!esSourceText) {
+                alert('请输入ES源数据');
+                return;
+            }
+
+            // 不做任何格式校验，直接传递用户输入的内容
+            console.log('直接传递用户输入的数据到后端');
+            
+            try {
+                // 收集自定义字段
+                const customFields = {};
+                allFields.forEach(field => {
+                    const input = document.getElementById(`field_${field}`);
+                    if (input && input.value.trim()) {
+                        customFields[field] = input.value.trim();
+                    }
+                });
+
+                // 直接传递原始数据给后端
+                const backendUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/kafka-generator/generate`;
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        es_source_raw: esSourceText,  // 传递原始字符串
+                        custom_fields: customFields
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 显示结果
+                    document.getElementById('resultOutput').textContent = 
+                        JSON.stringify(result.data, null, 2);
+                    document.getElementById('resultCard').style.display = 'block';
+                    
+                    // 滚动到结果区域
+                    document.getElementById('resultCard').scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                } else {
+                    alert('生成失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('请求失败:', error);
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        // 复制结果
+        function copyResult() {
+            const resultText = document.getElementById('resultOutput').textContent;
+            
+            if (!resultText) {
+                alert('没有可复制的内容');
+                return;
+            }
+
+            // 使用现代Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(resultText)
+                    .then(() => {
+                        showCopySuccess();
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        fallbackCopyText(resultText);
+                    });
+            } else {
+                // 降级方案
+                fallbackCopyText(resultText);
+            }
+        }
+
+        // 降级复制方法
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopySuccess();
+                } else {
+                    alert('复制失败，请手动选择文本进行复制');
+                }
+            } catch (err) {
+                alert('复制功能不可用，请手动选择文本进行复制');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // 显示复制成功提示
+        function showCopySuccess() {
+            const copyBtn = document.querySelector('.copy-btn');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>已复制';
+            copyBtn.className = 'btn btn-success btn-sm copy-btn';
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.className = 'btn btn-success btn-sm copy-btn';
+            }, 2000);
+        }
+
+        // 预处理ES数据函数
+        function preprocessEsData(rawData) {
+            console.log('开始预处理数据...');
+            let processed = rawData;
+            
+            // 1. 移除BOM标记
+            if (processed.charCodeAt(0) === 0xFEFF) {
+                processed = processed.slice(1);
+                console.log('移除BOM标记');
+            }
+            
+            // 2. 处理三重引号 - 使用简单直接的方法
+            const tripleQuoteCount = (processed.match(/"""/g) || []).length;
+            if (tripleQuoteCount > 0) {
+                console.log(`发现 ${tripleQuoteCount} 个三重引号`);
+                // 简单替换：先全部替换成双引号，后续再处理内容
+                processed = processed.replace(/"""/g, '"');
+                console.log('三重引号已替换为双引号');
+            }
+            
+            // 3. 处理HTML实体
+            const htmlEntities = {
+                '&quot;': '"',
+                '&amp;': '&',
+                '&lt;': '<',
+                '&gt;': '>',
+                '&nbsp;': ' ',
+                '&#39;': "'"
+            };
+            
+            Object.keys(htmlEntities).forEach(entity => {
+                const count = (processed.match(new RegExp(entity, 'g')) || []).length;
+                if (count > 0) {
+                    processed = processed.replace(new RegExp(entity, 'g'), htmlEntities[entity]);
+                    console.log(`处理了 ${count} 个 '${entity}' HTML实体`);
+                }
+            });
+            
+            // 4. 处理ES格式数据的特殊情况
+            // 检查是否是ES查询结果格式（包含hits数组）
+            if (processed.includes('"hits"') && processed.includes('"_source"')) {
+                console.log('检测到ES查询结果格式，尝试提取_source数据');
+                try {
+                    const esObj = JSON.parse(processed);
+                    if (esObj.hits && esObj.hits.hits && esObj.hits.hits.length > 0) {
+                        // 提取第一个hit的_source
+                        const sourceData = esObj.hits.hits[0]._source;
+                        processed = JSON.stringify(sourceData, null, 2);
+                        console.log('成功提取_source数据');
+                    }
+                } catch (e) {
+                    console.log('ES格式解析失败，继续常规处理');
+                }
+            }
+            
+            // 5. 特别处理字符串内的换行符（重点修复）
+            // 匹配字符串内未转义的换行符并转义
+            const unescapedNewlinePattern = /"([^"]*)\n([^"]*)"/g;
+            let newlineMatches = [];
+            let match;
+            while ((match = unescapedNewlinePattern.exec(processed)) !== null) {
+                newlineMatches.push({
+                    fullMatch: match[0],
+                    position: match.index,
+                    before: match[1],
+                    after: match[2]
+                });
+            }
+            
+            if (newlineMatches.length > 0) {
+                console.log(`发现 ${newlineMatches.length} 个字符串内未转义的换行符:`);
+                newlineMatches.slice(0, 5).forEach((item, index) => {
+                    console.log(`  ${index + 1}. 位置 ${item.position}: '${item.fullMatch.substring(0, 30)}...'`);
+                });
+                
+                // 转义字符串内的换行符
+                processed = processed.replace(unescapedNewlinePattern, '"$1\\n$2"');
+                console.log('已完成换行符转义处理');
+            }
+            
+            // 6. 处理控制字符（重点修复）
+            let controlCharsFound = [];
+            let cleanedProcessed = '';
+            
+            for (let i = 0; i < processed.length; i++) {
+                const charCode = processed.charCodeAt(i);
+                const char = processed[i];
+                
+                // 允许的字符：制表符(9)、换行符(10)、回车符(13)、空格及以上(32+)
+                if (charCode === 9 || charCode === 10 || charCode === 13 || charCode >= 32) {
+                    cleanedProcessed += char;
+                } else {
+                    controlCharsFound.push({
+                        position: i,
+                        code: charCode,
+                        char: char
+                    });
+                }
+            }
+            
+            if (controlCharsFound.length > 0) {
+                console.log(`发现 ${controlCharsFound.length} 个控制字符:`);
+                controlCharsFound.slice(0, 20).forEach((item, index) => {
+                    console.log(`  ${index + 1}. 位置 ${item.position}: ASCII ${item.code} (${JSON.stringify(item.char)})`);
+                });
+                
+                processed = cleanedProcessed;
+                console.log('移除了控制字符');
+            }
+            
+            // 7. 处理多余的转义字符
+            const escapePatterns = [
+                [/\\"/g, '"'],  // 双重转义引号
+                [/\\\\/g, '\\']   // 双重反斜杠
+            ];
+            
+            escapePatterns.forEach(([pattern, replacement]) => {
+                const matches = processed.match(pattern);
+                if (matches) {
+                    processed = processed.replace(pattern, replacement);
+                    console.log(`处理了 ${matches.length} 个转义字符模式`);
+                }
+            });
+            
+            // 8. 标准化换行符
+            processed = processed.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            // 9. 移除行尾空格
+            processed = processed.split('\n').map(line => line.trimEnd()).join('\n');
+            
+            // 10. 处理可能的多余逗号
+            const trailingCommaCount = (processed.match(/,\s*([\}\]])/g) || []).length;
+            if (trailingCommaCount > 0) {
+                console.log(`发现 ${trailingCommaCount} 个尾随逗号，进行清理`);
+                processed = processed.replace(/,\s*([\}\]])/g, '$1');
+            }
+            
+            console.log('预处理完成');
+            return processed;
+        }
+
+        // 添加预处理按钮
+        function preprocessData() {
+            const textarea = document.getElementById('esSource');
+            const rawData = textarea.value.trim();
+            
+            if (!rawData) {
+                alert('请先输入ES数据');
+                return;
+            }
+            
+            try {
+                console.log('=== 开始数据预处理 ===');
+                console.log('原始数据长度:', rawData.length);
+                console.log('原始数据预览:', rawData.substring(0, 200) + '...');
+                
+                const processedData = preprocessEsData(rawData);
+                
+                console.log('处理后数据长度:', processedData.length);
+                console.log('处理后数据预览:', processedData.substring(0, 200) + '...');
+                
+                // 验证处理后的数据是否可以解析
+                try {
+                    const parsed = JSON.parse(processedData);
+                    console.log('✓ 处理后的数据可以成功解析为JSON');
+                    console.log('解析后的对象键数:', Object.keys(parsed).length);
+                } catch (parseError) {
+                    console.log('✗ 处理后的数据仍然无法解析:', parseError.message);
+                    // 尝试定位错误位置
+                    const errorMatch = parseError.message.match(/position\s+(\d+)/);
+                    if (errorMatch) {
+                        const errorPos = parseInt(errorMatch[1]);
+                        const start = Math.max(0, errorPos - 50);
+                        const end = Math.min(processedData.length, errorPos + 50);
+                        console.log('错误位置上下文:', processedData.substring(start, end));
+                    }
+                }
+                
+                textarea.value = processedData;
+                alert('数据预处理完成！\n请检查处理后的数据，然后点击生成按钮\n\n控制台中有详细处理日志可供查看');
+                
+            } catch (error) {
+                console.error('预处理失败:', error);
+                alert('预处理失败: ' + error.message);
+            }
+        }
+
+        // 加载示例数据
+        function loadSampleData() {
+            const sampleData = {
+  "HOME_BROAD_BAND_LIST": [],
+  "FULL_REGION_ID": "35000/350600/350623",
+  "EVENT_LEVEL": 4,
+  "ORG_TYPE": 14104,
+  "EVENT_LOCATION": "MSP",
+  "INDUSTRY_CUST_TYPE": "10",
+  "TOPIC_PREFIX": "EVENT-GZ",
+  "REMOTE_OBJECT_NAME": "SSAP",
+  "EVENT_TIME": "2026-02-09 14:03:50",
+  "IS_TEST": 0,
+  "PORT_NUM_CN": "集客直真",
+  "EVENT_REASON": "告警分析：设备脱网\n定位信息：MSP。",
+  "VENDOR_ID": 323,
+  "REMOTE_EQUIPMENT_NAME": "",
+  "SRC_ORG_ALARM_TEXT": "【发生时间】2026-02-09 14:03:50;\n【告警对象】MSP;\n【告警内容】设备脱网(影响1条电路);\n【业务影响情况】1条业务;\n(1).数据专线(5901351420250509296606),漳州漳浦消防救援(古雷EE)宿舍楼-漳州漳浦消防救援(杜浔AG专职站)FE5980KA\n【归属客户】漳州市消防救援支队(5916596304)(金牌,非直服直管);\n【A端】福建省漳州漳浦县古雷镇古雷港经济开发区新港城裕民路801号;\n【业务信息】数据专线,本地专线,A;\n;【告警分析】设备脱网;\n【预定位信息】【工程信息查询】1、自身工程：初步核实故障网元62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1近24小时无工程割接信息\n\n【客户侧信息查询】1、客户侧网元：62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1\n2、告警情况：客户侧无相关告警\n【对端故障信息查询】对端无故障\n【集客动环信息查询】1、故障网元：62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1\n2、查询资源：初步核实归属机房名称为漳州漳浦消防救援(杜浔AG专职站)一楼办公室机房，归属站点名称为3、查询告警：经核实查询最近6小时无相关停电故障，设备所在机房动环运行正常;",
+  "ALARM_SOURCE": "直真专线监控系统",
+  "CITY_NAME": "漳州市",
+  "EQUIPMENT_NAME": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+  "NETWORK_SUB_TYPE_ID": "1100",
+  "EVENT_ID": 311980616,
+  "SITE_TYPE": "",
+  "EVENT_NUM": 2,
+  "DETAIL_STATUS": 2,
+  "CANCEL_STATUS": 1,
+  "PROJ_INTERFERENCE_FLAG": 0,
+  "ROOT_NETWORK_TYPE_ID": "1",
+  "NETWORK_SUB_TYPE_NAME": "集客",
+  "ALARM_STANDARD_NAME": "设备脱网",
+  "ALARM_STANDARD_FLAG": 2,
+  "MAINTAIN_TEAM": "漳州漳浦集客铁通维护组",
+  "EQP_OBJECT_ID": "87002",
+  "EVENT_ROOT_CATEGORY": "客户侧故障",
+  "EVENT_SOURCE": 2,
+  "EVENT_STATUS": 0,
+  "KEY_CELL": "0",
+  "NE_LABEL": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+  "TYPE_KEYCODE": "预处理,",
+  "EVENT_EXPLANATION": "",
+  "ALARM_RESOURCE_STATUS": "1",
+  "EFFECT_CLIENT_LEVEL": "1",
+  "SERVICE_ASSURANCE_LEVEL": "2",
+  "SUPPRESS_NIGHT": "0",
+  "NMS_ALARM_ID": "2020740405373157376",
+  "EXCEPTION_SUPPRESS_DISPATCH": 0,
+  "EVENT_NAME": "单条集客A本地专线故障事件-设备脱网",
+  "EQUIPMENT_IP": "5901351420250509296606",
+  "FAULT_LOCATION": "【告警对象】MSP;<br>",
+  "EVENT_COLLECTION_TIME": "2026-02-09 14:04:57",
+  "TOPIC_PARTITION": 12,
+  "SPECIFIC_PROBLEMS": "631ed71a84cadfbeb9d29c7659232abf",
+  "FULL_REGION_NAME": "福建省/漳州市/漳浦县",
+  "EXTRA_STRING1": "",
+  "IS_EFFECT_BUSINESS": "是",
+  "EVENT_CAT": "【工程信息查询】1、自身工程：初步核实故障网元62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1近24小时无工程割接信息",
+  "ALARM_UNIQUE_ID": "2028480021",
+  "ALARM_NAME": "设备脱网(影响1条电路)",
+  "VENDOR_NAME": "瑞斯康达",
+  "RECOGNITION_STANDARD_ID": "WLSJ-YW-B-03-80-0032",
+  "5G_CUSTOMER_LIST": [],
+  "EVENT_TYPE_ID": "业务类",
+  "MAIN_NET_SORT_ONE": "集团专线",
+  "EVENT_STANDARD_FLAG": 2,
+  "VENDOR_EVENT_TYPE": "14202",
+  "ALARM_REASON": "",
+  "OBJECT_CLASS_ID": 87002,
+  "PORT_NUM": "300205",
+  "COUNTY_ID": "350623",
+  "EVENT_LEVEL_NAME": "四级",
+  "ALARM_LEVEL_NAME": "二级告警",
+  "EVENT_EFFECT": "网络层面：[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1；\n业务层面：影响集客业务1条，涉及客户：漳州市消防救援支队(5916596304)；\n社会层面：无。\n",
+  "EVENT_FP": "1713996274_3872318956_2520283298_4136070826_2",
+  "SERVICE_EFFECT_STATUS": "有影响",
+  "EVENT_ARRIVAL_TIME": "2026-02-09 14:04:59",
+  "FAULT_DIAGNOSIS": "经核实无工程操作、无传输故障，无光功率异常，无动环停电，初步判断为对端故障导致，请进一步核实。",
+  "EFFECT_SERVICE_LEVEL": "2",
+  "PROJ_INTERFERENCE_TYPE": "【是否干扰告警】：否。",
+  "TMSC_CAT": "",
+  "FAULT_TYPE_ID": "设备",
+  "GZ_EVENT_STATUS": 2,
+  "EVENT_PROVINCE_LEVEL": "2",
+  "NETWORK_TYPE_ID": "11",
+  "NE_ADMIN_STATUS": "",
+  "NMS_NAME": "集客网管",
+  "NETWORK_TYPE_NAME": "集客",
+  "FAULT_SUB_TYPE_ID": "产品故障类",
+  "PROVINCE_NAME": "福建省",
+  "EVENT_PROBABLE_CAUSE_TXT": "",
+  "OBJECT_CLASS_TEXT": "SSAP",
+  "ALARM_STANDARD_ID": "1100-064-371-10-860022",
+  "EXTRA_ID2": "",
+  "INTELLIGENT": 0,
+  "MAIN_NET_SORT_TWO": "传输专线",
+  "COUNTY_NAME": "漳浦县",
+  "SATOTAL": 3,
+  "EVENT_STANDARD_ID": "WLSJ-YW-B-03-80-0032",
+  "EFFECT_NE_NUM": 1,
+  "ROOT_NETWORK_TYPE_TOP": "集客",
+  "LAST_EVENT_TIME": "2026-02-09 14:03:50",
+  "EVENT_EXPLANATION_ADDITION": "",
+  "VENDOR_SEVERITY": "1",
+  "INTERFERENCE_FLAG": "0",
+  "EQP_OBJECT_NAME": "SSAP",
+  "OLD_EVENT_NAME": "单条集客A本地专线故障事件-设备脱网",
+  "EVENT_SUMMARY": "预处理步骤： 1.核查是否工程操作导致；\n 2.核查是否动环停电故障导致；\n 3.核查是否传输光缆故障导致；\n 4.核查是否设备故障导致；\n 5.核查是否客户下电导致。\n",
+  "PROVINCE_ID": "35000",
+  "EVENT_CLEAR_FP": "1713996274_3872318956_2520283298_4136070826_2",
+  "GROUP_CUSTOMER_LINE_LIST": "[]",
+  "ALARM_LEVEL": 2,
+  "EVENT_ROOT_CATEGORY_ID": "11002",
+  "EVENT_STANDARD_NAME": "单条集客专线故障事件",
+  "NE_LOCATION": "62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+  "EFFECT_CIRCUIT_LEVEL": "1403",
+  "MAINTAIN_TEAM_SOURCE": "1",
+  "CITY_ID": "350600",
+  "REMOTE_OBJECT_CLASS": "87002",
+  "MAIN_NET_SORT_THREE": "SSAP",
+  "CUSTOMER_SERVICE_LEVEL": "1",
+  "CREATION_EVENT_TIME": "2026-02-09 14:04:59",
+  "FIRST_EVENT_TIME": "2026-02-09 14:03:50",
+  "SERV_EFFECT_TYPE": "政企业务-集团专线"
+};
+            
+            document.getElementById('esSource').value = JSON.stringify(sampleData, null, 2);
+        }
+    </script>
+</body>
+</html>

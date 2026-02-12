@@ -1,4 +1,4 @@
-# app.py
+ # app.py
 from datetime import datetime
 from http import client
 
@@ -21,6 +21,7 @@ from routes.excel2word_routes import excel2word_bp
 from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
 from routes.markdown_upload_routes import markdown_upload_bp
 from routes.schedule_config_routes import schedule_config_bp
+from routes.kafka_generator_routes import kafka_generator_bp
 from routes.sql_routes import sql_bp
 from routes.event_routes import event_bp
 from routes.word_to_md_routes import word_to_md_bp
@@ -53,6 +54,7 @@ def create_app(config_name='default'):
     app.register_blueprint(word_to_md_bp)
     app.register_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
     app.register_blueprint(schedule_config_bp)
+    app.register_blueprint(kafka_generator_bp)
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
@@ -78,6 +80,6 @@ def index():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5004
+    port = int(os.environ.get("PORT", 5002))  # 优先使用环境变量，否则默认 5002
     logger.info(f"启动Flask应用，端口: {port}")
     app.run(debug=True, host='0.0.0.0', port=port)

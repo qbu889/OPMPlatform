@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES数据JSON修复工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h2><i class="fas fa-tools me-2"></i>ES数据JSON修复工具</h2>
+                <p class="text-muted">专门修复ES数据中的JSON格式问题</p>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-edit me-2"></i>输入您的ES数据</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea id="inputData" class="form-control" rows="15" placeholder="请粘贴您的ES数据..."></textarea>
+                        <div class="mt-3">
+                            <button onclick="fixData()" class="btn btn-primary">
+                                <i class="fas fa-magic me-1"></i>自动修复
+                            </button>
+                            <button onclick="clearData()" class="btn btn-secondary ms-2">
+                                <i class="fas fa-trash me-1"></i>清空
+                            </button>
+                            <button onclick="loadTestData()" class="btn btn-info ms-2">
+                                <i class="fas fa-flask me-1"></i>加载测试数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4" id="analysisCard" style="display: none;">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-search me-2"></i>问题分析</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre id="analysisOutput" class="mb-0"></pre>
+                    </div>
+                </div>
+                
+                <div class="card mb-4" id="resultCard" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-check-circle me-2"></i>修复结果</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre id="resultOutput" class="mb-3"></pre>
+                        <button onclick="copyResult()" class="btn btn-success">
+                            <i class="fas fa-copy me-1"></i>复制修复后的数据
+                        </button>
+                        <button onclick="useInGenerator()" class="btn btn-primary ms-2">
+                            <i class="fas fa-arrow-right me-1"></i>在生成器中使用
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>使用说明：</h6>
+                    <ul class="mb-0">
+                        <li>粘贴您的ES数据到上方文本框</li>
+                        <li>点击"自动修复"按钮处理数据</li>
+                        <li>如果修复成功，可以复制结果或直接在生成器中使用</li>
+                        <li>如仍有问题，会显示详细的错误分析</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fixData() {
+            const inputData = document.getElementById('inputData').value.trim();
+            
+            if (!inputData) {
+                alert('请先输入数据');
+                return;
+            }
+            
+            console.log('开始修复数据...');
+            
+            try {
+                // 首先尝试直接解析
+                const parsed = JSON.parse(inputData);
+                showSuccess(inputData, '数据已经是有效的JSON格式！');
+                return;
+            } catch (error) {
+                console.log('直接解析失败，开始修复:', error.message);
+                showAnalysis(error.message);
+            }
+            
+            // 执行修复
+            const fixedData = preprocessData(inputData);
+            
+            try {
+                // 验证修复后的数据
+                const parsed = JSON.parse(fixedData);
+                showSuccess(fixedData, '数据修复成功！');
+            } catch (error) {
+                console.log('修复后仍然有问题:', error.message);
+                showAnalysis('修复后仍然存在问题: ' + error.message);
+                document.getElementById('resultCard').style.display = 'none';
+            }
+        }
+        
+        function preprocessData(rawData) {
+            console.log('开始预处理数据...');
+            let processed = rawData;
+            let analysis = [];
+            
+            // 1. 移除BOM标记
+            if (processed.charCodeAt(0) === 0xFEFF) {
+                processed = processed.slice(1);
+                analysis.push('✓ 移除了BOM标记');
+            }
+            
+            // 2. 处理三重引号
+            const tripleQuoteCount = (processed.match(/"""/g) || []).length;
+            if (tripleQuoteCount > 0) {
+                processed = processed.replace(/"""/g, '"');
+                analysis.push(`✓ 处理了 ${tripleQuoteCount} 个三重引号`);
+            }
+            
+            // 3. 处理嵌套JSON字符串中的未转义引号（新增）
+            const nestedJsonPattern = /"([^"]*?)":"(\{[^}]*\})"/g;
+            let nestedMatches = [];
+            let match;
+            
+            // 收集所有嵌套JSON匹配项
+            while ((match = nestedJsonPattern.exec(processed)) !== null) {
+                nestedMatches.push({
+                    fullMatch: match[0],
+                    key: match[1],
+                    value: match[2],
+                    position: match.index
+                });
+            }
+            
+            if (nestedMatches.length > 0) {
+                console.log(`发现 ${nestedMatches.length} 个嵌套JSON字符串:`);
+                nestedMatches.forEach((item, index) => {
+                    console.log(`  ${index + 1}. 字段 "${item.key}" 包含嵌套JSON`);
+                });
+                
+                // 转义嵌套JSON中的双引号
+                processed = processed.replace(nestedJsonPattern, (match, key, value) => {
+                    // 转义value中的双引号
+                    const escapedValue = value.replace(/"/g, '\\"');
+                    return `"${key}":"${escapedValue}"`;
+                });
+                
+                analysis.push(`✓ 处理了 ${nestedMatches.length} 个嵌套JSON字符串`);
+            }
+            
+            // 4. 处理HTML实体
+            const htmlEntities = {
+                '&quot;': '"',
+                '&amp;': '&',
+                '&lt;': '<',
+                '&gt;': '>',
+                '&nbsp;': ' ',
+                '&#39;': "'"
+            };
+            
+            Object.keys(htmlEntities).forEach(entity => {
+                const count = (processed.match(new RegExp(entity, 'g')) || []).length;
+                if (count > 0) {
+                    processed = processed.replace(new RegExp(entity, 'g'), htmlEntities[entity]);
+                    analysis.push(`✓ 处理了 ${count} 个 '${entity}' HTML实体`);
+                }
+            });
+            
+            // 5. 处理控制字符
+            let controlCharsFound = [];
+            for (let i = 0; i < processed.length; i++) {
+                const charCode = processed.charCodeAt(i);
+                if (charCode < 32 && ![10, 13, 9].includes(charCode)) {
+                    controlCharsFound.push({
+                        position: i,
+                        code: charCode,
+                        char: processed[i]
+                    });
+                }
+            }
+            
+            if (controlCharsFound.length > 0) {
+                analysis.push(`✓ 发现并移除了 ${controlCharsFound.length} 个控制字符`);
+                processed = processed.replace(/[\x00-\x1F\x7F]/g, '');
+            }
+            
+            // 6. 处理多余的转义字符
+            const escapePatterns = [
+                [/\\\"/g, '"'],
+                [/\\\\/g, '\\']
+            ];
+            
+            escapePatterns.forEach(([pattern, replacement]) => {
+                const matches = processed.match(pattern);
+                if (matches) {
+                    processed = processed.replace(pattern, replacement);
+                    analysis.push(`✓ 处理了 ${matches.length} 个转义字符模式`);
+                }
+            });
+            
+            // 7. 标准化换行符
+            processed = processed.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            // 8. 移除行尾空格
+            processed = processed.split('\n').map(line => line.trimEnd()).join('\n');
+            
+            // 9. 处理尾随逗号
+            const trailingCommaCount = (processed.match(/,\s*([}\]])/g) || []).length;
+            if (trailingCommaCount > 0) {
+                processed = processed.replace(/,\s*([}\]])/g, '$1');
+                analysis.push(`✓ 处理了 ${trailingCommaCount} 个尾随逗号`);
+            }
+            
+            // 显示分析结果
+            document.getElementById('analysisOutput').textContent = analysis.join('\n');
+            document.getElementById('analysisCard').style.display = 'block';
+            
+            return processed;
+        }
+        
+        function showAnalysis(message) {
+            document.getElementById('analysisOutput').textContent = message;
+            document.getElementById('analysisCard').style.display = 'block';
+        }
+        
+        function showSuccess(data, message) {
+            document.getElementById('resultOutput').textContent = data;
+            document.getElementById('resultCard').style.display = 'block';
+            
+            // 更新分析卡片
+            const analysis = document.getElementById('analysisOutput');
+            analysis.textContent = message + '\n\n修复后的数据可以正常使用！';
+            document.getElementById('analysisCard').className = 'card mb-4';
+            document.getElementById('analysisCard').querySelector('.card-header').className = 'card-header bg-success text-white';
+        }
+        
+        function clearData() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('analysisCard').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'none';
+        }
+        
+        function copyResult() {
+            const resultText = document.getElementById('resultOutput').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(resultText).then(() => {
+                    alert('已复制到剪贴板！');
+                });
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = resultText;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('已复制到剪贴板！');
+            }
+        }
+        
+        function useInGenerator() {
+            const resultText = document.getElementById('resultOutput').textContent;
+            // 存储到localStorage，然后跳转到生成器页面
+            localStorage.setItem('fixedEsData', resultText);
+            window.location.href = '/kafka-generator';
+        }
+        
+        function loadTestData() {
+            const testData = `{
+    "took": 5,
+    "timed_out": false,
+    "_shards": {
+        "total": 5,
+        "successful": 5,
+        "skipped": 0,
+        "failed": 0
+    },
+    "hits": {
+        "total": {
+            "value": 1,
+            "relation": "eq"
+        },
+        "max_score": 1.0,
+        "hits": [
+            {
+                "_index": "test_index",
+                "_type": "_doc",
+                "_id": "1",
+                "_score": 1.0,
+                "_source": {
+                    "name": "测试数据",
+                    "description": "包含特殊字符的数据""",
+                    "nested_json": "{"key1":"value1","key2":"value2"}",
+                    "complex_field": "包含"引号"的字符串"
+                }
+            }
+        ]
+    }
+}`;
+            document.getElementById('inputData').value = testData;
+        }
+        
+        // 页面加载完成后检查是否有传递的数据
+        window.addEventListener('load', function() {
+            const storedData = localStorage.getItem('fixedEsData');
+            if (storedData) {
+                document.getElementById('inputData').value = storedData;
+                localStorage.removeItem('fixedEsData');
+                fixData();
+            }
+        });
+    </script>
+</body>
+</html>
