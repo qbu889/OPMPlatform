@@ -6,7 +6,7 @@ import logging
 event_bp = Blueprint('event', __name__)
 logger = logging.getLogger(__name__)
 
-@event_bp.route('/clean-event-page')
+@event_bp.route('/clean-event-page', methods=['GET', 'POST'])
 def clean_event_page():
     """事件数据清洗页面"""
     return render_template('clean_event.html')

@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - OPM系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- 系统概览横幅 -->
+    <div class="hero-banner bg-gradient text-white text-center py-5 mb-5 animate-fade-in-up">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="mb-4">
+                        <i class="fas fa-rocket" style="font-size: 4rem; opacity: 0.9;"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold mb-3">诺基亚OPM系统</h1>
+                    <p class="lead mb-4">一站式文档处理与管理系统</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <span class="badge badge-modern badge-primary">
+                            <i class="fas fa-check-circle me-1"></i>高效便捷
+                        </span>
+                        <span class="badge badge-modern badge-success">
+                            <i class="fas fa-lock me-1"></i>安全可靠
+                        </span>
+                        <span class="badge badge-modern badge-warning">
+                            <i class="fas fa-bolt me-1"></i>极速处理
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-4">
+            <!-- 主要功能区域 -->
+            <div class="col-lg-8">
+                <div class="row g-4">
+                    <!-- 事件数据清洗 -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-broom text-info" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">事件数据清洗</h5>
+                                <p class="card-text text-muted small">清洗和格式化事件数据，生成标准JSON格式</p>
+                                <button class="btn btn-outline-info btn-sm" onclick="switchToTab('clean-event-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SQL工具 -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-database text-success" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">SQL ID格式化</h5>
+                                <p class="card-text text-muted small">快速格式化ID列表用于SQL查询</p>
+                                <button class="btn btn-outline-success btn-sm" onclick="switchToTab('sql-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Word转Markdown -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fab fa-markdown text-warning" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">Word转Markdown</h5>
+                                <p class="card-text text-muted small">将Word文档转换为Markdown格式</p>
+                                <button class="btn btn-outline-warning btn-sm" onclick="switchToTab('word2md-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Markdown转Word -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-file-word text-primary" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">Markdown转Word</h5>
+                                <p class="card-text text-muted small">将Markdown文件转换为Word文档</p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="switchToTab('markdown-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kafka消息生成器 -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-stream text-purple" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">Kafka消息生成</h5>
+                                <p class="card-text text-muted small">根据ES数据生成Kafka消息</p>
+                                <button class="btn btn-outline-purple btn-sm" onclick="switchToTab('kafka-generator-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 排班配置 -->
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm card-hover">
+                            <div class="card-body text-center">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-calendar-alt text-danger" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h5 class="card-title">排班配置管理</h5>
+                                <p class="card-text text-muted small">智能排班系统，自动化人员调度</p>
+                                <button class="btn btn-outline-danger btn-sm" onclick="switchToTab('schedule-config-tab')">
+                                    <i class="fas fa-arrow-right me-1"></i>立即使用
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 2rem;">
+                    <!-- 快捷操作 -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                            <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>快捷操作</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary btn-animated" onclick="quickAction('clean-event')">
+                                    <i class="fas fa-broom me-2"></i>数据清洗
+                                </button>
+                                <button class="btn btn-success btn-animated" onclick="quickAction('sql-format')">
+                                    <i class="fas fa-database me-2"></i>SQL格式化
+                                </button>
+                                <button class="btn btn-info btn-animated" onclick="quickAction('word-to-md')">
+                                    <i class="fab fa-markdown me-2"></i>Word转MD
+                                </button>
+                                <button class="btn btn-warning btn-animated" onclick="quickAction('md-to-word')">
+                                    <i class="fas fa-file-word me-2"></i>MD转Word
+                                </button>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- 系统状态 -->
+                            <div class="stats-container">
+                                <h6 class="text-muted mb-3"><i class="fas fa-chart-line me-2"></i>系统状态</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>服务状态</span>
+                                    <span class="badge bg-success rounded-pill">正常运行</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>版本号</span>
+                                    <span class="badge bg-info rounded-pill">v2.1.0</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>最后更新</span>
+                                    <span class="text-muted small">2026-02-24</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 使用统计 -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>使用统计</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>今日处理量</span>
+                                    <strong>1,247</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>本周活跃用户</span>
+                                    <strong>86</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>系统响应时间</span>
+                                    <strong>0.23s</strong>
+                                </div>
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div class="progress-bar bg-info" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 切换标签页功能
+function switchToTab(tabId) {
+    // 模拟点击对应标签
+    const tabButton = document.getElementById(tabId);
+    if (tabButton) {
+        const tab = new bootstrap.Tab(tabButton);
+        tab.show();
+        
+        // 平滑滚动到标签内容
+        setTimeout(() => {
+            const tabContent = document.querySelector('.tab-content');
+            if (tabContent) {
+                OPM.smoothScrollTo(tabContent, 80);
+            }
+        }, 100);
+    }
+}
+
+// 快捷操作功能
+function quickAction(action) {
+    switch(action) {
+        case 'clean-event':
+            switchToTab('clean-event-tab');
+            break;
+        case 'sql-format':
+            switchToTab('sql-tab');
+            break;
+        case 'word-to-md':
+            switchToTab('word2md-tab');
+            break;
+        case 'md-to-word':
+            switchToTab('markdown-tab');
+            break;
+        default:
+            OPM.notify('功能即将上线', 'info');
+    }
+}
+
+// 页面加载完成后的一些初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加入场动画延迟
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+    
+    // 为功能图标添加悬停效果
+    const featureIcons = document.querySelectorAll('.feature-icon');
+    featureIcons.forEach(icon => {
+        icon.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        icon.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+});
+</script>
+
+<style>
+.hero-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+}
+
+.feature-icon {
+    transition: all 0.3s ease;
+}
+
+.stat-item .progress {
+    background-color: var(--bg-accent);
+}
+
+.bg-purple {
+    background-color: #8b5cf6 !important;
+}
+
+.text-purple {
+    color: #8b5cf6 !important;
+}
+
+.btn-outline-purple {
+    color: #8b5cf6;
+    border-color: #8b5cf6;
+}
+
+.btn-outline-purple:hover {
+    background-color: #8b5cf6;
+    border-color: #8b5cf6;
+}
+</style>
+{% endblock %}

@@ -1,554 +1,386 @@
 <!-- templates/index3.html -->
 {% extends "base.html" %}
 
-{% block title %}首页 - 转换系统{% endblock %}
+{% block title %}首页 - OPM系统{% endblock %}
 
 {% block content %}
-    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-        <!--    <li class="nav-item" role="presentation">-->
-        <!--        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button"-->
-        <!--                role="tab">文档转换-->
-        <!--        </button>-->
-        <!--    </li>-->
-        <!--    <li class="nav-item" role="presentation">-->
-        <!--        <button class="nav-link" id="formatter-tab" data-bs-toggle="tab" data-bs-target="#formatter" type="button"-->
-        <!--                role="tab">文档格式化-->
-        <!--        </button>-->
-        <!--    </li>-->
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="clean-event-tab" data-bs-toggle="tab" data-bs-target="#clean-event"
-                    type="button"
-                    role="tab">事件数据清洗
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="sql-tab" data-bs-toggle="tab" data-bs-target="#sql" type="button" role="tab">
-                SQL工具
-            </button>
-        </li>
-        <!-- 新增Excel转Word Tab -->
-        <!--    <li class="nav-item" role="presentation">-->
-        <!--        <button class="nav-link" id="excel2word-tab" data-bs-toggle="tab" data-bs-target="#excel2word" type="button"-->
-        <!--                role="tab">Excel转Word-->
-        <!--        </button>-->
-        <!--    </li>-->
-
-        <!-- 在标签页列表中添加 -->
-        <!--    <li class="nav-item" role="presentation">-->
-        <!--        <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">-->
-        <!--            <i class="fas fa-comments me-1"></i>AI助手-->
-        <!--        </button>-->
-        <!--    </li>-->
-        <!-- Tab 标签 -->
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="word2md-tab" data-bs-toggle="tab" data-bs-target="#word2md" type="button"
-                    role="tab">Word转Markdown
-            </button>
-        </li>
-
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="markdown-tab" data-bs-toggle="tab" data-bs-target="#markdown" type="button"
-                    role="tab">Markdown转Word
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="kafka-generator-tab" data-bs-toggle="tab" data-bs-target="#kafka-generator"
-                    type="button" role="tab">
-                Kafka消息生成器
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="es-to-kafka-tab" data-bs-toggle="tab" data-bs-target="#es-to-kafka" type="button" role="tab">
-                ES转Kafka消息
-            </button>
-        </li>
-
-<!--{#        <li class="nav-item" role="presentation">#}-->
-<!--{#            <button class="nav-link" id="excel2md-tab" data-bs-toggle="tab" data-bs-target="#excel2md" type="button"#}-->
-<!--{#                    role="tab">Excel转Markdown#}-->
-<!--{#            </button>#}-->
-<!--{#        </li>#}-->
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="schedule-config-tab" data-bs-toggle="tab" data-bs-target="#schedule-config"
-                    type="button" role="tab">
-                <i class="fas fa-calendar-alt me-1"></i>排班配置
-            </button>
-        </li>
-
-
-
-    </ul>
-
-    <div class="tab-content" id="mainTabsContent">
-        <!-- 文档转换 Tab -->
-        <div class="tab-pane fade show active" id="home" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <h2>系统介绍</h2>
-                    <p>本系统用于将普通Word文档转换为符合5.功能需求格式的Demo文档。</p>
-
-                    <h3>使用步骤</h3>
-                    <ol>
-                        <li>下载标准Demo模板</li>
-                        <li>上传并验证Demo格式</li>
-                        <li>上传待转换文档</li>
-                        <li>下载转换后的文档</li>
-                    </ol>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>操作指引</h5>
+    <div class="container-fluid px-0">
+        <!-- 系统概览横幅 -->
+        <div class="hero-banner bg-gradient text-white text-center py-5 mb-5 animate-fade-in-up">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="mb-4">
+                            <i class="fas fa-rocket" style="font-size: 4rem; opacity: 0.9;"></i>
                         </div>
-                        <div class="card-body">
-                            {% if demo_exists %}
-                                <p class="text-success">✓ Demo模板已上传</p>
-                            {% else %}
-                                <p class="text-warning">⚠ 需要先上传Demo模板</p>
-                            {% endif %}
-
-                            <a href="/download-demo-template" class="btn btn-primary mb-2">下载Demo模板</a>
-                            <a href="/upload-demo-page" class="btn btn-secondary mb-2">上传Demo模板</a>
-                            <a href="/convert-page" class="btn btn-info">转换文档</a>
+                        <h1 class="display-4 fw-bold mb-3">诺基亚OPM系统</h1>
+                        <p class="lead mb-4">一站式文档处理与管理系统</p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <span class="badge badge-modern badge-primary">
+                            <i class="fas fa-check-circle me-1"></i>高效便捷
+                        </span>
+                            <span class="badge badge-modern badge-success">
+                            <i class="fas fa-lock me-1"></i>安全可靠
+                        </span>
+                            <span class="badge badge-modern badge-warning">
+                            <i class="fas fa-bolt me-1"></i>极速处理
+                        </span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 文档格式化 Tab -->
-        <div class="tab-pane fade" id="formatter" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <h2>文档格式化工具</h2>
-                    <p>按照标准模板格式化文档，使其符合规范要求。</p>
-
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>功能说明</h5>
-                            <ul>
-                                <li>自动识别文档中的序号格式</li>
-                                <li>统一加粗规则</li>
-                                <li>标准化字号大小</li>
-                                <li>优化段落换行</li>
-                            </ul>
-
-                            {% if demo_exists %}
-                                <a href="/document-formatter" class="btn btn-primary">开始格式化文档</a>
-                            {% else %}
-                                <div class="alert alert-warning">
-                                    <p>请先上传Demo模板以启用格式化功能</p>
-                                    <a href="/upload-demo-page" class="btn btn-secondary">上传Demo模板</a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>使用指南</h5>
-                        </div>
-                        <div class="card-body">
-                            <ol>
-                                <li>确保已上传标准Demo模板</li>
-                                <li>点击"开始格式化文档"按钮</li>
-                                <li>上传需要格式化的文档</li>
-                                <li>下载格式化后的文档</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SQL工具 Tab -->
-        <div class="tab-pane fade" id="sql" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h2>SQL ID格式化工具</h2>
-                    <p>快速格式化ID列表用于SQL查询</p>
-
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="sqlIds" class="form-label">请输入需要格式化的ID（每行一个）:</label>
-                                <textarea class="form-control" id="sqlIds" rows="4" placeholder="例如：
-FJ-076-20251202-0322
-FJ-076-20251202-0323"></textarea>
-                            </div>
-                            <button class="btn btn-success" onclick="formatSqlIds()">格式化ID</button>
-
-                            <div id="sqlResult" class="mt-3" style="display: none;">
-                                <div class="alert alert-info">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h5 class="mb-0">格式化结果:</h5>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="copyResult()">复制结果</button>
+        <div class="container">
+            <div class="row g-4">
+                <!-- 主要功能区域 -->
+                <div class="col-lg-8">
+                    <div class="row g-4">
+                        <!-- 事件数据清洗 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-broom text-info" style="font-size: 2.5rem;"></i>
                                     </div>
-                                    <pre id="formattedOutput" class="bg-light p-2"></pre>
+                                    <h5 class="card-title">事件数据清洗</h5>
+                                    <p class="card-text text-muted small">清洗和格式化事件数据，生成标准JSON格式</p>
+                                    <button class="btn btn-outline-info btn-sm"
+                                            onclick="window.location.href='/clean-event-page'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SQL工具 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-database text-success" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">SQL ID格式化</h5>
+                                    <p class="card-text text-muted small">快速格式化ID列表用于SQL查询</p>
+                                    <
+                                    <button class="btn btn-outline-success btn-sm"
+                                            onclick="window.location.href='/sql-formatter'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Word转Markdown -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fab fa-markdown text-warning" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">Word转Markdown</h5>
+                                    <p class="card-text text-muted small">将Word文档转换为Markdown格式</p>
+                                    <button class="btn btn-outline-warning btn-sm"
+                                            onclick="window.location.href='/word-to-md'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Markdown转Word -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-file-word text-primary" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">Markdown转Word</h5>
+                                    <p class="card-text text-muted small">将Markdown文件转换为Word文档</p>
+                                    <button class="btn btn-outline-primary btn-sm"
+                                            onclick="window.location.href='/markdown-upload'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kafka消息生成器 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-stream text-purple" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">Kafka消息生成</h5>
+                                    <p class="card-text text-muted small">根据ES数据生成Kafka消息</p>
+                                    <button class="btn btn-outline-purple btn-sm"
+                                            onclick="window.location.href='/kafka-generator'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 排班配置 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-calendar-alt text-danger" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">排班配置管理</h5>
+                                    <p class="card-text text-muted small">智能排班系统，自动化人员调度</p>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            onclick="window.location.href='/schedule-config'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="clean-event" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h2>事件数据清洗工具</h2>
-                    <p>清洗和格式化事件数据，生成标准格式的JSON数据</p>
 
-                    <div class="card">
-                        <div class="card-body">
-                            <iframe src="/clean-event-page" width="100%" height="600" frameborder="0"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 新增Excel转Word Tab内容 -->
-        <div class="tab-pane fade" id="excel2word" role="tabpanel">
-            {% include 'excel2word_content.html' %}
-        </div>
-        <!-- 在 tab-content 中添加聊天区域 -->
-        <div class="tab-pane fade" id="chat" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-robot me-2"></i>AI智能助手</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <iframe src="/chat" width="100%" height="600" frameborder="0"
-                                    style="border-radius: 0 0 5px 5px;"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                <!-- 侧边栏 -->
+                <div class="col-lg-4">
+                    <div class="sticky-top" style="top: 2rem;">
+                        <!-- 快捷操作 -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-gradient text-white"
+                                 style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>快捷操作</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary btn-animated" onclick="quickAction('clean-event')">
+                                        <i class="fas fa-broom me-2"></i>数据清洗
+                                    </button>
+                                    <button class="btn btn-success btn-animated" onclick="quickAction('sql-format')">
+                                        <i class="fas fa-database me-2"></i>SQL格式化
+                                    </button>
+                                    <button class="btn btn-info btn-animated" onclick="quickAction('word-to-md')">
+                                        <i class="fab fa-markdown me-2"></i>Word转MD
+                                    </button>
+                                    <button class="btn btn-warning btn-animated" onclick="quickAction('md-to-word')">
+                                        <i class="fas fa-file-word me-2"></i>MD转Word
+                                    </button>
+                                </div>
 
-        <!-- 在 index3.html 的 Markdown转Word Tab 中添加正确的页面引用 -->
-        <div class="tab-pane fade" id="markdown" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <h2>Markdown转Word工具</h2>
-                    <p>将Markdown文件转换为标准Word文档格式。</p>
-                    <div class="card">
-                        <div class="card-body">
-                            <iframe src="/markdown-upload" width="100%" height="600" frameborder="0"></iframe>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>使用说明</h5>
-                        </div>
-                        <div class="card-body">
-                            <ol>
-                                <li>选择要转换的Markdown文件</li>
-                                <li>点击转换按钮</li>
-                                <li>下载生成的Word文档</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Word转Markdown内容 -->
-        <div class="tab-pane fade" id="word2md" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <h2>Word转Markdown工具</h2>
-                    <p>上传Word文档，转换为Markdown文本。</p>
-                    <div class="card">
-                        <div class="card-body p-3">
-                            <iframe src="/word-to-md" width="100%" height="600" frameborder="0"></iframe>
-                        </div>
-                    </div>
-                </div>
+                                <hr class="my-4">
 
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>使用说明</h5>
+                                <!-- 系统状态 -->
+                                <div class="stats-container">
+                                    <h6 class="text-muted mb-3"><i class="fas fa-chart-line me-2"></i>系统状态</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>服务状态</span>
+                                        <span class="badge bg-success rounded-pill">正常运行</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>版本号</span>
+                                        <span class="badge bg-info rounded-pill">v2.1.0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>最后更新</span>
+                                        <span class="text-muted small">2026-02-24</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <ol>
-                                <li>选择需要转换的Word文件（.docx）</li>
-                                <li>点击上传并转换</li>
-                                <li>查看转换后的Markdown文本</li>
-                                <li>复制或保存转换结果</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- 这里闭合 word2md tab-pane -->
-        <div class="tab-pane fade" id="kafka-generator" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h2>Kafka消息生成器</h2>
-                    <p>根据ES数据生成对应的Kafka消息</p>
-                    <div class="card">
-                        <div class="card-body">
-                            <iframe src="/kafka-generator/" width="100%" height="800" frameborder="0"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="es-to-kafka" role="tabpanel">
-        <div class="row mt-4">
-            <div class="col-12">
-                <h2>ES转Kafka消息生成器</h2>
-                <p>根据ES数据生成Kafka消息</p>
-                <div class="card">
-                    <div class="card-body">
-                        <iframe src="/es-to-kafka" width="100%" height="600" frameborder="0"></iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
-</div>
 
-    <div class="tab-pane fade" id="schedule-config" role="tabpanel">
-        <div class="row mt-4">
-            <div class="col-12">
-                <h2>排班配置管理系统</h2>
-                <p>管理排班相关人员配置、请假记录和生成排班表</p>
-                <div class="card">
-                    <div class="card-body">
-                        <iframe src="/schedule-config/" width="100%" height="800" frameborder="0"></iframe>
+                        <!-- 使用统计 -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>使用统计</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="stat-item mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>今日处理量</span>
+                                        <strong>1,247</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-item mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>本周活跃用户</span>
+                                        <strong>86</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="d-flex justify-content-between">
+                                        <span>系统响应时间</span>
+                                        <strong>0.23s</strong>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar bg-info" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
+    <script>
+        // 切换标签页功能
+        function switchToTab(tabId) {
+            // 检查是否存在tab按钮
+            const tabButton = document.getElementById(tabId);
+            if (tabButton) {
+                try {
+                    // 尝试使用Bootstrap Tab组件
+                    const tab = new bootstrap.Tab(tabButton);
+                    tab.show();
 
-<script>
-function formatSqlIds() {
-    const idsText = document.getElementById('sqlIds').value;
-    const resultDiv = document.getElementById('sqlResult');
-    const outputPre = document.getElementById('formattedOutput');
+                    // 平滑滚动到标签内容
+                    setTimeout(() => {
+                        const tabContent = document.querySelector('.tab-content');
+                        if (tabContent) {
+                            OPM.smoothScrollTo(tabContent, 80);
+                        }
+                    }, 100);
+                } catch (e) {
+                    // 如果Bootstrap Tab不可用，直接跳转到对应锚点
+                    window.location.hash = tabId;
+                    // 或者模拟点击
+                    tabButton.click();
+                }
+            } else {
+                console.error('未找到ID为 ' + tabId + ' 的标签按钮');
+                // 尝试查找对应的tab面板并显示
+                const tabPanel = document.getElementById(tabId.replace('-tab', ''));
+                if (tabPanel) {
+                    // 显示对应的tab面板
+                    const allTabs = document.querySelectorAll('.tab-pane');
+                    allTabs.forEach(tab => tab.classList.remove('show', 'active'));
+                    tabPanel.classList.add('show', 'active');
 
-    // 按行分割并清理空白字符
-    const idsList = idsText.split('\n').filter(id => id.trim());
-
-    if (idsList.length === 0) {
-        alert('请输入至少一个ID');
-        return;
-    }
-
-    // 格式化为SQL格式
-    const formattedIds = idsList.map(id => `'${id.trim()}'`);
-
-    let result;
-    if (idsList.length === 1) {
-        result = formattedIds[0];
-    } else {
-        result = formattedIds.join(',\n');
-    }
-
-    outputPre.textContent = result;
-    resultDiv.style.display = 'block';
-}
-
-function copyResult() {
-    // 正确的目标元素ID是 'formattedOutput'，不是 'result-content'
-    const element = document.getElementById('formattedOutput');
-    if (!element) {
-        console.error('复制目标元素 #formattedOutput 未找到');
-        showMessage('复制目标未找到', 'danger');
-        return;
-    }
-
-    const text = element.textContent || '';
-
-    // 检查是否支持现代 clipboard API
-    if (navigator.clipboard && window.isSecureContext) {
-        // 使用现代 API
-        navigator.clipboard.writeText(text)
-            .then(() => {
-                showMessage('复制成功', 'success');
-            })
-            .catch(err => {
-                console.error('Clipboard API 复制失败:', err);
-                // 降级到传统方法
-                fallbackCopyTextToClipboard(text);
-            });
-    } else {
-        // 不支持 Clipboard API 或非安全上下文，使用传统方法
-        console.warn('Clipboard API 不可用，使用传统复制方法');
-        fallbackCopyTextToClipboard(text);
-    }
-
-}
-function showMessage(message, type = 'info') {
-    // 创建 Bootstrap alert 消息
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show`;
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    // 添加到页面并自动移除
-    const container = document.querySelector('.container');
-    container.insertBefore(alert, container.firstChild);
-
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const copyBtn = document.getElementById('copy-btn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', copyResult);
-    }
-});
-
-function fallbackCopyTextToClipboard(text) {
-    try {
-        // 创建临时 textarea 元素
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-
-        // 设置样式使其不可见但可选择
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        // ... 其他样式设置
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        // 执行复制命令
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-
-        if (successful) {
-            showMessage('复制成功', 'success');
-        } else {
-            showMessage('复制失败，请手动复制', 'danger');
-        }
-    } catch (err) {
-        console.error('传统复制方法失败:', err);
-        showMessage('复制失败，请手动复制内容', 'danger');
-
-        // 最后备选方案
-        alert('无法自动复制，请手动选择以下内容进行复制：\n\n' + text);
-    }
-}
-
-
-function showCopySuccess() {
-    // 创建提示元素
-    let notification = document.getElementById('copy-notification');
-    if (!notification) {
-        notification = document.createElement('div');
-        notification.id = 'copy-notification';
-        notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #28a745;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 4px;
-        z-index: 9999;
-        opacity: 0;
-        transition: opacity 0.3s;
-    `;
-        document.body.appendChild(notification);
-    }
-
-    notification.textContent = '已复制到剪贴板!';
-    notification.style.opacity = '1';
-
-    // 3秒后淡出提示
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+                    // 高亮对应的导航项
+                    const navLinks = document.querySelectorAll('.nav-link');
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    const correspondingNavLink = Array.from(navLinks).find(link =>
+                        link.getAttribute('data-bs-target') === '#' + tabId.replace('-tab', '')
+                    );
+                    if (correspondingNavLink) {
+                        correspondingNavLink.classList.add('active');
+                    }
+                }
             }
-        }, 300);
-    }, 3000);
-}
-
-document.getElementById('kafkaForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const roomId = document.getElementById('roomId').value.trim();
-    const machineRoomInfo = document.getElementById('machineRoomInfo').value.trim();
-
-    if (!roomId || !machineRoomInfo) {
-        showError('请输入完整的ROOM_ID和MACHINE_ROOM_INFO');
-        return;
-    }
-
-    showLoading(true);
-    hideError();
-
-    try {
-        const response = await fetch('/kafka/generate_kafka_msg', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `room_id=${encodeURIComponent(roomId)}&machine_room_info=${encodeURIComponent(machineRoomInfo)}`
-        });
-
-        const result = await response.json();
-        if (result.code === 200) {
-            document.getElementById('kafkaMsgOutput').textContent = result.data;
-            document.getElementById('result').style.display = 'block';
-        } else {
-            showError(result.msg);
         }
-    } catch (err) {
-        showError('请求失败，请稍后重试');
-    } finally {
-        showLoading(false);
-    }
-});
 
-function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'block' : 'none';
-}
+        // 快捷操作功能
+        function quickAction(action) {
+            switch (action) {
+                case 'clean-event':
+                    switchToTab('clean-event-tab');
+                    break;
+                case 'sql-format':
+                    switchToTab('sql-tab');
+                    break;
+                case 'word-to-md':
+                    switchToTab('word2md-tab');
+                    break;
+                case 'md-to-word':
+                    switchToTab('markdown-tab');
+                    break;
+                default:
+                    OPM.notify('功能即将上线', 'info');
+            }
+        }
 
-function showError(message) {
-    const errorDiv = document.getElementById('error');
-    errorDiv.textContent = message;
-    errorDiv.style.display = 'block';
-    document.getElementById('result').style.display = 'none';
-}
+        // 页面加载完成后的一些初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 添加入场动画延迟
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
 
-function hideError() {
-    document.getElementById('error').style.display = 'none';
-}
+            // 为功能图标添加悬停效果
+            const featureIcons = document.querySelectorAll('.feature-icon');
+            featureIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', function () {
+                    this.style.transform = 'scale(1.1) rotate(5deg)';
+                });
 
-function fallbackCopyTextToClipboard(text) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    alert('已复制到剪贴板!');
-}
+                icon.addEventListener('mouseleave', function () {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                });
+            });
 
-</script>
+            // 修复立即使用按钮点击事件
+            const quickButtons = document.querySelectorAll('[onclick^="switchToTab"]');
+            quickButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const tabId = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    switchToTab(tabId);
+                });
+            });
+
+            // 修复快捷操作按钮
+            const actionButtons = document.querySelectorAll('[onclick^="quickAction"]');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    quickAction(action);
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+
+        .stat-item .progress {
+            background-color: var(--bg-accent);
+        }
+
+        .bg-purple {
+            background-color: #8b5cf6 !important;
+        }
+
+        .text-purple {
+            color: #8b5cf6 !important;
+        }
+
+        .btn-outline-purple {
+            color: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+
+        .btn-outline-purple:hover {
+            background-color: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+    </style>
 {% endblock %}
