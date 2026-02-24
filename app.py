@@ -12,7 +12,7 @@ from flask import Flask, render_template, request, jsonify
 import os
 import logging
 
-from openai import chat
+# from openai import chat
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from config import config
@@ -80,6 +80,6 @@ def index():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get("PORT", 5002))  # 优先使用环境变量，否则默认 5002
+    port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5002
     logger.info(f"启动Flask应用，端口: {port}")
     app.run(debug=True, host='0.0.0.0', port=port)
