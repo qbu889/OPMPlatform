@@ -3,200 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>排班配置</title>
+    <title>排班配置管理系统 - 诺基亚OPM系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <style>
-        .staff-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            margin: 2px;
-            border-radius: 12px;
-            font-size: 0.8em;
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d6;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #60a5fa;
+
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-accent: #f1f5f9;
+            --bg-card: #ffffff;
+
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+
+            --border-color: #e2e8f0;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+            --transition-fast: 200ms ease;
+            --transition-normal: 300ms ease;
+            --transition-slow: 500ms ease;
         }
 
-        .core-staff {
-            background-color: #dc3545;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            border: none;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background: var(--bg-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-slow);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--bg-accent), #e0f2fe);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all var(--transition-normal);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--transition-slow);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
         }
 
-        .test-staff {
-            background-color: #0d6efd;
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
         }
 
-        .leave-record {
-            border-left: 4px solid #ffc107;
-            padding-left: 15px;
-            margin-bottom: 10px;
-        }
-
-        .full-day-leave {
-            border-left: 4px solid #dc3545;
-        }
-        
-        /* 排班表格样式调整，参考Excel表格 */
-        #scheduleTable {
+        .schedule-table {
             border-collapse: collapse;
             width: 100%;
             font-size: 14px;
+            margin: 1rem 0;
         }
-        
-        #scheduleTable th,
-        #scheduleTable td {
-            border: 1px solid #dee2e6;
-            padding: 8px 12px;
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
             text-align: center;
         }
-        
-        #scheduleTable th {
-            background-color: #212529 !important;
+
+        .schedule-table th {
+            background: var(--bg-card);
+            font-weight: 600;
+        }
+
+        /* 排班表格样式增强 */
+        .schedule-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            margin: 1rem 0;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        /* 标题行样式 - 黑色背景 */
+        .schedule-table thead th {
+            background-color: #000000 !important;
             color: #ffffff !important;
-            font-weight: bold;
+            font-weight: 600;
             position: sticky;
             top: 0;
+            border-color: #000000;
         }
-        
-        #scheduleTable tbody tr:hover {
+
+        /* 表格主体样式 */
+        .schedule-table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        /* 交替行颜色 */
+        .schedule-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .schedule-table tbody tr:nth-child(even) {
             background-color: #f8f9fa;
         }
-        
-        /* 列宽调整 */
-        #scheduleTable th:nth-child(1),
-        #scheduleTable td:nth-child(1) {
-            width: 100px; /* 日期列 */
-        }
-        
-        #scheduleTable th:nth-child(2),
-        #scheduleTable td:nth-child(2) {
-            width: 80px; /* 星期列 */
-        }
-        
-        #scheduleTable th:nth-child(3),
-        #scheduleTable td:nth-child(3) {
-            width: 120px; /* 时段列 */
-        }
-        
-        #scheduleTable th:nth-child(4),
-        #scheduleTable td:nth-child(4) {
-            width: 250px; /* 人员安排列 */
-        }
-        
-        #scheduleTable th:nth-child(5),
-        #scheduleTable td:nth-child(5) {
-            width: 100px; /* 人员类型列 */
-        }
-        
-        #scheduleTable th:nth-child(6),
-        #scheduleTable td:nth-child(6) {
-            width: 80px; /* 角色列 */
-        }
-        
-        /* 备注列样式 - 在JavaScript中动态添加 */
-        .schedule-note {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 4px 8px;
-            margin: 2px 0;
-            font-size: 12px;
-        }
-        
-        /* 人员显示样式 */
-        .staff-list {
-            display: inline-block;
-            padding: 2px 6px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-        
-        .staff-main {
-            font-weight: bold;
-            color: #212529;
-        }
-        
-        .staff-assist {
-            color: #6c757d;
-        }
-        
-        /* 时段列颜色增强 */
-        .time-slot-early {
-            background-color: #d4edda;
-            color: #155724;
-            font-weight: 500;
-        }
-        .time-slot-mid {
-            background-color: #cce5ff;
-            color: #004085;
-            font-weight: 500;
-        }
-        .time-slot-evening {
-            background-color: #fff3cd;
-            color: #856404;
-            font-weight: 500;
-        }
-        
-        /* 人员安排列样式 */
-        .staff-arrangement {
+
+        /* 人员安排列特殊样式 */
+        .schedule-table td:nth-child(4) {
             font-weight: 500;
             color: #212529;
         }
-        
-        /* 备注列样式 */
-        .note-column {
-            background-color: #f8f9fa;
-            font-weight: 500;
+
+        /* 不同行的人员安排颜色 */
+        .schedule-table tbody tr:nth-child(4n+1) td:nth-child(4) {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .schedule-table tbody tr:nth-child(4n+2) td:nth-child(4) {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .schedule-table tbody tr:nth-child(4n+3) td:nth-child(4) {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .schedule-table tbody tr:nth-child(4n+4) td:nth-child(4) {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        /* 悬停效果增强 */
+        .schedule-table tbody tr:hover td:nth-child(4) {
+            background-color: #ffeb3b !important;
+            color: #000000 !important;
+            font-weight: 600;
+            transform: scale(1.05);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-tabs .nav-link {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .schedule-table {
+                font-size: 12px;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container-fluid mt-4">
-    <h2><i class="fas fa-calendar-alt me-2"></i>排班配置管理系统</h2>
+<div class="main-container">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt me-3"></i>排班配置管理系统</h1>
+        <p class="text-muted">智能排班系统，自动化人员调度</p>
+    </div>
 
-    <ul class="nav nav-tabs" id="configTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="staff-config-tab" data-bs-toggle="tab" data-bs-target="#staff-config"
-                    type="button" role="tab">
-                <i class="fas fa-users me-1"></i>人员配置
+    <ul class="nav nav-tabs mb-4" id="configTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="staff-config-tab" data-bs-toggle="tab" data-bs-target="#staff-config">
+                人员配置
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="leave-config-tab" data-bs-toggle="tab" data-bs-target="#leave-config"
-                    type="button" role="tab">
-                <i class="fas fa-user-clock me-1"></i>请假配置
+        <li class="nav-item">
+            <button class="nav-link" id="leave-config-tab" data-bs-toggle="tab" data-bs-target="#leave-config">
+                请假配置
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="schedule-gen-tab" data-bs-toggle="tab" data-bs-target="#schedule-gen"
-                    type="button" role="tab">
-                <i class="fas fa-cogs me-1"></i>生成排班
+        <li class="nav-item">
+            <button class="nav-link" id="schedule-gen-tab" data-bs-toggle="tab" data-bs-target="#schedule-gen">
+                生成排班
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="schedule-query-tab" data-bs-toggle="tab" data-bs-target="#schedule-query"
-                    type="button" role="tab">
-                <i class="fas fa-table me-1"></i>排班查询
+        <li class="nav-item">
+            <button class="nav-link" id="schedule-query-tab" data-bs-toggle="tab" data-bs-target="#schedule-query">
+                排班查询
             </button>
         </li>
     </ul>
 
-
     <div class="tab-content" id="configTabContent">
         <!-- 人员配置标签页 -->
-        <div class="tab-pane fade show active" id="staff-config" role="tabpanel">
-            <div class="row mt-4">
-                <div class="col-md-6">
+        <div class="tab-pane fade show active" id="staff-config">
+            <div class="row g-4">
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-user-tie me-2"></i>核心人员配置</h5>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleCoreEditBtn">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="toggleCoreEditBtn">
                                 <i class="fas fa-edit me-1"></i>编辑
                             </button>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
                                 <label for="coreStaff" class="form-label">核心人员</label>
-                                <input type="text" class="form-control" id="coreStaff" placeholder="输入核心人员姓名" readonly>
+                                <input type="text" class="form-control" id="coreStaff" placeholder="输入核心人员姓名"
+                                       readonly>
                             </div>
                         </div>
                     </div>
@@ -204,7 +343,7 @@
                     <div class="card mt-3">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-user-friends me-2"></i>测试人员配置</h5>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleTestEditBtn">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="toggleTestEditBtn">
                                 <i class="fas fa-edit me-1"></i>编辑
                             </button>
                         </div>
@@ -212,14 +351,15 @@
                             <div id="testStaffList">
                                 <!-- 测试人员列表将在这里显示 -->
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addTestStaffBtn" disabled>
+                            <button type="button" class="btn btn-sm btn-outline-success mt-2" id="addTestStaffBtn"
+                                    disabled>
                                 <i class="fas fa-plus me-1"></i>添加测试人员
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-header">
                             <h5><i class="fas fa-info-circle me-2"></i>配置说明</h5>
@@ -249,8 +389,8 @@
         </div>
 
         <!-- 请假配置标签页 -->
-        <div class="tab-pane fade" id="leave-config" role="tabpanel">
-            <div class="row mt-4">
+        <div class="tab-pane fade" id="leave-config">
+            <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
@@ -331,8 +471,8 @@
         </div>
 
         <!-- 生成排班标签页 -->
-        <div class="tab-pane fade" id="schedule-gen" role="tabpanel">
-            <div class="row mt-4">
+        <div class="tab-pane fade" id="schedule-gen">
+            <div class="row g-4">
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
@@ -405,8 +545,8 @@
         </div>
 
         <!-- 排班查询标签页 -->
-        <div class="tab-pane fade" id="schedule-query" role="tabpanel">
-            <div class="row mt-4">
+        <div class="tab-pane fade" id="schedule-query">
+            <div class="row g-4">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -427,7 +567,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="excel-style-table" id="scheduleTable">
+                                <table class="schedule-table" id="scheduleTable">
                                     <thead class="table-dark">
                                     <tr>
                                         <th>日期</th>
@@ -442,7 +582,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="noScheduleMessage" class="alert alert-info text-center" style="display: none;">
+                            <div id="noScheduleMessage" class="alert alert-info text-center mt-3"
+                                 style="display: none;">
                                 暂无排班记录
                             </div>
                         </div>
@@ -451,891 +592,791 @@
             </div>
         </div>
 
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // 页面初始化
-    document.addEventListener('DOMContentLoaded', function () {
-        loadStaffConfig();
-        setupEventListeners();
-        setDefaultQueryDates(); // 设置默认查询日期
-    });
-
-    // 设置事件监听器
-    function setupEventListeners() {
-        // 人员配置相关
-        document.getElementById('saveStaffConfigBtn').addEventListener('click', saveStaffConfig);
-        document.getElementById('loadStaffConfigBtn').addEventListener('click', loadStaffConfig);
-        document.getElementById('addTestStaffBtn').addEventListener('click', addTestStaffInput);
-        document.getElementById('toggleCoreEditBtn').addEventListener('click', toggleCoreEditMode);
-        document.getElementById('toggleTestEditBtn').addEventListener('click', toggleTestEditMode);
-
-        // 请假配置相关
-        document.getElementById('leaveForm').addEventListener('submit', submitLeaveRecord);
-        document.getElementById('isFullDay').addEventListener('change', toggleTimeInputs);
-        document.getElementById('searchLeaveBtn').addEventListener('click', searchLeaveRecords);
-
-        // 排班生成相关
-        document.getElementById('generateScheduleBtn').addEventListener('click', generateSchedule);
-
-        // 排班查询相关
-        document.getElementById('searchScheduleBtn').addEventListener('click', searchSchedule);
-
-        // 排班导出相关
-       document.getElementById('exportScheduleBtn').addEventListener('click', exportSchedule);
-    }
-
-    // 加载人员配置
-    async function loadStaffConfig() {
-        try {
-            const response = await fetch('/schedule-config/api/staff-config');
-            const result = await response.json();
-
-            if (result.success) {
-                document.getElementById('coreStaff').value = result.data.core_staff || '';
-
-                // 清空测试人员列表
-                document.getElementById('testStaffList').innerHTML = '';
-
-                // 添加测试人员
-                result.data.test_staffs.forEach(staff => {
-                    addTestStaffToList(staff);
-                });
-
-                // 更新请假人员下拉框
-                updateLeaveStaffSelect([...result.data.test_staffs, result.data.core_staff]);
-
-                showMessage('人员配置加载成功', 'success');
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('加载人员配置失败: ' + error.message, 'danger');
-        }
-    }
-
-    // 保存人员配置
-    async function saveStaffConfig() {
-        const coreStaff = document.getElementById('coreStaff').value.trim();
-        const testStaffElements = document.querySelectorAll('#testStaffList input[type="text"]');
-        const testStaffs = [];
-
-        testStaffElements.forEach(input => {
-            const value = input.value.trim();
-            if (value) {
-                testStaffs.push(value);
-            }
-        });
-
-        if (!coreStaff) {
-            showMessage('请填写核心人员姓名', 'warning');
-            return;
-        }
-
-        if (testStaffs.length === 0) {
-            showMessage('请至少添加一名测试人员', 'warning');
-            return;
-        }
-
-        try {
-            const response = await fetch('/schedule-config/api/staff-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    core_staff: coreStaff,
-                    test_staffs: testStaffs
-                })
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // 页面初始化
+            document.addEventListener('DOMContentLoaded', function () {
+                loadStaffConfig();
+                setupEventListeners();
+                setDefaultQueryDates();
             });
 
-            const result = await response.json();
+            // 设置事件监听器
+            function setupEventListeners() {
+                // 人员配置相关
+                document.getElementById('saveStaffConfigBtn').addEventListener('click', saveStaffConfig);
+                document.getElementById('loadStaffConfigBtn').addEventListener('click', loadStaffConfig);
+                document.getElementById('addTestStaffBtn').addEventListener('click', addTestStaffInput);
+                document.getElementById('toggleCoreEditBtn').addEventListener('click', toggleCoreEditMode);
+                document.getElementById('toggleTestEditBtn').addEventListener('click', toggleTestEditMode);
 
-            if (result.success) {
-                showMessage(result.msg, 'success');
-                // 保存成功后自动退出编辑模式
-                if (isCoreEditing) {
-                    toggleCoreEditMode();
-                }
-                if (isTestEditing) {
-                    toggleTestEditMode();
-                }
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('保存人员配置失败: ' + error.message, 'danger');
-        }
-    }
+                // 请假配置相关
+                document.getElementById('leaveForm').addEventListener('submit', submitLeaveRecord);
+                document.getElementById('isFullDay').addEventListener('change', toggleTimeInputs);
+                document.getElementById('searchLeaveBtn').addEventListener('click', searchLeaveRecords);
 
-    // 添加测试人员输入框
-    function addTestStaffInput() {
-        // 检查是否处于编辑模式
-        if (!isTestEditing) {
-            showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
-            return;
-        }
-        
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'input-group mb-2';
-        inputGroup.innerHTML = `
-                <input type="text" class="form-control" placeholder="输入测试人员姓名" required>
-                <button class="btn btn-outline-danger remove-staff-btn" type="button" disabled>
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+                // 排班生成相关
+                document.getElementById('generateScheduleBtn').addEventListener('click', generateSchedule);
 
-        document.getElementById('testStaffList').appendChild(inputGroup);
-
-        // 添加删除按钮事件
-        const removeBtn = inputGroup.querySelector('.remove-staff-btn');
-        removeBtn.addEventListener('click', function () {
-            confirmDeleteTestStaff(inputGroup);
-        });
-        
-        // 如果当前处于编辑模式，启用新添加的删除按钮
-        if (isTestEditing) {
-            removeBtn.disabled = false;
-            removeBtn.classList.remove('btn-outline-secondary');
-            removeBtn.classList.add('btn-outline-danger');
-        }
-    }
-
-    // 添加测试人员到列表（用于加载现有配置）
-    function addTestStaffToList(staffName) {
-        const inputGroup = document.createElement('div');
-        inputGroup.className = 'input-group mb-2';
-        inputGroup.innerHTML = `
-                <input type="text" class="form-control" value="${staffName}" readonly>
-                <button class="btn btn-outline-secondary remove-staff-btn" type="button" disabled>
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-
-        document.getElementById('testStaffList').appendChild(inputGroup);
-
-        // 添加删除按钮事件
-        const removeBtn = inputGroup.querySelector('.remove-staff-btn');
-        removeBtn.addEventListener('click', function () {
-            confirmDeleteTestStaff(inputGroup);
-        });
-    }
-
-    // 更新请假人员下拉框
-    function updateLeaveStaffSelect(staffList) {
-        const select = document.getElementById('leaveStaff');
-        select.innerHTML = '<option value="">请选择人员</option>';
-
-        staffList.forEach(staff => {
-            const option = document.createElement('option');
-            option.value = staff;
-            option.textContent = staff;
-            select.appendChild(option);
-        });
-    }
-
-    // 时间输入切换
-    function toggleTimeInputs() {
-        const isFullDay = document.getElementById('isFullDay').checked;
-        const timeSection = document.getElementById('timeSection');
-
-        if (isFullDay) {
-            timeSection.style.display = 'none';
-        } else {
-            timeSection.style.display = 'block';
-        }
-    }
-
-    // 提交请假记录
-    async function submitLeaveRecord(e) {
-        e.preventDefault();
-
-        const staffName = document.getElementById('leaveStaff').value;
-        const startDate = document.getElementById('leaveStartDate').value;
-        const endDate = document.getElementById('leaveEndDate').value;
-        const isFullDay = document.getElementById('isFullDay').checked;
-        const startTime = document.getElementById('startTime').value || '00:00';
-        const endTime = document.getElementById('endTime').value || '23:59';
-        const reason = document.getElementById('leaveReason').value;
-
-        // 在 submitLeaveRecord 函数中找到：
-        if (!staffName || !startDate) {
-            showMessage('请填写必填项', 'warning');
-            return;
-        }
-
-        // 修改为：
-        if (!staffName || !startDate) {
-            showMessage('请填写必填项', 'warning');
-            return;
-        }
-
-
-        try {
-            const response = await fetch('/schedule-config/api/leave-records', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    staff_name: staffName,
-                    start_date: startDate,
-                    end_date: endDate,
-                    is_full_day: isFullDay,
-                    start_time: startTime,
-                    end_time: endTime,
-                    reason: reason
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showMessage(result.msg, 'success');
-                document.getElementById('leaveForm').reset();
-                toggleTimeInputs(); // 重置时间显示
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('添加请假记录失败: ' + error.message, 'danger');
-        }
-    }
-
-    // 搜索请假记录
-    async function searchLeaveRecords() {
-        const startDate = document.getElementById('queryStartDate').value;
-        const endDate = document.getElementById('queryEndDate').value;
-
-        if (!startDate || !endDate) {
-            showMessage('请填写查询日期范围', 'warning');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/schedule-config/api/leave-records?start_date=${startDate}&end_date=${endDate}`);
-            const result = await response.json();
-
-            if (result.success) {
-                displayLeaveRecords(result.data);
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('查询请假记录失败: ' + error.message, 'danger');
-        }
-    }
-
-    // 显示请假记录
-    function displayLeaveRecords(records) {
-        const container = document.getElementById('leaveRecordsList');
-
-        if (records.length === 0) {
-            container.innerHTML = '<div class="alert alert-info">暂无请假记录</div>';
-            return;
-        }
-
-        let html = '';
-        records.forEach(record => {
-            const isFullDayClass = record.is_full_day ? 'full-day-leave' : '';
-            const timeDisplay = record.is_full_day ?
-                '全天' :
-                `${record.start_time || '00:00'} - ${record.end_time || '23:59'}`;
-
-            html += `
-                    <div class="leave-record ${isFullDayClass}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong>${record.staff_name}</strong>
-                                <span class="badge bg-${record.staff_type === 'CORE' ? 'danger' : 'primary'} ms-2">${record.staff_type === 'CORE' ? '核心' : '测试'}</span>
-                                <br>
-                                <small class="text-muted">${formatDate(record.leave_date)}</small>
-                                <br>
-                                <small>时段: ${timeDisplay}</small>
-                                ${record.reason ? `<br><small>原因: ${record.reason}</small>` : ''}
-                            </div>
-                            <button class="btn btn-sm btn-outline-danger delete-leave-btn" data-id="${record.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-        });
-
-        container.innerHTML = html;
-
-        // 添加删除按钮事件
-        document.querySelectorAll('.delete-leave-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const recordId = this.getAttribute('data-id');
-                deleteLeaveRecord(recordId);
-            });
-        });
-    }
-
-    // 删除请假记录
-    async function deleteLeaveRecord(id) {
-        if (!confirm('确定要删除这条请假记录吗？')) {
-            return;
-        }
-
-        try {
-            const response = await fetch('/schedule-config/api/leave-records', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({id: id})
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showMessage(result.msg, 'success');
-                searchLeaveRecords(); // 重新查询
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('删除请假记录失败: ' + error.message, 'danger');
-        }
-    }
-
-    // 生成排班表
-    async function generateSchedule() {
-        const startDate = document.getElementById('genStartDate').value;
-        const endDate = document.getElementById('genEndDate').value;
-
-        if (!startDate || !endDate) {
-            showMessage('请填写排班日期范围', 'warning');
-            return;
-        }
-
-        if (new Date(startDate) > new Date(endDate)) {
-            showMessage('开始日期不能晚于结束日期', 'warning');
-            return;
-        }
-
-        // 检查是否有已存在的排班记录
-        try {
-            const checkResponse = await fetch(`/schedule-config/api/check-existing-roster?start_date=${startDate}&end_date=${endDate}`);
-            const checkResult = await checkResponse.json();
-            
-            if (checkResult.success && checkResult.data && checkResult.data.length > 0) {
-                // 有已存在的排班记录，弹出确认窗口
-                const existingCount = checkResult.data.length;
-                const message = `检测到 ${existingCount} 条已存在的排班记录！\n是否清除现有排班后重新生成？`;
-                
-                if (!confirm(message)) {
-                    showMessage('已取消生成排班表', 'info');
-                    return;
-                }
-                
-                // 用户选择清除，先删除现有记录
-                const deleteResponse = await fetch('/schedule-config/api/delete-existing-roster', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        start_date: startDate,
-                        end_date: endDate
-                    })
-                });
-                
-                const deleteResult = await deleteResponse.json();
-                if (!deleteResult.success) {
-                    showMessage('清除现有排班失败: ' + deleteResult.msg, 'danger');
-                    return;
-                }
-            }
-        } catch (error) {
-            showMessage('检查现有排班失败: ' + error.message, 'danger');
-            return;
-        }
-
-        if (!confirm(`确定要生成 ${startDate} 至 ${endDate} 的排班表吗？`)) {
-            return;
-        }
-
-        try {
-            const response = await fetch('/schedule-config/api/generate-schedule', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    start_date: startDate,
-                    end_date: endDate
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showMessage(result.msg, 'success');
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('生成排班表失败: ' + error.message, 'danger');
-        }
-    }
-
-
-    // 格式化日期显示
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('zh-CN');
-    }
-
-    // 显示消息
-    function showMessage(message, type = 'info') {
-        // 创建消息元素
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show`;
-        alert.setAttribute('role', 'alert');
-        alert.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-        // 添加到页面顶部
-        const container = document.querySelector('.container-fluid');
-        container.insertBefore(alert, container.firstChild);
-
-        // 自动移除消息
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.remove();
-            }
-        }, 5000);
-    }
-
-    // 搜索排班记录
-    async function searchSchedule() {
-        const startDate = document.getElementById('queryScheduleStartDate').value;
-        const endDate = document.getElementById('queryScheduleEndDate').value;
-
-        if (!startDate || !endDate) {
-            showMessage('请填写查询日期范围', 'warning');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
-            const result = await response.json();
-
-            if (result.success) {
-                displayScheduleRecords(result.data);
-            } else {
-                showMessage(result.msg, 'danger');
-            }
-        } catch (error) {
-            showMessage('查询排班记录失败: ' + error.message, 'danger');
-        }
-    }
-
-    // 显示排班记录
-    function displayScheduleRecords(records) {
-    const tbody = document.getElementById('scheduleTableBody');
-    const noMessage = document.getElementById('noScheduleMessage');
-
-    if (records.length === 0) {
-        tbody.innerHTML = '';
-        noMessage.style.display = 'block';
-        return;
-    }
-
-    noMessage.style.display = 'none';
-    tbody.innerHTML = '';
-
-    // 按日期分组
-    const groupedData = {};
-    records.forEach(record => {
-        const dateKey = record.date;
-        if (!groupedData[dateKey]) {
-            groupedData[dateKey] = [];
-        }
-        groupedData[dateKey].push(record);
-    });
-
-    // 按日期排序
-    const sortedDates = Object.keys(groupedData).sort();
-
-    sortedDates.forEach(date => {
-        const dayRecords = groupedData[date];
-
-        // 判断是否为节假日或周末
-        const dateObj = new Date(date);
-        const weekday = dateObj.getDay(); // 0=周日, 6=周六
-
-        // 查询 holiday_config 表判断是否为节假日（这里简化处理）
-        // 实际应通过API获取，这里用简单逻辑：非工作日且不在holiday_config中视为周末
-        const isHoliday = weekday === 5 || weekday === 6; // 周六、周日视为周末
-        const isWeekend = weekday === 5 || weekday === 6;
-
-        // 按时段分组并合并相同人员
-        const timeSlotGroups = {};
-        dayRecords.forEach(record => {
-            const timeSlot = record.time_slot;
-            if (!timeSlotGroups[timeSlot]) {
-                timeSlotGroups[timeSlot] = {
-                    staffs: [],
-                    staffNamesSet: new Set()
-                };
+                // 排班查询相关
+                document.getElementById('searchScheduleBtn').addEventListener('click', searchSchedule);
+                document.getElementById('exportScheduleBtn').addEventListener('click', exportSchedule);
             }
 
-            // 合并人员（去重，主班优先）
-            if (!timeSlotGroups[timeSlot].staffNamesSet.has(record.staff_name)) {
-                timeSlotGroups[timeSlot].staffs.push({
-                    ...record,
-                    displayType: record.is_main ? '主' : (record.staff_type === 'CORE' ? '核心' : '辅')
-                });
-                timeSlotGroups[timeSlot].staffNamesSet.add(record.staff_name);
-            }
-        });
+            // 加载人员配置
+            async function loadStaffConfig() {
+                try {
+                    const response = await fetch('/schedule-config/api/staff-config');
+                    const result = await response.json();
 
-        // 按时段顺序排序
-        const timeSlotOrder = [
-            '8:00～12:00',      // 节假日时段
-            '13:30～17:30',
-            '17:30～21:30',
-            '8:00～9:00',       // 日常时段
-            '9:00～12:00',
-            '13:30～18:00',
-            '18:00～21:00'
-        ];
+                    if (result.success) {
+                        document.getElementById('coreStaff').value = result.data.core_staff || '';
 
-        const sortedSlots = Object.keys(timeSlotGroups).sort((a, b) => {
-            const indexA = timeSlotOrder.indexOf(a);
-            const indexB = timeSlotOrder.indexOf(b);
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
+                        // 清空测试人员列表
+                        document.getElementById('testStaffList').innerHTML = '';
 
-        // 计算该日期的时段数量
-        const slotCount = sortedSlots.length;
+                        // 添加测试人员
+                        result.data.test_staffs.forEach(staff => {
+                            addTestStaffToList(staff);
+                        });
 
-        // 生成表格行
-        sortedSlots.forEach((timeSlot, slotIndex) => {
-            const slotGroup = timeSlotGroups[timeSlot];
-            const staffs = slotGroup.staffs;
+                        // 更新请假人员下拉框
+                        updateLeaveStaffSelect([...result.data.test_staffs, result.data.core_staff]);
 
-            // 人员显示
-            let staffDisplay = staffs.map(s => s.staff_name).join('、') || '空闲';
-
-            // 时段颜色类
-            // 在 displayScheduleRecords 函数中，替换原有的 timeSlotClass 生成逻辑：
-            let timeSlotClass = '';
-            switch (timeSlot) {
-                case '8:00～9:00':
-                case '8:00～12:00':
-                    timeSlotClass = 'time-slot-early';
-                    break;
-                case '9:00～12:00':
-                case '13:30～17:30':
-                case '13:30～18:00':
-                    timeSlotClass = 'time-slot-mid';
-                    break;
-                case '17:30～21:30':
-                case '18:00～21:00':
-                    timeSlotClass = 'time-slot-evening';
-                    break;
-                default:
-                    timeSlotClass = '';
-            }
-
-
-            // 创建行
-            const row = document.createElement('tr');
-
-            // 星期显示
-            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-            const weekdayStr = weekdays[dateObj.getDay()];
-
-            // 只有第一个时段显示日期和星期
-            if (slotIndex === 0) {
-                row.innerHTML = `
-                    <td rowspan="${slotCount}">${date}</td>
-                    <td rowspan="${slotCount}">${weekdayStr}</td>
-                    <td class="${timeSlotClass}">${timeSlot}</td>
-                    <td class="staff-arrangement">${staffDisplay}</td>
-                    <td class="note-column"></td>
-                `;
-            } else {
-                row.innerHTML = `
-                    <td class="${timeSlotClass}">${timeSlot}</td>
-                    <td class="staff-arrangement">${staffDisplay}</td>
-                    <td class="note-column"></td>
-                `;
-            }
-
-            tbody.appendChild(row);
-        });
-    });
-
-    // 添加CSS样式
-    const style = document.createElement('style');
-    style.textContent = `
-         /* 节假日时段颜色 */
-        .time-slot-holiday-early {
-            background-color: #d4edda;
-            color: #155724;
-            font-weight: 500;
-        }
-        .time-slot-holiday-mid {
-            background-color: #cce5ff;
-            color: #004085;
-            font-weight: 500;
-        }
-        .time-slot-holiday-evening {
-            background-color: #fff3cd;
-            color: #856404;
-            font-weight: 500;
-        }
-
-        /* 周末时段标识 */
-        .weekend-row {
-            background-color: #f8f9fa !important;
-        }
-
-        `;
-        document.head.appendChild(style);
-    }
-
-
-    // 设置默认查询日期（当天到30天后，从00:00开始）
-    function setDefaultQueryDates() {
-        const today = new Date();
-        // 确保从当天00:00开始
-        today.setHours(0, 0, 0, 0);
-        const thirtyDaysLater = new Date(today);
-        thirtyDaysLater.setDate(today.getDate() + 30);
-        
-        // 格式化为 YYYY-MM-DD
-        const formatDate = (date) => {
-            return date.toISOString().split('T')[0];
-        };
-        
-        // 设置排班查询的默认日期
-        document.getElementById('queryScheduleStartDate').value = formatDate(today);
-        document.getElementById('queryScheduleEndDate').value = formatDate(thirtyDaysLater);
-        
-        // 设置请假查询的默认日期
-        document.getElementById('queryStartDate').value = formatDate(today);
-        document.getElementById('queryEndDate').value = formatDate(thirtyDaysLater);
-    }
-
-    // 编辑模式状态
-    let isCoreEditing = false;
-    let isTestEditing = false;
-
-    // 切换核心人员编辑模式
-    function toggleCoreEditMode() {
-        isCoreEditing = !isCoreEditing;
-        const coreInput = document.getElementById('coreStaff');
-        const editBtn = document.getElementById('toggleCoreEditBtn');
-        
-        if (isCoreEditing) {
-            coreInput.removeAttribute('readonly');
-            coreInput.classList.add('editable');
-            editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
-            editBtn.classList.remove('btn-outline-secondary');
-            editBtn.classList.add('btn-outline-success');
-        } else {
-            coreInput.setAttribute('readonly', 'readonly');
-            coreInput.classList.remove('editable');
-            editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
-            editBtn.classList.remove('btn-outline-success');
-            editBtn.classList.add('btn-outline-secondary');
-        }
-    }
-
-    // 切换测试人员编辑模式
-    function toggleTestEditMode() {
-        isTestEditing = !isTestEditing;
-        const addBtn = document.getElementById('addTestStaffBtn');
-        const editBtn = document.getElementById('toggleTestEditBtn');
-        const removeButtons = document.querySelectorAll('.remove-staff-btn');
-        
-        if (isTestEditing) {
-            addBtn.disabled = false;
-            addBtn.classList.remove('btn-outline-secondary');
-            addBtn.classList.add('btn-outline-primary');
-            editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
-            editBtn.classList.remove('btn-outline-secondary');
-            editBtn.classList.add('btn-outline-success');
-            
-            // 启用所有删除按钮
-            removeButtons.forEach(btn => {
-                btn.disabled = false;
-                btn.classList.remove('btn-outline-secondary');
-                btn.classList.add('btn-outline-danger');
-            });
-        } else {
-            addBtn.disabled = true;
-            addBtn.classList.remove('btn-outline-primary');
-            addBtn.classList.add('btn-outline-secondary');
-            editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
-            editBtn.classList.remove('btn-outline-success');
-            editBtn.classList.add('btn-outline-secondary');
-            
-            // 禁用所有删除按钮
-            removeButtons.forEach(btn => {
-                btn.disabled = true;
-                btn.classList.remove('btn-outline-danger');
-                btn.classList.add('btn-outline-secondary');
-            });
-        }
-    }
-
-    // 确认删除测试人员
-    function confirmDeleteTestStaff(element) {
-        // 检查是否处于编辑模式
-        if (!isTestEditing) {
-            showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
-            return;
-        }
-        
-        const staffName = element.querySelector('input').value || '该人员';
-        if (confirm(`确定要删除"${staffName}"吗？此操作不可撤销。`)) {
-            element.remove();
-            showMessage(`已删除"${staffName}"`, 'success');
-        }
-    }
-
-    // 导出排班数据
-    async function exportSchedule() {
-        const startDate = document.getElementById('queryScheduleStartDate').value;
-        const endDate = document.getElementById('queryScheduleEndDate').value;
-
-        if (!startDate || !endDate) {
-            showMessage('请填写查询日期范围', 'warning');
-            return;
-        }
-
-        try {
-            // 直接从API获取原始数据进行导出
-            const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
-            const result = await response.json();
-
-            if (!result.success || !result.data || result.data.length === 0) {
-                showMessage('没有数据可导出', 'warning');
-                return;
-            }
-
-            // 构建CSV内容，使用原始API数据
-            let csvContent = "日期,星期,时段,人员\n";
-
-            // 按日期和时段分组处理数据
-            const groupedData = {};
-            result.data.forEach(record => {
-                const dateKey = record.date;
-                if (!groupedData[dateKey]) {
-                    groupedData[dateKey] = {};
-                }
-
-                if (!groupedData[dateKey][record.time_slot]) {
-                    groupedData[dateKey][record.time_slot] = [];
-                }
-
-                groupedData[dateKey][record.time_slot].push(record);
-            });
-
-            // 按日期排序
-            const sortedDates = Object.keys(groupedData).sort();
-
-            sortedDates.forEach(date => {
-                const dayRecords = groupedData[date];
-                // 按时段顺序排序
-                const timeSlotOrder = [
-                    '8:00～9:00',
-                    '9:00～12:00',
-                    '13:30～18:00',
-                    '18:00～21:00'
-                ];
-                const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
-                    const indexA = timeSlotOrder.indexOf(a);
-                    const indexB = timeSlotOrder.indexOf(b);
-                    if (indexA === -1 && indexB === -1) return 0;
-                    if (indexA === -1) return 1;
-                    if (indexB === -1) return -1;
-                    return indexA - indexB;
-                });
-
-                sortedSlots.forEach(timeSlot => {
-                    const slotRecords = dayRecords[timeSlot];
-
-                // 在 exportSchedule() 函数中，人员合并逻辑保持一致
-                const uniqueStaffs = [];
-                const staffNamesSet = new Set();
-
-                // 主班人员优先
-                slotRecords.filter(r => r.is_main).forEach(record => {
-                    if (!staffNamesSet.has(record.staff_name)) {
-                        uniqueStaffs.push(record);
-                        staffNamesSet.add(record.staff_name);
-                    }
-                });
-
-                // 辅助人员
-                slotRecords.filter(r => !r.is_main).forEach(record => {
-                    if (!staffNamesSet.has(record.staff_name)) {
-                        uniqueStaffs.push(record);
-                        staffNamesSet.add(record.staff_name);
-                    }
-                });
-
-
-                    let staffDisplay = '';
-                    if (uniqueStaffs.length > 0) {
-                        staffDisplay = uniqueStaffs.map(r => r.staff_name).join('、');
+                        showMessage('人员配置加载成功', 'success');
                     } else {
-                        staffDisplay = '空闲';
+                        showMessage(result.msg, 'danger');
                     }
+                } catch (error) {
+                    showMessage('加载人员配置失败: ' + error.message, 'danger');
+                }
+            }
 
-                    // 计算星期几
+            // 保存人员配置
+            async function saveStaffConfig() {
+                const coreStaff = document.getElementById('coreStaff').value.trim();
+                const testStaffElements = document.querySelectorAll('#testStaffList input[type="text"]');
+                const testStaffs = [];
+
+                testStaffElements.forEach(input => {
+                    const value = input.value.trim();
+                    if (value) {
+                        testStaffs.push(value);
+                    }
+                });
+
+                if (!coreStaff) {
+                    showMessage('请填写核心人员姓名', 'warning');
+                    return;
+                }
+
+                if (testStaffs.length === 0) {
+                    showMessage('请至少添加一名测试人员', 'warning');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/schedule-config/api/staff-config', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            core_staff: coreStaff,
+                            test_staffs: testStaffs
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.msg, 'success');
+                        // 保存成功后自动退出编辑模式
+                        if (isCoreEditing) {
+                            toggleCoreEditMode();
+                        }
+                        if (isTestEditing) {
+                            toggleTestEditMode();
+                        }
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('保存人员配置失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 添加测试人员输入框
+            function addTestStaffInput() {
+                if (!isTestEditing) {
+                    showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
+                    return;
+                }
+
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group mb-2';
+                inputGroup.innerHTML = `
+            <input type="text" class="form-control" placeholder="输入测试人员姓名" required>
+            <button class="btn btn-outline-danger remove-staff-btn" type="button" disabled>
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+                document.getElementById('testStaffList').appendChild(inputGroup);
+
+                const removeBtn = inputGroup.querySelector('.remove-staff-btn');
+                removeBtn.addEventListener('click', function () {
+                    confirmDeleteTestStaff(inputGroup);
+                });
+
+                if (isTestEditing) {
+                    removeBtn.disabled = false;
+                    removeBtn.classList.remove('btn-outline-secondary');
+                    removeBtn.classList.add('btn-outline-danger');
+                }
+            }
+
+            // 添加测试人员到列表
+            function addTestStaffToList(staffName) {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group mb-2';
+                inputGroup.innerHTML = `
+            <input type="text" class="form-control" value="${staffName}" readonly>
+            <button class="btn btn-outline-secondary remove-staff-btn" type="button" disabled>
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+                document.getElementById('testStaffList').appendChild(inputGroup);
+
+                const removeBtn = inputGroup.querySelector('.remove-staff-btn');
+                removeBtn.addEventListener('click', function () {
+                    confirmDeleteTestStaff(inputGroup);
+                });
+            }
+
+            // 更新请假人员下拉框
+            function updateLeaveStaffSelect(staffList) {
+                const select = document.getElementById('leaveStaff');
+                select.innerHTML = '<option value="">请选择人员</option>';
+
+                staffList.forEach(staff => {
+                    const option = document.createElement('option');
+                    option.value = staff;
+                    option.textContent = staff;
+                    select.appendChild(option);
+                });
+            }
+
+            // 时间输入切换
+            function toggleTimeInputs() {
+                const isFullDay = document.getElementById('isFullDay').checked;
+                const timeSection = document.getElementById('timeSection');
+
+                if (isFullDay) {
+                    timeSection.style.display = 'none';
+                } else {
+                    timeSection.style.display = 'block';
+                }
+            }
+
+            // 提交请假记录
+            async function submitLeaveRecord(e) {
+                e.preventDefault();
+
+                const staffName = document.getElementById('leaveStaff').value;
+                const startDate = document.getElementById('leaveStartDate').value;
+                const endDate = document.getElementById('leaveEndDate').value;
+                const isFullDay = document.getElementById('isFullDay').checked;
+                const startTime = document.getElementById('startTime').value || '00:00';
+                const endTime = document.getElementById('endTime').value || '23:59';
+                const reason = document.getElementById('leaveReason').value;
+
+                if (!staffName || !startDate) {
+                    showMessage('请填写必填项', 'warning');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/schedule-config/api/leave-records', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            staff_name: staffName,
+                            start_date: startDate,
+                            end_date: endDate,
+                            is_full_day: isFullDay,
+                            start_time: startTime,
+                            end_time: endTime,
+                            reason: reason
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.msg, 'success');
+                        document.getElementById('leaveForm').reset();
+                        toggleTimeInputs();
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('添加请假记录失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 搜索请假记录
+            async function searchLeaveRecords() {
+                const startDate = document.getElementById('queryStartDate').value;
+                const endDate = document.getElementById('queryEndDate').value;
+
+                if (!startDate || !endDate) {
+                    showMessage('请填写查询日期范围', 'warning');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/schedule-config/api/leave-records?start_date=${startDate}&end_date=${endDate}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        displayLeaveRecords(result.data);
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('查询请假记录失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 显示请假记录
+            function displayLeaveRecords(records) {
+                const container = document.getElementById('leaveRecordsList');
+
+                if (records.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">暂无请假记录</div>';
+                    return;
+                }
+
+                let html = '';
+                records.forEach(record => {
+                    const isFullDayClass = record.is_full_day ? 'full-day-leave' : '';
+                    const timeDisplay = record.is_full_day ?
+                        '全天' :
+                        `${record.start_time || '00:00'} - ${record.end_time || '23:59'}`;
+
+                    html += `
+                <div class="leave-record ${isFullDayClass}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${record.staff_name}</strong>
+                            <span class="badge bg-${record.staff_type === 'CORE' ? 'danger' : 'primary'} ms-2">${record.staff_type === 'CORE' ? '核心' : '测试'}</span>
+                            <br>
+                            <small class="text-muted">${formatDate(record.leave_date)}</small>
+                            <br>
+                            <small>时段: ${timeDisplay}</small>
+                            ${record.reason ? `<br><small>原因: ${record.reason}</small>` : ''}
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger delete-leave-btn" data-id="${record.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+                });
+
+                container.innerHTML = html;
+
+                document.querySelectorAll('.delete-leave-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const recordId = this.getAttribute('data-id');
+                        deleteLeaveRecord(recordId);
+                    });
+                });
+            }
+
+            // 删除请假记录
+            async function deleteLeaveRecord(id) {
+                if (!confirm('确定要删除这条请假记录吗？')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/schedule-config/api/leave-records', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({id: id})
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.msg, 'success');
+                        searchLeaveRecords();
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('删除请假记录失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 生成排班表
+            async function generateSchedule() {
+                const startDate = document.getElementById('genStartDate').value;
+                const endDate = document.getElementById('genEndDate').value;
+
+                if (!startDate || !endDate) {
+                    showMessage('请填写排班日期范围', 'warning');
+                    return;
+                }
+
+                if (new Date(startDate) > new Date(endDate)) {
+                    showMessage('开始日期不能晚于结束日期', 'warning');
+                    return;
+                }
+
+                // 检查是否有已存在的排班记录
+                try {
+                    const checkResponse = await fetch(`/schedule-config/api/check-existing-roster?start_date=${startDate}&end_date=${endDate}`);
+                    const checkResult = await checkResponse.json();
+
+                    if (checkResult.success && checkResult.data && checkResult.data.length > 0) {
+                        const existingCount = checkResult.data.length;
+                        const message = `检测到 ${existingCount} 条已存在的排班记录！\n是否清除现有排班后重新生成？`;
+
+                        if (!confirm(message)) {
+                            showMessage('已取消生成排班表', 'info');
+                            return;
+                        }
+
+                        const deleteResponse = await fetch('/schedule-config/api/delete-existing-roster', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                start_date: startDate,
+                                end_date: endDate
+                            })
+                        });
+
+                        const deleteResult = await deleteResponse.json();
+                        if (!deleteResult.success) {
+                            showMessage('清除现有排班失败: ' + deleteResult.msg, 'danger');
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    showMessage('检查现有排班失败: ' + error.message, 'danger');
+                    return;
+                }
+
+                if (!confirm(`确定要生成 ${startDate} 至 ${endDate} 的排班表吗？`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/schedule-config/api/generate-schedule', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            start_date: startDate,
+                            end_date: endDate
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.msg, 'success');
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('生成排班表失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 搜索排班记录
+            async function searchSchedule() {
+                const startDate = document.getElementById('queryScheduleStartDate').value;
+                const endDate = document.getElementById('queryScheduleEndDate').value;
+
+                if (!startDate || !endDate) {
+                    showMessage('请填写查询日期范围', 'warning');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        displayScheduleRecords(result.data);
+                    } else {
+                        showMessage(result.msg, 'danger');
+                    }
+                } catch (error) {
+                    showMessage('查询排班记录失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 显示排班记录
+            function displayScheduleRecords(records) {
+                const tbody = document.getElementById('scheduleTableBody');
+                const noMessage = document.getElementById('noScheduleMessage');
+
+                if (records.length === 0) {
+                    tbody.innerHTML = '';
+                    noMessage.style.display = 'block';
+                    return;
+                }
+
+                noMessage.style.display = 'none';
+                tbody.innerHTML = '';
+
+                // 按日期分组
+                const groupedData = {};
+                records.forEach(record => {
+                    const dateKey = record.date;
+                    if (!groupedData[dateKey]) {
+                        groupedData[dateKey] = [];
+                    }
+                    groupedData[dateKey].push(record);
+                });
+
+                // 按日期排序
+                const sortedDates = Object.keys(groupedData).sort();
+
+                sortedDates.forEach(date => {
+                    const dayRecords = groupedData[date];
                     const dateObj = new Date(date);
                     const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-                    const weekday = weekdays[dateObj.getDay()];
+                    const weekdayStr = weekdays[dateObj.getDay()];
 
-                    // 人员类型
-                    const staffTypes = uniqueStaffs.map(r => r.staff_type === 'CORE' ? '核心' : '测试').join('、') || '无';
+                    // 按时段分组并合并相同人员
+                    const timeSlotGroups = {};
+                    dayRecords.forEach(record => {
+                        const timeSlot = record.time_slot;
+                        if (!timeSlotGroups[timeSlot]) {
+                            timeSlotGroups[timeSlot] = {
+                                staffs: [],
+                                staffNamesSet: new Set()
+                            };
+                        }
 
-                    // 角色显示
-                    const roles = uniqueStaffs.map(r => r.displayType).join('、') || '无';
+                        if (!timeSlotGroups[timeSlot].staffNamesSet.has(record.staff_name)) {
+                            timeSlotGroups[timeSlot].staffs.push({
+                                ...record,
+                                displayType: record.is_main ? '主' : (record.staff_type === 'CORE' ? '核心' : '辅')
+                            });
+                            timeSlotGroups[timeSlot].staffNamesSet.add(record.staff_name);
+                        }
+                    });
 
-                    // 构建CSV行
-                    csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}"\n`;
+                    // 按时段顺序排序
+                    const timeSlotOrder = [
+                        '8:00～12:00',
+                        '13:30～17:30',
+                        '17:30～21:30',
+                        '8:00～9:00',
+                        '9:00～12:00',
+                        '13:30～18:00',
+                        '18:00～21:00'
+                    ];
 
+                    const sortedSlots = Object.keys(timeSlotGroups).sort((a, b) => {
+                        const indexA = timeSlotOrder.indexOf(a);
+                        const indexB = timeSlotOrder.indexOf(b);
+                        if (indexA === -1 && indexB === -1) return 0;
+                        if (indexA === -1) return 1;
+                        if (indexB === -1) return -1;
+                        return indexA - indexB;
+                    });
+
+                    const slotCount = sortedSlots.length;
+
+                    // 生成表格行
+                    sortedSlots.forEach((timeSlot, slotIndex) => {
+                        const slotGroup = timeSlotGroups[timeSlot];
+                        const staffs = slotGroup.staffs;
+                        let staffDisplay = staffs.map(s => s.staff_name).join('、') || '空闲';
+
+                        let timeSlotClass = '';
+                        switch (timeSlot) {
+                            case '8:00～9:00':
+                            case '8:00～12:00':
+                                timeSlotClass = 'time-slot-early';
+                                break;
+                            case '9:00～12:00':
+                            case '13:30～17:30':
+                            case '13:30～18:00':
+                                timeSlotClass = 'time-slot-mid';
+                                break;
+                            case '17:30～21:30':
+                            case '18:00～21:00':
+                                timeSlotClass = 'time-slot-evening';
+                                break;
+                            default:
+                                timeSlotClass = '';
+                        }
+
+                        const row = document.createElement('tr');
+
+                        if (slotIndex === 0) {
+                            row.innerHTML = `
+                        <td rowspan="${slotCount}">${date}</td>
+                        <td rowspan="${slotCount}">${weekdayStr}</td>
+                        <td class="${timeSlotClass}">${timeSlot}</td>
+                        <td class="staff-arrangement">${staffDisplay}</td>
+                        <td class="note-column"></td>
+                    `;
+                        } else {
+                            row.innerHTML = `
+                        <td class="${timeSlotClass}">${timeSlot}</td>
+                        <td class="staff-arrangement">${staffDisplay}</td>
+                        <td class="note-column"></td>
+                    `;
+                        }
+
+                        tbody.appendChild(row);
+                    });
                 });
-            });
+            }
 
-            // 创建下载链接
-            const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
+            // 导出排班数据
+            async function exportSchedule() {
+                const startDate = document.getElementById('queryScheduleStartDate').value;
+                const endDate = document.getElementById('queryScheduleEndDate').value;
 
-            link.setAttribute('href', url);
-            link.setAttribute('download', `排班表_${startDate}_to_${endDate}.csv`);
-            link.style.visibility = 'hidden';
+                if (!startDate || !endDate) {
+                    showMessage('请填写查询日期范围', 'warning');
+                    return;
+                }
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                try {
+                    const response = await fetch(`/schedule-config/api/schedule-records?start_date=${startDate}&end_date=${endDate}`);
+                    const result = await response.json();
 
-            showMessage('导出成功', 'success');
-        } catch (error) {
-            showMessage('导出失败: ' + error.message, 'danger');
-        }
-    }
+                    if (!result.success || !result.data || result.data.length === 0) {
+                        showMessage('没有数据可导出', 'warning');
+                        return;
+                    }
 
+                    let csvContent = "日期,星期,时段,人员\n";
 
-</script>
+                    const groupedData = {};
+                    result.data.forEach(record => {
+                        const dateKey = record.date;
+                        if (!groupedData[dateKey]) {
+                            groupedData[dateKey] = {};
+                        }
+
+                        if (!groupedData[dateKey][record.time_slot]) {
+                            groupedData[dateKey][record.time_slot] = [];
+                        }
+
+                        groupedData[dateKey][record.time_slot].push(record);
+                    });
+
+                    const sortedDates = Object.keys(groupedData).sort();
+
+                    sortedDates.forEach(date => {
+                        const dayRecords = groupedData[date];
+                        const timeSlotOrder = [
+                            '8:00～9:00',
+                            '9:00～12:00',
+                            '13:30～18:00',
+                            '18:00～21:00'
+                        ];
+                        const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
+                            const indexA = timeSlotOrder.indexOf(a);
+                            const indexB = timeSlotOrder.indexOf(b);
+                            return indexA - indexB;
+                        });
+
+                        sortedSlots.forEach(timeSlot => {
+                            const slotRecords = dayRecords[timeSlot];
+                            const uniqueStaffs = [];
+                            const staffNamesSet = new Set();
+
+                            slotRecords.filter(r => r.is_main).forEach(record => {
+                                if (!staffNamesSet.has(record.staff_name)) {
+                                    uniqueStaffs.push(record);
+                                    staffNamesSet.add(record.staff_name);
+                                }
+                            });
+
+                            slotRecords.filter(r => !r.is_main).forEach(record => {
+                                if (!staffNamesSet.has(record.staff_name)) {
+                                    uniqueStaffs.push(record);
+                                    staffNamesSet.add(record.staff_name);
+                                }
+                            });
+
+                            let staffDisplay = '';
+                            if (uniqueStaffs.length > 0) {
+                                staffDisplay = uniqueStaffs.map(r => r.staff_name).join('、');
+                            } else {
+                                staffDisplay = '空闲';
+                            }
+
+                            const dateObj = new Date(date);
+                            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                            const weekday = weekdays[dateObj.getDay()];
+
+                            csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}"\n`;
+                        });
+                    });
+
+                    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `排班表_${startDate}_to_${endDate}.csv`);
+                    link.style.visibility = 'hidden';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    showMessage('导出成功', 'success');
+                } catch (error) {
+                    showMessage('导出失败: ' + error.message, 'danger');
+                }
+            }
+
+            // 格式化日期显示
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('zh-CN');
+            }
+
+            // 显示消息
+            function showMessage(message, type = 'info') {
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type} alert-dismissible fade show`;
+                alert.setAttribute('role', 'alert');
+                alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+                const container = document.querySelector('.main-container');
+                container.insertBefore(alert, container.firstChild);
+
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+
+            // 设置默认查询日期
+            function setDefaultQueryDates() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const thirtyDaysLater = new Date(today);
+                thirtyDaysLater.setDate(today.getDate() + 30);
+
+                const formatDate = (date) => {
+                    return date.toISOString().split('T')[0];
+                };
+
+                document.getElementById('queryScheduleStartDate').value = formatDate(today);
+                document.getElementById('queryScheduleEndDate').value = formatDate(thirtyDaysLater);
+                document.getElementById('queryStartDate').value = formatDate(today);
+                document.getElementById('queryEndDate').value = formatDate(thirtyDaysLater);
+            }
+
+            // 编辑模式状态
+            let isCoreEditing = false;
+            let isTestEditing = false;
+
+            // 切换核心人员编辑模式
+            function toggleCoreEditMode() {
+                isCoreEditing = !isCoreEditing;
+                const coreInput = document.getElementById('coreStaff');
+                const editBtn = document.getElementById('toggleCoreEditBtn');
+
+                if (isCoreEditing) {
+                    coreInput.removeAttribute('readonly');
+                    coreInput.classList.add('editable');
+                    editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
+                    editBtn.classList.remove('btn-outline-secondary');
+                    editBtn.classList.add('btn-outline-success');
+                } else {
+                    coreInput.setAttribute('readonly', 'readonly');
+                    coreInput.classList.remove('editable');
+                    editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
+                    editBtn.classList.remove('btn-outline-success');
+                    editBtn.classList.add('btn-outline-secondary');
+                }
+            }
+
+            // 切换测试人员编辑模式
+            function toggleTestEditMode() {
+                isTestEditing = !isTestEditing;
+                const addBtn = document.getElementById('addTestStaffBtn');
+                const editBtn = document.getElementById('toggleTestEditBtn');
+                const removeButtons = document.querySelectorAll('.remove-staff-btn');
+
+                if (isTestEditing) {
+                    addBtn.disabled = false;
+                    addBtn.classList.remove('btn-outline-secondary');
+                    addBtn.classList.add('btn-outline-primary');
+                    editBtn.innerHTML = '<i class="fas fa-save me-1"></i>完成';
+                    editBtn.classList.remove('btn-outline-secondary');
+                    editBtn.classList.add('btn-outline-success');
+
+                    removeButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('btn-outline-secondary');
+                        btn.classList.add('btn-outline-danger');
+                    });
+                } else {
+                    addBtn.disabled = true;
+                    addBtn.classList.remove('btn-outline-primary');
+                    addBtn.classList.add('btn-outline-secondary');
+                    editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
+                    editBtn.classList.remove('btn-outline-success');
+                    editBtn.classList.add('btn-outline-secondary');
+
+                    removeButtons.forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.remove('btn-outline-danger');
+                        btn.classList.add('btn-outline-secondary');
+                    });
+                }
+            }
+
+            // 确认删除测试人员
+            function confirmDeleteTestStaff(element) {
+                if (!isTestEditing) {
+                    showMessage('请先点击"编辑"按钮进入编辑模式', 'warning');
+                    return;
+                }
+
+                const staffName = element.querySelector('input').value || '该人员';
+                if (confirm(`确定要删除"${staffName}"吗？此操作不可撤销。`)) {
+                    element.remove();
+                    showMessage(`已删除"${staffName}"`, 'success');
+                }
+            }
+
+        </script>
+    </div>
+</div>
 </body>
+
 </html>
