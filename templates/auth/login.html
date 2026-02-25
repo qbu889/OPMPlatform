@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}用户登录 - OPM系统{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 mt-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-lock" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        <h2 class="mt-3">用户登录</h2>
+                        <p class="text-muted">欢迎回到OPM系统</p>
+                    </div>
+                    
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">用户名或邮箱</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">密码</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-key"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">记住我</label>
+                        </div>
+                        
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                                <i class="fas fa-sign-in-alt me-2"></i>登录
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('auth.forgot_password_page') }}" class="text-decoration-none">
+                            忘记密码？
+                        </a>
+                        <span class="mx-2">|</span>
+                        <a href="{{ url_for('auth.register_page') }}" class="text-decoration-none">
+                            没有账户？立即注册
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // 密码显示/隐藏切换
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+    
+    // 登录表单提交
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const loginData = {
+            username: formData.get('username'),
+            password: formData.get('password')
+        };
+        
+        // 禁用按钮并显示加载状态
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>登录中...';
+        
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 显示成功消息
+                showNotification('登录成功！正在跳转...', 'success');
+                
+                // 延迟跳转到首页
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            } else {
+                showNotification(result.message || '登录失败', 'error');
+            }
+        } catch (error) {
+            console.error('登录错误:', error);
+            showNotification('网络错误，请稍后重试', 'error');
+        } finally {
+            // 恢复按钮状态
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>登录';
+        }
+    });
+    
+    // 显示详细的成功信息
+    function showDetailedSuccess(result) {
+        let successMessage = `<div><strong>登录成功！</strong></div>`;
+        
+        if (result.user) {
+            successMessage += `
+                <div class="mt-2">
+                    <small>
+                        <div>欢迎回来，${result.user.username}！</div>
+                        <div>用户ID: ${result.user.id}</div>
+                        <div>邮箱: ${result.user.email}</div>
+                        <div>角色: ${result.user.role}</div>
+                    </small>
+                </div>
+            `;
+        }
+        
+        if (result.session_info) {
+            successMessage += `
+                <div class="mt-2">
+                    <small>
+                        <div>会话创建时间: ${result.session_info.created_at || '未知'}</div>
+                        <div>会话过期时间: ${result.session_info.expires_at || '未知'}</div>
+                    </small>
+                </div>
+            `;
+        }
+        
+        showNotification(successMessage, 'success');
+    }
+    
+    // 显示详细的错误信息
+    function showDetailedError(result) {
+        let errorMessage = `<div><strong>${result.message || '登录失败'}</strong></div>`;
+        
+        if (result.error_details) {
+            errorMessage += `
+                <div class="mt-2">
+                    <small>
+                        <div>用户名: ${result.error_details.username || '未知'}</div>
+                        <div>时间: ${result.error_details.attempt_time || '未知'}</div>
+                        <div>IP地址: ${result.error_details.ip_address || '未知'}</div>
+                        <div>原因: ${result.error_details.reason || '未知'}</div>
+                    </small>
+                </div>
+            `;
+        }
+        
+        showNotification(errorMessage, 'error');
+    }
+    
+    // 显示通知函数
+    function showNotification(message, type = 'info') {
+        // 移除现有的通知
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // 创建通知元素
+        const toastHTML = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0 position-fixed top-0 end-0 m-3" 
+                 role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1050; min-width: 300px;">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', toastHTML);
+        
+        // 显示通知
+        const toastEl = document.querySelector('.toast:last-child');
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+        
+        // 自动移除
+        toastEl.addEventListener('hidden.bs.toast', function() {
+            this.remove();
+        });
+    }
+});
+</script>
+{% endblock %}

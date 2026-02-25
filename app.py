@@ -8,7 +8,7 @@ import json
 from flask import send_file
 import markdown
 from docx import Document
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import os
 import logging
 
@@ -25,6 +25,7 @@ from routes.kafka_generator_routes import kafka_generator_bp
 from routes.sql_routes import sql_bp
 from routes.event_routes import event_bp
 from routes.word_to_md_routes import word_to_md_bp
+from routes.auth_routes import auth_bp
 from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 
 # 配置日志
@@ -33,6 +34,11 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# 确保models目录存在
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def create_app(config_name='default'):
@@ -55,6 +61,7 @@ def create_app(config_name='default'):
     app.register_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
     app.register_blueprint(schedule_config_bp)
     app.register_blueprint(kafka_generator_bp)
+    app.register_blueprint(auth_bp)
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
@@ -76,7 +83,16 @@ def index():
     logger.info("访问系统首页")
     demo_exists = os.path.exists(app.config['DEMO_TEMPLATE_PATH'])
     logger.info(f"Demo模板存在状态: {demo_exists}")
-    return render_template('index.html', demo_exists=demo_exists)
+    
+    # 检查用户登录状态
+    from flask import session
+    user_info = {
+        'logged_in': 'user_id' in session,
+        'username': session.get('username', ''),
+        'role': session.get('role', 'user')
+    }
+    
+    return render_template('index.html', demo_exists=demo_exists, user=user_info)
 
 if __name__ == '__main__':
     import os
