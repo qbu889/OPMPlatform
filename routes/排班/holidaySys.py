@@ -196,8 +196,8 @@ def start_scheduler():
 if __name__ == "__main__":
     """
     主程序入口，支持两种运行方式：
-    1. 手动触发：python3 holiday_sync.py 2026 （指定同步的年份，多个用空格分隔）
-    2. 定时触发：python3 holiday_sync.py （直接运行，启动定时任务）
+    1. 手动触发：python3 holidaySys.py 2026 （指定同步的年份，多个用空格分隔）
+    2. 定时触发：python3 holidaySys.py （直接运行，启动定时任务）
     """
 
     args = sys.argv[1:]
