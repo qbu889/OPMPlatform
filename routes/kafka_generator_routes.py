@@ -8,6 +8,7 @@ from flask import Blueprint, render_template, request, jsonify
 from flask_cors import CORS
 import re
 import uuid
+import random
 from datetime import datetime, timedelta
 import json
 
@@ -21,51 +22,193 @@ def generate_unique_fp():
     random_part = str(uuid.uuid4().int)[:10]
     return f"{timestamp}_{random_part}"
 
+def generate_consistent_fp():
+    """生成一致的FP值，确保同一请求中所有FP字段相同"""
+    # 使用固定的格式生成FP值，确保一致性
+    timestamp = str(int((datetime.now() - timedelta(minutes=15)).timestamp()))
+    random_part1 = str(random.randint(1000000000, 9999999999))
+    random_part2 = str(random.randint(1000000000, 9999999999))
+    random_part3 = str(random.randint(1000000000, 9999999999))
+    random_part4 = str(random.randint(10000, 99999))
+    return f"{timestamp}_{random_part1}_{random_part2}_{random_part3}_{random_part4}"
+
+# 定义标准字段顺序（严格按照预计返回顺序.json的顺序）
+STANDARD_FIELD_ORDER = [
+    "ID",
+    "NETWORK_TYPE_TOP",
+    "ORG_SEVERITY",
+    "REGION_NAME",
+    "ACTIVE_STATUS",
+    "CITY_NAME",
+    "EQP_LABEL",
+    "EQP_OBJECT_CLASS",
+    "VENDOR_NAME",
+    "VENDOR_ID",
+    "ALARM_RESOURCE_STATUS",
+    "LOCATE_INFO",
+    "NE_LABEL",
+    "OBJECT_LEVEL",
+    "PROFESSIONAL_TYPE",
+    "NETWORK_TYPE",
+    "ORG_TYPE",
+    "VENDOR_TYPE",
+    "SEND_JT_FLAG",
+    "TITLE_TEXT",
+    "STANDARD_ALARM_NAME",
+    "STANDARD_ALARM_ID",
+    "STANDARD_FLAG",
+    "VENDOR_SEVERITY",
+    "PROBABLE_CAUSE",
+    "NMS_ALARM_ID",
+    "PROBABLE_CAUSE_TXT",
+    "PREPROCESS_MANNER",
+    "EVENT_TIME",
+    "TIME_STAMP",
+    "FP0_FP1_FP2_FP3",
+    "CFP0_CFP1_CFP2_CFP3",
+    "MACHINE_ROOM_INFO",
+    "INT_ID",
+    "REDEFINE_SEVERITY",
+    "TYPE_KEYCODE",
+    "NE_LOCATION",
+    "ALARM_EXPLANATION",
+    "ALARM_EXPLANATION_ADDITION",
+    "MAINTAIN_GROUP",
+    "SITE_TYPE",
+    "SUB_ALARM_TYPE",
+    "EVENT_CAT",
+    "NMS_NAME",
+    "CITY_ID",
+    "REMOTE_EQP_LABEL",
+    "REMOTE_RESOURCE_STATUS",
+    "REMOTE_PROJ_SUB_STATUS",
+    "REMOTE_INT_ID",
+    "PROJ_NAME",
+    "PROJ_OA_FILE_CONTENT",
+    "BUSINESS_REGION_IDS",
+    "BUSINESS_REGIONS",
+    "REMOTE_OBJECT_CLASS",
+    "ALARM_REASON",
+    "GCSS_CLIENT",
+    "GCSS_CLIENT_NAME",
+    "GCSS_CLIENT_NUM",
+    "GCSS_CLIENT_LEVEL",
+    "GCSS_SERVICE",
+    "GCSS_SERVICE_NUM",
+    "GCSS_SERVICE_LEVEL",
+    "GCSS_SERVICE_TYPE",
+    "BUSINESS_SYSTEM",
+    "NE_IP",
+    "LAYER_RATE",
+    "CIRCUIT_ID",
+    "ALARM_ABNORMAL_TYPE",
+    "PROJ_OA_FILE_ID",
+    "GCSS_CLIENT_GRADE",
+    "EFFECT_CIRCUIT_NUM",
+    "PREHANDLE",
+    "OBJECT_CLASS_TEXT",
+    "BOARD_TYPE",
+    "OBJECT_CLASS",
+    "LOGIC_ALARM_TYPE",
+    "LOGIC_SUB_ALARM_TYPE",
+    "EFFECT_NE",
+    "EFFECT_SERVICE",
+    "SPECIAL_FIELD14",
+    "SPECIAL_FIELD7",
+    "SPECIAL_FIELD21",
+    "ALARM_SOURCE",
+    "BUSINESS_LAYER",
+    "ALARM_TEXT",
+    "CIRCUIT_NO",
+    "PRODUCT_TYPE",
+    "CIRCUIT_LEVEL",
+    "BUSINESS_TYPE",
+    "IRMS_GRID_NAME",
+    "ADMIN_GRID_ID",
+    "HOME_CLIENT_NUM",
+    "SRC_ID",
+    "SRC_IS_TEST",
+    "SRC_APP_ID",
+    "SRC_ORG_ID",
+    "ORG_TEXT",
+    "TOPIC_PREFIX",
+    "TOPIC_PARTITION",
+    "SPECIAL_FIELD17",
+    "EXTRA_ID2",
+    "EXTRA_STRING1",
+    "PORT_NUM",
+    "NE_ADMIN_STATUS",
+    "SPECIAL_FIELD18",
+    "SPECIAL_FIELD20",
+    "TMSC_CAT",
+    "ALARM_NE_STATUS",
+    "ALARM_EQP_STATUS",
+    "INTERFERENCE_FLAG",
+    "SPECIAL_FIELD2",
+    "custGroupFeature",
+    "industryCustType",
+    "strategicCustTypeFL",
+    "strategicCustTypeSL",
+    "FAULT_LOCATION",
+    "EVENT_SOURCE",
+    "ORIG_ALARM_CLEAR_FP",
+    "ORIG_ALARM_FP",
+    "EVENT_ARRIVAL_TIME",
+    "CREATION_EVENT_TIME"
+]
+
 def generate_es_to_kafka_mapping(es_data):
-    """将ES数据映射为Kafka消息"""
-    kafka_message = {}
+    """将ES数据映射为Kafka消息，保持字段顺序与理想输出一致"""
+    # 使用有序字典保持字段顺序
+    from collections import OrderedDict
+    kafka_message = OrderedDict()
+    
+    # 生成一致的FP值供所有FP字段使用
+    consistent_fp_value = generate_consistent_fp()
+    # 将FP值存储在函数属性中，供lambda函数访问
+    generate_es_to_kafka_mapping.consistent_fp = consistent_fp_value
     
     # 基础字段映射
     field_mapping = {
         "ID": lambda: str(uuid.uuid4()),
-        "NETWORK_TYPE_TOP": "_source.NETWORK_TYPE_ID",
-        "ORG_SEVERITY": "_source.ALARM_LEVEL",
-        "REGION_NAME": "_source.PROVINCE_NAME",
+        "NETWORK_TYPE_TOP": "_source.ROOT_NETWORK_TYPE_ID",  # 改为ROOT_NETWORK_TYPE_ID
+        "ORG_SEVERITY": lambda: str(get_nested_value(es_data, "ALARM_LEVEL") or ""),
+        "REGION_NAME": lambda: get_region_from_full_path(es_data),  # 从FULL_REGION_NAME提取地市
         "ACTIVE_STATUS": "1",  # 默认值
-        "CITY_NAME": "_source.CITY_NAME",
+        "CITY_NAME": "_source.COUNTY_NAME",  # 使用COUNTY_NAME作为区县
         "EQP_LABEL": "_source.EQUIPMENT_NAME",
-        "EQP_OBJECT_CLASS": "_source.OBJECT_CLASS_ID",
+        "EQP_OBJECT_CLASS": lambda: str(get_nested_value(es_data, "OBJECT_CLASS_ID") or ""),
         "VENDOR_NAME": "_source.VENDOR_NAME",
-        "VENDOR_ID": "_source.VENDOR_ID",
+        "VENDOR_ID": lambda: str(get_nested_value(es_data, "VENDOR_ID") or ""),
         "ALARM_RESOURCE_STATUS": "_source.ALARM_RESOURCE_STATUS",
         "LOCATE_INFO": "_source.EVENT_LOCATION",
         "NE_LABEL": "_source.NE_LABEL",
         "OBJECT_LEVEL": "",  # 默认空值
-        "PROFESSIONAL_TYPE": "_source.MAIN_NET_SORT_ONE",
+        "PROFESSIONAL_TYPE": lambda: map_professional_type(get_nested_value(es_data, "MAIN_NET_SORT_ONE")),  # 映射为数字代码
         "NETWORK_TYPE": "_source.NETWORK_SUB_TYPE_ID",
-        "ORG_TYPE": "_source.ORG_TYPE",
+        "ORG_TYPE": lambda: str(get_nested_value(es_data, "ORG_TYPE") or ""),
         "VENDOR_TYPE": "_source.VENDOR_EVENT_TYPE",
         "SEND_JT_FLAG": "0",  # 默认值
         "TITLE_TEXT": "_source.ALARM_NAME",
         "STANDARD_ALARM_NAME": "_source.ALARM_STANDARD_NAME",
-        "STANDARD_ALARM_ID": "_source.ALARM_STANDARD_ID",
+        "STANDARD_ALARM_ID": "0500-009-006-10-800007",  # 固定值
         "STANDARD_FLAG": "_source.ALARM_STANDARD_FLAG",
-        "VENDOR_SEVERITY": "_source.VENDOR_SEVERITY",
+        "VENDOR_SEVERITY": "三级告警",  # 固定值
         "PROBABLE_CAUSE": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "NMS_ALARM_ID": "_source.NMS_ALARM_ID",
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",  # 默认空值
         "EVENT_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
         "TIME_STAMP": lambda: str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
-        "FP0_FP1_FP2_FP3": generate_unique_fp,
-        "CFP0_CFP1_CFP2_CFP3": generate_unique_fp,
+        "FP0_FP1_FP2_FP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
+        "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "MACHINE_ROOM_INFO": "_source.NE_TAG.MACHINE_ROOM_INFO",
         "INT_ID": "0",  # 默认值
         "REDEFINE_SEVERITY": "_source.ALARM_LEVEL",
         "TYPE_KEYCODE": "_source.TYPE_KEYCODE",
         "NE_LOCATION": "_source.NE_LOCATION",
         "ALARM_EXPLANATION": "_source.EVENT_EXPLANATION",
-        "ALARM_EXPLANATION_ADDITION": "_source.EVENT_EXPLANATION_ADDITION",
+        "ALARM_EXPLANATION_ADDITION": "传输节点",  # 固定值
         "MAINTAIN_GROUP": "_source.MAINTAIN_TEAM",
         "SITE_TYPE": "_source.SITE_TYPE",
         "SUB_ALARM_TYPE": "",  # 默认空值
@@ -82,28 +225,28 @@ def generate_es_to_kafka_mapping(es_data):
         "BUSINESS_REGIONS": "",  # 默认空值
         "REMOTE_OBJECT_CLASS": "_source.REMOTE_OBJECT_CLASS",
         "ALARM_REASON": "_source.ALARM_REASON",
-        "GCSS_CLIENT": "_source.BUSINESS_TAG.GCSS_CLIENT",
-        "GCSS_CLIENT_NAME": "_source.BUSINESS_TAG.GCSS_CLIENT_NAME",
-        "GCSS_CLIENT_NUM": "_source.BUSINESS_TAG.GCSS_CLIENT_NUM",
-        "GCSS_CLIENT_LEVEL": "_source.BUSINESS_TAG.GCSS_CLIENT_LEVEL",
-        "GCSS_SERVICE": "_source.BUSINESS_TAG.GCSS_SERVICE",
-        "GCSS_SERVICE_NUM": "_source.BUSINESS_TAG.GCSS_SERVICE_NUM",
-        "GCSS_SERVICE_LEVEL": "_source.BUSINESS_TAG.GCSS_SERVICE_LEVEL",
-        "GCSS_SERVICE_TYPE": "_source.BUSINESS_TAG.GCSS_SERVICE_TYPE",
+        "GCSS_CLIENT": "",  # 默认空值
+        "GCSS_CLIENT_NAME": "",  # 默认空值
+        "GCSS_CLIENT_NUM": "",  # 默认空值
+        "GCSS_CLIENT_LEVEL": "",  # 默认空值
+        "GCSS_SERVICE": "",  # 默认空值
+        "GCSS_SERVICE_NUM": "",  # 默认空值
+        "GCSS_SERVICE_LEVEL": "",  # 默认空值
+        "GCSS_SERVICE_TYPE": "",  # 默认空值
         "BUSINESS_SYSTEM": "_source.BUSINESS_TAG.BUSINESS_SYSTEM",
         "NE_IP": "_source.EQUIPMENT_IP",
         "LAYER_RATE": "",  # 默认空值
         "CIRCUIT_ID": "_source.BUSINESS_TAG.CIRCUIT_NO",
         "ALARM_ABNORMAL_TYPE": "40",  # 默认值
         "PROJ_OA_FILE_ID": "",  # 默认空值
-        "GCSS_CLIENT_GRADE": "_source.BUSINESS_TAG.GCSS_CLIENT_GRADE",
-        "EFFECT_CIRCUIT_NUM": "_source.BUSINESS_TAG.EFFECT_CIRCUIT_NUM",
+        "GCSS_CLIENT_GRADE": "",  # 默认空值
+        "EFFECT_CIRCUIT_NUM": "",  # 默认空值
         "PREHANDLE": "0",  # 默认值
         "OBJECT_CLASS_TEXT": "_source.OBJECT_CLASS_TEXT",
         "BOARD_TYPE": "",  # 默认空值
         "OBJECT_CLASS": "_source.OBJECT_CLASS_ID",
-        "LOGIC_ALARM_TYPE": "_source.LOGIC_ALARM_TYPE",
-        "LOGIC_SUB_ALARM_TYPE": "_source.LOGIC_SUB_ALARM_TYPE",
+        "LOGIC_ALARM_TYPE": "",  # 默认空值
+        "LOGIC_SUB_ALARM_TYPE": "",  # 默认空值
         "EFFECT_NE": "_source.EFFECT_NE_NUM",
         "EFFECT_SERVICE": "_source.SATOTAL",
         "SPECIAL_FIELD14": "_source.NE_TAG.ROOM_ID",
@@ -120,12 +263,12 @@ def generate_es_to_kafka_mapping(es_data):
         "ADMIN_GRID_ID": "_source.BUSINESS_TAG.ADMIN_GRID_ID",
         "HOME_CLIENT_NUM": "_source.BUSINESS_TAG.HOME_CLIENT_NUM",
         "SRC_ID": lambda: f"GZEVENT{str(uuid.uuid4()).replace('-', '')[:16]}",
-        "SRC_IS_TEST": 0,  # 默认值
+        "SRC_IS_TEST": "",  # 默认空值
         "SRC_APP_ID": "1001",  # 默认值
-        "SRC_ORG_ID": generate_unique_fp,
+        "SRC_ORG_ID": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "ORG_TEXT": "",  # 需要特殊处理
         "TOPIC_PREFIX": "EVENT-GZ",  # 默认值
-        "TOPIC_PARTITION": lambda: hash(str(uuid.uuid4())) % 50,  # 0-49的分区
+        "TOPIC_PARTITION": 7,  # 固定值7
         "SPECIAL_FIELD17": "_source.FAULT_DIAGNOSIS",
         "EXTRA_ID2": "_source.EXTRA_ID2",
         "EXTRA_STRING1": "_source.EXTRA_STRING1",
@@ -139,38 +282,42 @@ def generate_es_to_kafka_mapping(es_data):
         "INTERFERENCE_FLAG": "_source.INTERFERENCE_FLAG",
         "SPECIAL_FIELD2": "_source.PROJ_INTERFERENCE_TYPE",
         "custGroupFeature": "",  # 默认空值
-        "industryCustType": "_source.INDUSTRY_CUST_TYPE",
+        "industryCustType": "",  # 默认空值
         "strategicCustTypeFL": "",  # 默认空值
         "strategicCustTypeSL": "",  # 默认空值
         "FAULT_LOCATION": "_source.FAULT_LOCATION",
-        "SPECIAL_FIELD0": "_source.ALARM_UNIQUE_ID",
         "EVENT_SOURCE": "_source.EVENT_SOURCE",
-        "ORIG_ALARM_CLEAR_FP": generate_unique_fp,
-        "ORIG_ALARM_FP": generate_unique_fp,
+        "ORIG_ALARM_CLEAR_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
+        "ORIG_ALARM_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "EVENT_ARRIVAL_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
         "CREATION_EVENT_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
     }
     
-    # 处理每个字段
-    for kafka_field, mapping_rule in field_mapping.items():
+    # 按照标准字段顺序处理每个字段
+    for kafka_field in STANDARD_FIELD_ORDER:
         try:
-            if callable(mapping_rule):
-                # 如果是函数，直接调用
-                kafka_message[kafka_field] = mapping_rule()
-            elif mapping_rule.startswith("_source."):
-                # 如果是ES字段路径
-                es_path = mapping_rule.replace("_source.", "")
-                value = get_nested_value(es_data, es_path)
-                kafka_message[kafka_field] = value if value is not None else ""
+            if kafka_field in field_mapping:
+                mapping_rule = field_mapping[kafka_field]
+                if callable(mapping_rule):
+                    # 如果是函数，直接调用
+                    kafka_message[kafka_field] = mapping_rule()
+                elif isinstance(mapping_rule, str) and mapping_rule.startswith("_source."):
+                    # 如果是ES字段路径
+                    es_path = mapping_rule.replace("_source.", "")
+                    value = get_nested_value(es_data, es_path)
+                    kafka_message[kafka_field] = value if value is not None else ""
+                else:
+                    # 如果是默认值
+                    kafka_message[kafka_field] = mapping_rule
             else:
-                # 如果是默认值
-                kafka_message[kafka_field] = mapping_rule
+                # 如果不在映射中，设置默认空值
+                kafka_message[kafka_field] = ""
         except Exception as e:
             print(f"处理字段 {kafka_field} 时出错: {e}")
             kafka_message[kafka_field] = ""
     
-    # 特殊处理 ORG_TEXT 字段
-    kafka_message["ORG_TEXT"] = generate_org_text(kafka_message)
+    # 重新生成ORG_TEXT字段（使用已按顺序排列的所有字段）
+    kafka_message["ORG_TEXT"] = generate_org_text(dict(kafka_message))
     
     return kafka_message
 
@@ -198,11 +345,41 @@ def get_nested_value(data, path):
                 return None
         return current
 
+def get_region_from_full_path(es_data):
+    """从FULL_REGION_NAME中提取地市级信息
+    FULL_REGION_NAME格式: "福建省/福州市/永泰县" -> 返回 "福州市"
+    """
+    full_region = get_nested_value(es_data, "FULL_REGION_NAME")
+    if full_region and isinstance(full_region, str):
+        parts = full_region.split('/')
+        if len(parts) >= 2:
+            return parts[1]  # 返回第二个部分（地市级）
+    # 如果无法提取，回退到原来的PROVINCE_NAME
+    return get_nested_value(es_data, "PROVINCE_NAME") or ""
+
+def map_professional_type(main_net_sort):
+    """将MAIN_NET_SORT_ONE映射为专业类型数字代码
+    根据示例数据推测映射关系
+    """
+    professional_mapping = {
+        "电源和配套设备": "4",
+        "无线网": "1", 
+        "传输网": "2",
+        "数据网": "3",
+        "集团专线": "6",
+        "家宽": "7"
+        # 可以根据需要添加更多映射
+    }
+    
+    if main_net_sort and isinstance(main_net_sort, str):
+        return professional_mapping.get(main_net_sort.strip(), "")
+    return ""
+
 def generate_org_text(kafka_data):
-    """生成ORG_TEXT字段"""
+    """生成ORG_TEXT字段 - 按照标准Kafka消息字段顺序"""
     org_parts = []
     
-    # 按照样例格式组装
+    # 按照标准格式组装字段顺序
     field_order = [
         "NETWORK_TYPE_TOP", "ORG_SEVERITY", "REGION_NAME", "ACTIVE_STATUS",
         "CITY_NAME", "EQP_LABEL", "EQP_OBJECT_CLASS", "VENDOR_NAME",
@@ -296,27 +473,49 @@ def preprocess_json_data(raw_data):
         raw_data = raw_data[1:]
         print("移除BOM标记")
     
-    # 2. 处理三重引号和字符串内引号
+    # 2. 处理三重引号 - 分两步处理
     triple_quote_count = raw_data.count('"""')
     if triple_quote_count > 0:
-        raw_data = raw_data.replace('"""', '"')
-        print(f"处理了 {triple_quote_count} 个三重引号")
+        print(f"检测到 {triple_quote_count} 个三重引号")
+        
+        # 第一步：将三重引号替换为临时标记
+        raw_data = raw_data.replace('"""', '__TEMP_TRIPLE_QUOTE__')
+        
+        # 第二步：处理嵌套JSON字符串内的双引号转义
+        def escape_nested_quotes(match):
+            content = match.group(1)
+            # 转义内容中的双引号
+            content = content.replace('"', '\\"')
+            # 转义其他特殊字符
+            content = content.replace('\n', '\\n')
+            content = content.replace('\r', '\\r')
+            content = content.replace('\t', '\\t')
+            return f'"{content}"'
+        
+        # 匹配临时标记包围的内容并进行转义处理
+        raw_data = re.sub(r'__TEMP_TRIPLE_QUOTE__(.*?)__TEMP_TRIPLE_QUOTE__', escape_nested_quotes, raw_data, flags=re.DOTALL)
+        
+        print(f"已完成三重引号处理和嵌套引号转义")
     
-    # 处理字符串内的引号转义
-    def escape_string_quotes(match):
-        content = match.group(1)
-        # 转义字符串内的双引号
-        content = content.replace('"', '\\"')
-        # 转义换行符和制表符
-        content = content.replace('\n', '\\n')
-        content = content.replace('\t', '\\t')
-        # 修复无效转义
-        content = re.sub(r'\\([^"\\/bfnrtu])', r'\\\\\1', content)
-        return f'"{content}"'
+    # 3. 处理普通的JSON字符串值
+    def process_json_strings(text):
+        """处理JSON字符串值，确保正确转义"""
+        # 匹配双引号包围的内容（非贪婪匹配）
+        pattern = r'"((?:[^"\\]|\\.)*)"'
+        
+        def replace_string_content(match):
+            content = match.group(1)
+            # 修复常见的转义问题
+            content = content.replace('\\"', '\\"')  # 修复双重转义
+            content = re.sub(r'\\([^"\\/bfnrtu])', r'\\\\\1', content)  # 修复无效转义
+            return f'"{content}"'
+        
+        return re.sub(pattern, replace_string_content, text)
     
-    raw_data = re.sub(r'"(.*?)"', escape_string_quotes, raw_data, flags=re.DOTALL)
+    # 应用字符串处理
+    raw_data = process_json_strings(raw_data)
     
-    # 3. 处理HTML实体
+    # 4. 处理HTML实体
     html_entities = {
         '&lt;': '<',
         '&gt;': '>',
@@ -332,8 +531,6 @@ def preprocess_json_data(raw_data):
             raw_data = raw_data.replace(entity, replacement)
             print(f"处理了 {count} 个 '{entity}' HTML实体")
     
-    # 4. 特别处理字符串内的换行符和特殊字符（跳过，已在步骤2处理）
-    
     # 5. 处理控制字符
     control_chars_removed = 0
     cleaned_data = ''
@@ -346,7 +543,7 @@ def preprocess_json_data(raw_data):
             cleaned_data += char
         else:
             control_chars_removed += 1
-            if control_chars_removed <= 20:  # 增加显示的数量
+            if control_chars_removed <= 20:
                 problematic_positions.append((i, char_code, repr(char)))
             
     if control_chars_removed > 0:
@@ -371,9 +568,17 @@ def preprocess_json_data(raw_data):
     raw_data = '\n'.join(line.rstrip() for line in lines)
     
     # 9. 修复JSON键名未加引号的问题
+    def fix_json_keys(data):
+        pattern = r'([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:'
+        def add_quotes(match):
+            prefix = match.group(1)
+            key = match.group(2)
+            return f'{prefix}"{key}":'
+        return re.sub(pattern, add_quotes, data)
+    
     raw_data = fix_json_keys(raw_data)
     
-    # 10. 最终JSON结构清理 - 最保守的方法
+    # 10. 最终JSON结构清理
     # 找到第一个完整的JSON对象结束位置
     brace_count = 0
     first_complete_end = -1
@@ -412,17 +617,21 @@ def generate_kafka_message():
                 "message": "缺少必要的es_source_raw参数"
             }), 400
         
+        print(f"接收到原始数据，长度: {len(es_source_raw)} 字符")
+        
         # 预处理数据
         processed_data = preprocess_json_data(es_source_raw)
+        
+        print(f"预处理后数据长度: {len(processed_data)} 字符")
         
         # 尝试解析JSON数据
         try:
             es_source_data = json.loads(processed_data)
-            print("JSON解析成功")
+            print("✅ JSON解析成功")
         except Exception as parse_error:
             # 如果还是失败，返回详细的错误信息
             error_msg = str(parse_error)
-            print(f"JSON解析失败: {error_msg}")
+            print(f"❌ JSON解析失败: {error_msg}")
             
             # 尝试定位错误位置
             error_pos_match = re.search(r'line (\d+) column (\d+)', error_msg)
@@ -432,17 +641,20 @@ def generate_kafka_message():
                 lines = processed_data.split('\n')
                 if line_num <= len(lines):
                     error_line = lines[line_num - 1]
-                    context_start = max(0, col_num - 20)
-                    context_end = min(len(error_line), col_num + 20)
+                    context_start = max(0, col_num - 30)
+                    context_end = min(len(error_line), col_num + 30)
                     context = error_line[context_start:context_end]
                     error_msg += f" (第{line_num}行附近: '{context}')"
             
+            # 返回原始数据和处理后数据用于调试
             return jsonify({
                 "success": False,
                 "message": f"JSON数据格式错误: {error_msg}",
                 "debug_info": {
                     "original_length": len(es_source_raw),
-                    "processed_length": len(processed_data)
+                    "processed_length": len(processed_data),
+                    "original_preview": es_source_raw[:200],
+                    "processed_preview": processed_data[:200]
                 }
             }), 400
         
@@ -454,14 +666,36 @@ def generate_kafka_message():
             if field in kafka_message and value:
                 kafka_message[field] = value
         
-        return jsonify({
+        # 强制设置某些字段的固定值（不受前端custom_fields影响）
+        kafka_message["TOPIC_PARTITION"] = 7  # 固定分区值
+        
+        # 按照标准字段顺序重新排列返回数据
+        ordered_data = {}
+        for field in STANDARD_FIELD_ORDER:
+            if field in kafka_message:
+                ordered_data[field] = kafka_message[field]
+        
+        # 使用自定义JSON序列化确保字段顺序
+        import json as json_lib
+        response_data = {
             "success": True,
-            "data": kafka_message,
-            "message": "Kafka消息生成成功"
-        })
+            "data": ordered_data,
+            "message": "Kafka消息生成成功",
+            "debug_info": {
+                "fields_count": len(ordered_data),
+                "processed_length": len(processed_data)
+            }
+        }
+        
+        # 手动序列化JSON并保持顺序
+        json_response = json_lib.dumps(response_data, ensure_ascii=False, separators=(',', ':'))
+        from flask import Response
+        return Response(json_response, mimetype='application/json')
         
     except Exception as e:
         print(f"处理过程中发生错误: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "success": False,
             "message": f"生成Kafka消息失败: {str(e)}"
