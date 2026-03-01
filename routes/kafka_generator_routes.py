@@ -12,8 +12,8 @@ import random
 from datetime import datetime, timedelta
 import json
 
-
 kafka_generator_bp = Blueprint('kafka_generator_bp', __name__, url_prefix='/kafka-generator')
+
 
 def generate_unique_fp():
     """生成唯一的FP值"""
@@ -21,6 +21,7 @@ def generate_unique_fp():
     timestamp = str(int(datetime.now().timestamp()))
     random_part = str(uuid.uuid4().int)[:10]
     return f"{timestamp}_{random_part}"
+
 
 def generate_consistent_fp():
     """生成一致的FP值，确保同一请求中所有FP字段相同"""
@@ -31,6 +32,7 @@ def generate_consistent_fp():
     random_part3 = str(random.randint(1000000000, 9999999999))
     random_part4 = str(random.randint(10000, 99999))
     return f"{timestamp}_{random_part1}_{random_part2}_{random_part3}_{random_part4}"
+
 
 # 定义标准字段顺序（严格按照预计返回顺序.json的顺序）
 STANDARD_FIELD_ORDER = [
@@ -157,17 +159,18 @@ STANDARD_FIELD_ORDER = [
     "CREATION_EVENT_TIME"
 ]
 
+
 def generate_es_to_kafka_mapping(es_data):
     """将ES数据映射为Kafka消息，保持字段顺序与理想输出一致"""
     # 使用有序字典保持字段顺序
     from collections import OrderedDict
     kafka_message = OrderedDict()
-    
+
     # 生成一致的FP值供所有FP字段使用
     consistent_fp_value = generate_consistent_fp()
     # 将FP值存储在函数属性中，供lambda函数访问
     generate_es_to_kafka_mapping.consistent_fp = consistent_fp_value
-    
+
     # 基础字段映射
     field_mapping = {
         "ID": lambda: str(uuid.uuid4()),
@@ -292,7 +295,7 @@ def generate_es_to_kafka_mapping(es_data):
         "EVENT_ARRIVAL_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
         "CREATION_EVENT_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
     }
-    
+
     # 按照标准字段顺序处理每个字段
     for kafka_field in STANDARD_FIELD_ORDER:
         try:
@@ -315,11 +318,12 @@ def generate_es_to_kafka_mapping(es_data):
         except Exception as e:
             print(f"处理字段 {kafka_field} 时出错: {e}")
             kafka_message[kafka_field] = ""
-    
+
     # 重新生成ORG_TEXT字段（使用已按顺序排列的所有字段）
     kafka_message["ORG_TEXT"] = generate_org_text(dict(kafka_message))
-    
+
     return kafka_message
+
 
 def get_nested_value(data, path):
     """获取嵌套字典中的值"""
@@ -345,6 +349,7 @@ def get_nested_value(data, path):
                 return None
         return current
 
+
 def get_region_from_full_path(es_data):
     """从FULL_REGION_NAME中提取地市级信息
     FULL_REGION_NAME格式: "福建省/福州市/永泰县" -> 返回 "福州市"
@@ -357,28 +362,30 @@ def get_region_from_full_path(es_data):
     # 如果无法提取，回退到原来的PROVINCE_NAME
     return get_nested_value(es_data, "PROVINCE_NAME") or ""
 
+
 def map_professional_type(main_net_sort):
     """将MAIN_NET_SORT_ONE映射为专业类型数字代码
     根据示例数据推测映射关系
     """
     professional_mapping = {
         "电源和配套设备": "4",
-        "无线网": "1", 
+        "无线网": "1",
         "传输网": "2",
         "数据网": "3",
         "集团专线": "6",
         "家宽": "7"
         # 可以根据需要添加更多映射
     }
-    
+
     if main_net_sort and isinstance(main_net_sort, str):
         return professional_mapping.get(main_net_sort.strip(), "")
     return ""
 
+
 def generate_org_text(kafka_data):
     """生成ORG_TEXT字段 - 按照标准Kafka消息字段顺序"""
     org_parts = []
-    
+
     # 按照标准格式组装字段顺序
     field_order = [
         "NETWORK_TYPE_TOP", "ORG_SEVERITY", "REGION_NAME", "ACTIVE_STATUS",
@@ -410,7 +417,7 @@ def generate_org_text(kafka_data):
         "IRMS_GRID_NAME", "ADMIN_GRID_ID", "HOME_CLIENT_NUM",
         "SRC_ID", "SRC_IS_TEST", "SRC_APP_ID", "SRC_ORG_ID"
     ]
-    
+
     for field in field_order:
         # 确保值是字符串类型
         raw_value = kafka_data.get(field, "")
@@ -418,69 +425,72 @@ def generate_org_text(kafka_data):
             value = ""
         else:
             value = str(raw_value)
-        
+
         # 处理特殊字符 - 确保value是字符串后再操作
         if isinstance(value, str) and value:
             value = value.replace("_", "\\_")
         else:
             value = "_"
-            
+
         org_parts.append(value)
-    
+
     return "_;".join(org_parts) + "_"
+
 
 @kafka_generator_bp.route('/')
 def kafka_generator_page():
     """Kafka消息生成器页面"""
     return render_template('kafka_generator.html')
 
+
 def fix_json_keys(raw_data):
     """修复JSON键名未加引号的问题
     将 {key: value} 格式转换为 {"key": value} 格式"""
     import re
-    
+
     # 更精确的键名匹配模式
     # 匹配字母、数字、下划线组成的键名，前面是{或,
     pattern = r'([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:'
-    
+
     def add_quotes(match):
         prefix = match.group(1)  # { 或 ,
-        key = match.group(2)     # 键名
+        key = match.group(2)  # 键名
         return f'{prefix}"{key}":'
-    
+
     # 执行替换
     fixed_data = re.sub(pattern, add_quotes, raw_data)
-    
+
     # 统计修复的数量
     matches_before = re.findall(pattern, raw_data)
     matches_after = re.findall(pattern, fixed_data)
-    
+
     if len(matches_before) > 0:
         print(f"检测到 {len(matches_before)} 个未加引号的键名:")
         for _, key in matches_before:
             print(f"  - {key}")
         print(f"已修复 {len(matches_before)} 个键名")
-    
+
     return fixed_data
+
 
 def preprocess_json_data(raw_data):
     """预处理JSON数据，修复常见格式问题
     专门针对包含三重引号、控制字符、多余括号等问题的JSON数据"""
     print("开始预处理JSON数据...")
-    
+
     # 1. 移除BOM标记
     if raw_data.startswith('\ufeff'):
         raw_data = raw_data[1:]
         print("移除BOM标记")
-    
+
     # 2. 处理三重引号 - 分两步处理
     triple_quote_count = raw_data.count('"""')
     if triple_quote_count > 0:
         print(f"检测到 {triple_quote_count} 个三重引号")
-        
+
         # 第一步：将三重引号替换为临时标记
         raw_data = raw_data.replace('"""', '__TEMP_TRIPLE_QUOTE__')
-        
+
         # 第二步：处理嵌套JSON字符串内的双引号转义
         def escape_nested_quotes(match):
             content = match.group(1)
@@ -491,30 +501,31 @@ def preprocess_json_data(raw_data):
             content = content.replace('\r', '\\r')
             content = content.replace('\t', '\\t')
             return f'"{content}"'
-        
+
         # 匹配临时标记包围的内容并进行转义处理
-        raw_data = re.sub(r'__TEMP_TRIPLE_QUOTE__(.*?)__TEMP_TRIPLE_QUOTE__', escape_nested_quotes, raw_data, flags=re.DOTALL)
-        
+        raw_data = re.sub(r'__TEMP_TRIPLE_QUOTE__(.*?)__TEMP_TRIPLE_QUOTE__', escape_nested_quotes, raw_data,
+                          flags=re.DOTALL)
+
         print(f"已完成三重引号处理和嵌套引号转义")
-    
+
     # 3. 处理普通的JSON字符串值
     def process_json_strings(text):
         """处理JSON字符串值，确保正确转义"""
         # 匹配双引号包围的内容（非贪婪匹配）
         pattern = r'"((?:[^"\\]|\\.)*)"'
-        
+
         def replace_string_content(match):
             content = match.group(1)
             # 修复常见的转义问题
             content = content.replace('\\"', '\\"')  # 修复双重转义
             content = re.sub(r'\\([^"\\/bfnrtu])', r'\\\\\1', content)  # 修复无效转义
             return f'"{content}"'
-        
+
         return re.sub(pattern, replace_string_content, text)
-    
+
     # 应用字符串处理
     raw_data = process_json_strings(raw_data)
-    
+
     # 4. 处理HTML实体
     html_entities = {
         '&lt;': '<',
@@ -524,18 +535,18 @@ def preprocess_json_data(raw_data):
         '&#39;': "'",
         '&nbsp;': ' '
     }
-    
+
     for entity, replacement in html_entities.items():
         count = raw_data.count(entity)
         if count > 0:
             raw_data = raw_data.replace(entity, replacement)
             print(f"处理了 {count} 个 '{entity}' HTML实体")
-    
+
     # 5. 处理控制字符
     control_chars_removed = 0
     cleaned_data = ''
     problematic_positions = []
-    
+
     for i, char in enumerate(raw_data):
         char_code = ord(char)
         # 允许: 制表符(9), 换行符(10), 回车符(13), 空格及以上(32+)
@@ -545,7 +556,7 @@ def preprocess_json_data(raw_data):
             control_chars_removed += 1
             if control_chars_removed <= 20:
                 problematic_positions.append((i, char_code, repr(char)))
-            
+
     if control_chars_removed > 0:
         print(f"总共移除了 {control_chars_removed} 个控制字符")
         if problematic_positions:
@@ -553,36 +564,38 @@ def preprocess_json_data(raw_data):
             for pos, code, char_repr in problematic_positions:
                 print(f"  位置{pos}: ASCII码{code}, 字符{char_repr}")
         raw_data = cleaned_data
-    
+
     # 6. 处理尾随逗号
     trailing_commas = len(re.findall(r',\s*([\}\]])', raw_data))
     if trailing_commas > 0:
         raw_data = re.sub(r',\s*([\}\]])', r'\1', raw_data)
         print(f"处理了 {trailing_commas} 个尾随逗号")
-    
+
     # 7. 标准化换行符
     raw_data = raw_data.replace('\r\n', '\n').replace('\r', '\n')
-    
+
     # 8. 移除行尾空格
     lines = raw_data.split('\n')
     raw_data = '\n'.join(line.rstrip() for line in lines)
-    
+
     # 9. 修复JSON键名未加引号的问题
     def fix_json_keys(data):
         pattern = r'([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:'
+
         def add_quotes(match):
             prefix = match.group(1)
             key = match.group(2)
             return f'{prefix}"{key}":'
+
         return re.sub(pattern, add_quotes, data)
-    
+
     raw_data = fix_json_keys(raw_data)
-    
+
     # 10. 最终JSON结构清理
     # 找到第一个完整的JSON对象结束位置
     brace_count = 0
     first_complete_end = -1
-    
+
     for i, char in enumerate(raw_data):
         if char == '{':
             brace_count += 1
@@ -591,16 +604,17 @@ def preprocess_json_data(raw_data):
             if brace_count == 0:
                 first_complete_end = i
                 break
-    
+
     # 如果找到了第一个完整结束位置，只保留到该位置
     if first_complete_end != -1 and first_complete_end < len(raw_data) - 1:
         extra_content = raw_data[first_complete_end + 1:].strip()
         if extra_content:
             print(f"清理末尾多余内容 ({len(extra_content)} 字符): {repr(extra_content[:30])}")
             raw_data = raw_data[:first_complete_end + 1]
-    
+
     print("预处理完成")
     return raw_data
+
 
 @kafka_generator_bp.route('/generate', methods=['POST'])
 def generate_kafka_message():
@@ -609,21 +623,21 @@ def generate_kafka_message():
         # 获取前端传入的参数
         es_source_raw = request.json.get('es_source_raw')
         custom_fields = request.json.get('custom_fields', {})
-        
+
         # 必须提供原始数据
         if not es_source_raw:
             return jsonify({
                 "success": False,
                 "message": "缺少必要的es_source_raw参数"
             }), 400
-        
+
         print(f"接收到原始数据，长度: {len(es_source_raw)} 字符")
-        
+
         # 预处理数据
         processed_data = preprocess_json_data(es_source_raw)
-        
+
         print(f"预处理后数据长度: {len(processed_data)} 字符")
-        
+
         # 尝试解析JSON数据
         try:
             es_source_data = json.loads(processed_data)
@@ -632,7 +646,7 @@ def generate_kafka_message():
             # 如果还是失败，返回详细的错误信息
             error_msg = str(parse_error)
             print(f"❌ JSON解析失败: {error_msg}")
-            
+
             # 尝试定位错误位置
             error_pos_match = re.search(r'line (\d+) column (\d+)', error_msg)
             if error_pos_match:
@@ -645,7 +659,7 @@ def generate_kafka_message():
                     context_end = min(len(error_line), col_num + 30)
                     context = error_line[context_start:context_end]
                     error_msg += f" (第{line_num}行附近: '{context}')"
-            
+
             # 返回原始数据和处理后数据用于调试
             return jsonify({
                 "success": False,
@@ -657,24 +671,24 @@ def generate_kafka_message():
                     "processed_preview": processed_data[:200]
                 }
             }), 400
-        
+
         # 生成基础Kafka消息
         kafka_message = generate_es_to_kafka_mapping(es_source_data)
-        
+
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
             if field in kafka_message and value:
                 kafka_message[field] = value
-        
+
         # 强制设置某些字段的固定值（不受前端custom_fields影响）
         kafka_message["TOPIC_PARTITION"] = 7  # 固定分区值
-        
+
         # 按照标准字段顺序重新排列返回数据
         ordered_data = {}
         for field in STANDARD_FIELD_ORDER:
             if field in kafka_message:
                 ordered_data[field] = kafka_message[field]
-        
+
         # 使用自定义JSON序列化确保字段顺序
         import json as json_lib
         response_data = {
@@ -686,12 +700,12 @@ def generate_kafka_message():
                 "processed_length": len(processed_data)
             }
         }
-        
+
         # 手动序列化JSON并保持顺序
         json_response = json_lib.dumps(response_data, ensure_ascii=False, separators=(',', ':'))
         from flask import Response
         return Response(json_response, mimetype='application/json')
-        
+
     except Exception as e:
         print(f"处理过程中发生错误: {str(e)}")
         import traceback
@@ -701,9 +715,11 @@ def generate_kafka_message():
             "message": f"生成Kafka消息失败: {str(e)}"
         }), 500
 
+
 @kafka_generator_bp.route('/fixer')
 def json_fixer_page():
     return render_template('json_fixer.html')
+
 
 @kafka_generator_bp.route('/config')
 def get_config():
