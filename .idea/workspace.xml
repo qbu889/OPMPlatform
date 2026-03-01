@@ -262,11 +262,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Flask 服务器.Flask (app.py)" />
-      <item itemvalue="Python.wordToWord" />
-      <item itemvalue="Python.app" />
       <item itemvalue="Python.app2" />
+      <item itemvalue="Python.app" />
       <item itemvalue="Python.kafka_routes" />
+      <item itemvalue="Python.wordToWord" />
+      <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python 测试.Python 测试 (TestKafkaRoutes.py 内)" />
     </list>
     <recent_temporary>
