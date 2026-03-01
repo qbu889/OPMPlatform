@@ -723,7 +723,7 @@ def json_fixer_page():
 
 @kafka_generator_bp.route('/config')
 def get_config():
-    """获取应用配置信息"""
+    """获取应用配置信息1"""
     import os
     port = os.environ.get("PORT", 5002)
     return jsonify({
