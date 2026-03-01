@@ -21,7 +21,7 @@ def test_admin_initialization():
         print("✅ 数据库初始化完成")
         
         # 验证管理员账户是否存在
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('../../users.db')
         cursor = conn.cursor()
         
         cursor.execute("SELECT id, username, email, role, is_active FROM users WHERE username = 'admin'")
@@ -66,7 +66,7 @@ def list_all_users():
     """列出所有用户"""
     print("\n👥 当前所有用户:")
     try:
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('../../users.db')
         cursor = conn.cursor()
         
         cursor.execute("""
