@@ -236,18 +236,43 @@ class RosterGenerator:
         return leave_staffs
 
 
-    def _get_prev_holiday_morning_staff(self, target_date: date) -> str:
-        """获取前一日节假日8:00～12:00的排班人员（用于节假日早班过滤）"""
+    def _get_prev_shift_staff(self, target_date: date, time_slot: str) -> str:
+        """获取前一天指定时段的排班人员（用于避让机制）"""
         prev_date = target_date - timedelta(days=1)
         sql = """
         SELECT staff_name 
         FROM roster 
-        WHERE date = %s AND time_slot = '8:00～12:00'
+        WHERE date = %s AND time_slot = %s
         """
-        result = self.db.query(sql, (prev_date,))
+        result = self.db.query(sql, (prev_date, time_slot))
         if result:
             return result[0]["staff_name"]
         return ""
+
+    def _filter_conflict_staffs(self, available_staffs: List[str],
+                                target_date: date, time_slot: str) -> List[str]:
+        """过滤存在冲突的人员（实现避让机制）"""
+        prev_day_early_staffs = self._get_prev_day_early_staffs(target_date)
+
+        # 对于第二天的8:00～9:00和8:00～12:00时段，避让前一天8:00～12:00排班人员
+        if time_slot in ['8:00～9:00', '8:00～12:00']:
+            filtered_staffs = [staff for staff in available_staffs if staff not in prev_day_early_staffs]
+            # 如果过滤后没有可用人员，避免无人可用，返回原列表
+            return filtered_staffs if filtered_staffs else available_staffs
+
+        # 对于其他时段（如9:00～12:00、13:30～18:00），不避让
+        return available_staffs
+
+    def _get_prev_day_early_staffs(self, target_date: date) -> set:
+        """获取前一天8:00～12:00时段排班人员集合"""
+        prev_date = target_date - timedelta(days=1)
+        sql = """
+              SELECT DISTINCT staff_name
+              FROM roster
+              WHERE date = %s AND time_slot IN ('8:00～9:00', '9:00～12:00', '8:00～12:00') \
+              """
+        results = self.db.query(sql, (prev_date,))
+        return set(item['staff_name'] for item in results)
 
     def _get_daily_roster(self, target_date: date) -> List[Dict]:
         """生成日常排班数据（8:00～9:00和18:00～21:00排同一个人）"""
@@ -269,10 +294,26 @@ class RosterGenerator:
         rotation_8_9 = self.rotation_config["日常8-9"]
         available_8_9 = [s for s in rotation_8_9["order"] if s not in leave_8_9]
 
+        # 应用避让机制：过滤前一天8:00～9:00排班的人员
+        available_8_9 = self._filter_conflict_staffs(available_8_9, target_date, '8:00～9:00')
+
         if available_8_9:
-            staff_index = rotation_8_9["index"] % len(available_8_9)
-            selected_staff = available_8_9[staff_index]
-            
+            # 修复轮换索引逻辑：确保按完整轮换顺序进行
+            original_order = rotation_8_9["order"]
+            current_index = rotation_8_9["index"] % len(original_order)
+
+            # 找到当前索引位置对应的人员（跳过请假和避让人员）
+            selected_staff = None
+            for i in range(len(original_order)):
+                candidate = original_order[(current_index + i) % len(original_order)]
+                if candidate in available_8_9:
+                    selected_staff = candidate
+                    break
+
+            if not selected_staff:
+                # 如果没有可用人员，使用第一个可用人员
+                selected_staff = available_8_9[0]
+
             # 为两个时段安排同一个人
             roster_list.append({
                 "date": target_date,
@@ -290,12 +331,20 @@ class RosterGenerator:
             # 更新轮换索引
             self._update_rotation_index("日常8-9")
 
-        # 2. 9:00～12:00（保持原有主辅逻辑）
+        # 2. 9:00～12:00（保持原有主辅逻辑，但应用避让机制）
         slot_9_12 = "9:00～12:00"
         leave_9_12 = self._get_leave_staffs(target_date, slot_9_12)
-        main_staff = CORE_STAFF if CORE_STAFF not in leave_9_12 else None
-        if not main_staff:
-            main_staff = next((s for s in TEST_STAFFS if s not in leave_9_12), None)
+        
+        # 获取可用的主班人员（核心人员优先）
+        main_candidates = [CORE_STAFF] + [s for s in TEST_STAFFS if s not in leave_9_12]
+        # 应用避让机制：过滤前一天9:00～12:00排班的人员
+        main_candidates = self._filter_conflict_staffs(main_candidates, target_date, slot_9_12)
+        
+        main_staff = None
+        if main_candidates:
+            # 优先选择核心人员，如果没有则选择第一个可用的测试人员
+            main_staff = next((s for s in main_candidates if s == CORE_STAFF), 
+                            next((s for s in main_candidates if s in TEST_STAFFS), None))
         if main_staff:
             roster_list.append({
                 "date": target_date,
@@ -312,9 +361,26 @@ class RosterGenerator:
                     "is_main": False
                 })
 
-        # 3. 13:30～18:00（固定5人，除非请假）
+        # 3. 13:30～18:00（固定5人，但需要应用避让机制）
         slot_13_18 = "13:30～18:00"
-        for staff in available_fixed_staffs:
+        # 对于下午班，需要考虑两种避让情况：
+        # 1. 避让前一天8:00～9:00的人员
+        # 2. 避让前一天9:00～12:00的人员
+        afternoon_available = available_fixed_staffs.copy()
+        
+        # 获取前一天两个时段的排班人员
+        prev_early_staff = self._get_prev_shift_staff(target_date, "8:00～9:00")
+        prev_morning_staff = self._get_prev_shift_staff(target_date, "9:00～12:00")
+        
+        # 过滤掉前一天这两个时段的人员
+        afternoon_available = [staff for staff in afternoon_available 
+                             if staff != prev_early_staff and staff != prev_morning_staff]
+        
+        # 如果过滤后没有可用人员，恢复原始列表（避免无人可用）
+        if not afternoon_available:
+            afternoon_available = available_fixed_staffs
+        
+        for staff in afternoon_available:
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_13_18,
@@ -336,6 +402,10 @@ class RosterGenerator:
 
         # 可用人员：轮换队列中未请假的人员
         available_staffs = [s for s in rotation_holiday["order"] if s not in all_leave_staffs]
+        
+        # 应用避让机制：过滤前一天9:00～12:00排班的人员
+        # 注意：节假日使用9:00～12:00时段作为避让参考
+        available_staffs = self._filter_conflict_staffs(available_staffs, target_date, '8:00～12:00')
 
         # 如果没有可用人员，默认郑晨昊
         if not available_staffs:
