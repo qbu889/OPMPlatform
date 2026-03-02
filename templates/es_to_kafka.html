@@ -81,7 +81,7 @@
             display: none;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+    <!-- 移除了 clipboard.js CDN 引用，使用现代浏览器内置 Clipboard API -->
 </head>
 <body>
     <div class="container">
@@ -146,27 +146,39 @@
         });
 
         // 复制按钮点击事件
-        document.getElementById('copy-btn').addEventListener('click', function() {
+        document.getElementById('copy-btn').addEventListener('click', async function() {
             const msgTextarea = document.getElementById('kafka-msg');
             if (!msgTextarea.value) {
                 alert('暂无可复制的消息内容！');
                 return;
             }
 
-            // 选中文本并复制
-            msgTextarea.select();
-            document.execCommand('copy');
-
-            // 显示复制成功提示
-            const successTip = document.getElementById('success-tip');
-            successTip.style.display = 'block';
-            setTimeout(() => {
-                successTip.style.display = 'none';
-            }, 2000);
+            try {
+                // 使用现代 Clipboard API
+                await navigator.clipboard.writeText(msgTextarea.value);
+                
+                // 显示复制成功提示
+                const successTip = document.getElementById('success-tip');
+                successTip.style.display = 'block';
+                setTimeout(() => {
+                    successTip.style.display = 'none';
+                }, 2000);
+            } catch (err) {
+                // 降级到传统方法
+                console.warn('Clipboard API 不可用，使用传统方法:', err);
+                msgTextarea.select();
+                document.execCommand('copy');
+                
+                // 显示复制成功提示
+                const successTip = document.getElementById('success-tip');
+                successTip.style.display = 'block';
+                setTimeout(() => {
+                    successTip.style.display = 'none';
+                }, 2000);
+            }
         });
 
-        // 初始化 ClipboardJS
-        new ClipboardJS('#copy-btn');
+        // 移除了 ClipboardJS 初始化代码
     </script>
 </body>
 </html>

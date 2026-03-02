@@ -18,7 +18,7 @@ from flask import send_from_directory
 from config import config
 from routes.document_routes import document_bp
 from routes.excel2word_routes import excel2word_bp
-from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
+# from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
 from routes.markdown_upload_routes import markdown_upload_bp
 from routes.schedule_config_routes import schedule_config_bp
 from routes.kafka_generator_routes import kafka_generator_bp
@@ -58,7 +58,7 @@ def create_app(config_name='default'):
     app.register_blueprint(excel2word_bp)
     app.register_blueprint(markdown_upload_bp)
     app.register_blueprint(word_to_md_bp)
-    app.register_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
+    # app.registe`r_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
     app.register_blueprint(schedule_config_bp)
     app.register_blueprint(kafka_generator_bp)
     app.register_blueprint(auth_bp)
@@ -93,6 +93,11 @@ def index():
     }
     
     return render_template('index.html', demo_exists=demo_exists, user=user_info)
+
+@app.route('/test-icons')
+def test_icons():
+    """图标显示测试页面"""
+    return send_from_directory('.', 'test_icon_display.html')
 
 if __name__ == '__main__':
     import os

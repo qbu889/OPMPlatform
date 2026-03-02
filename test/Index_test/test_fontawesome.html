@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Font Awesome 测试</title>
+    <link href="/vendor/fontawesome/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-icon {
+            font-size: 48px;
+            margin: 10px;
+        }
+        .icon-info {
+            color: #007bff;
+        }
+        .icon-success {
+            color: #28a745;
+        }
+        .icon-warning {
+            color: #ffc107;
+        }
+        .icon-danger {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>Font Awesome 图标测试</h1>
+    
+    <div class="test-icon icon-info"><i class="fas fa-home"></i> fa-home</div>
+    <div class="test-icon icon-success"><i class="fas fa-check-circle"></i> fa-check-circle</div>
+    <div class="test-icon icon-warning"><i class="fas fa-exclamation-triangle"></i> fa-exclamation-triangle</div>
+    <div class="test-icon icon-danger"><i class="fas fa-times-circle"></i> fa-times-circle</div>
+    
+    <div class="test-icon icon-info"><i class="fab fa-github"></i> fab fa-github</div>
+    <div class="test-icon icon-success"><i class="fas fa-star"></i> fa-star</div>
+    
+    <h2>测试结果：</h2>
+    <p>如果上面的图标显示为方框或空白，请检查：</p>
+    <ul>
+        <li>浏览器开发者工具中的网络请求（Network tab）查看字体文件是否404</li>
+        <li>确保 static/vendor/webfonts 目录下的字体文件存在</li>
+        <li>检查 Flask 静态文件路由配置</li>
+    </ul>
+</body>
+</html>

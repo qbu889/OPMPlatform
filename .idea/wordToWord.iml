@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/uploads" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (OPMPlatform)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (wordToWord)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">
