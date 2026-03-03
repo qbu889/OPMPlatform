@@ -1110,6 +1110,18 @@
                         const slotGroup = timeSlotGroups[timeSlot];
                         const staffs = slotGroup.staffs;
                         let staffDisplay = staffs.map(s => s.staff_name).join('、') || '空闲';
+                        
+                        // 收集该时段所有记录的 remark，去重后显示
+                        let remarkDisplay = '';
+                        const remarks = new Set();
+                        staffs.forEach(s => {
+                            if (s.remark) {
+                                remarks.add(s.remark);
+                            }
+                        });
+                        if (remarks.size > 0) {
+                            remarkDisplay = Array.from(remarks).join('、');
+                        }
 
                         let timeSlotClass = '';
                         switch (timeSlot) {
@@ -1138,13 +1150,13 @@
                         <td rowspan="${slotCount}">${weekdayStr}</td>
                         <td class="${timeSlotClass}">${timeSlot}</td>
                         <td class="staff-arrangement">${staffDisplay}</td>
-                        <td class="note-column"></td>
+                        <td class="note-column">${remarkDisplay}</td>
                     `;
                         } else {
                             row.innerHTML = `
                         <td class="${timeSlotClass}">${timeSlot}</td>
                         <td class="staff-arrangement">${staffDisplay}</td>
-                        <td class="note-column"></td>
+                        <td class="note-column">${remarkDisplay}</td>
                     `;
                         }
 

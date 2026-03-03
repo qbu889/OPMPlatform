@@ -305,6 +305,7 @@ class RosterGenerator:
     def _get_daily_roster(self, target_date: date) -> List[Dict]:
         """生成日常排班数据 (8:00～9:00 和 18:00～21:00 排同一个人)"""
         roster_list = []
+        rotation_daily = self.rotation_config["日常 8-9"]
 
         # 获取当天请假人员
         all_leave_staffs = self._get_leave_staffs(target_date)
@@ -314,6 +315,11 @@ class RosterGenerator:
         
         # 记录是否有请假调整
         has_leave_adjustment = len(all_leave_staffs) > 0
+        
+        # 生成备注信息
+        remark_template = None
+        if has_leave_adjustment:
+            remark_template = f"因请假调整（{', '.join(all_leave_staffs)}）"
 
         # 1. 8:00～9:00 和 18:00～21:00 轮换 (同一个人)
         slot_8_9 = "8:00～9:00"
@@ -333,7 +339,7 @@ class RosterGenerator:
             
             if selected_staff:
                 # 为两个时段安排同一个人
-                remark = "因请假调整" if has_leave_adjustment else None
+                remark = remark_template
                 roster_list.append({
                     "date": target_date,
                     "time_slot": slot_8_9,
@@ -369,7 +375,7 @@ class RosterGenerator:
                     break
                     
         if main_staff:
-            remark = "因请假调整" if has_leave_adjustment else None
+            remark = remark_template
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_9_12,
@@ -396,7 +402,7 @@ class RosterGenerator:
         available_afternoon = [s for s in available_staffs if s not in leave_13_18]
         
         for staff in available_afternoon:
-            remark = "因请假调整" if has_leave_adjustment else None
+            remark = remark_template
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_13_18,
@@ -420,6 +426,11 @@ class RosterGenerator:
         
         # 记录是否有请假调整
         has_leave_adjustment = len(all_leave_staffs) > 0
+        
+        # 生成备注信息
+        remark_template = None
+        if has_leave_adjustment:
+            remark_template = f"因请假调整（{', '.join(all_leave_staffs)}）"
 
         # 获取前一天早班人员 (8:00~12:00),今天应该延后
         prev_morning_staff = self._get_prev_day_staff(target_date, "morning")
@@ -448,7 +459,7 @@ class RosterGenerator:
 
         # 为所有节假日时段安排同一个人
         holiday_slots = ["8:00～12:00", "13:30～17:30", "17:30～21:30"]
-        remark = "因请假调整" if has_leave_adjustment else None
+        remark = remark_template
         for slot in holiday_slots:
             roster_list.append({
                 "date": target_date,
