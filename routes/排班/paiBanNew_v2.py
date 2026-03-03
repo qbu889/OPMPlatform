@@ -250,11 +250,15 @@ class RosterGenerator:
         matched_staff = set()
         for row in results:
             slot = row['time_slot']
-            # 匹配时段模式
-            if time_slot_pattern == "morning" and ("8:00" in slot or "9:00" in slot):
-                matched_staff.add(row['staff_name'])
-            elif time_slot_pattern == "evening" and "18:00" in slot:
-                matched_staff.add(row['staff_name'])
+            # 精确匹配时段，避免模糊匹配导致多人被选中
+            if time_slot_pattern == "morning":
+                # 匹配早班时段：8:00～9:00 或 8:00～12:00 或 9:00～12:00
+                if slot in ["8:00～9:00", "8:00～12:00", "9:00～12:00"]:
+                    matched_staff.add(row['staff_name'])
+            elif time_slot_pattern == "evening":
+                # 匹配晚班时段：18:00～21:00 或 17:30～21:30（节假日）
+                if slot in ["18:00～21:00", "17:30～21:30"]:
+                    matched_staff.add(row['staff_name'])
                 
         return matched_staff
 
