@@ -4,12 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：前端备注信息数据展示">
-      <change afterPath="$PROJECT_DIR$/test/排班/debug_rotation.py" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：1. 优化排班逻辑；">
+      <change afterPath="$PROJECT_DIR$/test/排班/check_feb14.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/test_all_staff_leave.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/verify_no_repeat.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/PaiBan.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme/PaiBan.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/排班/4.排班最终结果.txt" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/4.排班最终结果.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/paiBanNew.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/排班/test_leave_remark.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/排班/test_leave_remark.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/schedule_config.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/schedule_config.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -317,7 +321,7 @@
       <workItem from="1771897295342" duration="5980000" />
       <workItem from="1772356492237" duration="880000" />
       <workItem from="1772418073555" duration="22901000" />
-      <workItem from="1772504611577" duration="11521000" />
+      <workItem from="1772504611577" duration="15977000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -383,7 +387,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772517578052</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="fix：1. 优化排班逻辑；">
+      <option name="closed" value="true" />
+      <created>1772524448486</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772524448486</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -431,7 +443,8 @@
     <MESSAGE value="fix：前端资源本地读取" />
     <MESSAGE value="fix：排班逻辑全面优化" />
     <MESSAGE value="fix：前端备注信息数据展示" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：前端备注信息数据展示" />
+    <MESSAGE value="fix：1. 优化排班逻辑；" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：1. 优化排班逻辑；" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -467,7 +480,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$simple_admin_test.coverage" NAME="simple_admin_test Coverage Results" MODIFIED="1772085467021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$holidaySys.coverage" NAME="holidaySys Coverage Results" MODIFIED="1772185508639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$auth_models.coverage" NAME="auth_models Coverage Results" MODIFIED="1772013460735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772523921653" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772531033638" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$debug_rotation.coverage" NAME="debug_rotation Coverage Results" MODIFIED="1772523501544" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_real_input_output.coverage" NAME="test_real_input_output Coverage Results" MODIFIED="1772162900732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

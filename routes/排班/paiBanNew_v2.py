@@ -331,8 +331,16 @@ class RosterGenerator:
         leave_8_9 = self._get_leave_staffs(target_date, slot_8_9)
         available_8_9 = [s for s in available_staffs if s not in leave_8_9]
 
-        # 获取前一天晚班人员，今天早班要延后
-        prev_evening_staff = self._get_prev_day_staff(target_date, "evening")
+        # 获取前一天晚班人员，今天应该延后
+        # 无论前一天是日常还是节假日，都要排除其晚班人员
+        prev_date = target_date - timedelta(days=1)
+        sql_prev_evening = """
+        SELECT staff_name 
+        FROM roster 
+        WHERE date = %s AND (time_slot = '18:00～21:00' OR time_slot = '17:30～21:30')
+        """
+        prev_evening_results = self.db.query(sql_prev_evening, (prev_date,))
+        prev_evening_staff = set([row['staff_name'] for row in prev_evening_results]) if prev_evening_results else set()
         
         if available_8_9:
             result = self._select_staff_from_queue(
@@ -362,6 +370,24 @@ class RosterGenerator:
                 # 更新轮换索引 (关键：每次排班后必须更新)
                 self._update_rotation_to_index("日常 8-9", new_index)
                 debug(f"{target_date} 早班更新索引：{new_index}")
+        else:
+            # 无人可用，默认核心人员
+            remark = f"因请假调整（{', '.join(all_leave_staffs)}）" if all_leave_staffs else None
+            roster_list.append({
+                "date": target_date,
+                "time_slot": slot_8_9,
+                "staff_name": self.core_staff,
+                "is_main": False,
+                "remark": remark
+            })
+            roster_list.append({
+                "date": target_date,
+                "time_slot": slot_18_21,
+                "staff_name": self.core_staff,
+                "is_main": False,
+                "remark": remark
+            })
+            debug(f"{target_date} 日常无人可用，默认排核心人员 {self.core_staff}")
 
         # 2. 9:00～12:00 (主辅班逻辑)
         slot_9_12 = "9:00～12:00"
@@ -399,6 +425,17 @@ class RosterGenerator:
                     "is_main": False,
                     "remark": remark
                 })
+        else:
+            # 主班和辅班都无人可用，默认核心人员
+            remark = f"因请假调整（{', '.join(all_leave_staffs)}）" if all_leave_staffs else None
+            roster_list.append({
+                "date": target_date,
+                "time_slot": slot_9_12,
+                "staff_name": self.core_staff,
+                "is_main": True,
+                "remark": remark
+            })
+            debug(f"{target_date} 日常 9:00～12:00 无人可用，默认排核心人员 {self.core_staff}")
 
         # 3. 13:30～18:00 (所有可用人员)
         slot_13_18 = "13:30～18:00"
@@ -414,6 +451,18 @@ class RosterGenerator:
                 "is_main": False,
                 "remark": remark
             })
+        
+        # 如果下午时段无人可用，默认核心人员
+        if not available_afternoon:
+            remark = f"因请假调整（{', '.join(all_leave_staffs)}）" if all_leave_staffs else None
+            roster_list.append({
+                "date": target_date,
+                "time_slot": slot_13_18,
+                "staff_name": self.core_staff,
+                "is_main": False,
+                "remark": remark
+            })
+            debug(f"{target_date} 日常 13:30～18:00 无人可用，默认排核心人员 {self.core_staff}")
 
         return roster_list
 
@@ -437,8 +486,16 @@ class RosterGenerator:
             remark_template = f"因请假调整（{', '.join(all_leave_staffs)}）"
 
         # 获取前一天早班人员 (8:00~12:00),今天应该延后
-        prev_morning_staff = self._get_prev_day_staff(target_date, "morning")
-
+        # 节假日排班只需排除前一天 8:00～12:00 时段的人员
+        prev_date = target_date - timedelta(days=1)
+        sql_prev_morning = """
+        SELECT staff_name 
+        FROM roster 
+        WHERE date = %s AND time_slot = '8:00～12:00'
+        """
+        prev_morning_results = self.db.query(sql_prev_morning, (prev_date,))
+        prev_morning_staff = set([row['staff_name'] for row in prev_morning_results]) if prev_morning_results else set()
+        
         # 选择人员
         if not available_staffs:
             # 无人可用，默认核心人员

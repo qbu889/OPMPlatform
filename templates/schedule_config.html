@@ -1184,7 +1184,7 @@
                         return;
                     }
 
-                    let csvContent = "日期,星期,时段,人员\n";
+                    let csvContent = "日期,星期,时段,人员,备注\n";
 
                     const groupedData = {};
                     result.data.forEach(record => {
@@ -1246,11 +1246,25 @@
                             const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
                             const weekday = weekdays[dateObj.getDay()];
 
-                            csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}"\n`;
+                            // 收集该时段所有记录的 remark，去重后显示
+                            let remarkDisplay = '';
+                            const remarks = new Set();
+                            slotRecords.forEach(r => {
+                                if (r.remark) {
+                                    remarks.add(r.remark);
+                                }
+                            });
+                            if (remarks.size > 0) {
+                                remarkDisplay = Array.from(remarks).join('、');
+                            }
+
+                            csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}","${remarkDisplay}"\n`;
                         });
                     });
 
-                    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+                    // 添加 UTF-8 BOM 头，确保 Excel 能正确识别中文
+                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+                    const blob = new Blob([bom, csvContent], {type: 'text/csv;charset=utf-8;'});
                     const link = document.createElement('a');
                     const url = URL.createObjectURL(blob);
 
