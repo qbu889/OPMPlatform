@@ -87,7 +87,7 @@ class RosterGenerator:
         self.core_staff = self._get_core_staff()
         self.test_staffs = self._get_test_staffs()
         self.all_staffs = self.test_staffs + [self.core_staff]
-
+        
         # 初始化轮换队列 (从数据库读取)
         self.rotation_config = self._load_rotation_config()
 
@@ -218,8 +218,8 @@ class RosterGenerator:
             slot_leave = self.db.query(sql_all_slots, (target_date,))
             leave_staffs.update([item["staff_name"] for item in slot_leave])
         elif time_slot:
-            # 解析时段
-            start_str, end_str = time_slot.split("~")
+            # 解析时段 (注意：使用全角冒号～)
+            start_str, end_str = time_slot.split("～")
             start = datetime.strptime(start_str, "%H:%M").time()
             end = datetime.strptime(end_str, "%H:%M").time()
             sql_slot = """
@@ -238,7 +238,7 @@ class RosterGenerator:
     def _get_prev_day_staff(self, target_date: date, time_slot_pattern: str) -> Set[str]:
         """获取前一天某时段或类似时段的排班人员"""
         prev_date = target_date - timedelta(days=1)
-
+        
         # 查询前一天的排班记录
         sql = """
         SELECT staff_name, time_slot 
@@ -246,7 +246,7 @@ class RosterGenerator:
         WHERE date = %s
         """
         results = self.db.query(sql, (prev_date,))
-
+        
         matched_staff = set()
         for row in results:
             slot = row['time_slot']
@@ -255,22 +255,22 @@ class RosterGenerator:
                 matched_staff.add(row['staff_name'])
             elif time_slot_pattern == "evening" and "18:00" in slot:
                 matched_staff.add(row['staff_name'])
-
+                
         return matched_staff
 
-    def _select_staff_from_queue(self, slot_type: str, available_staffs: List[str],
-                                 exclude_staffs: Set[str] = None) -> Tuple[str, int]:
+    def _select_staff_from_queue(self, slot_type: str, available_staffs: List[str], 
+                                  exclude_staffs: Set[str] = None) -> Tuple[str, int]:
         """
         从轮换队列中选择人员
         返回：(选中的人员，新的索引)
         """
         if exclude_staffs is None:
             exclude_staffs = set()
-
+            
         rotation = self.rotation_config[slot_type]
         order = rotation["order"]
         current_index = rotation["index"]
-
+        
         # 从当前索引开始，找到第一个未被排除且可用的人员
         n = len(order)
         for i in range(n):
@@ -280,15 +280,15 @@ class RosterGenerator:
                 # 计算新的索引 (选中人员的下一个位置)
                 new_index = (idx + 1) % n
                 return staff, new_index
-
+        
         # 如果没有找到合适的人员，返回当前索引指向的人员 (如果可用)
         if current_index < len(order) and order[current_index] in available_staffs:
             return order[current_index], (current_index + 1) % n
-
+            
         # 如果都不可用，返回第一个可用人员
         if available_staffs:
-            return available_staffs[0], 1 % len(available_staffs)
-
+            return available_staffs[0], (1 if len(available_staffs) > 1 else 0)
+            
         # 无人可用
         return None, current_index
 
@@ -311,6 +311,9 @@ class RosterGenerator:
 
         # 过滤请假人员后的可用人员
         available_staffs = [s for s in self.all_staffs if s not in all_leave_staffs]
+        
+        # 记录是否有请假调整
+        has_leave_adjustment = len(all_leave_staffs) > 0
 
         # 1. 8:00～9:00 和 18:00～21:00 轮换 (同一个人)
         slot_8_9 = "8:00～9:00"
@@ -320,34 +323,40 @@ class RosterGenerator:
 
         # 获取前一天晚班人员，今天早班要延后
         prev_evening_staff = self._get_prev_day_staff(target_date, "evening")
-
+        
         if available_8_9:
-            selected_staff, new_index = self._select_staff_from_queue(
+            result = self._select_staff_from_queue(
                 "日常 8-9", available_8_9, prev_evening_staff
             )
-
+            debug(f"{target_date} 早班选择结果：{result}")
+            selected_staff, new_index = result
+            
             if selected_staff:
                 # 为两个时段安排同一个人
+                remark = "因请假调整" if has_leave_adjustment else None
                 roster_list.append({
                     "date": target_date,
                     "time_slot": slot_8_9,
                     "staff_name": selected_staff,
-                    "is_main": False
+                    "is_main": False,
+                    "remark": remark
                 })
                 roster_list.append({
                     "date": target_date,
                     "time_slot": slot_18_21,
                     "staff_name": selected_staff,
-                    "is_main": False
+                    "is_main": False,
+                    "remark": remark
                 })
-
-                # 更新轮换索引
+                
+                # 更新轮换索引 (关键：每次排班后必须更新)
                 self._update_rotation_to_index("日常 8-9", new_index)
+                debug(f"{target_date} 早班更新索引：{new_index}")
 
         # 2. 9:00～12:00 (主辅班逻辑)
         slot_9_12 = "9:00～12:00"
         leave_9_12 = self._get_leave_staffs(target_date, slot_9_12)
-
+        
         # 主班：优先核心人员
         main_staff = None
         if self.core_staff not in leave_9_12 and self.core_staff in available_staffs:
@@ -358,37 +367,42 @@ class RosterGenerator:
                 if staff not in leave_9_12 and staff in available_staffs:
                     main_staff = staff
                     break
-
+                    
         if main_staff:
+            remark = "因请假调整" if has_leave_adjustment else None
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_9_12,
                 "staff_name": main_staff,
-                "is_main": True
+                "is_main": True,
+                "remark": remark
             })
-
+            
             # 辅班：从测试人员中选 3 人 (排除主班)
-            aux_candidates = [s for s in self.test_staffs
-                              if s not in leave_9_12 and s in available_staffs and s != main_staff]
+            aux_candidates = [s for s in self.test_staffs 
+                            if s not in leave_9_12 and s in available_staffs and s != main_staff]
             for aux in aux_candidates[:3]:
                 roster_list.append({
                     "date": target_date,
                     "time_slot": slot_9_12,
                     "staff_name": aux,
-                    "is_main": False
+                    "is_main": False,
+                    "remark": remark
                 })
 
         # 3. 13:30～18:00 (所有可用人员)
         slot_13_18 = "13:30～18:00"
         leave_13_18 = self._get_leave_staffs(target_date, slot_13_18)
         available_afternoon = [s for s in available_staffs if s not in leave_13_18]
-
+        
         for staff in available_afternoon:
+            remark = "因请假调整" if has_leave_adjustment else None
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot_13_18,
                 "staff_name": staff,
-                "is_main": False
+                "is_main": False,
+                "remark": remark
             })
 
         return roster_list
@@ -403,6 +417,9 @@ class RosterGenerator:
 
         # 可用人员：轮换队列中未请假的人员
         available_staffs = [s for s in rotation_holiday["order"] if s not in all_leave_staffs]
+        
+        # 记录是否有请假调整
+        has_leave_adjustment = len(all_leave_staffs) > 0
 
         # 获取前一天早班人员 (8:00~12:00),今天应该延后
         prev_morning_staff = self._get_prev_day_staff(target_date, "morning")
@@ -411,28 +428,34 @@ class RosterGenerator:
         if not available_staffs:
             # 无人可用，默认核心人员
             selected_staff = self.core_staff
+            new_index = 0
             debug(f"{target_date} 节假日无人可用，默认排核心人员 {self.core_staff}")
         else:
-            selected_staff, new_index = self._select_staff_from_queue(
+            result = self._select_staff_from_queue(
                 "节假日", available_staffs, prev_morning_staff
             )
-
+            debug(f"{target_date} 排班选择结果：{result}")
+            selected_staff, new_index = result
+            
             if selected_staff:
-                # 更新轮换索引
+                # 更新轮换索引 (关键：每次排班后必须更新)
                 self._update_rotation_to_index("节假日", new_index)
                 debug(f"{target_date} 节假日排班：{selected_staff}, 新索引：{new_index}")
             else:
                 selected_staff = self.core_staff
+                new_index = 0
                 debug(f"{target_date} 节假日选择失败，默认排核心人员 {self.core_staff}")
 
         # 为所有节假日时段安排同一个人
         holiday_slots = ["8:00～12:00", "13:30～17:30", "17:30～21:30"]
+        remark = "因请假调整" if has_leave_adjustment else None
         for slot in holiday_slots:
             roster_list.append({
                 "date": target_date,
                 "time_slot": slot,
                 "staff_name": selected_staff,
-                "is_main": False
+                "is_main": False,
+                "remark": remark
             })
 
         return roster_list
@@ -467,8 +490,8 @@ class RosterGenerator:
             # 3. 写入数据库
             for item in roster_data:
                 sql = """
-                INSERT INTO roster (date, time_slot, staff_name, is_main, rotation_index)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO roster (date, time_slot, staff_name, is_main, rotation_index, remark)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
                 # 获取对应轮换索引
                 rot_index = 0
@@ -482,7 +505,7 @@ class RosterGenerator:
 
                 self.db.execute(sql, (
                     item["date"], item["time_slot"], item["staff_name"],
-                    item["is_main"], rot_index
+                    item["is_main"], rot_index, item.get("remark")
                 ))
 
             # 4. 日期 +1

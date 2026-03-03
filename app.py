@@ -97,7 +97,7 @@ def index():
 @app.route('/test-icons')
 def test_icons():
     """图标显示测试页面"""
-    return send_from_directory('.', 'test_icon_display.html')
+    return send_from_directory('.', 'test/Index_test/test_icon_display.html')
 
 if __name__ == '__main__':
     import os

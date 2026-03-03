@@ -1,9 +1,13 @@
 # roster 表：存储每日排班信息
 CREATE TABLE roster (
-    id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键 ID',
     date DATE NOT NULL COMMENT '排班日期',
     time_slot VARCHAR(20) NOT NULL COMMENT '时间段',
-    staff_name VARCHAR(50) NOT NULL COMMENT '员工姓名'
+    staff_name VARCHAR(50) NOT NULL COMMENT '员工姓名',
+    is_main BOOLEAN DEFAULT FALSE COMMENT '是否为主班',
+    rotation_index INT DEFAULT 0 COMMENT '轮换索引',
+    remark VARCHAR(200) COMMENT '备注 (如：因请假调整)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) COMMENT='存储每日排班信息';
 
 # holiday_config 表：存储法定节假日配置（包括是否上班）

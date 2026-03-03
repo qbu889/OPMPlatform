@@ -4,7 +4,7 @@
 排班配置管理路由
 """
 from flask import Blueprint, render_template, request, jsonify
-from routes.排班.paiBanNew import DB_CONFIG, RosterDB, CORE_STAFF, TEST_STAFFS
+from routes.排班.paiBanNew_v2 import DB_CONFIG, RosterDB
 from datetime import datetime, date, timedelta
 from typing import List, Dict
 
@@ -260,8 +260,8 @@ def leave_records():
 
 @schedule_config_bp.route('/api/generate-schedule', methods=['POST'])
 def generate_schedule():
-    """生成排班表API"""
-    from routes.排班.paiBanNew import RosterGenerator
+    """生成排班表 API"""
+    from routes.排班.paiBanNew_v2 import RosterGenerator
 
     try:
         data = request.get_json()
@@ -289,7 +289,7 @@ def generate_schedule():
 
         return jsonify({"success": True, "msg": f"排班表生成成功：{start_date_str} 至 {end_date_str}"})
     except Exception as e:
-        return jsonify({"success": False, "msg": "生成排班表失败: " + str(e)})
+        return jsonify({"success": False, "msg": "生成排班表失败：" + str(e)})
 
 @schedule_config_bp.route('/api/schedule-records', methods=['GET'])
 def schedule_records():
@@ -339,289 +339,7 @@ def schedule_records():
                 "data": processed_results
             })
         except Exception as e:
-            return jsonify({"success": False, "msg": "获取排班记录失败: " + str(e)})
-
-@schedule_config_bp.route('/api/conflict-records', methods=['GET'])
-def conflict_records():
-    """查询避让记录API（新增需求：20260301）"""
-    try:
-        start_date = request.args.get('start_date')
-        end_date = request.args.get('end_date')
-
-        if not start_date or not end_date:
-            return jsonify({"success": False, "msg": "开始日期和结束日期不能为空"})
-
-        db = RosterDB(DB_CONFIG)
-        if not db.connect():
-            return jsonify({"success": False, "msg": "数据库连接失败"})
-
-        # 查询避让记录：找出违反避让规则的排班
-        sql = """
-        SELECT 
-            r1.date as current_date,
-            r1.time_slot as current_slot,
-            r1.staff_name as current_staff,
-            r2.date as prev_date,
-            r2.time_slot as prev_slot,
-            r2.staff_name as prev_staff
-        FROM roster r1
-        JOIN roster r2 ON r1.staff_name = r2.staff_name
-        WHERE r1.date BETWEEN %s AND %s
-        AND r2.date = DATE_SUB(r1.date, INTERVAL 1 DAY)
-        AND (
-            -- 早班避让规则：前一天8:00～9:00，今天任何时段都不应该安排
-            (r2.time_slot = '8:00～9:00') OR
-            -- 上午班避让规则：前一天9:00～12:00，今天任何时段都不应该安排
-            (r2.time_slot = '9:00～12:00')
-        )
-        ORDER BY r1.date, r1.time_slot
-        """
-
-        results = db.query(sql, (start_date, end_date))
-        db.close()
-        
-        # 处理时间字段
-        processed_results = serialize_datetime_objects(results)
-        
-        return jsonify({
-            "success": True,
-            "data": processed_results,
-            "total": len(processed_results)
-        })
-    except Exception as e:
-        return jsonify({"success": False, "msg": "查询避让记录失败: " + str(e)})
-
-
-@schedule_config_bp.route('/api/check-conflicts', methods=['POST'])
-def check_conflicts():
-    """检查指定日期是否存在潜在的避让冲突（新增需求：20260301）"""
-    try:
-        data = request.get_json()
-        check_date_str = data.get('check_date')
-        
-        if not check_date_str:
-            return jsonify({"success": False, "msg": "检查日期不能为空"})
-            
-        check_date = datetime.strptime(check_date_str, '%Y-%m-%d').date()
-        prev_date = check_date - timedelta(days=1)
-        
-        db = RosterDB(DB_CONFIG)
-        if not db.connect():
-            return jsonify({"success": False, "msg": "数据库连接失败"})
-
-        # 检查前一天的排班情况
-        prev_sql = """
-        SELECT time_slot, staff_name 
-        FROM roster 
-        WHERE date = %s AND time_slot IN ('8:00～9:00', '9:00～12:00')
-        """
-        
-        prev_results = db.query(prev_sql, (prev_date,))
-        conflicts = []
-        
-        for prev_record in prev_results:
-            prev_slot = prev_record['time_slot']
-            prev_staff = prev_record['staff_name']
-            
-            # 检查今天的排班是否违反了避让规则
-            current_sql = """
-            SELECT time_slot 
-            FROM roster 
-            WHERE date = %s AND staff_name = %s
-            """
-            
-            current_results = db.query(current_sql, (check_date, prev_staff))
-            
-            if current_results:
-                conflicts.append({
-                    'conflict_date': check_date_str,
-                    'prev_date': prev_date.strftime('%Y-%m-%d'),
-                    'prev_slot': prev_slot,
-                    'staff_name': prev_staff,
-                    'current_slots': [r['time_slot'] for r in current_results],
-                    'violation_type': '早班避让' if prev_slot == '8:00～9:00' else '上午班避让'
-                })
-        
-        db.close()
-        
-        return jsonify({
-            "success": True,
-            "data": conflicts,
-            "has_conflicts": len(conflicts) > 0
-        })
-    except Exception as e:
-        return jsonify({"success": False, "msg": "检查避让冲突失败: " + str(e)})
-
-
-@schedule_config_bp.route('/api/rotation-config', methods=['GET', 'POST'])
-def rotation_config():
-    """轮换配置管理API（新增需求：20260301）"""
-    if request.method == 'GET':
-        try:
-            db = RosterDB(DB_CONFIG)
-            if not db.connect():
-                return jsonify({"success": False, "msg": "数据库连接失败"})
-            
-            # 获取当前轮换配置
-            sql = "SELECT time_slot_type, rotation_order, current_index FROM rotation_config"
-            results = db.query(sql)
-            db.close()
-            
-            # 处理结果
-            config_data = {}
-            for item in results:
-                config_data[item['time_slot_type']] = {
-                    'rotation_order': item['rotation_order'].split(',') if item['rotation_order'] else [],
-                    'current_index': item['current_index']
-                }
-            
-            return jsonify({
-                "success": True,
-                "data": config_data
-            })
-        except Exception as e:
-            return jsonify({"success": False, "msg": "获取轮换配置失败: " + str(e)})
-    
-    elif request.method == 'POST':
-        try:
-            data = request.get_json()
-            config_type = data.get('config_type')  # '日常' 或 '节假日'
-            rotation_order = data.get('rotation_order', [])
-            current_index = data.get('current_index', 0)
-            
-            if not config_type or not rotation_order:
-                return jsonify({"success": False, "msg": "配置类型和轮换顺序不能为空"})
-            
-            db = RosterDB(DB_CONFIG)
-            if not db.connect():
-                return jsonify({"success": False, "msg": "数据库连接失败"})
-            
-            # 更新或插入轮换配置
-            sql = """
-            INSERT INTO rotation_config (time_slot_type, rotation_order, current_index) 
-            VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE 
-            rotation_order = VALUES(rotation_order), 
-            current_index = VALUES(current_index)
-            """
-            
-            success = db.execute(sql, (config_type, ','.join(rotation_order), current_index))
-            db.close()
-            
-            if success:
-                return jsonify({"success": True, "msg": "轮换配置更新成功"})
-            else:
-                return jsonify({"success": False, "msg": "轮换配置更新失败"})
-        except Exception as e:
-            return jsonify({"success": False, "msg": "更新轮换配置失败: " + str(e)})
-
-
-@schedule_config_bp.route('/api/priority-staff', methods=['GET'])
-def priority_staff():
-    """获取优先安排人员列表（请假归来人员优先）API（新增需求：20260301）"""
-    try:
-        start_date = request.args.get('start_date')
-        end_date = request.args.get('end_date')
-        
-        if not start_date or not end_date:
-            return jsonify({"success": False, "msg": "开始日期和结束日期不能为空"})
-        
-        db = RosterDB(DB_CONFIG)
-        if not db.connect():
-            return jsonify({"success": False, "msg": "数据库连接失败"})
-        
-        # 获取请假记录中的人员及其请假时间
-        leave_sql = """
-        SELECT staff_name, MIN(leave_date) as first_leave, MAX(leave_date) as last_leave
-        FROM leave_record 
-        WHERE leave_date BETWEEN %s AND %s
-        GROUP BY staff_name
-        ORDER BY first_leave
-        """
-        
-        leave_results = db.query(leave_sql, (start_date, end_date))
-        
-        # 获取当前所有人员
-        staff_sql = "SELECT staff_name FROM staff_config"
-        staff_results = db.query(staff_sql)
-        all_staffs = [item['staff_name'] for item in staff_results]
-        
-        # 构建优先级列表
-        priority_list = []
-        
-        # 1. 最高优先级：最近请假归来人员
-        for leave_record in leave_results:
-            staff_name = leave_record['staff_name']
-            last_leave = leave_record['last_leave']
-            # 检查该人员是否已经在后续日期有排班安排
-            check_roster_sql = """
-            SELECT COUNT(*) as scheduled_count
-            FROM roster 
-            WHERE staff_name = %s AND date > %s
-            """
-            roster_check = db.query(check_roster_sql, (staff_name, last_leave))
-            scheduled_count = roster_check[0]['scheduled_count'] if roster_check else 0
-            
-            if scheduled_count == 0:  # 还没有安排，需要优先
-                priority_list.append({
-                    'staff_name': staff_name,
-                    'priority_level': 1,
-                    'reason': f'请假归来优先安排（最后请假日期：{last_leave}）',
-                    'last_leave_date': last_leave
-                })
-        
-        # 2. 次优先级：未在近期排班的人员
-        recent_days = 7  # 考虑最近7天的排班情况
-        recent_start = datetime.strptime(end_date, '%Y-%m-%d').date() - timedelta(days=recent_days)
-        
-        for staff in all_staffs:
-            # 检查是否已在优先列表中
-            if any(item['staff_name'] == staff for item in priority_list):
-                continue
-            
-            # 检查近期是否有排班
-            recent_roster_sql = """
-            SELECT COUNT(*) as recent_count
-            FROM roster 
-            WHERE staff_name = %s AND date BETWEEN %s AND %s
-            """
-            recent_check = db.query(recent_roster_sql, (staff, recent_start, end_date))
-            recent_count = recent_check[0]['recent_count'] if recent_check else 0
-            
-            if recent_count == 0:  # 近期无排班，给予次优先级
-                priority_list.append({
-                    'staff_name': staff,
-                    'priority_level': 2,
-                    'reason': '近期未排班人员',
-                    'last_scheduled': None
-                })
-        
-        # 3. 普通人员按轮换顺序
-        remaining_staff = [staff for staff in all_staffs 
-                          if not any(item['staff_name'] == staff for item in priority_list)]
-        
-        for i, staff in enumerate(remaining_staff):
-            priority_list.append({
-                'staff_name': staff,
-                'priority_level': 3,
-                'reason': '按轮换顺序安排',
-                'rotation_order': i
-            })
-        
-        # 按优先级排序
-        priority_list.sort(key=lambda x: (x['priority_level'], 
-                                        x.get('last_leave_date', ''), 
-                                        x.get('rotation_order', 0)))
-        
-        db.close()
-        
-        return jsonify({
-            "success": True,
-            "data": priority_list,
-            "total": len(priority_list)
-        })
-    except Exception as e:
-        return jsonify({"success": False, "msg": "获取优先人员列表失败: " + str(e)})
+            return jsonify({"success": False, "msg": "获取排班记录失败：" + str(e)})
 
 
 @schedule_config_bp.route('/api/check-existing-roster', methods=['GET'])

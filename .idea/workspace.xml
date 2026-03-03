@@ -4,35 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="端口保持5001；增加pymysql的依赖包">
-      <change afterPath="$PROJECT_DIR$/routes/排班/人员配置.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/排班/请假记录.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/bootstrap/bootstrap.bundle.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/bootstrap/bootstrap.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/fontawesome/all.min.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/webfonts/fa-brands-400.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/webfonts/fa-brands-400.woff2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/webfonts/fa-solid-900.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/vendor/webfonts/fa-solid-900.woff2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/Index_test/replace_cdn_links.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/Index_test/test_fontawesome.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：前端查询时段显示异常的问题">
+      <change afterPath="$PROJECT_DIR$/routes/排班/1.请假配置.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/2.人员配置.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/3. 生成排班.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/4.排班最终结果.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/DEPLOYMENT_CHECKLIST.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/FIX_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/IMPROVEMENTS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/QUICK_START.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/alter_roster_table.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/check_remark.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/check_rotation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/fix_rotation_config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/init_roster_table.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/test_improved_roster.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/排班/verify_roster.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/排班/排班curl.txt" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/排班curl.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/排班/排班查询curl.txt" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/排班查询curl.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/chat.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/clean_event.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/clean_event.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/es_to_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/es_to_kafka.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/generate_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/generate_kafka.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/json_fixer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/json_fixer.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/markdown_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/markdown_upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/schedule_config.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/schedule_config.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/sql_formatter.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/sql_formatter.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/word_to_md.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/word_to_md.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/PaiBan.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme/PaiBan.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/schedule_config_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/schedule_config_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/paiBanNew.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/paiBanNew.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/sch.sql" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/sch.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/排班curl.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/排班查询curl.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/scheduleTest/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/排班/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/scheduleTest/test_roster_generation.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/排班/test_roster_generation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,44 +114,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask 服务器.Flask (app.py).executor": "Run",
-    "Flask 服务器.Flask (app2.py).executor": "Run",
-    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
-    "JavaScript 调试.schedule.html.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.app2.executor": "Run",
-    "Python.holidaySys.executor": "Run",
-    "Python.kafka_routes.executor": "Debug",
-    "Python.paiBan.executor": "Run",
-    "Python.paiBanNew.executor": "Run",
-    "Python.wordToWord.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/tmp",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
+    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
+    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/tmp&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql_aurora"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql_aurora&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tmp" />
@@ -160,18 +159,18 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/排班" />
       <recent name="$PROJECT_DIR$/test/Index_test" />
       <recent name="$PROJECT_DIR$/routes/排班" />
       <recent name="$PROJECT_DIR$/routes" />
       <recent name="$PROJECT_DIR$/templates" />
-      <recent name="$PROJECT_DIR$/static" />
     </key>
   </component>
-  <component name="RunManager" selected="JavaScript Debug.test_fontawesome.html">
+  <component name="RunManager" selected="Python.paiBanNew_v2">
     <configuration name="test_fontawesome.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/wordToWord/test/Index_test/test_fontawesome.html" useBuiltInWebServerPort="true">
       <method v="2" />
     </configuration>
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="paiBanNew" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -179,12 +178,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes/排班" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/排班/paiBanNew.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -193,7 +192,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="app2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="paiBanNew_v2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -201,34 +200,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes/排班" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app2.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="kafka_routes" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="wordToWord" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/routes" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/kafka_routes.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -274,21 +251,37 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Flask (app.py:create_app)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+      <option name="application" value="create_app" />
+      <module name="wordToWord" />
+      <option name="target" value="$PROJECT_DIR$/app.py" />
+      <option name="targetType" value="PATH" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Flask server.Flask (app.py:create_app)" />
       <item itemvalue="Flask server.Flask (app.py)" />
       <item itemvalue="JavaScript Debug.test_fontawesome.html" />
       <item itemvalue="Python.wordToWord" />
-      <item itemvalue="Python.app2" />
-      <item itemvalue="Python.app" />
-      <item itemvalue="Python.kafka_routes" />
+      <item itemvalue="Python.paiBanNew_v2" />
+      <item itemvalue="Python.paiBanNew" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Flask server.Flask (app.py)" />
+        <item itemvalue="Python.paiBanNew_v2" />
+        <item itemvalue="Python.paiBanNew" />
+        <item itemvalue="Flask server.Flask (app.py:create_app)" />
         <item itemvalue="JavaScript Debug.test_fontawesome.html" />
-        <item itemvalue="Python.app" />
-        <item itemvalue="Python.app2" />
-        <item itemvalue="Python.kafka_routes" />
       </list>
     </recent_temporary>
   </component>
@@ -320,7 +313,8 @@
       <workItem from="1770601547649" duration="210000" />
       <workItem from="1771897295342" duration="5980000" />
       <workItem from="1772356492237" duration="880000" />
-      <workItem from="1772418073555" duration="2566000" />
+      <workItem from="1772418073555" duration="22901000" />
+      <workItem from="1772504611577" duration="5957000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -362,11 +356,30 @@
       <option name="project" value="LOCAL" />
       <updated>1772356556260</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fix：前端资源本地读取">
+      <option name="closed" value="true" />
+      <created>1772421014845</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1772421014845</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -396,7 +409,17 @@
     <MESSAGE value="kafka消息生成" />
     <MESSAGE value="排班系统1.0" />
     <MESSAGE value="端口保持5001；增加pymysql的依赖包" />
-    <option name="LAST_COMMIT_MESSAGE" value="端口保持5001；增加pymysql的依赖包" />
+    <MESSAGE value="fix：前端资源本地读取" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：前端资源本地读取" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="rotation_holiday[&quot;order&quot;]" />
+        <watch expression="s" />
+        <watch expression="all_leave_staffs" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/wordToWord$kafka_generator_routes.coverage" NAME="kafka_generator_routes Coverage Results" MODIFIED="1772158199279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
@@ -406,6 +429,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_json_fix.coverage" NAME="test_json_fix Coverage Results" MODIFIED="1772085168298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_login_improvements.coverage" NAME="test_login_improvements Coverage Results" MODIFIED="1772012707996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$paiBan.coverage" NAME="paiBan 覆盖结果" MODIFIED="1770345049830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes" />
+    <SUITE FILE_PATH="coverage/wordToWord$paiBanNew_v2.coverage" NAME="paiBanNew_v2 Coverage Results" MODIFIED="1772509103762" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_field_order.coverage" NAME="verify_field_order Coverage Results" MODIFIED="1772162249831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/OPMPlatform$app.coverage" NAME="app 覆盖结果" MODIFIED="1771897366914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__app2_py_.coverage" NAME="Flask (app2.py) 覆盖结果" MODIFIED="1770186254351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
@@ -421,13 +445,14 @@
     <SUITE FILE_PATH="coverage/wordToWord$simple_admin_test.coverage" NAME="simple_admin_test Coverage Results" MODIFIED="1772085467021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$holidaySys.coverage" NAME="holidaySys Coverage Results" MODIFIED="1772185508639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$auth_models.coverage" NAME="auth_models Coverage Results" MODIFIED="1772013460735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772418755731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772510408615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_real_input_output.coverage" NAME="test_real_input_output Coverage Results" MODIFIED="1772162900732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) Coverage Results" MODIFIED="1772423061601" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1772158517894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$simple_field_analysis.coverage" NAME="simple_field_analysis Coverage Results" MODIFIED="1772268490419" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_admin_fix.coverage" NAME="verify_admin_fix Coverage Results" MODIFIED="1772085370033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/wordToWord$paiBanNew.coverage" NAME="paiBanNew 覆盖结果" MODIFIED="1770360649752" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
+    <SUITE FILE_PATH="coverage/wordToWord$paiBanNew.coverage" NAME="paiBanNew Coverage Results" MODIFIED="1772508768432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$auth_manual_test.coverage" NAME="auth_manual_test Coverage Results" MODIFIED="1772085451418" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="github-copilot-workspace">

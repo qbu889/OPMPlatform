@@ -1,0 +1,74 @@
+curl 'http://127.0.0.1:5000/schedule-config/api/leave-records?start_date=2026-02-01&end_date=2026-03-31' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: zh-CN,zh;q=0.9' \
+  -H 'Connection: keep-alive' \
+  -H 'Referer: http://127.0.0.1:5000/schedule-config/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"'
+
+
+接口返回：
+{
+    "data": [
+        {
+            "end_time": "23:59:00",
+            "id": 3,
+            "is_full_day": 1,
+            "leave_date": "2026-02-05",
+            "staff_name": "陈伟强",
+            "staff_type": "TEST",
+            "start_time": "00:00:00"
+        },
+        {
+            "end_time": "23:59:00",
+            "id": 2,
+            "is_full_day": 1,
+            "leave_date": "2026-02-06",
+            "staff_name": "曾婷婷",
+            "staff_type": "TEST",
+            "start_time": "00:00:00"
+        },
+        {
+            "end_time": "23:59:00",
+            "id": 4,
+            "is_full_day": 1,
+            "leave_date": "2026-02-06",
+            "staff_name": "陈伟强",
+            "staff_type": "TEST",
+            "start_time": "00:00:00"
+        },
+        {
+            "end_time": "23:59:00",
+            "id": 5,
+            "is_full_day": 1,
+            "leave_date": "2026-02-08",
+            "staff_name": "林子旺",
+            "staff_type": "TEST",
+            "start_time": "00:00:00"
+        },
+        {
+            "end_time": "23:59:00",
+            "id": 7,
+            "is_full_day": 1,
+            "leave_date": "2026-02-24",
+            "staff_name": "郑晨昊",
+            "staff_type": "CORE",
+            "start_time": "00:00:00"
+        },
+        {
+            "end_time": "23:59:00",
+            "id": 8,
+            "is_full_day": 1,
+            "leave_date": "2026-02-24",
+            "staff_name": "曾婷婷",
+            "staff_type": "TEST",
+            "start_time": "00:00:00"
+        }
+    ],
+    "success": true
+}
