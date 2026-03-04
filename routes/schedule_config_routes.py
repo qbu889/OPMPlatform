@@ -7,6 +7,8 @@ from flask import Blueprint, render_template, request, jsonify
 from routes.排班.paiBanNew_v2 import DB_CONFIG, RosterDB
 from datetime import datetime, date, timedelta
 from typing import List, Dict
+import csv
+import io
 
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
 
@@ -383,6 +385,162 @@ def check_existing_roster():
             })
     except Exception as e:
         return jsonify({"success": False, "msg": "检查现有排班失败: " + str(e)})
+
+
+@schedule_config_bp.route('/api/import-schedule', methods=['POST'])
+def import_schedule():
+    """从 CSV 文件导入排班数据 API"""
+    try:
+        # 检查是否有文件上传
+        if 'file' not in request.files:
+            return jsonify({"success": False, "msg": "未找到上传文件"})
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            return jsonify({"success": False, "msg": "未选择文件"})
+        
+        if not file.filename.endswith('.csv'):
+            return jsonify({"success": False, "msg": "请上传 CSV 格式的文件"})
+        
+        # 读取 CSV 文件内容
+        content = file.read().decode('utf-8-sig')  # utf-8-sig 可以处理 BOM 头
+        csv_file = io.StringIO(content)
+        
+        # 解析 CSV
+        reader = csv.DictReader(csv_file)
+        
+        # 验证 CSV 列名
+        required_columns = ['日期', '星期', '时段', '人员']
+        if not all(col in reader.fieldnames for col in required_columns):
+            return jsonify({"success": False, "msg": f"CSV 文件格式不正确，需要包含以下列：{', '.join(required_columns)}"})
+        
+        # 解析数据并按日期和时段分组
+        schedule_data = {}
+        for row in reader:
+            date_str = row['日期'].strip()
+            time_slot = row['时段'].strip()
+            staff_str = row['人员'].strip()
+            remark = row.get('备注', '').strip() if '备注' in row else ''
+            
+            # 解析日期 (支持多种格式)
+            try:
+                # 尝试 YYYY/M/D 格式 (如 2026/2/24)
+                if '/' in date_str:
+                    parsed_date = datetime.strptime(date_str, '%Y/%m/%d').date()
+                else:
+                    # 尝试 YYYY-MM-DD 格式
+                    parsed_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"success": False, "msg": f"日期格式错误：{date_str}，请使用 YYYY-MM-DD 或 YYYY/MM/DD 格式"})
+            
+            date_key = parsed_date.strftime('%Y-%m-%d')
+            
+            if date_key not in schedule_data:
+                schedule_data[date_key] = {}
+            
+            if time_slot not in schedule_data[date_key]:
+                schedule_data[date_key][time_slot] = {'staffs': [], 'remark': remark}
+            
+            # 分割多个人员 (使用顿号、逗号等分隔符)
+            staff_list = [s.strip() for s in staff_str.replace(',', ',').split('、')]
+            schedule_data[date_key][time_slot]['staffs'].extend(staff_list)
+        
+        # 获取需要导入的日期范围
+        if not schedule_data:
+            return jsonify({"success": False, "msg": "CSV 文件中没有有效的排班数据"})
+        
+        dates = sorted(schedule_data.keys())
+        start_date = dates[0]
+        end_date = dates[-1]
+        
+        # 返回导入预览信息
+        total_records = sum(
+            len(slot_data['staffs']) 
+            for date_data in schedule_data.values() 
+            for slot_data in date_data.values()
+        )
+        
+        # 将数据暂存在 session 或其他地方，等待用户确认
+        # 这里简单起见，直接返回预览信息
+        return jsonify({
+            "success": True,
+            "msg": f"解析成功，共 {total_records} 条记录",
+            "data": {
+                "start_date": start_date,
+                "end_date": end_date,
+                "total_days": len(dates),
+                "total_records": total_records,
+                "schedule_data": schedule_data
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "msg": "导入失败：" + str(e)})
+
+
+@schedule_config_bp.route('/api/confirm-import-schedule', methods=['POST'])
+def confirm_import_schedule():
+    """确认导入排班数据 API"""
+    try:
+        data = request.get_json()
+        schedule_data = data.get('schedule_data')
+        
+        if not schedule_data:
+            return jsonify({"success": False, "msg": "未提供排班数据"})
+        
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+        
+        # 获取日期范围
+        dates = sorted(schedule_data.keys())
+        start_date = dates[0]
+        end_date = dates[-1]
+        
+        # 先删除已有数据
+        delete_sql = "DELETE FROM roster WHERE date BETWEEN %s AND %s"
+        db.execute(delete_sql, (start_date, end_date))
+        
+        # 插入新数据
+        insert_sql = """
+        INSERT INTO roster (date, time_slot, staff_name, is_main, remark)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+        
+        inserted_count = 0
+        for date_str in sorted(schedule_data.keys()):
+            date_data = schedule_data[date_str]
+            
+            for time_slot, slot_data in date_data.items():
+                staff_list = slot_data['staffs']
+                remark = slot_data.get('remark', '')
+                
+                # 如果是多人，第一个作为主班，其他为辅班
+                for idx, staff_name in enumerate(staff_list):
+                    is_main = (idx == 0)  # 第一个人员为主班
+                    db.execute(insert_sql, (
+                        date_str, 
+                        time_slot, 
+                        staff_name, 
+                        is_main, 
+                        remark if remark else None
+                    ))
+                    inserted_count += 1
+        
+        db.close()
+        
+        return jsonify({
+            "success": True, 
+            "msg": f"导入成功！共导入 {inserted_count} 条排班记录，日期范围：{start_date} 至 {end_date}"
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "msg": "确认导入失败：" + str(e)})
 
 
 @schedule_config_bp.route('/api/delete-existing-roster', methods=['POST'])
