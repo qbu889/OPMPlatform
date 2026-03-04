@@ -203,4 +203,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+#     import_dimension_table.py --batch
 
