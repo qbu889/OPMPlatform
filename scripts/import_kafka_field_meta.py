@@ -70,13 +70,43 @@ def upsert_rows(rows: List[Dict[str, Any]]) -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="导入 Kafka 字段元数据到 MySQL（kafka_field_meta）")
-    parser.add_argument("--csv", required=True, help="sql/事件关联-分级调度接口协议.csv）")
+    parser = argparse.ArgumentParser(description="导入 Kafka 字段元数据到 MySQL(kafka_field_meta)")
+    parser.add_argument("--csv", help="CSV 文件路径 (例如：sql/事件关联 - 分级调度接口协议.csv)")
+    parser.add_argument("--batch", action="store_true", help="批量导入模式：自动查找 sql 目录下的事件关联文件")
     args = parser.parse_args()
 
-    rows = read_csv_rows(args.csv)
+    # 如果没有提供 CSV 参数，尝试自动查找
+    if not args.csv:
+        sql_dir = os.path.join(PROJECT_ROOT, "sql")
+        if os.path.exists(sql_dir):
+            # 查找包含"事件关联"或"分级调度"的 CSV 文件
+            target_files = [
+                f for f in os.listdir(sql_dir)
+                if f.endswith('.csv') and ('事件关联' in f or '分级调度' in f)
+            ]
+            if target_files:
+                args.csv = os.path.join(sql_dir, target_files[0])
+                print(f"自动检测到文件：{args.csv}")
+            else:
+                print("错误：未指定 CSV 文件，且未在 sql 目录中找到事件关联相关文件")
+                print("\n使用方法:")
+                print("  python scripts/import_kafka_field_meta.py --csv \"sql/事件关联 - 分级调度接口协议.csv\"")
+                parser.print_help()
+                sys.exit(1)
+        else:
+            print("错误：未指定 CSV 文件，且 sql 目录不存在")
+            print("\n使用方法:")
+            print("  python scripts/import_kafka_field_meta.py --csv \"sql/事件关联 - 分级调度接口协议.csv\"")
+            parser.print_help()
+            sys.exit(1)
+
+    csv_path = os.path.abspath(args.csv)
+    if not os.path.exists(csv_path):
+        raise SystemExit(f"CSV 文件不存在：{csv_path}")
+
+    rows = read_csv_rows(csv_path)
     count = upsert_rows(rows)
-    print(f"导入完成：{count} 条（包含 upsert）")
+    print(f"导入完成：{count} 条 (包含 upsert)")
 
 
 if __name__ == "__main__":

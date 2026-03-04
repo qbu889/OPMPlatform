@@ -7,29 +7,6 @@
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：新增派单CSV文件导入功能">
       <change afterPath="$PROJECT_DIR$/.env.wechat" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/requirements_wechat.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/import_dimension_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/alarm_resource_status.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/alter_roster_table.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/business_layer.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/circuit_level.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/effect_ne.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/effect_service.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/eqp_object_class.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/extra_id2.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/kafka_field_meta.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/logic_alarm_type.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/ne_admin_status.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/network_type.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/network_type_top.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/org_severity.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/org_type.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/port_num.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/sch.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/sub_alarm_type.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/users.db" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sql/事件关联-分级调度接口协议.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/mysql_helper.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_auto_reply_mac.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_config_example.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_mac.log" afterDir="false" />
@@ -37,13 +14,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36_[更改]/shelved.patch" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36___.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/excel2word_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/excel2word_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/排班/alter_roster_table.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/排班/sch.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/users.db" beforeDir="false" afterPath="$PROJECT_DIR$/users.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cleanup_thread.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cleanup_thread.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -355,7 +327,7 @@
       <workItem from="1772554014392" duration="13023000" />
       <workItem from="1772613776658" duration="15000" />
       <workItem from="1772614843180" duration="747000" />
-      <workItem from="1772617172382" duration="2576000" />
+      <workItem from="1772617172382" duration="3306000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -461,7 +433,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772610856249</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="new：kafka新增ES字段和对应字典数据查询">
+      <option name="closed" value="true" />
+      <created>1772620129127</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1772620129127</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -514,7 +494,8 @@
     <MESSAGE value="new：新增派单CSV文件导入功能" />
     <MESSAGE value="new：桌面整理程序" />
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：csv导入remark没有填充数据问题" />
+    <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：kafka新增ES字段和对应字典数据查询" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
