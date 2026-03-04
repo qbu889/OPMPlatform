@@ -106,7 +106,7 @@ def main():
 
     rows = read_csv_rows(csv_path)
     count = upsert_rows(rows)
-    print(f"导入完成：{count} 条（包含 upsert）")
+    print(f"导入完成：{count} 条 (包含 upsert)")
 
 
 if __name__ == "__main__":
