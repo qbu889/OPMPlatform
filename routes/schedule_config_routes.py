@@ -421,7 +421,8 @@ def import_schedule():
             date_str = row['日期'].strip()
             time_slot = row['时段'].strip()
             staff_str = row['人员'].strip()
-            remark = row.get('备注', '').strip() if '备注' in row else ''
+            # 如果 CSV 有备注列则读取，否则使用空字符串
+            remark = row.get('备注', '').strip() if '备注' in reader.fieldnames else ''
             
             # 解析日期 (支持多种格式)
             try:
