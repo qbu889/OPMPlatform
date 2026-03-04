@@ -10,18 +10,6 @@ from utils.cleanup_thread import run_cleanup_loop
 # 新建蓝图，前缀统一为 /excel2word
 excel2word_bp = Blueprint('excel2word', __name__, url_prefix='/excel2word')
 
-# 启动后台清理线程（仅启动一次）
-cleanup_started = False
-
-
-def init_cleanup():
-    global cleanup_started
-    if not cleanup_started:
-        thread = threading.Thread(target=run_cleanup_loop, daemon=True)
-        thread.start()
-        cleanup_started = True
-
-
 # 保存上传的Excel文件（复用现有UPLOAD_FOLDER配置，统一文件管理）
 def save_excel_file(uploaded_file):
     """保存上传的Excel文件，生成唯一文件名"""
@@ -45,7 +33,6 @@ def save_excel_file(uploaded_file):
 @excel2word_bp.route('/')
 def excel2word_page():
     """Excel转Word主页面"""
-    init_cleanup()  # 启动清理线程
     return render_template('excel2word.html',
                            excel_uploaded='excel_path' in session,
                            converted=session.get('converted', False),

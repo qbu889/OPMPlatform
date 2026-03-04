@@ -7,9 +7,9 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from threading import Thread
 from flask import current_app
-# 清理配置
-RETENTION_HOURS = 1
-INTERVAL_SECONDS = 1800
+# 清理配置（默认值，可以通过线程参数覆盖）
+RETENTION_HOURS = 1          # 默认保留 1 小时
+INTERVAL_SECONDS = 1800      # 默认清理间隔 30 分钟
 TIMESTAMP_PATTERN = re.compile(r".+_(\d{13})\..+")
 
 class CleanupThread(Thread):
@@ -20,6 +20,7 @@ class CleanupThread(Thread):
         self.retention_hours = retention_hours
 
     def run(self):
+        # 将 Flask 应用实例和配置传递给清理循环
         run_cleanup_loop(self.app, self.cleanup_interval, self.retention_hours)
 
 
@@ -60,13 +61,17 @@ def cleanup_dir(directory: str, cutoff: str) -> Tuple[int, int]:  # 小写tuple 
     return deleted_count, freed_bytes
 
 # 需要修改 utils/cleanup_thread.py 中的函数定义
-def run_cleanup_loop(app):
-    # 实现清理逻辑
-    """后台清理循环"""
-    print(f"[清理线程] 启动，保留时长：{RETENTION_HOURS}小时，清理间隔：{INTERVAL_SECONDS}秒")
+def run_cleanup_loop(app, cleanup_interval: int = INTERVAL_SECONDS, retention_hours: int = RETENTION_HOURS):
+    """后台清理循环
+
+    :param app: Flask 应用实例
+    :param cleanup_interval: 清理间隔秒数
+    :param retention_hours: 文件保留小时数
+    """
+    print(f"[清理线程] 启动，保留时长：{retention_hours}小时，清理间隔：{cleanup_interval}秒")
     while True:
         now = datetime.now()
-        cutoff = now - timedelta(hours=RETENTION_HOURS)
+        cutoff = now - timedelta(hours=retention_hours)
 
         # 使用应用上下文访问配置
         with app.app_context():
@@ -79,4 +84,4 @@ def run_cleanup_loop(app):
 
             if in_del + out_del > 0:
                 print(f"[{now}] 清理完成：删除Excel文件{in_del}个，Word文件{out_del}个")
-        time.sleep(INTERVAL_SECONDS)
+        time.sleep(cleanup_interval)

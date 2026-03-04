@@ -14,6 +14,236 @@ import json
 
 kafka_generator_bp = Blueprint('kafka_generator_bp', __name__, url_prefix='/kafka-generator')
 
+# 字段元数据配置（后续可以迁移到 MySQL）
+# key 使用 Kafka 字段名（大写），便于与模板 allFields 对应
+FIELD_META = {
+    "NETWORK_TYPE_TOP": {
+        "label_cn": "一级专业分类",
+        "es_field": "NETWORK_TYPE_ID",
+        "db_cn": "一级专业ID"
+    },
+    "ORG_SEVERITY": {
+        "label_cn": "网管告警级别",
+        "es_field": "ALARM_LEVEL",
+        "db_cn": "网管告警级别"
+    },
+    "REGION_NAME": {
+        "label_cn": "地区",
+        "es_field": "CITY_NAME",
+        "db_cn": "地市"
+    },
+    "ACTIVE_STATUS": {
+        "label_cn": "告警清除状态",
+        "es_field": "CANCEL_STATUS",
+        "db_cn": "清除状态"
+    },
+    "CITY_NAME": {
+        "label_cn": "县市",
+        "es_field": "COUNTY_NAME",
+        "db_cn": "区县"
+    },
+    "EQP_LABEL": {
+        "label_cn": "网元名称",
+        "es_field": "EQUIPMENT_NAME",
+        "db_cn": "网元名称"
+    },
+    "EQP_OBJECT_CLASS": {
+        "label_cn": "设备类型",
+        "es_field": "EQP_OBJECT_ID",
+        "db_cn": "设备类型ID"
+    },
+    "VENDOR_NAME": {
+        "label_cn": "设备厂家名称",
+        "es_field": "VENDOR_NAME",
+        "db_cn": "设备厂家"
+    },
+    "VENDOR_ID": {
+        "label_cn": "设备厂家ID",
+        "es_field": "VENDOR_ID",
+        "db_cn": "设备厂家"
+    },
+    "ALARM_RESOURCE_STATUS": {
+        "label_cn": "告警工程状态",
+        "es_field": "ALARM_RESOURCE_STATUS",
+        "db_cn": "工程状态"
+    },
+    "LOCATE_INFO": {
+        "label_cn": "定位信息",
+        "es_field": "EVENT_LOCATION",
+        "db_cn": "事件定位信息"
+    },
+    "NE_LABEL": {
+        "label_cn": "告警对象网元名称",
+        "es_field": "NE_LABEL",
+        "db_cn": "告警对象网元名称"
+    },
+    "OBJECT_LEVEL": {
+        "label_cn": "告警对象重要级别",
+        "es_field": "OBJECT_LEVEL",
+        "db_cn": "告警对象重要级别"
+    },
+    "PROFESSIONAL_TYPE": {
+        "label_cn": "专业（旧概念）",
+        "es_field": "PROFESSIONAL_TYPE",
+        "db_cn": "专业（旧概念）"
+    },
+    "NETWORK_TYPE": {
+        "label_cn": "二级专业分类",
+        "es_field": "NETWORK_SUB_TYPE_ID",
+        "db_cn": "二级专业"
+    },
+    "ORG_TYPE": {
+        "label_cn": "告警类别",
+        "es_field": "ORG_TYPE",
+        "db_cn": "告警类别"
+    },
+    "VENDOR_TYPE": {
+        "label_cn": "厂家原始告警类别",
+        "es_field": "VENDOR_EVENT_TYPE",
+        "db_cn": "厂家原始告警类别"
+    },
+    "SEND_JT_FLAG": {
+        "label_cn": "是否需要上报集团",
+        "es_field": "SEND_JT_FLAG",
+        "db_cn": "是否需要上报集团"
+    },
+    "TITLE_TEXT": {
+        "label_cn": "告警标题",
+        "es_field": "ALARM_NAME",
+        "db_cn": "告警标题"
+    },
+    "STANDARD_ALARM_NAME": {
+        "label_cn": "告警标准名",
+        "es_field": "ALARM_STANDARD_NAME",
+        "db_cn": "告警标准化名称"
+    },
+    "STANDARD_ALARM_ID": {
+        "label_cn": "告警标准化ID",
+        "es_field": "ALARM_STANDARD_ID",
+        "db_cn": "告警标准化ID"
+    },
+    "STANDARD_FLAG": {
+        "label_cn": "标准化标志",
+        "es_field": "ALARM_STANDARD_FLAG",
+        "db_cn": "标准化标志"
+    },
+    "VENDOR_SEVERITY": {
+        "label_cn": "厂家原始告警级别",
+        "es_field": "VENDOR_SEVERITY",
+        "db_cn": "厂家原始告警级别"
+    },
+    "PROBABLE_CAUSE": {
+        "label_cn": "厂家告警号",
+        "es_field": "PROBABLE_CAUSE",
+        "db_cn": "厂家告警号"
+    },
+    "NMS_ALARM_ID": {
+        "label_cn": "告警流水号",
+        "es_field": "NMS_ALARM_ID",
+        "db_cn": "网管告警ID"
+    },
+    "PROBABLE_CAUSE_TXT": {
+        "label_cn": "告警可能原因描述",
+        "es_field": "EVENT_PROBABLE_CAUSE_TXT",
+        "db_cn": "事件可能原因描述"
+    },
+    "PREPROCESS_MANNER": {
+        "label_cn": "预处理方式",
+        "es_field": "PREPROCESS_MANNER",
+        "db_cn": "预处理方式"
+    },
+    "EVENT_TIME": {
+        "label_cn": "告警发生时间",
+        "es_field": "EVENT_TIME",
+        "db_cn": "事件发生时间"
+    },
+    "TIME_STAMP": {
+        "label_cn": "告警发现时间",
+        "es_field": "EVENT_COLLECTION_TIME",
+        "db_cn": "事件采集时间"
+    },
+    "FP0_FP1_FP2_FP3": {
+        "label_cn": "告警指纹FP",
+        "es_field": "ORIG_ALARM_FP",
+        "db_cn": "告警流水号"
+    },
+    "CFP0_CFP1_CFP2_CFP3": {
+        "label_cn": "清除告警指纹FP",
+        "es_field": "ORIG_ALARM_CLEAR_FP",
+        "db_cn": "事件清除FP"
+    },
+    "MACHINE_ROOM_INFO": {
+        "label_cn": "机房信息",
+        "es_field": "MACHINE_ROOM_INFO",
+        "db_cn": "机房信息"
+    }
+    # 其它字段可按需继续补充
+}
+
+# Kafka 字段 -> 维表名 映射 (用于前端"字典"弹窗和后端查询)
+FIELD_DICT_TABLES = {
+    "ALARM_RESOURCE_STATUS": "alarm_resource_status",
+    "BUSINESS_LAYER": "business_layer",
+    "CIRCUIT_LEVEL": "circuit_level",
+    "EFFECT_NE": "effect_ne",
+    "EFFECT_SERVICE": "effect_service",
+    "EQP_OBJECT_CLASS": "eqp_object_class",
+    "EXTRA_ID2": "extra_id2",
+    "LOGIC_ALARM_TYPE": "logic_alarm_type",
+    "NE_ADMIN_STATUS": "ne_admin_status",
+    "NETWORK_TYPE": "network_type",
+    "NETWORK_TYPE_TOP": "network_type_top",
+    "ORG_SEVERITY": "org_severity",
+    "ORG_TYPE": "org_type",
+    "PORT_NUM": "port_num",
+    "SUB_ALARM_TYPE": "sub_alarm_type",
+}
+
+
+def load_field_meta_from_mysql():
+    """从 MySQL 加载字段元数据。
+
+    读取表：kafka_field_meta
+    返回结构：{ "NETWORK_TYPE_TOP": { "label_cn": "...", "es_field": "...", "db_cn": "..." }, ... }
+    失败或无数据时返回 None，供调用方回退到内置 FIELD_META。
+    """
+    try:
+        from utils.mysql_helper import get_mysql_conn_dict_cursor
+
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return None
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT kafka_field, es_field, db_cn, label_cn
+                    FROM kafka_field_meta
+                    WHERE is_enabled = 1
+                    """
+                )
+                rows = cur.fetchall() or []
+        finally:
+            conn.close()
+
+        if not rows:
+            return None
+
+        meta = {}
+        for r in rows:
+            k = (r.get("kafka_field") or "").strip().upper()
+            if not k:
+                continue
+            meta[k] = {
+                "label_cn": (r.get("label_cn") or "").strip(),
+                "es_field": (r.get("es_field") or "").strip(),
+                "db_cn": (r.get("db_cn") or "").strip(),
+            }
+        return meta or None
+    except Exception:
+        return None
+
 
 def generate_unique_fp():
     """生成唯一的FP值"""
@@ -441,6 +671,78 @@ def generate_org_text(kafka_data):
 def kafka_generator_page():
     """Kafka消息生成器页面"""
     return render_template('kafka_generator.html')
+
+
+@kafka_generator_bp.route('/field-meta')
+def kafka_field_meta():
+    """提供前端展示用的字段元数据
+
+    当前版本从内存常量 FIELD_META 读取，后续可改为从 MySQL 读取：
+    - 表结构示例：kafka_field_meta(kafka_field, es_field, db_cn, label_cn, remark...)
+    """
+    mysql_meta = load_field_meta_from_mysql()
+    return jsonify({
+        "success": True,
+        "data": mysql_meta or FIELD_META
+    })
+
+
+@kafka_generator_bp.route('/field-options')
+def kafka_field_options():
+    """返回某个 Kafka 字段对应维表中的所有配置项
+
+    请求参数:
+      - kafka_field: 如 BUSINESS_LAYER / CIRCUIT_LEVEL 等
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    import traceback
+
+    kafka_field = (request.args.get("kafka_field") or "").strip().upper()
+    if not kafka_field:
+        return jsonify({"success": False, "message": "缺少 kafka_field 参数"}), 400
+
+    table = FIELD_DICT_TABLES.get(kafka_field)
+    if not table:
+        return jsonify({"success": False, "message": f"字段 {kafka_field} 未配置维表"}), 400
+
+    print(f"[DEBUG] 查询维表：{table}, 字段：{kafka_field}")
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        print(f"[ERROR] MySQL 连接失败")
+        return jsonify({"success": False, "message": "MySQL 未配置或不可用"}), 500
+
+    try:
+        table_escaped = table.replace("`", "``")
+        with conn.cursor() as cur:
+            # 简单限制一下返回行数，避免维表过大
+            query = f"SELECT * FROM `{table_escaped}` LIMIT 500"
+            print(f"[DEBUG] 执行 SQL: {query}")
+            cur.execute(query)
+            rows = cur.fetchall() or []
+            print(f"[DEBUG] 查询成功，返回 {len(rows)} 行数据")
+    except Exception as e:
+        print(f"[ERROR] 查询失败：{e}")
+        print(f"[ERROR] 详细错误：{traceback.format_exc()}")
+        return jsonify({
+            "success": False, 
+            "message": f"数据库查询失败：{str(e)}",
+            "table": table,
+            "field": kafka_field
+        }), 500
+    finally:
+        conn.close()
+
+    # rows 为字典列表：[{col: val, ...}, ...]
+    columns = list(rows[0].keys()) if rows else []
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "columns": columns,
+            "rows": rows,
+        }
+    })
 
 
 def fix_json_keys(raw_data):
