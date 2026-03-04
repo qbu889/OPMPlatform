@@ -311,6 +311,191 @@
             color: #0d6efd;
             text-decoration: underline;
             margin-left: 8px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        .field-item input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+        .field-meta {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        .field-meta .es-field {
+            color: #667eea;
+            cursor: help;
+            text-decoration: underline dotted;
+            font-weight: 500;
+        }
+        /* 字典按钮样式优化 */
+        .btn-dict {
+            background: linear-gradient(135deg, #ff0040 0%, #ff3366 100%) !important;
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            border: 2px solid #ff0040 !important;
+            box-shadow: 0 4px 20px rgba(255, 0, 64, 0.5) !important;
+            transition: all 0.3s ease !important;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+        }
+        .btn-dict::before {
+            content: '📖';
+            margin-right: 6px;
+            font-size: 16px;
+            display: inline-block;
+            animation: bounce 1.5s infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .btn-dict::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            animation: pulse 3s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        .btn-dict:hover {
+            transform: translateY(-5px) scale(1.05) !important;
+            box-shadow: 0 10px 30px rgba(255, 0, 64, 0.7) !important;
+            background: linear-gradient(135deg, #ff3366 0%, #ff0040 100%) !important;
+            border-color: #ff3366 !important;
+        }
+        .btn-dict:active {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 6px 20px rgba(255, 0, 64, 0.6) !important;
+        }
+        .input-group .btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        .input-group .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
+            margin-bottom: 30px !important;
+        }
+        .alert-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .alert-info h6 {
+            color: #1976d2;
+            font-weight: 600;
+        }
+        .alert-info ul li {
+            color: #424242;
+            margin-bottom: 5px;
+        }
+        /* 字典弹窗样式优化 */
+        #fieldDictModal .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: none;
+        }
+        #fieldDictModal .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 20px 24px;
+            border: none;
+        }
+        #fieldDictModal .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        #fieldDictModal .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        #fieldDictModal .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 10px 10px;
+        }
+        #fieldDictTable {
+            font-size: 13px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        #fieldDictTable thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #fieldDictTable thead th {
+            font-weight: 600;
+            padding: 12px 15px;
+            border: none;
+            white-space: nowrap;
+        }
+        #fieldDictTable tbody tr {
+            transition: all 0.2s ease;
+        }
+        #fieldDictTable tbody tr:hover {
+            background-color: #f0f7ff;
+            transform: scale(1.005);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+            cursor: pointer;
+        }
+        #fieldDictTable tbody td {
+            padding: 10px 15px;
+            vertical-align: middle;
+            border-color: #e9ecef;
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #fieldDictTable tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        #fieldDictTable tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        /* 滚动条美化 */
+        #fieldDictModal .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        #fieldDictModal .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #fieldDictModal .modal-body::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        #fieldDictModal .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
@@ -440,6 +625,28 @@
             LOGIC_ALARM_TYPE: 'logic_alarm_type',
             NE_ADMIN_STATUS: 'ne_admin_status',
             PORT_NUM: 'port_num'
+        };
+
+        // 字段元数据（从后端/数据库加载）
+        let fieldMetaMap = {}; // { KAFKA_FIELD: { label_cn, es_field, db_cn } }
+
+        // 有维表映射的字段 -> 维表名 (需与后端 FIELD_DICT_TABLES 保持一致)
+        const fieldDictTables = {
+            ALARM_RESOURCE_STATUS: 'alarm_resource_status',
+            BUSINESS_LAYER: 'business_layer',
+            CIRCUIT_LEVEL: 'circuit_level',
+            EFFECT_NE: 'effect_ne',
+            EFFECT_SERVICE: 'effect_service',
+            EQP_OBJECT_CLASS: 'eqp_object_class',
+            EXTRA_ID2: 'extra_id2',
+            LOGIC_ALARM_TYPE: 'logic_alarm_type',
+            NE_ADMIN_STATUS: 'ne_admin_status',
+            NETWORK_TYPE: 'network_type',
+            NETWORK_TYPE_TOP: 'network_type_top',
+            ORG_SEVERITY: 'org_severity',
+            ORG_TYPE: 'org_type',
+            PORT_NUM: 'port_num',
+            SUB_ALARM_TYPE: 'sub_alarm_type'
         };
 
         // 字段元数据（从后端/数据库加载）
