@@ -430,3 +430,38 @@
         border: 1px solid #ddd !important;
     }
 }
+
+/* ===== 强制覆盖 hero-banner 的白色文字 ===== */
+.hero-banner,
+.hero-banner *,
+.hero-banner h1,
+.hero-banner h2,
+.hero-banner h3,
+.hero-banner h4,
+.hero-banner h5,
+.hero-banner h6,
+.hero-banner p,
+.hero-banner .lead,
+.hero-banner span,
+.hero-banner div,
+.hero-banner a,
+.hero-banner strong,
+.hero-banner b {
+    color: #000000 !important;
+}
+
+/* 徽章保持自己的颜色 */
+.hero-banner .badge {
+    color: inherit !important;
+}
+
+/* 确保火箭图标有颜色 */
+.hero-banner i.fas {
+    color: inherit !important;
+}
+
+/* 覆盖 text-white 类的影响 */
+.hero-banner.text-white,
+.hero-banner .text-white {
+    color: #000000 !important;
+}

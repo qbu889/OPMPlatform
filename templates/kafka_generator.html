@@ -7,325 +7,87 @@
     <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/vendor/fontawesome/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
         .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 30px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
         }
         .card {
-            margin-bottom: 25px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            padding: 18px 25px;
-            border: none;
-        }
-        .card-header h5 {
-            margin: 0;
-            font-size: 18px;
-        }
-        .card-body {
-            padding: 25px;
-            background: white;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .result-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 8px;
-            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
             margin-top: 20px;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .copy-btn {
+            margin-top: 10px;
         }
         textarea {
             font-family: 'Courier New', monospace;
-            font-size: 13px;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-        textarea:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            outline: none;
-        }
-        .btn {
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-        }
-        .btn-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-        }
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            font-size: 12px;
         }
         .field-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
             margin-top: 20px;
         }
         .field-item {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        .field-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            border-color: #667eea;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
         }
         .field-item label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #495057;
-            margin-bottom: 8px;
-            display: block;
+            font-weight: bold;
+            font-size: 12px;
         }
         .field-item input {
             font-size: 12px;
-            border-radius: 6px;
-            border: 2px solid #dee2e6;
-            transition: all 0.3s ease;
-        }
-        .field-item input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            outline: none;
         }
         .field-meta {
             font-size: 11px;
-            color: #6c757d;
-            margin-top: 6px;
-            font-style: italic;
+            color: #666;
+            margin-top: 4px;
         }
         .field-meta .es-field {
-            color: #667eea;
+            color: #0d6efd;
             cursor: help;
             text-decoration: underline dotted;
-            font-weight: 500;
         }
-        /* 字典按钮样式优化 */
-        .btn-dict {
-            background: linear-gradient(135deg, #ff0040 0%, #ff3366 100%) !important;
-            color: white !important;
-            font-weight: 700 !important;
-            font-size: 13px !important;
-            border: 2px solid #ff0040 !important;
-            box-shadow: 0 4px 20px rgba(255, 0, 64, 0.5) !important;
-            transition: all 0.3s ease !important;
-            position: relative;
-            overflow: hidden;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            letter-spacing: 0.5px;
-        }
-        .btn-dict::before {
-            content: '📖';
-            margin-right: 6px;
-            font-size: 16px;
-            display: inline-block;
-            animation: bounce 1.5s infinite;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-        .btn-dict::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            animation: pulse 3s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0; }
-            100% { transform: scale(0.8); opacity: 0.5; }
-        }
-        .btn-dict:hover {
-            transform: translateY(-5px) scale(1.05) !important;
-            box-shadow: 0 10px 30px rgba(255, 0, 64, 0.7) !important;
-            background: linear-gradient(135deg, #ff3366 0%, #ff0040 100%) !important;
-            border-color: #ff3366 !important;
-        }
-        .btn-dict:active {
-            transform: translateY(-2px) scale(1.02) !important;
-            box-shadow: 0 6px 20px rgba(255, 0, 64, 0.6) !important;
-        }
-        .input-group .btn {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-        .input-group .form-control {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        h1 {
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
-            margin-bottom: 30px !important;
-        }
-        .alert-info {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .alert-info h6 {
-            color: #1976d2;
-            font-weight: 600;
-        }
-        .alert-info ul li {
-            color: #424242;
-            margin-bottom: 5px;
-        }
-        /* 字典弹窗样式优化 */
-        #fieldDictModal .modal-content {
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            border: none;
-        }
-        #fieldDictModal .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px 10px 0 0;
-            padding: 20px 24px;
-            border: none;
-        }
-        #fieldDictModal .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        #fieldDictModal .modal-body {
-            padding: 20px;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        #fieldDictModal .modal-footer {
-            border-top: 1px solid #e9ecef;
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            border-radius: 0 0 10px 10px;
-        }
-        #fieldDictTable {
-            font-size: 13px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        #fieldDictTable thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        #fieldDictTable thead th {
-            font-weight: 600;
-            padding: 12px 15px;
-            border: none;
-            white-space: nowrap;
-        }
-        #fieldDictTable tbody tr {
-            transition: all 0.2s ease;
-        }
-        #fieldDictTable tbody tr:hover {
-            background-color: #f0f7ff;
-            transform: scale(1.005);
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        .dict-link {
+            font-size: 11px;
             cursor: pointer;
-        }
-        #fieldDictTable tbody td {
-            padding: 10px 15px;
-            vertical-align: middle;
-            border-color: #e9ecef;
-            max-width: 400px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        #fieldDictTable tbody tr:nth-child(even) {
-            background-color: #fafbfc;
-        }
-        #fieldDictTable tbody tr:nth-child(odd) {
-            background-color: #ffffff;
-        }
-        /* 滚动条美化 */
-        #fieldDictModal .modal-body::-webkit-scrollbar {
-            width: 8px;
-        }
-        #fieldDictModal .modal-body::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        #fieldDictModal .modal-body::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        #fieldDictModal .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            color: #0d6efd;
+            text-decoration: underline;
+            margin-left: 8px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mb-4">
-            <i class="fas fa-exchange-alt me-2"></i>Kafka 消息生成器
-            <small style="font-size: 14px; display: block; margin-top: 10px; opacity: 0.9;">
-                <i class="fas fa-magic me-1"></i>智能转换 · 高效生成
-            </small>
-        </h1>
+        <h1 class="text-center mb-4"><i class="fas fa-exchange-alt me-2"></i>Kafka消息生成器</h1>
         
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-database me-2"></i>ES 源数据输入</h5>
+                <h5><i class="fas fa-database me-2"></i>ES源数据输入</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label for="esSource" class="form-label" style="font-weight: 600; color: #495057;">
-                        <i class="fas fa-database me-2"></i>ES 源数据输入
-                    </label>
-                    <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
+                    <label for="esSource" class="form-label">请输入ES _source 数据 (JSON格式):</label>
+                    <textarea class="form-control" id="esSource" rows="10" placeholder='{"EVENT_ID": 12345, "EVENT_NAME": "测试事件", ...}'></textarea>
                 </div>
-                <div class="d-flex gap-3">
-                    <button class="btn btn-primary btn-lg" onclick="generateMessage()">
-                        <i class="fas fa-cogs me-2"></i>生成 Kafka 消息
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="generateMessage()">
+                        <i class="fas fa-cogs me-1"></i>生成Kafka消息
                     </button>
-                    <button class="btn btn-secondary btn-lg" onclick="preprocessData()">
-                        <i class="fas fa-wrench me-2"></i>预处理数据
+                    <button class="btn btn-secondary" onclick="preprocessData()">
+                        <i class="fas fa-wrench me-1"></i>预处理数据
                     </button>
-                    <button class="btn btn-info btn-lg" onclick="loadSampleData()">
-                        <i class="fas fa-file-import me-2"></i>加载示例数据
+                    <button class="btn btn-info" onclick="loadSampleData()">
+                        <i class="fas fa-file-import me-1"></i>加载示例数据
                     </button>
                 </div>
             </div>
@@ -334,50 +96,48 @@
         <div class="card">
             <div class="card-header">
                 <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
-                <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
+                <small class="text-muted">可选择性覆盖自动生成的字段值</small>
             </div>
             <div class="card-body">
                 <div class="field-grid" id="customFields">
                     <!-- 自定义字段将在这里动态生成 -->
                 </div>
-                <div class="text-center mt-4">
-                    <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
-                        <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
-                    </button>
-                </div>
+                <button class="btn btn-secondary btn-sm mt-3" onclick="toggleAllFields()">
+                    <i class="fas fa-eye me-1"></i>显示/隐藏所有字段
+                </button>
             </div>
         </div>
 
         <div class="card" id="resultCard" style="display: none;">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-file-code me-2"></i>生成结果</h5>
-                <button class="btn btn-success" onclick="copyResult()">
-                    <i class="fas fa-copy me-2"></i>复制结果
+                <button class="btn btn-success btn-sm copy-btn" onclick="copyResult()">
+                    <i class="fas fa-copy me-1"></i>复制结果
                 </button>
             </div>
             <div class="card-body">
                 <div class="result-section">
-                    <pre id="resultOutput" class="mb-0" style="background: white; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0;"></pre>
+                    <pre id="resultOutput" class="mb-0"></pre>
                 </div>
             </div>
         </div>
 
         <div class="alert alert-info mt-4">
             <h6><i class="fas fa-info-circle me-2"></i>使用说明:</h6>
-            <ul class="mb-0" style="padding-left: 20px;">
-                <li>粘贴 ES 数据中 <code>_source</code> 对象的完整 JSON 内容</li>
+            <ul class="mb-0">
+                <li>粘贴ES数据中 <code>_source</code> 对象的完整JSON内容</li>
                 <li>如遇到格式错误，可先点击"预处理数据"按钮自动修复常见问题</li>
-                <li>系统会自动映射生成对应的 Kafka 消息格式</li>
+                <li>系统会自动映射生成对应的Kafka消息格式</li>
                 <li>可通过自定义字段面板覆盖特定字段的值</li>
-                <li>FP 相关字段会自动生成唯一值</li>
-                <li>时间字段会自动设置为当前时间减 15 分钟</li>
+                <li>FP相关字段会自动生成唯一值</li>
+                <li>时间字段会自动设置为当前时间减15分钟</li>
             </ul>
-            <div class="mt-3" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px;">
-                <small style="color: #1976d2;">
-                    <strong><i class="fas fa-lightbulb me-1"></i>常见问题处理：</strong><br>
-                    • 三重引号 (""") 会自动转换为双引号<br>
-                    • HTML 实体 (&lt; &gt;) 会自动解码<br>
-                    • 多余的尾随逗号会自动移除
+            <div class="mt-2">
+                <small class="text-muted">
+                    <strong>常见问题处理：</strong><br>
+                    • 三重引号("""")会自动转换为双引号<br>
+                    • HTML实体(&lt; &gt;)会自动解码<br>
+                    • 多余的尾随逗号会被自动移除
                 </small>
             </div>
         </div>
@@ -413,23 +173,16 @@
         // 字段元数据（从后端/数据库加载）
         let fieldMetaMap = {}; // { KAFKA_FIELD: { label_cn, es_field, db_cn } }
 
-        // 有维表映射的字段 -> 维表名 (需与后端 FIELD_DICT_TABLES 保持一致)
+        // 有维表映射的字段 -> 维表名（需与后端 FIELD_DICT_TABLES 保持一致）
         const fieldDictTables = {
-            ALARM_RESOURCE_STATUS: 'alarm_resource_status',
             BUSINESS_LAYER: 'business_layer',
             CIRCUIT_LEVEL: 'circuit_level',
             EFFECT_NE: 'effect_ne',
             EFFECT_SERVICE: 'effect_service',
-            EQP_OBJECT_CLASS: 'eqp_object_class',
             EXTRA_ID2: 'extra_id2',
             LOGIC_ALARM_TYPE: 'logic_alarm_type',
             NE_ADMIN_STATUS: 'ne_admin_status',
-            NETWORK_TYPE: 'network_type',
-            NETWORK_TYPE_TOP: 'network_type_top',
-            ORG_SEVERITY: 'org_severity',
-            ORG_TYPE: 'org_type',
-            PORT_NUM: 'port_num',
-            SUB_ALARM_TYPE: 'sub_alarm_type'
+            PORT_NUM: 'port_num'
         };
 
         // 常用字段列表

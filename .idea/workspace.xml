@@ -11,10 +11,13 @@
       <change afterPath="$PROJECT_DIR$/wechat_config_example.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_mac.log" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_mac_guide.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36_[更改]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36___.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/import_dimension_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_dimension_table.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index_modern.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index_modern.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka_generator.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/users.db" beforeDir="false" afterPath="$PROJECT_DIR$/users.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -150,7 +153,7 @@
       <recent name="$PROJECT_DIR$/templates" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.import_dimension_table">
+  <component name="RunManager" selected="Flask server.Flask (app.py)">
     <configuration name="桌面整理" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -286,10 +289,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Flask server.Flask (app.py)" />
         <item itemvalue="Python.import_dimension_table" />
         <item itemvalue="Python.import_kafka_field_meta" />
         <item itemvalue="Python.wechat_auto_reply_mac" />
-        <item itemvalue="Flask server.Flask (app.py)" />
         <item itemvalue="Python.桌面整理" />
       </list>
     </recent_temporary>
@@ -327,7 +330,7 @@
       <workItem from="1772554014392" duration="13023000" />
       <workItem from="1772613776658" duration="15000" />
       <workItem from="1772614843180" duration="747000" />
-      <workItem from="1772617172382" duration="3306000" />
+      <workItem from="1772617172382" duration="5808000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -441,7 +444,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772620129127</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="new：导入kafka字段调整">
+      <option name="closed" value="true" />
+      <created>1772620934605</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1772620934605</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -495,7 +506,8 @@
     <MESSAGE value="new：桌面整理程序" />
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
     <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：kafka新增ES字段和对应字典数据查询" />
+    <MESSAGE value="new：导入kafka字段调整" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：导入kafka字段调整" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -534,7 +546,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$holidaySys.coverage" NAME="holidaySys Coverage Results" MODIFIED="1772185508639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$auth_models.coverage" NAME="auth_models Coverage Results" MODIFIED="1772013460735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
     <SUITE FILE_PATH="coverage/wordToWord$import_kafka_field_meta.coverage" NAME="import_kafka_field_meta Coverage Results" MODIFIED="1772614862970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772610772844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772675281443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$debug_rotation.coverage" NAME="debug_rotation Coverage Results" MODIFIED="1772523501544" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME="桌面整理 Coverage Results" MODIFIED="1772609725124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/桌面" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

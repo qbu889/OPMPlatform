@@ -106,13 +106,12 @@ def main():
 
     rows = read_csv_rows(csv_path)
     count = upsert_rows(rows)
-    print(f"导入完成：{count} 条 (包含 upsert)")
+    print(f"导入完成：{count} 条（包含 upsert）")
 
 
 if __name__ == "__main__":
     '''
     命令行运行：python3 scripts/import_kafka_field_meta.py --csv "sql/事件关联-分级调度接口协议.csv"
-    import_kafka_field_meta --csv
     '''
     main()
 
