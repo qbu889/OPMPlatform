@@ -431,7 +431,41 @@
     }
 }
 
-/* ===== 强制覆盖 hero-banner 的白色文字 ===== */
+/* ===== 全新首页配色方案 ===== */
+/* 背景渐变 - 使用更柔和的现代配色 */
+.hero-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+/* 装饰性背景图案 */
+.hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* 所有文字使用白色，确保在深色背景上清晰可见 */
 .hero-banner,
 .hero-banner *,
 .hero-banner h1,
@@ -447,21 +481,58 @@
 .hero-banner a,
 .hero-banner strong,
 .hero-banner b {
-    color: #000000 !important;
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* 徽章保持自己的颜色 */
+/* 主标题特殊处理 - 更大更醒目 */
+.hero-banner h1.display-4 {
+    font-weight: 900 !important;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* 副标题稍微细一点 */
+.hero-banner p.lead {
+    font-weight: 400 !important;
+    opacity: 0.95;
+}
+
+/* 徽章使用白色背景 + 彩色文字，更时尚 */
 .hero-banner .badge {
-    color: inherit !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border: none;
+    font-weight: 600;
+}
+
+.hero-banner .badge .fas, 
+.hero-banner .badge .fab {
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* 徽章内部文字根据背景调整 */
+.hero-banner .badge.badge-primary {
+    color: #4e73df !important;
+}
+
+.hero-banner .badge.badge-success {
+    color: #1cc88a !important;
+}
+
+.hero-banner .badge.badge-warning {
+    color: #f6c23e !important;
 }
 
 /* 确保火箭图标有颜色 */
-.hero-banner i.fas {
-    color: inherit !important;
+.hero-banner i.fas.fa-rocket {
+    color: #ffffff !important;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
 }
 
 /* 覆盖 text-white 类的影响 */
 .hero-banner.text-white,
 .hero-banner .text-white {
-    color: #000000 !important;
+    color: #ffffff !important;
 }

@@ -11,13 +11,8 @@
       <change afterPath="$PROJECT_DIR$/wechat_config_example.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_mac.log" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/wechat_mac_guide.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/import_dimension_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_dimension_table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/css/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/styles.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/index_modern.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index_modern.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka_generator.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/users.db" beforeDir="false" afterPath="$PROJECT_DIR$/users.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -330,7 +325,7 @@
       <workItem from="1772554014392" duration="13023000" />
       <workItem from="1772613776658" duration="15000" />
       <workItem from="1772614843180" duration="747000" />
-      <workItem from="1772617172382" duration="5808000" />
+      <workItem from="1772617172382" duration="6179000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -452,7 +447,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772620934605</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="fix：字体颜色白色跟背景色混淆">
+      <option name="closed" value="true" />
+      <created>1772675449971</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1772675449971</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -507,7 +510,8 @@
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
     <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
     <MESSAGE value="new：导入kafka字段调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：导入kafka字段调整" />
+    <MESSAGE value="fix：字体颜色白色跟背景色混淆" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：字体颜色白色跟背景色混淆" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
