@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：新增派单CSV文件导入功能">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：导入kafka字段调整&#10;&#10;(cherry picked from commit e79f08a3c1202b22dac84d3be501aba2ed81d7ee)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +38,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="e79f08a3c1202b22dac84d3be501aba2ed81d7ee" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -58,6 +57,10 @@
             <RecentBranchesForRepo>
               <option name="branches">
                 <list>
+                  <RecentBranch>
+                    <option name="branchName" value="merge-master0305" />
+                    <option name="lastUsedInstant" value="1772677715" />
+                  </RecentBranch>
                   <RecentBranch>
                     <option name="branchName" value="master" />
                     <option name="lastUsedInstant" value="1772677337" />
@@ -318,7 +321,7 @@
       <workItem from="1772554014392" duration="13023000" />
       <workItem from="1772613776658" duration="15000" />
       <workItem from="1772614843180" duration="747000" />
-      <workItem from="1772617172382" duration="6179000" />
+      <workItem from="1772617172382" duration="2576000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -448,7 +451,7 @@
       <option name="project" value="LOCAL" />
       <updated>1772675449971</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -476,7 +479,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="merge-master0305" />
                       </list>
                     </value>
                   </entry>
@@ -501,10 +504,7 @@
     <MESSAGE value="new：新增派单CSV文件导入功能" />
     <MESSAGE value="new：桌面整理程序" />
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
-    <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
-    <MESSAGE value="new：导入kafka字段调整" />
-    <MESSAGE value="fix：字体颜色白色跟背景色混淆" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：字体颜色白色跟背景色混淆" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：csv导入remark没有填充数据问题" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
