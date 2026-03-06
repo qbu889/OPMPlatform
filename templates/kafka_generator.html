@@ -798,14 +798,23 @@
 
         // 显示复制成功提示
         function showCopySuccess() {
-            const copyBtn = document.querySelector('.copy-btn');
+            const copyBtn = document.querySelector('#resultCard .btn');
+            if (!copyBtn) {
+                console.warn('未找到复制按钮元素');
+                return;
+            }
+            
             const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>已复制';
-            copyBtn.className = 'btn btn-success btn-sm copy-btn';
+            const originalClass = copyBtn.className;
+            
+            copyBtn.innerHTML = '<i class="fas fa-check me-2"></i>复制成功';
+            copyBtn.className = 'btn btn-success';
+            copyBtn.disabled = true;
             
             setTimeout(() => {
                 copyBtn.innerHTML = originalText;
-                copyBtn.className = 'btn btn-success btn-sm copy-btn';
+                copyBtn.className = originalClass;
+                copyBtn.disabled = false;
             }, 2000);
         }
 
