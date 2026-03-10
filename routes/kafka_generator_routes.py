@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Kafka消息生成器路由
-根据ES数据生成对应的Kafka消息
+Kafka 消息生成器路由
+根据 ES 数据生成对应的 Kafka 消息
 """
 from flask import Blueprint, render_template, request, jsonify
 from flask_cors import CORS
@@ -11,6 +11,9 @@ import uuid
 import random
 from datetime import datetime, timedelta
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 kafka_generator_bp = Blueprint('kafka_generator_bp', __name__, url_prefix='/kafka-generator')
 

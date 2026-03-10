@@ -42,10 +42,10 @@ def analyze_template_format(template_path):
                     'bold': paragraph.runs[0].bold if paragraph.runs else False
                 })
 
-        logger.info(f"模板格式分析完成: {format_rules}")
+        logger.info(f"[DOC_FORMAT] Template format analysis completed: {format_rules}")
         return format_rules
     except Exception as e:
-        logger.error(f"分析模板格式失败: {str(e)}")
+        logger.error(f"[DOC_FORMAT] Failed to analyze template: {str(e)}")
         return {}
 
 
@@ -97,10 +97,10 @@ def apply_format_to_document(source_doc_path, template_format, output_path):
 
         # 保存格式化后的文档
         formatted_doc.save(output_path)
-        logger.info(f"文档格式化完成，保存至: {output_path}")
+        logger.info(f"[DOC_FORMAT] Document formatting completed, saved to: {output_path}")
         return True, ""
     except Exception as e:
-        logger.error(f"应用格式失败: {str(e)}")
+        logger.error(f"[DOC_FORMAT] Failed to apply format: {str(e)}")
         return False, str(e)
 
 
@@ -170,10 +170,10 @@ def enhanced_apply_format_to_document(source_doc_path, template_format, output_p
 
         # 保存文档
         formatted_doc.save(output_path)
-        logger.info(f"文档格式化完成，统计信息: {stats}")
+        logger.info(f"[DOC_FORMAT_ENHANCED] Document formatting completed, stats: {stats}")
         return True, ""
     except Exception as e:
-        logger.error(f"增强格式化失败: {str(e)}")
+        logger.error(f"[DOC_FORMAT_ENHANCED] Enhanced formatting failed: {str(e)}")
         return False, str(e)
 
 

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPA预估表生成器 - 文档转换系统</title>
+    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #e9ecef;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        
+        /* 确保上传区域内的所有元素都不会阻止点击 */
+        .upload-area * {
+            pointer-events: none;
+        }
+        
+        .icon-upload {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        
+        .result-card {
+            border-left: 4px solid #28a745;
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+        
+        .btn-download {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-download:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .stats-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .loading-spinner {
+            display: none !important;
+            text-align: center;
+            padding: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .loading-spinner.show {
+            display: block !important;
+        }
+        
+        .loading-spinner i {
+            font-size: 2rem;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+    
+    {% block title %}FPA预估表生成器{% endblock %}
+    
+    {% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="mb-4">
+                    <i class="fas fa-file-excel text-success"></i>
+                    FPA预估表生成器
+                </h2>
+                
+                <!-- 功能说明 -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> 功能说明</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">本工具用于从需求规格说明书中自动提取功能点信息，生成符合 FPA 规范的 Excel 预估表。</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-check-circle text-success"></i> 支持的功能</h6>
+                                <ul class="feature-list">
+                                    <li>自动识别需求文档的层级结构</li>
+                                    <li>提取功能描述、输入、输出等关键信息</li>
+                                    <li>统计内部/外部逻辑文件数量</li>
+                                    <li>生成标准化的 FPA预估 Excel 表格</li>
+                                    <li>支持拖拽上传和批量处理</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-file-alt text-info"></i> 支持的文档格式</h6>
+                                <ul class="feature-list">
+                                    <li>Markdown (.md) 格式需求文档</li>
+                                    <li>符合 FPA 规范的功能需求章节</li>
+                                    <li>包含完整的功能点描述信息</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 上传区域 -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-upload"></i> 上传需求文档</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if success %}
+                            <!-- 成功结果展示 -->
+                            <div class="result-card">
+                                <h4><i class="fas fa-check-circle text-success"></i> FPA预估表生成成功！</h4>
+                                <div class="stats-info mt-3">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h3><i class="fas fa-list-ul"></i> {{ function_point_count }}</h3>
+                                            <p>功能点数量</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h3><i class="fas fa-database"></i> 自动生成</h3>
+                                            <p>文件统计信息</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h3><i class="fas fa-file-excel"></i> Excel 格式</h3>
+                                            <p>标准化输出</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <a href="{{ url_for('fpa_generator.download_fpa', filename=output_file) }}" 
+                                       class="btn btn-download btn-lg">
+                                        <i class="fas fa-download"></i>
+                                        下载 FPA预估表
+                                    </a>
+                                    <a href="{{ url_for('fpa_generator.fpa_generator_page') }}" 
+                                       class="btn btn-outline-secondary btn-lg ml-2">
+                                        <i class="fas fa-redo"></i>
+                                        继续生成
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- 上传表单 -->
+                            <form method="POST" action="{{ url_for('fpa_generator.upload_requirement') }}" 
+                                  enctype="multipart/form-data" id="uploadForm" style="position: relative;">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt icon-upload"></i>
+                                    <h4>点击选择文件或拖拽到此处</h4>
+                                    <p class="text-muted">支持 Markdown (.md) 格式的需求规格说明书</p>
+                                    <input type="file" id="fileInput" name="requirement_file" 
+                                           accept=".md" style="display: none;">
+                                </div>
+                                                            
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>注意事项:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>请确保文档包含完整的功能点描述 (功能描述、输入、输出、处理过程等)</li>
+                                        <li>文档应符合 FPA 规范的层级结构 (一级分类、二级分类、三级分类...)</li>
+                                        <li>生成的 Excel 文件将自动保存到服务器，请及时下载</li>
+                                    </ul>
+                                </div>
+                                                            
+                                <button type="submit" class="btn btn-primary btn-lg mt-3" id="submitBtn">
+                                    <i class="fas fa-cog"></i>
+                                    开始生成 FPA 预估表
+                                </button>
+                                                            
+                                <!-- 加载动画 -->
+                                <div class="loading-spinner" id="loadingSpinner">
+                                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                    <p class="mt-2">正在解析文档并生成 FPA 预估表，请稍候...</p>
+                                </div>
+                            </form>
+                        {% endif %}
+                        
+                        <!-- 错误提示 -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                <div class="mt-4">
+                                    {% for category, message in messages %}
+                                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                            {{ message }}
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                
+                <!-- 使用指南 -->
+                <div class="card mt-4 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-book"></i> 使用指南</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>操作步骤：</h6>
+                        <ol>
+                            <li><strong>准备文档：</strong>确保需求文档为 Markdown 格式，包含完整的功能点描述</li>
+                            <li><strong>上传文档：</strong>点击上传区域或拖拽文件到上传框</li>
+                            <li><strong>生成表格：</strong>点击"开始生成 FPA预估表"按钮</li>
+                            <li><strong>下载结果：</strong>生成成功后点击下载按钮获取 Excel 文件</li>
+                        </ol>
+                        
+                        <h6 class="mt-4">文档格式要求：</h6>
+                        <pre class="bg-light p-3 rounded"><code>## 一级分类（如：监控管理应用）
+### 二级分类（如：故障监控应用）
+#### 三级分类（如：集团事件对接）
+##### 功能点名称（如：网络事件业务影响）
+###### 功能点计数项（如：家宽业务 OLT 脱管场景业务采集）
+
+**功能描述：**进行家宽业务 OLT 脱管场景业务采集
+**系统界面：**无
+**输入：**系统自动实时触发
+**输出：**查询出满足条件的事件数据
+**处理过程：**系统自动实时触发，进行数据采集和处理
+
+**本事务功能预计涉及到 1 个内部逻辑文件，0 个外部逻辑文件**
+
+本期新增/变更的内部逻辑文件：家宽业务影响指标清单表
+本期涉及原有但没修改的内部逻辑文件：网络事件表
+本期新增/变更的外部逻辑文件：无
+本期涉及原有但没修改的外部逻辑文件：无</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const uploadForm = document.getElementById('uploadForm');
+                
+            if (!uploadArea || !fileInput) {
+                console.error('上传区域或文件输入元素未找到');
+                console.log('uploadArea:', uploadArea);
+                console.log('fileInput:', fileInput);
+                return;
+            }
+            
+            console.log('初始化文件上传功能...');
+                
+            // 点击上传区域触发文件选择
+            uploadArea.addEventListener('click', function(e) {
+                console.log('点击上传区域');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 确保文件输入元素存在且可用
+                if (fileInput) {
+                    console.log('触发文件选择对话框');
+                    fileInput.click();
+                } else {
+                    console.error('文件输入元素不存在');
+                }
+            });
+                
+            // 文件选择后显示文件名，但不自动提交
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files.length > 0) {
+                    const fileName = this.files[0].name;
+                    uploadArea.querySelector('h4').textContent = `已选择：${fileName}`;
+                    uploadArea.style.borderColor = '#28a745';
+                    uploadArea.style.backgroundColor = '#d4edda';
+                    // 不再自动提交，等待用户点击按钮
+                }
+            });
+                
+            // 拖拽上传
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+                
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, function() {
+                    uploadArea.classList.add('dragover');
+                    uploadArea.style.borderColor = '#28a745';
+                    uploadArea.style.backgroundColor = '#d4edda';
+                }, false);
+            });
+                
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, function() {
+                    uploadArea.classList.remove('dragover');
+                    uploadArea.style.borderColor = '#dee2e6';
+                    uploadArea.style.backgroundColor = '#f8f9fa';
+                }, false);
+            });
+                
+            uploadArea.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                    
+                if (files && files.length > 0) {
+                    // 检查文件类型
+                    const file = files[0];
+                    if (file.name.endsWith('.md')) {
+                        fileInput.files = files;
+                        const fileName = file.name;
+                        uploadArea.querySelector('h4').textContent = `已选择：${fileName}`;
+                        uploadArea.style.borderColor = '#28a745';
+                        uploadArea.style.backgroundColor = '#d4edda';
+                        // 不再自动提交，等待用户点击按钮
+                    } else {
+                        alert('请上传 Markdown (.md) 格式的文件');
+                    }
+                }
+            }, false);
+                
+            // 表单提交时显示加载动画
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', function(e) {
+                    if (!fileInput.files || !fileInput.files.length) {
+                        alert('请先选择要上传的文件!');
+                        e.preventDefault();
+                        return false;
+                    }
+                        
+                    if (submitBtn) submitBtn.style.display = 'none';
+                    if (loadingSpinner) loadingSpinner.style.display = 'block';
+                    // 表单会继续提交
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

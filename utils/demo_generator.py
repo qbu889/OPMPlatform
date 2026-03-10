@@ -39,7 +39,7 @@ def create_styles(doc):
 def generate_demo_doc(template_path, parsed_data, output_path):
     """生成符合格式要求的功能需求文档"""
     try:
-        logger.info(f"开始生成文档: {output_path}")
+        logger.info(f"[DEMO_GEN] Starting document generation: {output_path}")
         doc = Document()
         create_styles(doc)
 
@@ -191,9 +191,9 @@ def generate_demo_doc(template_path, parsed_data, output_path):
                 doc.add_paragraph("")  # 空行分隔
 
         doc.save(output_path)
-        logger.info(f"文档生成完成: {output_path}")
+        logger.info(f"[DEMO_GEN] Document generation completed: {output_path}")
         return True, None
     except Exception as e:
-        error_msg = f"文档生成失败: {str(e)}"
+        error_msg = f"[DEMO_GEN] Document generation failed: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return False, error_msg

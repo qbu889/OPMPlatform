@@ -23,14 +23,14 @@ import os
 load_dotenv()
 
 # ===================== 核心配置 =====================
-# 数据库配置 (从.env 读取，或直接填写)
+# 数据库配置 (直接从.env 读取)
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", 3306)),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", "12345678"),
-    "database": os.getenv("DB_NAME", "schedule"),
-    "charset": "utf8mb4"
+    "host": os.getenv("MYSQL_HOST", "localhost"),
+    "port": int(os.getenv("MYSQL_PORT", 3306)),
+    "user": os.getenv("MYSQL_USER", "root"),
+    "password": os.getenv("MYSQL_PASSWORD", "12345678"),
+    "database": os.getenv("SCHEDULE_DB", "schedule_system"),
+    "charset": os.getenv("MYSQL_CHARSET", "utf8mb4")
 }
 
 

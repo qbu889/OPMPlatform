@@ -5,22 +5,105 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：新增派单CSV文件导入功能">
-      <change afterPath="$PROJECT_DIR$/.env.wechat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements_wechat.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/wechat_auto_reply_mac.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/wechat_config_example.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/wechat_mac.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/wechat_mac_guide.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36_[更改]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_2_25_09_36___.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/CATEGORY_USAGE_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CHATBOT_README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/knowledge_base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/AI客服.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/AI客服开发总结.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/AI客服快速入门.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/AI客服系统总览.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/DATABASE_CONFIG_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_DELIVERY_CHECKLIST.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_DEMO_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_GENERATOR_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_QUICK_START.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/FPA_README_INDEX.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/MYSQL_MIGRATION_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/OPMPlatform 项目文件结构分布.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/readme/修复404错误.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements-chatbot.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/category_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/chatbot_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/fpa_generator_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/fpa_generator_routes.py.bak" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/setup_ollama_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sql/init_all_databases.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sql/init_knowledge_base.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/category_management.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/chatbot.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/faq_preview.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/fpa_generator.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/check_ollama_status.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_chatbot_system.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_docx.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_file_types.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_large_doc_faq.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_parallel_faq.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/test_real_upload.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/上传的文档demo/事件工单少数据量.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/chatbot/上传的文档demo/事件工单运维手册2.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/FPA预估2025版V3.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/analyze_expected_excel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/check_expected_excel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/check_files.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/check_ilf.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/check_row10.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/compare_fpa_excel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_clean_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_fix.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_fpa_generator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_new_category_logic.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_real_doc.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/test_standard_format.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/fpa/事件处理类工单流程应用场景.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/chatbot_core.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/document_processor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_3_1,_16_05_[更改]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_3_1,_16_05_[更改]/users.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_3_1__16_05___.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/users.db" beforeDir="false" afterPath="$PROJECT_DIR$/users.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deepseekapp.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements-linux.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements-linux.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/auth_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/排班/paiBanNew_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index_modern.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index_modern.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/1.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/3---60300_20250826.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/3.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output_filled.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output_filled_1.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/【3】集中故障管理系统-监控综合应用-关于事件工单运营报表的开发需求-60300_20250826.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/监控综合应用事件全景优化_功能需求.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/users.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cleanup_temp_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cleanup_temp_files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cleanup_thread.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cleanup_thread.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/demo_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/demo_generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/demo_validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/demo_validator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/document_formatter.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/document_formatter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/document_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/document_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/excel_to_word_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/excel_to_word_core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/format_matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/format_matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/mysql_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/mysql_helper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/parse_source_doc.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/parse_source_doc.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="46c97d74-cfad-4ed4-ae0e-df76e168f393" value="Blue" />
+    </colors>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -48,7 +131,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="e79f08a3c1202b22dac84d3be501aba2ed81d7ee" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -67,6 +150,10 @@
             <RecentBranchesForRepo>
               <option name="branches">
                 <list>
+                  <RecentBranch>
+                    <option name="branchName" value="f/oldmaster" />
+                    <option name="lastUsedInstant" value="1772690519" />
+                  </RecentBranch>
                   <RecentBranch>
                     <option name="branchName" value="master" />
                     <option name="lastUsedInstant" value="1772355011" />
@@ -114,20 +201,21 @@
     &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
     &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
     &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/tmp&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;SQL Inserts&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;f/oldmaster&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/test/fpa&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.tuchg.nonasciicodecompletionhelper.config.PluginSettingsController&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -138,20 +226,22 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/tmp" />
+      <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
+      <recent name="$PROJECT_DIR$/test/chatbot" />
       <recent name="$PROJECT_DIR$/templates" />
-      <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/uploads/other" />
+      <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
       <recent name="$PROJECT_DIR$/test/排班" />
       <recent name="$PROJECT_DIR$/test/Index_test" />
       <recent name="$PROJECT_DIR$/routes/排班" />
-      <recent name="$PROJECT_DIR$/routes" />
-      <recent name="$PROJECT_DIR$/templates" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.import_dimension_table">
-    <configuration name="桌面整理" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Flask server.Flask (app.py)">
+    <configuration name="check_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -159,12 +249,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils/桌面" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/fpa" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/桌面/桌面整理.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/fpa/check_files.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -173,7 +263,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="import_dimension_table" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="compare_fpa_excel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -181,12 +271,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/fpa" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/import_dimension_table.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/fpa/compare_fpa_excel.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -195,7 +285,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="import_kafka_field_meta" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="ollama_client" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -203,12 +293,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/import_kafka_field_meta.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/ollama_client.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -217,7 +307,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="wechat_auto_reply_mac" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test_fix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -225,12 +315,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/fpa" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/wechat_auto_reply_mac.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/fpa/test_fix.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -279,18 +369,18 @@
     <list>
       <item itemvalue="Flask server.Flask (app.py)" />
       <item itemvalue="Python.wordToWord" />
-      <item itemvalue="Python.import_dimension_table" />
-      <item itemvalue="Python.import_kafka_field_meta" />
-      <item itemvalue="Python.wechat_auto_reply_mac" />
-      <item itemvalue="Python.桌面整理" />
+      <item itemvalue="Python.check_files" />
+      <item itemvalue="Python.test_fix" />
+      <item itemvalue="Python.compare_fpa_excel" />
+      <item itemvalue="Python.ollama_client" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.import_dimension_table" />
-        <item itemvalue="Python.import_kafka_field_meta" />
-        <item itemvalue="Python.wechat_auto_reply_mac" />
         <item itemvalue="Flask server.Flask (app.py)" />
-        <item itemvalue="Python.桌面整理" />
+        <item itemvalue="Python.test_fix" />
+        <item itemvalue="Python.check_files" />
+        <item itemvalue="Python.compare_fpa_excel" />
+        <item itemvalue="Python.ollama_client" />
       </list>
     </recent_temporary>
   </component>
@@ -328,6 +418,14 @@
       <workItem from="1772613776658" duration="15000" />
       <workItem from="1772614843180" duration="747000" />
       <workItem from="1772617172382" duration="3306000" />
+      <workItem from="1772693765214" duration="15000" />
+      <workItem from="1772701140947" duration="55000" />
+      <workItem from="1772701203543" duration="1130000" />
+      <workItem from="1772761439963" duration="5430000" />
+      <workItem from="1772779276350" duration="892000" />
+      <workItem from="1772782297253" duration="29245000" />
+      <workItem from="1773019815380" duration="27690000" />
+      <workItem from="1773123360481" duration="3823000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -441,7 +539,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772620129127</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="fix：完善整理文件">
+      <option name="closed" value="true" />
+      <created>1772762374453</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1772762374453</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix：复制成功提示错误的提示语">
+      <option name="closed" value="true" />
+      <created>1772778659241</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1772778659241</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -469,7 +583,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="origin/f/oldmaster" />
                       </list>
                     </value>
                   </entry>
@@ -495,7 +609,9 @@
     <MESSAGE value="new：桌面整理程序" />
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
     <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：kafka新增ES字段和对应字典数据查询" />
+    <MESSAGE value="fix：完善整理文件" />
+    <MESSAGE value="fix：复制成功提示错误的提示语" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：复制成功提示错误的提示语" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
@@ -508,6 +624,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/wordToWord$kafka_generator_routes.coverage" NAME="kafka_generator_routes Coverage Results" MODIFIED="1772158199279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$compare_fpa_excel.coverage" NAME="compare_fpa_excel Coverage Results" MODIFIED="1773037285078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
     <SUITE FILE_PATH="coverage/wordToWord$app.coverage" NAME="app Coverage Results" MODIFIED="1772085107343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$direct_test.coverage" NAME="direct_test Coverage Results" MODIFIED="1772158527433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$import_dimension_table.coverage" NAME="import_dimension_table Coverage Results" MODIFIED="1772617213196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
@@ -526,19 +643,23 @@
     <SUITE FILE_PATH="coverage/wordToWord$full_test.coverage" NAME="full_test Coverage Results" MODIFIED="1772085015587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_hash_fix.coverage" NAME="test_hash_fix Coverage Results" MODIFIED="1772013471542" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_admin_init.coverage" NAME="test_admin_init Coverage Results" MODIFIED="1772012909119" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$ollama_client.coverage" NAME="ollama_client Coverage Results" MODIFIED="1772853936031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/wordToWord$wordToWord.coverage" NAME="wordToWord 覆盖结果" MODIFIED="1767149221234" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$debug_json_issue.coverage" NAME="debug_json_issue Coverage Results" MODIFIED="1772078383065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_field_order_fix.coverage" NAME="test_field_order_fix Coverage Results" MODIFIED="1772270395138" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$check_files.coverage" NAME="check_files Coverage Results" MODIFIED="1773124167613" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
     <SUITE FILE_PATH="coverage/wordToWord$test_field_order.coverage" NAME="test_field_order Coverage Results" MODIFIED="1772158488185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$simple_admin_test.coverage" NAME="simple_admin_test Coverage Results" MODIFIED="1772085467021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$holidaySys.coverage" NAME="holidaySys Coverage Results" MODIFIED="1772185508639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$auth_models.coverage" NAME="auth_models Coverage Results" MODIFIED="1772013460735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
     <SUITE FILE_PATH="coverage/wordToWord$import_kafka_field_meta.coverage" NAME="import_kafka_field_meta Coverage Results" MODIFIED="1772614862970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1772610772844" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1773123149984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$debug_rotation.coverage" NAME="debug_rotation Coverage Results" MODIFIED="1772523501544" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
-    <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME="桌面整理 Coverage Results" MODIFIED="1772609725124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/桌面" />
+    <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME="桌面整理 Coverage Results" MODIFIED="1772762220335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/桌面" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_real_input_output.coverage" NAME="test_real_input_output Coverage Results" MODIFIED="1772162900732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$test_fix.coverage" NAME="test_fix Coverage Results" MODIFIED="1773127193032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
+    <SUITE FILE_PATH="coverage/wordToWord$check_ollama_status.coverage" NAME="check_ollama_status Coverage Results" MODIFIED="1772853875522" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/chatbot" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) Coverage Results" MODIFIED="1772423061601" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$paiBanNew__1_.coverage" NAME="paiBanNew (1) Coverage Results" MODIFIED="1772523454743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1772158517894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />

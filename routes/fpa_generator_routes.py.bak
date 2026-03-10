@@ -1,0 +1,703 @@
+# routes/fpa_generator_routes.py
+from flask import Blueprint, render_template, request, send_file, flash, current_app
+from pathlib import Path
+import pandas as pd
+import re
+import os
+import time
+from datetime import datetime
+import logging
+
+fpa_generator_bp = Blueprint('fpa_generator', __name__, url_prefix='/fpa-generator')
+logger = logging.getLogger(__name__)
+
+# FPA 模板配置
+FPA_TEMPLATE = {
+    '需求名称': '关于集团事件业务影响分析开发需求',
+    '需求编号': '49900_20250721',
+    '版本': 'V3',
+    '类型': '厂家版本',
+    '统计日期': datetime.now().strftime('%Y-%m-%d')
+}
+
+# FPA Excel 列名映射 (标准格式)
+FPA_COLUMNS = [
+    '编号', '一级分类', '二级分类', '三级分类', '功能点名称', '功能点计数项',
+    '类别', 'UFP', '重用程度', '修改类型', 'AFP', '备注'
+]
+
+# 工作量计算参数
+WORK_PARAMS = {
+    '规模变更调整因子': 1.21,  # CF
+    '基准生产率': 10.12,  # PDR (人时/功能点)
+    '调整因子': {
+        '应用类型': 1.00,  # A
+        '质量特性': 0.90,  # B
+        '开发语言': 1.00,  # C
+        '开发团队背景': 0.80  # D
+    }
+}
+
+
+def parse_requirement_document(md_content: str) -> list:
+    """
+    解析需求文档，提取 FPA 功能点信息
+    
+    Args:
+        md_content: Markdown 格式的需求文档内容
+        
+    Returns:
+        功能点列表
+    """
+    function_points = []
+    
+    # 清理零宽空格 (U+200D)
+    md_content = md_content.replace('\u200D', '')
+    
+    # 定义正则表达式模式
+    patterns = {
+        'level1': r'^##\s+(.+)$',  # 一级分类：##
+        'level2': r'^###\s+(.+)$',  # 二级分类：###
+        'level3': r'^####\s+(.+)$',  # 三级分类：####
+        'level4': r'^#####\s+(.+)$',  # 功能点名称：#####
+        'level5': r'^######\s*(.+?)(?:（注.*?）)?$',  # 功能点计数项：######
+    }
+    
+    lines = md_content.split('\n')
+    current_point = {
+        'level1': '',
+        'level2': '',
+        'level3': '',
+        'level4': '',
+        'level5': '',
+        '功能描述': '',
+        '系统界面': '',
+        '输入': '',
+        '输出': '',
+        '处理过程': '',
+        '内部逻辑文件数': 0,
+        '外部逻辑文件数': 0,
+        '新增/变更内部逻辑文件': '',
+        '原有未修改内部逻辑文件': '',
+        '新增/变更外部逻辑文件': '无',
+        '原有未修改外部逻辑文件': '',
+        # 新增字段用于标准 FPA 格式
+        '类别': '',
+        'UFP': 0,
+        '重用程度': '',
+        '修改类型': '',
+        'AFP': 0,
+        '备注': ''
+    }
+    
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        # 跳过空行和注释
+        if not line or line.startswith('<'):
+            i += 1
+            continue
+        
+        # 匹配各级标题
+        for level_name, pattern in patterns.items():
+            match = re.match(pattern, line)
+            if match:
+                title = match.group(1).strip()
+                # 去除标题中的加粗符号
+                title = re.sub(r'\*\*', '', title)
+                
+                if level_name == 'level5' and title:
+                    # 保存上一个功能点
+                    if current_point['level5']:
+                        function_points.append(current_point.copy())
+                    
+                    # 清洗标题中的注释和零宽字符
+                    title_clean = re.sub(r'\s*\(注.*?\)\s*$', '', title).strip()
+                    title_clean = title_clean.replace('\u200D', '').strip()
+                    
+                    # 开始新的功能点
+                    current_point = {
+                        'level1': current_point['level1'].replace('\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip(),
+                        'level2': current_point['level2'].replace('\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip(),
+                        'level3': current_point['level3'].replace('\u200D', '').replace('（注：对应 FPA 三级分类）', '').strip(),
+                        'level4': current_point['level4'].replace('\u200D', '').replace('（注：对应 FPA 功能点名称）', '').strip(),
+                        'level5': title_clean,
+                        '功能描述': '',
+                        '系统界面': '',
+                        '输入': '',
+                        '输出': '',
+                        '处理过程': '',
+                        '内部逻辑文件数': 0,
+                        '外部逻辑文件数': 0,
+                        '新增/变更内部逻辑文件': '',
+                        '原有未修改内部逻辑文件': '',
+                        '新增/变更外部逻辑文件': '无',
+                        '原有未修改外部逻辑文件': '',
+                        # 新增字段用于标准 FPA 格式
+                        '类别': '',
+                        'UFP': 0,
+                        '重用程度': '',
+                        '修改类型': '',
+                        'AFP': 0,
+                        '备注': ''
+                    }
+                elif level_name == 'level4' and title:
+                    current_point['level4'] = title.replace('\u200D', '').replace('（注：对应 FPA 功能点名称）', '').strip()
+                elif level_name == 'level3' and title:
+                    current_point['level3'] = title.replace('\u200D', '').replace('（注：对应 FPA 三级分类）', '').strip()
+                elif level_name == 'level2' and title:
+                    current_point['level2'] = title.replace('\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip()
+                elif level_name == 'level1' and title:
+                    current_point['level1'] = title.replace('\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip()
+                
+                break
+        
+        # 提取功能描述字段
+        if current_point['level5']:
+            # 功能描述
+            if line.startswith('**功能描述**') or line.startswith('**功能描述:**'):
+                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                if desc_match:
+                    current_point['功能描述'] = desc_match.group(1).strip()
+            
+            # 系统界面
+            elif line.startswith('**系统界面**') or line.startswith('**系统界面:**'):
+                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                if desc_match:
+                    current_point['系统界面'] = desc_match.group(1).strip()
+            
+            # 输入
+            elif line.startswith('**输入**') or line.startswith('**输入:**'):
+                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                if desc_match:
+                    current_point['输入'] = desc_match.group(1).strip()
+            
+            # 输出
+            elif line.startswith('**输出**') or line.startswith('**输出:**'):
+                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                if desc_match:
+                    current_point['输出'] = desc_match.group(1).strip()
+            
+            # 处理过程
+            elif line.startswith('**处理过程**') or line.startswith('**处理过程:**'):
+                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                if desc_match:
+                    current_point['处理过程'] = desc_match.group(1).strip()
+            
+            # 内部逻辑文件数量
+            elif '本事务功能预计涉及到' in line and '个内部逻辑文件' in line:
+                num_match = re.search(r'涉及到 (\d+) 个内部逻辑文件', line)
+                if num_match:
+                    current_point['内部逻辑文件数'] = int(num_match.group(1))
+                
+                num_match = re.search(r'，(\d+) 个外部逻辑文件', line)
+                if num_match:
+                    current_point['外部逻辑文件数'] = int(num_match.group(1))
+            
+            # 新增/变更的内部逻辑文件
+            elif line.startswith('本期新增/变更的内部逻辑文件'):
+                if ':' in line or ':' in line:
+                    files = line.split(':', 1)[1].strip()
+                    if files and files != '无':
+                        current_point['新增/变更内部逻辑文件'] = files
+            
+            # 原有未修改的内部逻辑文件
+            elif line.startswith('本期涉及原有但没修改的内部逻辑文件'):
+                if ':' in line or ':' in line:
+                    files = line.split(':', 1)[1].strip()
+                    if files and files != '无':
+                        current_point['原有未修改内部逻辑文件'] = files
+            
+            # 新增/变更的外部逻辑文件
+            elif line.startswith('本期新增/变更的外部逻辑文件'):
+                if ':' in line or ':' in line:
+                    files = line.split(':', 1)[1].strip()
+                    if files and files != '无':
+                        current_point['新增/变更外部逻辑文件'] = files
+            
+            # 原有未修改的外部逻辑文件
+            elif line.startswith('本期涉及原有但没修改的外部逻辑文件'):
+                if ':' in line or ':' in line:
+                    files = line.split(':', 1)[1].strip()
+                    if files and files != '无':
+                        current_point['原有未修改外部逻辑文件'] = files
+        
+        i += 1
+    
+    # 添加最后一个功能点
+    if current_point['level5']:
+        function_points.append(current_point)
+    
+    logger.info(f"解析完成，共提取 {len(function_points)} 个功能点")
+    
+    # 智能填充 FPA 字段
+    for point in function_points:
+        # 1. 识别类别 (EO/ILF)
+        item_text = point.get('功能点计数项', '')
+        if any(keyword in item_text for keyword in ['表', '报表', '清单', '结果表', '统计表']):
+            point['类别'] = 'ILF'  # 内部逻辑文件
+            point['UFP'] = 7
+        elif any(keyword in item_text for keyword in ['判定', '分析', '查询', '切换', '呈现', '导出', '上报']):
+            point['类别'] = 'EO'  # 外部输出
+            point['UFP'] = 5
+        else:
+            point['类别'] = 'EO'  # 默认为 EO
+            point['UFP'] = 5
+        
+        # 2. 识别重用程度
+        if any(keyword in item_text for keyword in ['表', '清单', '规则']):
+            point['重用程度'] = '高'
+        elif any(keyword in item_text for keyword in ['分析', '判定', '查询']):
+            point['重用程度'] = '中'
+        else:
+            point['重用程度'] = '中'
+        
+        # 3. 修改类型 (默认为新增)
+        point['修改类型'] = '新增'
+        
+        # 4. 计算 AFP (根据重用程度和修改类型)
+        ufp = point['UFP']
+        reuse = point['重用程度']
+        modify_type = point['修改类型']
+        
+        if modify_type == '新增':
+            if reuse == '高':
+                point['AFP'] = round(ufp * 0.33, 2)  # 高重用，33%
+            elif reuse == '中':
+                point['AFP'] = round(ufp * 0.67, 2)  # 中重用，67%
+            else:
+                point['AFP'] = ufp  # 低重用，100%
+        else:
+            point['AFP'] = round(ufp * 0.5, 2)  # 修改，50%
+    
+    return function_points
+
+
+def generate_fpa_excel(function_points: list, output_path: str) -> str:
+    """
+    生成 FPA 预估 Excel 文件 (标准格式)
+    
+    Args:
+        function_points: 功能点列表
+        output_path: 输出文件路径
+        
+    Returns:
+        生成的文件路径
+    """
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    
+    # 创建工作簿
+    wb = Workbook()
+    ws = wb.active
+    ws.title = '1.规模估算表'
+    
+    # 样式定义
+    header_fill = PatternFill(start_color="A5A5A5", end_color="A5A5A5", fill_type="solid")  # 灰色表头
+    header_font = Font(bold=True, size=11, color="000000")
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    
+    green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # 绿色 (被保护)
+    light_green_fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")  # 浅绿色
+    
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # 1. 标题
+    ws.merge_cells('A1:L1')
+    title_cell = ws['A1']
+    title_cell.value = '1.规模估算表'
+    title_cell.font = Font(bold=True, size=20)
+    title_cell.alignment = Alignment(horizontal='center', vertical='center')
+    ws.row_dimensions[1].height = 40
+    
+    # 2. 规模估算方法 (第 3-5 行)
+    ws.merge_cells('A3:B3')
+    ws['A3'] = '规模估算方法'
+    ws['A3'].font = Font(bold=True)
+    ws['A3'].alignment = Alignment(horizontal='center', vertical='center')
+    ws['A3'].fill = header_fill
+    
+    ws.merge_cells('C3:L3')
+    ws['C3'] = "'软件开发计价模型':7/5/4/5/4"
+    ws['C3'].alignment = Alignment(horizontal='left', vertical='center')
+    ws['C3'].font = Font(color="FF0000")  # 红色字体
+    
+    # 3. 未调整功能点合计
+    ws['A4'] = '未调整功能点合计'
+    ws['A4'].font = Font(bold=True)
+    ws['A4'].alignment = Alignment(horizontal='center', vertical='center')
+    
+    # 计算 UFP 总和
+    total_ufp = sum(point.get('UFP', 7) for point in function_points)
+    ws['B4'] = total_ufp
+    ws['B4'].fill = green_fill
+    ws['B4'].font = Font(bold=True, color="0000FF")  # 蓝色字体
+    
+    ws.merge_cells('C4:L4')
+    ws['C4'] = 'UFP,单位:FP'
+    ws['C4'].font = Font(color="FF0000")
+    
+    # 4. 调整后功能点合计
+    ws['A5'] = '调整后功能点合计'
+    ws['A5'].font = Font(bold=True)
+    ws['A5'].alignment = Alignment(horizontal='center', vertical='center')
+    
+    # 计算 AFP 总和
+    total_afp = sum(point.get('AFP', 0) for point in function_points)
+    ws['B5'] = round(total_afp, 2)
+    ws['B5'].fill = green_fill
+    ws['B5'].font = Font(bold=True, color="0000FF")
+    
+    ws.merge_cells('C5:L5')
+    ws['C5'] = 'AFP,单位:FP'
+    ws['C5'].font = Font(color="FF0000")
+    
+    # 5. 说明
+    ws.merge_cells('A6:L6')
+    ws['A6'] = '1. 本次计数在项目前期，需求未充分挖掘'
+    ws['A6'].font = Font(italic=True)
+    ws.row_dimensions[6].height = 25
+    
+    ws.merge_cells('A7:L7')
+    ws['A7'] = '2. 绿色单元格为被保护，不得擅自修改'
+    ws['A7'].font = Font(italic=True)
+    ws['A7'].font = Font(color="008000")  # 绿色字体
+    ws.row_dimensions[7].height = 25
+    
+    # 6. 表头 (第 8-9 行)
+    headers = ['编号', '一级分类', '二级分类', '三级分类', '功能点名称', '功能点计数项',
+               '类别', 'UFP', '重用程度', '修改类型', 'AFP', '备注']
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=8, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = thin_border
+        ws.row_dimensions[8].height = 40
+    
+    # 7. 填写说明 (第 9 行)
+    instructions = ['填写说明', '必填', '必填', '必填', '必填', '必填',
+                   '请选择计价模型种类。', '自动计算未调整的功能点数量。', '请选择代码复用情况', '请选择代码修改情况',
+                   '自动计算调整后的功能点数量。', '调整 AFP:请通过重用程度、修改类型来改']
+    
+    for col, instruction in enumerate(instructions, 1):
+        cell = ws.cell(row=9, column=col, value=instruction)
+        cell.fill = PatternFill(start_color="FFCC99", end_color="FFCC99", fill_type="solid")  # 橙色
+        cell.font = Font(size=9, color="FF0000")
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        cell.border = thin_border
+        ws.row_dimensions[9].height = 60
+    
+    # 8. 数据行
+    data_alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
+    
+    for row_idx, point in enumerate(function_points, 10):
+        # 编号
+        ws.cell(row=row_idx, column=1, value=row_idx - 9).alignment = Alignment(horizontal='center')
+        
+        # 分类信息 (去除注释文字，包含零宽空格)
+        level1 = point.get('level1', '').replace('\u200D（\u200D注\u200D：\u200D对\u200D应\u200D FPA 一\u200D级\u200D分\u200D类\u200D）\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip()
+        level2 = point.get('level2', '').replace('\u200D（\u200D注\u200D：\u200D对\u200D应\u200D FPA 一\u200D级\u200D分\u200D类\u200D）\u200D', '').replace('（注：对应 FPA 一级分类）', '').strip()
+        level3 = point.get('level3', '').replace('\u200D（\u200D注\u200D：\u200D对\u200D应\u200D FPA 三\u200D级\u200D分\u200D类\u200D）\u200D', '').replace('（注：对应 FPA 三级分类）', '').strip()
+        level4 = point.get('level4', '').replace('\u200D（\u200D注\u200D：\u200D对\u200D应\u200D FPA 功\u200D能\u200D点\u200D名\u200D称\u200D）\u200D', '').replace('（注：对应 FPA 功能点名称）', '').strip()
+        level5 = point.get('level5', '').replace('\u200D（\u200D注\u200D：\u200D对\u200D应\u200D FPA 功\u200D能\u200D点\u200D计\u200D数\u200D项\u200D）\u200D', '').replace('（注：对应 FPA 功能点计数项）', '').strip()
+        
+        ws.cell(row=row_idx, column=2, value=level1).alignment = data_alignment
+        ws.cell(row=row_idx, column=3, value=level2).alignment = data_alignment
+        ws.cell(row=row_idx, column=4, value=level3).alignment = data_alignment
+        ws.cell(row=row_idx, column=5, value=level4).alignment = data_alignment
+        ws.cell(row=row_idx, column=6, value=level5).alignment = data_alignment
+        
+        # 类别 (EO/ILF 等)
+        category = point.get('类别', 'EO' if '表' in point.get('功能点计数项', '') or '判定' in point.get('功能点计数项', '') else 'ILF')
+        ws.cell(row=row_idx, column=7, value=category).alignment = Alignment(horizontal='center')
+        
+        # UFP (使用公式计算 - 根据类别自动计算)
+        # EO=5, ILF=7
+        ufp_cell = ws.cell(row=row_idx, column=8)
+        ufp_cell.value = f'=IF(G{row_idx}="ILF",7,IF(G{row_idx}="EO",5,5))'
+        ufp_cell.fill = green_fill
+        ufp_cell.alignment = Alignment(horizontal='center')
+        
+        # 重用程度
+        reuse = point.get('重用程度', '高' if '表' in point.get('功能点计数项', '') else '中')
+        ws.cell(row=row_idx, column=9, value=reuse).alignment = Alignment(horizontal='center')
+        
+        # 修改类型
+        modify_type = point.get('修改类型', '新增')
+        ws.cell(row=row_idx, column=10, value=modify_type).alignment = Alignment(horizontal='center')
+        
+        # AFP (使用公式计算 - 根据重用程度和修改类型)
+        # 新增：高重用 33%, 中重用 67%, 低重用 100%
+        # 修改：50%
+        afp_cell = ws.cell(row=row_idx, column=11)
+        afp_cell.value = f'=IF(J{row_idx}="新增",IF(I{row_idx}="高",H{row_idx}*0.33,IF(I{row_idx}="中",H{row_idx}*0.67,H{row_idx})),H{row_idx}*0.5)'
+        afp_cell.fill = green_fill
+        afp_cell.alignment = Alignment(horizontal='center')
+        
+        # 备注
+        ws.cell(row=row_idx, column=12, value=point.get('备注', '')).alignment = data_alignment
+        
+        # 设置所有单元格边框
+        for col in range(1, 13):
+            ws.cell(row=row_idx, column=col).border = thin_border
+        
+        ws.row_dimensions[row_idx].height = 30
+    
+    # 9. 合计行
+    last_row = len(function_points) + 10
+    ws.merge_cells(f'A{last_row}:G{last_row}')
+    summary_cell = ws.cell(row=last_row, column=1, value='合计')
+    summary_cell.font = Font(bold=True, size=12)
+    summary_cell.alignment = Alignment(horizontal='right')
+    
+    ws.cell(row=last_row, column=8, value=total_ufp).font = Font(bold=True)
+    ws.cell(row=last_row, column=11, value=round(total_afp, 2)).font = Font(bold=True)
+    
+    for col in range(1, 13):
+        ws.cell(row=last_row, column=col).border = thin_border
+    
+    # 设置列宽
+    column_widths = {
+        'A': 6,   # 编号
+        'B': 15,  # 一级分类
+        'C': 15,  # 二级分类
+        'D': 15,  # 三级分类
+        'E': 20,  # 功能点名称
+        'F': 40,  # 功能点计数项
+        'G': 10,  # 类别
+        'H': 8,   # UFP
+        'I': 10,  # 重用程度
+        'J': 10,  # 修改类型
+        'K': 8,   # AFP
+        'L': 30   # 备注
+    }
+    
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+    
+    # 10. 创建评估结果表 (Sheet 2)
+    ws2 = wb.create_sheet(title='3.评估结果表')
+    
+    # 标题
+    ws2.merge_cells('A1:C1')
+    title_cell = ws2['A1']
+    title_cell.value = '3.评估结果表'
+    title_cell.font = Font(bold=True, size=20)
+    title_cell.alignment = Alignment(horizontal='center', vertical='center')
+    ws2.row_dimensions[1].height = 40
+    
+    # 评估结果数据
+    cf = WORK_PARAMS['规模变更调整因子']
+    pdr = WORK_PARAMS['基准生产率']
+    
+    factors = WORK_PARAMS['调整因子']
+    
+    # 表头 (第 3 行)
+    ws2['C3'] = '数值'
+    ws2['D3'] = '说明'
+    ws2['C3'].font = Font(bold=True)
+    ws2['D3'].font = Font(bold=True)
+    ws2['C3'].fill = header_fill
+    ws2['D3'].fill = header_fill
+    
+    # 第 4 行 - 规模估算结果 (A4+B4 合并)
+    ws2.merge_cells('A4:B4')
+    ws2['A4'] = '规模估算结果 (单位：功能点)'
+    ws2['C4'] = f'=K{last_row}'  # 引用规模估算表的 AFP 合计
+    ws2['D4'] = 'AFP'
+    
+    # 第 5 行 - 规模变更调整因子 (A5+B5 合并)
+    ws2.merge_cells('A5:B5')
+    ws2['A5'] = '规模变更调整因子'
+    ws2['C5'] = "='2. 规模估算'!C5"  # 引用 2.规模估算表的 C5
+    ws2['D5'] = 'CF, 项目阶段'
+    
+    # 第 6 行 - 调整后规模 (A6+B6 合并)
+    ws2.merge_cells('A6:B6')
+    ws2['A6'] = '调整后规模 (单位：功能点)'
+    ws2['C6'] = '=C4*C5'  # 公式计算
+    ws2['D6'] = 'S, 等于 AFP*CF'
+    
+    # 第 7 行 - 基准生产率 (A7+B7 合并)
+    ws2.merge_cells('A7:B7')
+    ws2['A7'] = '基准生产率 (单位：人时/功能点)'
+    ws2['C7'] = pdr
+    ws2['D7'] = 'PDR, 来自《2024 年软件行业基准数据》'
+    
+    # 第 8 行 - 未调整工作量 (A8+B8 合并)
+    ws2.merge_cells('A8:B8')
+    ws2['A8'] = '未调整工作量 (单位：人天)'
+    ws2['C8'] = '=C6*C7/8'  # 公式计算
+    ws2['D8'] = 'S*PDR/8h'
+    
+    # 第 9-12 行 - 调整因子 (A9:A12 合并)
+    ws2.merge_cells('A9:A12')
+    ws2['A9'] = '调整因子'
+    ws2['A9'].font = Font(bold=True)
+    ws2['A9'].alignment = Alignment(horizontal='center', vertical='center')
+    
+    # 第 9 行 - 应用类型
+    ws2['B9'] = '应用类型'
+    ws2['C9'] = factors['应用类型']
+    ws2['D9'] = "='3. 调整因子'!D3"  # A,应用类型调整因子
+    
+    # 第 10 行 - 质量特性
+    ws2['B10'] = '质量特性'
+    ws2['C10'] = factors['质量特性']
+    ws2['D10'] = '=1+0.025*SUM(\'3. 调整因子\'!D4:D7)'  # B,质量特性调整因子
+    
+    # 第 11 行 - 开发语言
+    ws2['B11'] = '开发语言'
+    ws2['C11'] = factors['开发语言']
+    ws2['D11'] = "='3. 调整因子'!D8"  # C,开发语言调整因子
+    
+    # 第 12 行 - 开发团队背景
+    ws2['B12'] = '开发团队背景'
+    ws2['C12'] = factors['开发团队背景']
+    ws2['D12'] = "='3. 调整因子'!D9"  # D,开发团队背景调整因子
+    
+    # 第 13 行 - 调整后工作量 (A13+B13 合并)
+    ws2.merge_cells('A13:B13')
+    ws2['A13'] = '调整后工作量 (单位：人天)'
+    ws2['C13'] = '=C8*C9*C10*C11*C12'  # 公式计算
+    ws2['D13'] = 'AE,S*PDR/8h*A*B*C*D'
+    
+    # 设置样式
+    for row in range(4, 14):
+        for col in range(1, 5):
+            cell = ws2.cell(row=row, column=col)
+            cell.border = thin_border
+    
+    # 绿色单元格 (被保护)
+    green_cells = ['C4', 'C5', 'C6', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13']
+    for cell_ref in green_cells:
+        col = cell_ref[0].upper()
+        row = int(cell_ref[1:])
+        cell = ws2.cell(row=row, column=ord(col)-ord('A')+1)
+        cell.fill = green_fill
+        cell.font = Font(bold=True, color="0000FF")
+    
+    # 红色说明
+    red_cells = ['D7', 'D13']
+    for cell_ref in red_cells:
+        col = cell_ref[0].upper()
+        row = int(cell_ref[1:])
+        cell = ws2.cell(row=row, column=ord(col)-ord('A')+1)
+        cell.font = Font(color="FF0000")
+
+    # 设置评估结果表列宽
+    ws2.column_dimensions['A'].width = 35
+    ws2.column_dimensions['B'].width = 20
+    ws2.column_dimensions['C'].width = 15
+    ws2.column_dimensions['D'].width = 40
+    
+    # 保存文件
+    wb.save(output_path)
+    logger.info(f"FPA Excel 生成成功：{output_path}")
+    return output_path
+
+
+# ---------------------- 路由定义 ----------------------
+
+@fpa_generator_bp.route('/')
+def fpa_generator_page():
+    """FPA预估表生成主页面"""
+    return render_template('fpa_generator.html')
+
+
+@fpa_generator_bp.route('/upload', methods=['POST'])
+def upload_requirement():
+    """
+    上传需求文档并生成 FPA预估表
+    
+    Form Data:
+        requirement_file: Markdown 格式的需求文档
+    """
+    try:
+        if 'requirement_file' not in request.files:
+            flash("未选择上传文件！", "error")
+            return render_template('fpa_generator.html')
+        
+        file = request.files['requirement_file']
+        if file.filename == '' or not file.filename.endswith('.md'):
+            flash("请上传有效的 Markdown 文件！", "error")
+            return render_template('fpa_generator.html')
+        
+        # 保存临时文件
+        timestamp = int(time.time() * 1000)
+        upload_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_input"
+        output_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_output"
+        os.makedirs(upload_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        filename = Path(file.filename).stem
+        temp_md_path = upload_dir / f"{filename}_{timestamp}.md"
+        file.save(temp_md_path)
+        
+        # 读取并解析文档
+        with open(temp_md_path, 'r', encoding='utf-8') as f:
+            md_content = f.read()
+        
+        function_points = parse_requirement_document(md_content)
+        
+        if not function_points:
+            flash("未能从文档中提取到功能点信息！", "error")
+            return render_template('fpa_generator.html')
+        
+        # 生成 Excel 文件
+        output_filename = f"{filename}_FPA预估_{timestamp}.xlsx"
+        output_path = output_dir / output_filename
+        generate_fpa_excel(function_points, str(output_path))
+        
+        # 清理临时文件
+        try:
+            os.remove(temp_md_path)
+        except Exception as e:
+            logger.warning(f"临时文件删除失败：{e}")
+        
+        flash(f"FPA预估表生成成功！共提取 {len(function_points)} 个功能点", "success")
+        
+        # 提供下载链接
+        return render_template(
+            'fpa_generator.html',
+            success=True,
+            output_file=output_filename,
+            output_path=str(output_path),
+            function_point_count=len(function_points)
+        )
+        
+    except Exception as e:
+        logger.error(f"FPA 生成失败：{e}", exc_info=True)
+        flash(f"生成失败：{str(e)}", "error")
+        return render_template('fpa_generator.html')
+
+
+@fpa_generator_bp.route('/download/<filename>')
+def download_fpa(filename):
+    """下载生成的 FPA预估表"""
+    try:
+        output_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_output"
+        file_path = output_dir / filename
+        
+        if not file_path.exists():
+            flash("文件不存在或已过期！", "error")
+            return render_template('fpa_generator.html')
+        
+        return send_file(
+            str(file_path),
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        logger.error(f"文件下载失败：{e}")
+        flash("下载失败！", "error")
+        return render_template('fpa_generator.html')

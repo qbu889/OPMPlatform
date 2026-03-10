@@ -9,7 +9,7 @@ def parse_source_doc(file_path):
     # 延迟导入，避免循环依赖
     from app import logger
     try:
-        logger.info(f"开始解析文档: {file_path}")
+        logger.info(f"[DOC_PARSE] Starting document parsing: {file_path}")
         doc = Document(file_path)
         parsed_data = []
 
@@ -21,7 +21,7 @@ def parse_source_doc(file_path):
 
             # 检查段落样式和内容
             style_name = para.style.name
-            logger.debug(f"段落内容: '{text}', 样式: '{style_name}'")
+            logger.debug(f"[DOC_PARSE] Paragraph: '{text}' | Style: '{style_name}'")
 
             # 根据实际文档结构调整解析逻辑
             # 可能需要调整样式识别条件
@@ -32,9 +32,9 @@ def parse_source_doc(file_path):
                 # 处理正文段落
                 pass
 
-        logger.info(f"文档解析完成，共提取 {len(parsed_data)} 条数据")
+        logger.info(f"[DOC_PARSE] Parsing completed, extracted {len(parsed_data)} items")
         return parsed_data, None
     except Exception as e:
-        error_msg = f"文档解析过程中发生错误: {str(e)}"
+        error_msg = f"[DOC_PARSE] Parsing error: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return None, error_msg

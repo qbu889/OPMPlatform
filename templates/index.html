@@ -32,6 +32,7 @@
                                 <li><a class="dropdown-item" href="/markdown-upload">Markdown转Word</a></li>
                                 <li><a class="dropdown-item" href="/kafka-generator">Kafka消息生成</a></li>
                                 <li><a class="dropdown-item" href="/schedule-config">排班配置</a></li>
+                                <li><a class="dropdown-item" href="/fpa-generator/">FPA预估表生成</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -182,18 +183,35 @@
                             </div>
                         </div>
 
-                        <!-- Kafka消息生成器 -->
+                        <!-- Kafka 消息生成器 -->
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
                                         <i class="fas fa-stream text-purple" style="font-size: 2.5rem;"></i>
                                     </div>
-                                    <h5 class="card-title">Kafka消息生成</h5>
-                                    <p class="card-text text-muted small">根据ES数据生成Kafka消息</p>
+                                    <h5 class="card-title">Kafka 消息生成</h5>
+                                    <p class="card-text text-muted small">根据 ES 数据生成 Kafka 消息</p>
                                     <button class="btn btn-outline-purple btn-sm"
                                             onclick="window.location.href='/kafka-generator'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 智能客服 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-robot text-info" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">智能客服</h5>
+                                    <p class="card-text text-muted small">基于 Ollama AI 的智能问答系统</p>
+                                    <button class="btn btn-outline-info btn-sm"
+                                            onclick="window.location.href='/chatbot/'">
+                                        <i class="fas fa-comments me-1"></i>立即使用
                                     </button>
                                 </div>
                             </div>
@@ -210,6 +228,23 @@
                                     <p class="card-text text-muted small">智能排班系统，自动化人员调度</p>
                                     <button class="btn btn-outline-danger btn-sm"
                                             onclick="window.location.href='/schedule-config'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- FPA预估表生成 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-file-excel text-success" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">FPA预估表生成</h5>
+                                    <p class="card-text text-muted small">从需求文档自动生成 FPA功能点估算表</p>
+                                    <button class="btn btn-outline-success btn-sm"
+                                            onclick="window.location.href='/fpa-generator/'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
                                     </button>
                                 </div>
@@ -239,7 +274,10 @@
                                         <i class="fab fa-markdown me-2"></i>Word转MD
                                     </button>
                                     <button class="btn btn-warning btn-animated" onclick="quickAction('md-to-word')">
-                                        <i class="fas fa-file-word me-2"></i>MD转Word
+                                        <i class="fas fa-file-word me-2"></i>MD 转 Word
+                                    </button>
+                                    <button class="btn btn-success btn-animated" onclick="quickAction('fpa-generator')">
+                                        <i class="fas fa-file-excel me-2"></i>FPA 转 Excel
                                     </button>
                                 </div>
 
@@ -366,6 +404,9 @@
                     break;
                 case 'md-to-word':
                     switchToTab('markdown-tab');
+                    break;
+                case 'fpa-generator':
+                    window.location.href = '/fpa-generator/';
                     break;
                 default:
                     OPM.notify('功能即将上线', 'info');

@@ -9,7 +9,7 @@ from flask import Blueprint, request, render_template, jsonify, session, redirec
 from models.auth_models import user_model, security_question_model, session_manager
 from functools import wraps
 
-# 配置日志
+# 配置日志 - 使用统一格式
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__)
@@ -171,14 +171,14 @@ def login():
         # 记录登录尝试
         client_ip = request.remote_addr
         user_agent = request.headers.get('User-Agent', 'Unknown')
-        logger.info(f"用户登录尝试 - 用户名: {username}, IP: {client_ip}, User-Agent: {user_agent}")
+        logger.info(f"[LOGIN_ATTEMPT] User: {username} | IP: {client_ip} | UA: {user_agent}")
         
         # 用户认证
         success, message, user_info = user_model.authenticate(username, password)
         
         if success:
             # 登录成功日志
-            logger.info(f"用户登录成功 - 用户ID: {user_info['id']}, 用户名: {user_info['username']}, IP: {client_ip}")
+            logger.info(f"[LOGIN_SUCCESS] UserID: {user_info['id']} | Username: {user_info['username']} | IP: {client_ip}")
             
             # 创建会话
             ip_address = request.remote_addr
@@ -214,14 +214,14 @@ def login():
                 
                 # 设置会话cookie
                 response.set_cookie('session_token', session_token, max_age=24*60*60, httponly=True, secure=False)
-                logger.info(f"会话创建成功 - Token: {session_token[:10]}..., 用户ID: {user_info['id']}")
+                logger.info(f"[SESSION_CREATED] Token: {session_token[:10]}... | UserID: {user_info['id']}")
                 return response
             else:
-                logger.error(f"创建会话失败 - 用户ID: {user_info['id']}, 用户名: {user_info['username']}")
+                logger.error(f"[SESSION_CREATE_FAILED] UserID: {user_info['id']} | Username: {user_info['username']}")
                 return jsonify({'success': False, 'message': '创建会话失败'}), 500
         else:
             # 登录失败日志
-            logger.warning(f"用户登录失败 - 用户名: {username}, 原因: {message}, IP: {client_ip}")
+            logger.warning(f"[LOGIN_FAILED] User: {username} | IP: {client_ip} | Reason: {message}")
             return jsonify({
                 'success': False, 
                 'message': message,
@@ -234,7 +234,7 @@ def login():
             }), 401
             
     except Exception as e:
-        logger.error(f"登录过程中发生异常 - 错误: {str(e)}, IP: {request.remote_addr}", exc_info=True)
+        logger.error(f"[LOGIN_EXCEPTION] Error: {str(e)} | IP: {request.remote_addr}", exc_info=True)
         return jsonify({
             'success': False, 
             'message': f'登录失败: {str(e)}',

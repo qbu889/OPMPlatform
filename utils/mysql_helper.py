@@ -32,6 +32,6 @@ def get_mysql_conn_dict_cursor():
         conn = pymysql.connect(**cfg)
         return conn
     except Exception as e:
-        logger.warning(f"MySQL连接不可用，将回退到内置配置: {e}")
+        logger.warning(f"[MYSQL_CONNECT] Connection failed, falling back to default config: {e}")
         return None
 

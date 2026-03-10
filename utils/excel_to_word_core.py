@@ -3,17 +3,23 @@ import pandas as pd
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def read_excel_robust(file_path):
-    """健壮读取Excel文件，自动识别表头"""
+    """健壮读取 Excel 文件，自动识别表头"""
     try:
+        logger.debug(f"[EXCEL_READ] Reading file: {file_path}")
         df = pd.read_excel(file_path, header=0, engine='openpyxl')
         # 清理空行和空列
         df = df.dropna(how='all').dropna(axis=1, how='all')
+        logger.info(f"[EXCEL_READ] Successfully read {len(df)} rows")
         return df
     except Exception as e:
-        raise Exception(f"读取Excel失败：{e}")
+        logger.error(f"[EXCEL_READ] Failed: {e}")
+        raise Exception(f"读取 Excel 失败：{e}")
 
 
 def excel_to_word(excel_path, word_path):

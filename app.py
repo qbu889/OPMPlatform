@@ -1,9 +1,7 @@
  # app.py
 from datetime import datetime
 from http import client
-
 import uuid
-
 import json
 from flask import send_file
 import markdown
@@ -11,6 +9,10 @@ from docx import Document
 from flask import Flask, render_template, request, jsonify, session
 import os
 import logging
+from dotenv import load_dotenv
+
+# 加载 .env 文件
+load_dotenv()
 
 # from openai import chat
 from werkzeug.utils import secure_filename
@@ -27,11 +29,15 @@ from routes.event_routes import event_bp
 from routes.word_to_md_routes import word_to_md_bp
 from routes.auth_routes import auth_bp
 from utils.cleanup_thread import CleanupThread  # 导入清理线程类
+from routes.chatbot_routes import chatbot_bp  # 导入智能客服蓝图
+from routes.category_routes import category_bp  # 导入专业领域管理蓝图
+from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA预估表生成器蓝图
 
-# 配置日志
+# 配置日志 - 统一日志格式
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
 
@@ -58,10 +64,13 @@ def create_app(config_name='default'):
     app.register_blueprint(excel2word_bp)
     app.register_blueprint(markdown_upload_bp)
     app.register_blueprint(word_to_md_bp)
-    # app.registe`r_blueprint(kafka_bp)  # 给Kafka蓝图添加前缀
+    # app.registe`r_blueprint(kafka_bp)  # 给 Kafka 蓝图添加前缀
     app.register_blueprint(schedule_config_bp)
     app.register_blueprint(kafka_generator_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(chatbot_bp)  # 注册智能客服蓝图
+    app.register_blueprint(category_bp)  # 注册专业领域管理蓝图
+    app.register_blueprint(fpa_generator_bp)  # 注册 FPA预估表生成器蓝图
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()

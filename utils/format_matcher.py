@@ -10,7 +10,7 @@ def match_document_format(input_doc_path, standard_template_path):
     匹配输入文档格式与标准模板格式
     """
     try:
-        logger.info(f"开始匹配文档格式: {input_doc_path}")
+        logger.info(f"[FORMAT_MATCH] Starting document format matching: {input_doc_path}")
 
         # 解析输入文档
         input_doc = Document(input_doc_path)
@@ -23,11 +23,11 @@ def match_document_format(input_doc_path, standard_template_path):
         # 比较结构匹配度
         match_result = compare_structures(input_structure, standard_structure)
 
-        logger.info(f"文档格式匹配完成，匹配度: {match_result['match_rate']:.2f}")
+        logger.info(f"[FORMAT_MATCH] Document format matching completed, match rate: {match_result['match_rate']:.2f}")
         return match_result
 
     except Exception as e:
-        logger.error(f"文档格式匹配过程中发生错误: {str(e)}")
+        logger.error(f"[FORMAT_MATCH] Error during document format matching: {str(e)}")
         return {"match_rate": 0, "errors": [str(e)]}
 
 

@@ -18,9 +18,9 @@ def cleanup_temp_files():
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
-                logger.info(f"已清理临时文件: {file_path}")
+                logger.info(f"[CLEANUP_TEMP] Removed: {file_path}")
             except Exception as e:
-                logger.warning(f"清理临时文件失败 {file_path}: {str(e)}")
+                logger.warning(f"[CLEANUP_TEMP] Failed to remove {file_path}: {str(e)}")
 
 
 # 在应用关闭时清理临时文件

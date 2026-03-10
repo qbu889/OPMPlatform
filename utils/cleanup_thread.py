@@ -1,5 +1,5 @@
 # utils/cleanup_thread.py
-from typing import Tuple  # 关键：导入大写的Tuple（3.9以下专用）
+from typing import Tuple  # 关键：导入大写的 Tuple（3.9 以下专用）
 
 import re
 import time
@@ -7,6 +7,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from threading import Thread
 from flask import current_app
+import logging
+
+# 配置日志
+logger = logging.getLogger(__name__)
+
 # 清理配置（默认值，可以通过线程参数覆盖）
 RETENTION_HOURS = 1          # 默认保留 1 小时
 INTERVAL_SECONDS = 1800      # 默认清理间隔 30 分钟
@@ -68,7 +73,7 @@ def run_cleanup_loop(app, cleanup_interval: int = INTERVAL_SECONDS, retention_ho
     :param cleanup_interval: 清理间隔秒数
     :param retention_hours: 文件保留小时数
     """
-    print(f"[清理线程] 启动，保留时长：{retention_hours}小时，清理间隔：{cleanup_interval}秒")
+    print(f"[CLEANUP_THREAD] Started | Retention: {retention_hours}h | Interval: {cleanup_interval}s")
     while True:
         now = datetime.now()
         cutoff = now - timedelta(hours=retention_hours)
@@ -83,5 +88,5 @@ def run_cleanup_loop(app, cleanup_interval: int = INTERVAL_SECONDS, retention_ho
             out_del, _ = cleanup_dir(word_output_dir, cutoff)
 
             if in_del + out_del > 0:
-                print(f"[{now}] 清理完成：删除Excel文件{in_del}个，Word文件{out_del}个")
+                logger.info(f"[CLEANUP_DONE] Excel: {in_del} files | Word: {out_del} files")
         time.sleep(cleanup_interval)
