@@ -796,12 +796,11 @@ def preprocess_json_data(raw_data):
         # 第一步：将三重引号替换为临时标记
         raw_data = raw_data.replace('"""', '__TEMP_TRIPLE_QUOTE__')
 
-        # 第二步：处理嵌套JSON字符串内的双引号转义
+        # 第二步：处理嵌套 JSON 字符串内的双引号转义
         def escape_nested_quotes(match):
             content = match.group(1)
-            # 转义内容中的双引号
+            # 只转义双引号和控制字符，不转义反斜杠（留给后面的 fix_invalid_escapes 处理）
             content = content.replace('"', '\\"')
-            # 转义其他特殊字符
             content = content.replace('\n', '\\n')
             content = content.replace('\r', '\\r')
             content = content.replace('\t', '\\t')
@@ -812,26 +811,65 @@ def preprocess_json_data(raw_data):
                           flags=re.DOTALL)
 
         print(f"已完成三重引号处理和嵌套引号转义")
-
-    # 3. 处理普通的JSON字符串值
+    
+    # 3. 修复非法转义字符 - 新增关键步骤
+    def fix_invalid_escapes(text):
+        r"""修复非法的转义序列
+        JSON 只允许：\\, \", \/, \b, \f, \n, \r, \t, \uXXXX
+        其他如 \:, \(, \) 等都是非法的
+        """
+        # 策略：先保护合法的转义，然后修复非法的
+        
+        # 第一步：临时替换合法的转义序列
+        placeholders = {}
+        valid_escapes = ['\\\\', '\\"', '\\/', '\\b', '\\f', '\\n', '\\r', '\\t']
+        
+        for i, escape_seq in enumerate(valid_escapes):
+            placeholder = f'__VALID_ESCAPE_{i}__'
+            placeholders[placeholder] = escape_seq
+            text = text.replace(escape_seq, placeholder)
+        
+        # 第二步：处理 \uXXXX 格式
+        def protect_unicode(match):
+            return f'__UNICODE_{match.group(0)[1:]}__'
+        
+        text = re.sub(r'\\u[0-9a-fA-F]{4}', protect_unicode, text)
+        
+        # 第三步：现在剩下的 \ 后跟字符都是非法的，直接双写反斜杠
+        text = re.sub(r'\\(.)', r'\\\\\1', text)
+        
+        # 第四步：恢复合法的转义序列
+        for placeholder, escape_seq in placeholders.items():
+            text = text.replace(placeholder, escape_seq)
+        
+        # 恢复 Unicode 转义
+        text = re.sub(r'__UNICODE_([0-9a-fA-F]{4})__', r'\\u\1', text)
+        
+        return text
+        
+    # 应用转义修复
+    raw_data = fix_invalid_escapes(raw_data)
+    print("已修复非法转义字符")
+    
+    # 4. 处理普通的 JSON 字符串值
     def process_json_strings(text):
-        """处理JSON字符串值，确保正确转义"""
+        """处理 JSON 字符串值，确保正确转义"""
         # 匹配双引号包围的内容（非贪婪匹配）
         pattern = r'"((?:[^"\\]|\\.)*)"'
-
+    
         def replace_string_content(match):
             content = match.group(1)
-            # 修复常见的转义问题
-            content = content.replace('\\"', '\\"')  # 修复双重转义
-            content = re.sub(r'\\([^"\\/bfnrtu])', r'\\\\\1', content)  # 修复无效转义
+            # 不再处理转义，因为 fix_invalid_escapes 已经处理过了
+            # 只修复双重转义的双引号
+            content = content.replace('\\\\"', '\\"')
             return f'"{content}"'
-
+    
         return re.sub(pattern, replace_string_content, text)
 
     # 应用字符串处理
     raw_data = process_json_strings(raw_data)
 
-    # 4. 处理HTML实体
+    # 5. 处理 HTML 实体
     html_entities = {
         '&lt;': '<',
         '&gt;': '>',
@@ -847,7 +885,7 @@ def preprocess_json_data(raw_data):
             raw_data = raw_data.replace(entity, replacement)
             print(f"处理了 {count} 个 '{entity}' HTML实体")
 
-    # 5. 处理控制字符
+    # 6. 处理控制字符
     control_chars_removed = 0
     cleaned_data = ''
     problematic_positions = []
@@ -870,20 +908,20 @@ def preprocess_json_data(raw_data):
                 print(f"  位置{pos}: ASCII码{code}, 字符{char_repr}")
         raw_data = cleaned_data
 
-    # 6. 处理尾随逗号
+    # 7. 处理尾随逗号
     trailing_commas = len(re.findall(r',\s*([\}\]])', raw_data))
     if trailing_commas > 0:
         raw_data = re.sub(r',\s*([\}\]])', r'\1', raw_data)
         print(f"处理了 {trailing_commas} 个尾随逗号")
 
-    # 7. 标准化换行符
+    # 8. 标准化换行符
     raw_data = raw_data.replace('\r\n', '\n').replace('\r', '\n')
 
-    # 8. 移除行尾空格
+    # 9. 移除行尾空格
     lines = raw_data.split('\n')
     raw_data = '\n'.join(line.rstrip() for line in lines)
 
-    # 9. 修复JSON键名未加引号的问题
+    # 10. 修复 JSON 键名未加引号的问题
     def fix_json_keys(data):
         pattern = r'([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:'
 
@@ -896,7 +934,7 @@ def preprocess_json_data(raw_data):
 
     raw_data = fix_json_keys(raw_data)
 
-    # 10. 最终JSON结构清理
+    # 11. 最终 JSON 结构清理
     # 找到第一个完整的JSON对象结束位置
     brace_count = 0
     first_complete_end = -1
