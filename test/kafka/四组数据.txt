@@ -126,27 +126,6 @@
 }
 （2）无线写入ES数据
 {
-  "took" : 32,
-  "timed_out" : false,
-  "_shards" : {
-    "total" : 12,
-    "successful" : 12,
-    "skipped" : 0,
-    "failed" : 0
-  },
-  "hits" : {
-    "total" : {
-      "value" : 1,
-      "relation" : "eq"
-    },
-    "max_score" : 1.0,
-    "hits" : [
-      {
-        "_index" : "mw_em_master",
-        "_type" : "_doc",
-        "_id" : "311176565",
-        "_score" : 1.0,
-        "_source" : {
           "HOME_BROAD_BAND_LIST" : [ ],
           "FULL_REGION_ID" : "35000/350100/350102",
           "EVENT_LEVEL" : 4,
@@ -527,27 +506,6 @@
 
 （2）写入ES数据
 {
-  "took" : 24,
-  "timed_out" : false,
-  "_shards" : {
-    "total" : 12,
-    "successful" : 12,
-    "skipped" : 0,
-    "failed" : 0
-  },
-  "hits" : {
-    "total" : {
-      "value" : 1,
-      "relation" : "eq"
-    },
-    "max_score" : 1.0,
-    "hits" : [
-      {
-        "_index" : "mw_em_master",
-        "_type" : "_doc",
-        "_id" : "311980616",
-        "_score" : 1.0,
-        "_source" : {
           "HOME_BROAD_BAND_LIST" : [ ],
           "FULL_REGION_ID" : "35000/350600/350623",
           "EVENT_LEVEL" : 4,
@@ -941,27 +899,6 @@
 }
 （2）写入ES数据
 {
-  "took" : 113,
-  "timed_out" : false,
-  "_shards" : {
-    "total" : 12,
-    "successful" : 12,
-    "skipped" : 0,
-    "failed" : 0
-  },
-  "hits" : {
-    "total" : {
-      "value" : 1,
-      "relation" : "eq"
-    },
-    "max_score" : 1.0,
-    "hits" : [
-      {
-        "_index" : "mw_em_master",
-        "_type" : "_doc",
-        "_id" : "311918824",
-        "_score" : 1.0,
-        "_source" : {
           "HOME_BROAD_BAND_LIST" : [ ],
           "FULL_REGION_ID" : "35000/350200/350206",
           "EVENT_LEVEL" : 4,
@@ -1334,27 +1271,6 @@
 }
 （2）写入ES数据
 {
-  "took" : 25,
-  "timed_out" : false,
-  "_shards" : {
-    "total" : 12,
-    "successful" : 12,
-    "skipped" : 0,
-    "failed" : 0
-  },
-  "hits" : {
-    "total" : {
-      "value" : 1,
-      "relation" : "eq"
-    },
-    "max_score" : 1.0,
-    "hits" : [
-      {
-        "_index" : "mw_em_master",
-        "_type" : "_doc",
-        "_id" : "311915877",
-        "_score" : 1.0,
-        "_source" : {
           "HOME_BROAD_BAND_LIST" : [ ],
           "FULL_REGION_ID" : "35000/350600/350605",
           "EVENT_LEVEL" : 4,

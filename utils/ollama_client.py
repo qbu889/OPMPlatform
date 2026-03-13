@@ -35,7 +35,7 @@ class OllamaClient:
                  stream: bool = False,
                  options: Optional[Dict] = None) -> str:
         """
-        生成文本回复
+        生成文本回复（基于 chat API 实现）
         
         Args:
             prompt: 输入提示词
@@ -47,37 +47,13 @@ class OllamaClient:
         Returns:
             生成的文本内容
         """
-        payload = {
-            "model": model or self.model,
-            "prompt": prompt,
-            "system": system or "",
-            "stream": stream
-        }
+        # 使用 chat API 实现 generate
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
         
-        if options:
-            payload["options"] = options
-            
-        try:
-            response = requests.post(
-                self.api_endpoint,
-                json=payload,
-                stream=stream,
-                timeout=300  # 增加到 5 分钟，处理长文档
-            )
-            response.raise_for_status()
-            
-            if stream:
-                return self._parse_stream_response(response)
-            else:
-                result = response.json()
-                return result.get("response", "")
-                
-        except requests.exceptions.RequestException as e:
-            logger.error(f"[OLLAMA_REQUEST] API request failed: {e}")
-            raise Exception(f"AI 服务不可用：{str(e)}")
-        except json.JSONDecodeError as e:
-            logger.error(f"[OLLAMA_JSON] Response parse error: {e}")
-            raise Exception("AI 响应格式错误")
+        return self.chat(messages, model=model, stream=stream, options=options)
     
     def chat(self,
              messages: List[Dict[str, str]],
@@ -172,6 +148,8 @@ class OllamaClient:
             full_prompt = f"{system_prompt}\n\n{full_prompt}"
         
         return self.generate(full_prompt, model=model)
+    
+    def _parse_stream_response(self, response) -> str:
         """解析流式响应"""
         full_content = ""
         for line in response.iter_lines():
@@ -225,7 +203,7 @@ def get_ollama_client(base_url: str = None, model: str = None) -> OllamaClient:
         # 从环境变量或配置读取
         import os
         ollama_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3:8b")
 
         _ollama_client = OllamaClient(base_url=ollama_url, model=ollama_model)
         logger.info(f"[OLLAMA_INIT] URL: {ollama_url} | Model: {ollama_model}")

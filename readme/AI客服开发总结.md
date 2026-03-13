@@ -139,7 +139,7 @@
 
 ### AI 相关
 - **Ollama**: 本地 AI 模型部署
-- **推荐模型**: qwen2.5:7b（中文能力强）
+- **推荐模型**: qwen3:8b（中文能力强）
 
 ### 文档处理
 - **python-docx**: Word 文档处理
@@ -170,7 +170,7 @@ brew install ollama
 ollama serve &
 
 # 拉取推荐模型
-ollama pull qwen2.5:7b
+ollama pull qwen3:8b
 ```
 
 ### 2. 启动应用
@@ -280,7 +280,7 @@ python test/chatbot/test_chatbot_system.py
 ```bash
 # .env 文件
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_MODEL=qwen3:8b
 ```
 
 ### 代码配置
@@ -290,7 +290,7 @@ OLLAMA_MODEL=qwen2.5:7b
 ```python
 ollama_client = OllamaClient(
     base_url="http://localhost:11434",
-    model="qwen2.5:7b"
+    model="qwen3:8b"
 )
 ```
 
@@ -312,7 +312,7 @@ sudo apt-get install tesseract-ocr-chi-sim
 **解决**：使用更小的模型或升级硬件
 ```bash
 # 使用较小模型
-ollama pull qwen2.5:3b
+ollama pull qwen3:8b
 ```
 
 ### 问题 3：文档上传失败

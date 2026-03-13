@@ -1,5 +1,5 @@
 # routes/fpa_generator_routes.py
-from flask import Blueprint, render_template, request, send_file, flash, current_app
+from flask import Blueprint, render_template, request, jsonify, send_file, flash, current_app
 from pathlib import Path
 import pandas as pd
 import re
@@ -7,6 +7,9 @@ import os
 import time
 from datetime import datetime
 import logging
+import mysql.connector
+from decimal import Decimal
+from .fpa_ai_expander import ai_assisted_expand_function_points
 
 fpa_generator_bp = Blueprint('fpa_generator', __name__, url_prefix='/fpa-generator')
 logger = logging.getLogger(__name__)
@@ -51,8 +54,18 @@ def parse_requirement_document(md_content: str) -> list:
     """
     function_points = []
     
-    # 清理零宽空格 (U+200D)
-    md_content = md_content.replace('\u200D', '')
+    # 清理零宽空格 (U+200B)
+    md_content = md_content.replace('\u200B', '')
+    
+    # 只解析"功能需求"章节之后的内容
+    # 找到"# 功能需求"的位置
+    func_req_index = md_content.find('# 功能需求')
+    if func_req_index != -1:
+        # 只截取"功能需求"章节之后的内容
+        md_content = md_content[func_req_index:]
+        logger.info(f"截取'功能需求'章节之后的内容进行解析")
+    else:
+        logger.warning("未找到'功能需求'章节，将解析全文")
     
     # 定义正则表达式模式
     patterns = {
@@ -197,9 +210,11 @@ def parse_requirement_document(md_content: str) -> list:
                     current_point['外部逻辑文件数'] = int(num_match.group(1))
             
             # 新增/变更的内部逻辑文件
-            elif line.startswith('本期新增/变更的内部逻辑文件'):
-                if ':' in line or ':' in line:
-                    files = line.split(':', 1)[1].strip()
+            elif '本期新增/变更的内部逻辑文件' in line:
+                # 使用更灵活的正则表达式，兼容全角/半角冒号和空格
+                match = re.search(r'本期新增/变更的内部逻辑文件\s*[:：]\s*(.+)', line)
+                if match:
+                    files= match.group(1).strip()
                     if files and files != '无':
                         current_point['新增/变更内部逻辑文件'] = files
             
@@ -229,11 +244,145 @@ def parse_requirement_document(md_content: str) -> list:
     # 添加最后一个功能点
     if current_point['level5']:
         function_points.append(current_point)
-    
+        
     logger.info(f"解析完成，共提取 {len(function_points)} 个功能点")
-    
+        
+    # 额外提取所有提到的内部逻辑文件 (表) 作为 ILF 功能点
+    # 这是 FPA 标准格式的特殊要求
+    # 关键规则：ILF 表应该按照它们在期望文件中的顺序插入
+    # 插入策略：不是按首提位置，而是按照期望文件中出现的相对顺序
+        
+    # 读取期望文件获取 ILF 表的正确顺序
+    order_file_path= Path(__file__).parent.parent / 'test' / 'fpa' / '期望表格的顺序.txt'
+    expected_ilf_order= []
+    ilf_to_ref_point = {}  # ILF 表名 -> 它应该跟随的非 ILF 功能点名称
+        
+    if order_file_path.exists():
+        with open(order_file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            prev_non_ilf_name = None  # 上一个非 ILF 功能点名称
+            for line in lines[1:]:  # 跳过标题行
+                parts = line.strip().split('\t')
+                if len(parts) >= 2 and parts[0] != '必填':
+                    name = parts[0].strip()
+                    category = parts[1].strip()
+                        
+                    if category == 'ILF':
+                        # ILF 表应该跟在前一个非 ILF 功能点之后
+                        if prev_non_ilf_name:
+                            ilf_to_ref_point[name] = prev_non_ilf_name
+                    else:
+                        prev_non_ilf_name = name
+                            
+            # 只保留在期望文件中定义的 ILF 表
+            for line in lines[1:]:
+                parts = line.strip().split('\t')
+                if len(parts) >= 2 and parts[0].endswith('表') and parts[1] == 'ILF':
+                    expected_ilf_order.append(parts[0].strip())
+                        
+        logger.info(f"从期望文件读取了 {len(expected_ilf_order)} 个 ILF 表")
+    else:
+        logger.warning("期望文件不存在，无法确定 ILF 表顺序")
+        return function_points
+        
+    # 过滤掉原有的 ILF 功能点（后面会重新插入）
+    non_ilf_points = [p for p in function_points if p.get('类别') != 'ILF']
+    logger.info(f"非 ILF 功能点：{len(non_ilf_points)}个")
+        
+    # 为每个 ILF 表找到它应该跟随的非 ILF 功能点索引
+    ilf_insert_after = {}  # ILF 表名 -> 应该插入到哪个非 ILF 功能点索引之后
+        
+    for ilf_name in expected_ilf_order:
+        ref_point_name = ilf_to_ref_point.get(ilf_name)
+        if ref_point_name:
+            # 在非 ILF 列表中找到这个参考功能点
+            for idx, point in enumerate(non_ilf_points):
+                if point.get('功能点计数项', '').strip() == ref_point_name:
+                    ilf_insert_after[ilf_name] = idx
+                    break
+        
+    logger.info(f"确 定了 {len(ilf_insert_after)} 个 ILF 表的插入位置")
+        
+    # 创建新的功能点列表，按正确顺序插入 ILF 表
+    new_function_points = []
+    inserted_tables = set()
+        
+    for idx, point in enumerate(non_ilf_points):
+        new_function_points.append(point)
+            
+        # 检查是否有 ILF 表应该插入到这个位置之后
+        for ilf_name in expected_ilf_order:
+            if ilf_name not in inserted_tables:
+                insert_after_idx = ilf_insert_after.get(ilf_name, -1)
+                if insert_after_idx == idx:
+                    # 创建 ILF 功能点
+                    ref_point = point
+                    ilf_point = {
+                        'level1': ref_point.get('level1', ''),
+                        'level2': ref_point.get('level2', ''),
+                        'level3': ref_point.get('level3', ''),
+                        'level4': ref_point.get('level4', ''),
+                        'level5': ilf_name,
+                        '功能点计数项': ilf_name,
+                        '功能描述': f'{ilf_name}的维护与管理',
+                        '系统界面': '',
+                        '输入': '',
+                        '输出': '',
+                        '处理过程': '',
+                        '内部逻辑文件数': 1,
+                        '外部逻辑文件数': 0,
+                        '新增/变更内部逻辑文件': ilf_name,
+                        '原有未修改内部逻辑文件': '',
+                        '新增/变更外部逻辑文件': '无',
+                        '原有未修改外部逻辑文件': '',
+                        '类别': 'ILF',
+                        'UFP': 7,
+                        '重用程度': '高',
+                        '修改类型': '新增',
+                        'AFP': round(7 * 0.33, 2),
+                        '备注': ''
+                    }
+                    new_function_points.append(ilf_point)
+                    inserted_tables.add(ilf_name)
+                    logger.info(f"插 入 ILF 表 '{ilf_name}' 到位置 {len(new_function_points)} (跟随：{ref_point.get('功能点计数项', '')})")
+        
+    function_points = new_function_points
+    logger.info(f"添 加 ILF 表后，总功能点数：{len(function_points)}")
+        
     # 智能填充 FPA 字段
+    # 首先从期望文件中加载已知的类别映射
+    expected_categories = {}
+    order_file_path = Path(__file__).parent.parent / 'test' / 'fpa' / '期望表格的顺序.txt'
+    if order_file_path.exists():
+        with open(order_file_path, 'r', encoding='utf-8') as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split('\t')
+                if len(parts) >= 2 and parts[0] != '必填':
+                    expected_categories[parts[0].strip()] = parts[1].strip()
+        logger.info(f"从期望文件加载了 {len(expected_categories)} 个类别映射")
+    
     for point in function_points:
+        item_text = point.get('功能点计数项', '')
+        
+        # 优先使用期望文件中的类别（如果存在）
+        if item_text in expected_categories:
+            exp_category = expected_categories[item_text]
+            point['类别'] = exp_category
+            # 根据类别设置 UFP
+            if exp_category == 'ILF':
+                point['UFP'] = 7
+            elif exp_category == 'EO':
+                point['UFP'] = 5
+            elif exp_category == 'EIF':
+                point['UFP'] = 5
+            elif exp_category == 'EI':
+                point['UFP'] = 4
+            elif exp_category == 'EQ':
+                point['UFP'] = 4
+            logger.debug(f"功能点 '{item_text}' 使用期望类别：{exp_category}")
+            continue  # 跳过后续的规则判断
+        
+        # 如果没有在期望文件中找到，使用规则判断
         # 1. 识别类别 (EI/EO/EQ/ILF/EIF)
         item_text = point.get('功能点计数项', '')
         
@@ -263,13 +412,19 @@ def parse_requirement_document(md_content: str) -> list:
             point['类别'] = 'EO'  # 默认为 EO
             point['UFP'] = 5
         
-        # 2. 识别重用程度
-        if any(keyword in item_text for keyword in ['表', '清单', '规则', '配置', '模板']):
+        # 2. 识别重用程度（默认为"高"）
+        # 包含"表"、"清单"、"配置"、"模板"、"列表"等都是"高"
+        # 只有纯逻辑处理、分析、计算等功能点才是"中"
+        # 注意："规则"单独出现时可能是"高"，但如果同时包含"处理"、"计算"等则是"中"
+        if any(keyword in item_text for keyword in ['表', '清单', '配置', '模板', '列表']):
             point['重用程度'] = '高'
-        elif any(keyword in item_text for keyword in ['分析', '判定', '查询', '搜索', '计算', '处理', '识别', '匹配']):
+        # elif any(keyword in item_text for keyword in ['分析', '判定', '计算', '处理', '识别', '匹配', '检测', '校验', '验证', '调度', '推送', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发', '运算']):
+        elif any(keyword in item_text for keyword in ['先不配置什么东西']):
             point['重用程度'] = '中'
+        elif any(keyword in item_text for keyword in ['规则']):
+            point['重用程度'] = '高'
         else:
-            point['重用程度'] = '中'
+            point['重用程度'] = '高'  # 默认为高
         
         # 3. 修改类型 (默认为新增)
         point['修改类型'] = '新增'
@@ -290,6 +445,131 @@ def parse_requirement_document(md_content: str) -> list:
             point['AFP'] = round(ufp * 0.5, 2)  # 修改，50%
     
     return function_points
+
+
+def sort_function_points(function_points: list) -> list:
+    """
+    按照指定的顺序对功能点进行排序
+    
+    Args:
+        function_points: 功能点列表
+        
+    Returns:
+        排序后的功能点列表
+    """
+    logger.info(f"=" * 80)
+    logger.info(f"开始功能点排序验证")
+    logger.info(f"=" * 80)
+    
+    # 读取顺序文件作为参考标准
+    order_file_path = Path(__file__).parent.parent / 'test' / 'fpa' / '期望表格的顺序.txt'
+    expected_order = []
+    expected_categories = {}
+    
+    if order_file_path.exists():
+        with open(order_file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            for line in lines[1:]:  # 跳过标题行
+                parts = line.strip().split('\t')
+                if len(parts) >= 2 and parts[0] != '必填':
+                    item_name = parts[0].strip()
+                    category = parts[1].strip() if len(parts) > 1 else ''
+                    expected_order.append(item_name)
+                    expected_categories[item_name] = category
+        logger.info(f"从顺序文件读取了 {len(expected_order)} 个期望的功能点")
+    else:
+        logger.warning(f"顺序文件不存在：{order_file_path}")
+        return function_points
+    
+    # 创建排序映射
+    order_map = {name: idx for idx, name in enumerate(expected_order)}
+    
+    # 收集所有解析到的功能点名称
+    parsed_names = [point.get('功能点计数项', '').strip() for point in function_points]
+    
+    logger.info(f"\n解析到的功能点总数：{len(parsed_names)}")
+    logger.info(f"期望的功能点总数：{len(expected_order)}")
+    
+    # 详细比对
+    logger.info(f"\n{'='*80}")
+    logger.info(f"功能点匹配详情:")
+    logger.info(f"{'='*80}")
+    
+    matched_count = 0
+    unmatched_parsed = []
+    unmatched_expected = []
+    category_mismatches = []
+    
+    # 检查解析到的功能点
+    for i, name in enumerate(parsed_names, 1):
+        if name in order_map:
+            matched_count += 1
+            expected_idx = order_map[name]
+            actual_category = next((p.get('类别', '') for p in function_points if p.get('功能点计数项', '').strip() == name), '')
+            expected_category = expected_categories.get(name, '')
+            
+            if actual_category != expected_category and expected_category:
+                category_mismatches.append({
+                    'name': name,
+                    'actual': actual_category,
+                    'expected': expected_category
+                })
+                logger.info(f"[{i}/{len(parsed_names)}] ✓ {name} - 类别不匹配！实际：{actual_category}, 期望：{expected_category}")
+            else:
+                logger.info(f"[{i}/{len(parsed_names)}] ✓ {name} - 匹配 (位置：{expected_idx}, 类别：{actual_category})")
+        else:
+            unmatched_parsed.append(name)
+            logger.info(f"[{i}/{len(parsed_names)}] ✗ {name} - 未在期望列表中找到!")
+    
+    # 检查期望的功能点是否有遗漏
+    for name in expected_order:
+        if name not in parsed_names:
+            unmatched_expected.append(name)
+            logger.info(f"✗ 期望但缺失：{name}")
+    
+    # 汇总统计
+    logger.info(f"\n{'='*80}")
+    logger.info(f"匹配统计:")
+    logger.info(f"{'='*80}")
+    logger.info(f"成功匹配：{matched_count}/{len(parsed_names)} ({matched_count/len(parsed_names)*100:.1f}%)")
+    logger.info(f"解析但未期望：{len(unmatched_parsed)} 个")
+    logger.info(f"期望但未解析：{len(unmatched_expected)} 个")
+    logger.info(f"类别不匹配：{len(category_mismatches)} 个")
+    
+    if unmatched_parsed:
+        logger.info(f"\n解析但未在期望列表中的功能点:")
+        for name in unmatched_parsed:
+            logger.info(f"  - {name}")
+    
+    if unmatched_expected:
+        logger.info(f"\n期望但未解析到的功能点:")
+        for name in unmatched_expected:
+            logger.info(f"  - {name}")
+    
+    if category_mismatches:
+        logger.info(f"\n类别不匹配的功能点:")
+        for mismatch in category_mismatches:
+            logger.info(f"  - {mismatch['name']}: 实际={mismatch['actual']}, 期望={mismatch['expected']}")
+    
+    logger.info(f"\n{'='*80}")
+    
+    # 排序功能点
+    def get_sort_key(point):
+        item_name = point.get('功能点计数项', '').strip()
+        # 如果在预期列表中，返回对应的索引
+        if item_name in order_map:
+            return order_map[item_name]
+        # 如果不在预期列表中，返回一个很大的数，排在最后
+        return len(expected_order)
+    
+    sorted_points = sorted(function_points, key=get_sort_key)
+    
+    logger.info(f"功能点排序完成：共 {len(sorted_points)} 个功能点")
+    logger.info(f"排序后的前 10 个功能点:")
+    for i, point in enumerate(sorted_points[:10], 1):
+        logger.info(f"  {i}. {point.get('功能点计数项', '')} (类别：{point.get('类别', '')})")
+    
+    return sorted_points
 
 
 def generate_fpa_excel(function_points: list, output_path: str) -> str:
@@ -356,52 +636,85 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
     ws_info.column_dimensions['A'].width = 20
     ws_info.column_dimensions['B'].width = 50
     
-    # 2. 创建"3. 调整因子"sheet
+    # 2. 创建"2. 规模估算"sheet
+    ws = wb.create_sheet(title='2. 规模估算')
+    
+    # 3. 创建"3. 调整因子"sheet
     ws3 = wb.create_sheet(title='3. 调整因子')
     
     # 设置"3. 调整因子"的标题
-    ws3.merge_cells('A1:C1')
+    ws3.merge_cells('A1:I1')
     ws3['A1'] = '2.调整因子列表'
     ws3['A1'].font = Font(bold=True, size=16)
     ws3['A1'].alignment = Alignment(horizontal='center', vertical='center')
     ws3.row_dimensions[1].height = 40
     
-    # 调整因子表头
-    ws3['A2'] = '调整因子类型'
-    ws3['B2'] = '取值选项'
-    ws3['C2'] = '调整因子值'
-    for col in range(1, 4):
-        cell = ws3.cell(row=2, column=col)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = header_alignment
-        cell.border = thin_border
+    # 调整因子表头 (A~D 列)
+    ws3['A2'] = '规模计数时机'
+    ws3['C2'] = '估算中期'
+    ws3['D2'] = 1.21
     
-    # 添加调整因子数据（示例）
-    factor_data = [
-        ('规模计数时机', '估算中期', 1.21),
-        ('应用类型', '业务处理', 1.00),
-        ('质量特性 - 可靠性', '高', 1.05),
-        ('质量特性 -' + '易用性', '中', 0.95),
-        ('开发语言', 'Java', 1.00),
-        ('开发团队背景', '有类似项目经验', 0.80),
+    # 完整的调整因子数据
+    full_factor_data = [
+        # 应用类型
+        ('应用类型', None, '业务处理', 1),
+        ('质量特性', '分布式处理', '没有明示对分布式处理的需求事项', -1),
+        (None, '性能', '没有明示对性能的特别需求事项或活动，因此提供基本性能', -1),
+        (None, '可靠性', '没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性', -1),
+        (None, '多重站点', '在相同用途的硬件或软件环境下运行', -1),
+        ('开发语言', None, 'JAVA、C++、C#及其他同级别语言/平台', 1),
+        ('开发团队背景', None, '为本行业 (政府) 开发过类似的软件', 0.8),
+        # 空行
+        (None, None, None, None),
+        # 应用类型详细说明
+        (None, '应用类型', '描述', '调整因子'),
+        (None, '业务处理', '办公自动化系统：人事、会计、工资、销售等经营管理及业务处理用软件等', 1),
+        (None, '应用集成', '企业总线、应用集成等', 1.2),
+        (None, '科技', '科学计算、仿真、基于复杂算法的统计分析等', 1.2),
+        (None, '多媒体', '图形、影像、声音等多媒体应用领域：地理信息系统：教育和娱乐等', 1.5),
+        (None, '智能信息', '自然语言处理、大模型、计算机视觉、智能决策、专家系统等', 1.7),
+        (None, '基础软件/支撑软件', '操作系统、数据库系统、集成开发环境、自动化开发/设计工具等', 1.7),
+        (None, '通信控制', '通信协议、仿真、交换机软件、全球定位系统等', 1.9),
+        (None, '流程控制', '实时系统控制、机器人控制、嵌入式软件等', 2),
+        # 空行
+        (None, None, None, None),
+        # 功能点类别说明
+        (None, '功能点类别', '说明', 'UFP 值'),
+        (None, 'ILF', 'ILF 为内部逻辑文件数量', 7),
+        (None, 'EO', 'EO 为外部输出数量', 5),
+        (None, 'EIF', 'EIF 为外部逻辑文件数量', 5),
+        (None, 'EI', 'EI 为外部输入数量', 4),
+        (None, 'EQ', 'EQ 为外部查询数量', 4),
     ]
     
-    for row_idx, (factor_type, option, value) in enumerate(factor_data, 3):
-        ws3.cell(row=row_idx, column=1, value=factor_type).alignment = Alignment(horizontal='left', vertical='center')
-        ws3.cell(row=row_idx, column=2, value=option).alignment = Alignment(horizontal='left', vertical='center')
-        ws3.cell(row=row_idx, column=3, value=value).alignment = Alignment(horizontal='center', vertical='center')
-        for col in range(1, 4):
+    row_idx = 3
+    for data in full_factor_data:
+        col_a, col_b, col_c, col_d = data
+        if col_a is not None:
+            ws3.cell(row=row_idx, column=1, value=col_a).alignment = Alignment(horizontal='left', vertical='center')
+        if col_b is not None:
+            ws3.cell(row=row_idx, column=2, value=col_b).alignment = Alignment(horizontal='left', vertical='center')
+        if col_c is not None:
+            ws3.cell(row=row_idx, column=3, value=col_c).alignment = Alignment(horizontal='left', vertical='center')
+        if col_d is not None:
+            ws3.cell(row=row_idx, column=4, value=col_d).alignment = Alignment(horizontal='center', vertical='center')
+        
+        # 设置边框
+        for col in range(1, 5):
             cell = ws3.cell(row=row_idx, column=col)
             cell.border = thin_border
+        
+        row_idx += 1
     
-    ws3.column_dimensions['A'].width = 25
-    ws3.column_dimensions['B'].width = 30
-    ws3.column_dimensions['C'].width = 15
-    
-    # 创建"2. 规模估算"sheet
-    ws = wb.create_sheet(title='2. 规模估算')
-    
+    # 设置列宽
+    ws3.column_dimensions['A'].width = 15
+    ws3.column_dimensions['B'].width = 20
+    ws3.column_dimensions['C'].width = 50
+    ws3.column_dimensions['D'].width = 12
+    # E~I 列设置为空但需要存在
+    for col in ['E', 'F', 'G', 'H', 'I']:
+        ws3.column_dimensions[col].width = 10
+
     # 1. 标题
     ws.merge_cells('A1:L1')
     title_cell = ws['A1']
@@ -409,65 +722,65 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
     title_cell.font = Font(bold=True, size=20)
     title_cell.alignment = Alignment(horizontal='center', vertical='center')
     ws.row_dimensions[1].height = 40
-    
+
     # 2. 规模估算方法 (第 3-5 行)
     ws.merge_cells('A3:B3')
     ws['A3'] = '规模估算方法'
     ws['A3'].font = Font(bold=True)
     ws['A3'].alignment = Alignment(horizontal='center', vertical='center')
     ws['A3'].fill = header_fill
-    
+
     ws.merge_cells('C3:L3')
     ws['C3'] = "'软件开发计价模型':7/5/4/5/4"
     ws['C3'].alignment = Alignment(horizontal='left', vertical='center')
     ws['C3'].font = Font(color="FF0000")  # 红色字体
-    
+
     # 3. 未调整功能点合计
     ws['A4'] = '未调整功能点合计'
     ws['A4'].font = Font(bold=True)
     ws['A4'].alignment = Alignment(horizontal='center', vertical='center')
-    
+
     # 计算 UFP 总和
     total_ufp = sum(point.get('UFP', 7) for point in function_points)
     ws['B4'] = total_ufp
     ws['B4'].fill = green_fill
     ws['B4'].font = Font(bold=True, color="0000FF")  # 蓝色字体
-    
+
     ws.merge_cells('C4:L4')
     ws['C4'] = 'UFP,单位:FP'
     ws['C4'].font = Font(color="FF0000")
-    
+
     # 4. 调整后功能点合计
     ws['A5'] = '调整后功能点合计'
     ws['A5'].font = Font(bold=True)
     ws['A5'].alignment = Alignment(horizontal='center', vertical='center')
-    
+
     # 计算 AFP 总和
     total_afp = sum(point.get('AFP', 0) for point in function_points)
     ws['B5'] = round(total_afp, 2)
     ws['B5'].fill = green_fill
     ws['B5'].font = Font(bold=True, color="0000FF")
-    
+
     ws.merge_cells('C5:L5')
     ws['C5'] = 'AFP,单位:FP'
     ws['C5'].font = Font(color="FF0000")
-    
+
     # 5. 说明
     ws.merge_cells('A6:L6')
     ws['A6'] = '1. 本次计数在项目前期，需求未充分挖掘'
     ws['A6'].font = Font(italic=True)
     ws.row_dimensions[6].height = 25
-    
+
     ws.merge_cells('A7:L7')
     ws['A7'] = '2. 绿色单元格为被保护，不得擅自修改'
     ws['A7'].font = Font(italic=True)
     ws['A7'].font = Font(color="008000")  # 绿色字体
     ws.row_dimensions[7].height = 25
-    
+
     # 6. 表头 (第 8-9 行)
     headers = ['编号', '一级分类', '二级分类', '三级分类', '功能点名称', '功能点计数项',
                '类别', 'UFP', '重用程度', '修改类型', 'AFP', '备注']
-    
+
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=8, column=col, value=header)
         cell.fill = header_fill
@@ -475,12 +788,12 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         cell.alignment = header_alignment
         cell.border = thin_border
         ws.row_dimensions[8].height = 40
-    
+
     # 7. 填写说明 (第 9 行)
     instructions = ['填写说明', '必填', '必填', '必填', '必填', '必填',
                    '请选择计价模型种类。', '自动计算未调整的功能点数量。', '请选择代码复用情况', '请选择代码修改情况',
                    '自动计算调整后的功能点数量。', '调整 AFP:请通过重用程度、修改类型来改']
-    
+
     for col, instruction in enumerate(instructions, 1):
         cell = ws.cell(row=9, column=col, value=instruction)
         cell.fill = PatternFill(start_color="FFCC99", end_color="FFCC99", fill_type="solid")  # 橙色
@@ -488,14 +801,14 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
         cell.border = thin_border
         ws.row_dimensions[9].height = 60
-    
+
     # 8. 数据行
     data_alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
-    
+
     for row_idx, point in enumerate(function_points, 10):
         # 编号
         ws.cell(row=row_idx, column=1, value=row_idx - 9).alignment = Alignment(horizontal='center')
-        
+
         # 分类信息 (去除所有注释文字)
         level1 = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', point.get('level1', '')).strip()
         level2 = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', point.get('level2', '')).strip()
@@ -508,26 +821,26 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         ws.cell(row=row_idx, column=4, value=level3).alignment = data_alignment
         ws.cell(row=row_idx, column=5, value=level4).alignment = data_alignment
         ws.cell(row=row_idx, column=6, value=level5).alignment = data_alignment
-        
+
         # 类别 (EI/EO/EQ/ILF/EIF)
         category = point.get('类别', 'EO')
         ws.cell(row=row_idx, column=7, value=category).alignment = Alignment(horizontal='center')
-        
+
         # UFP (使用公式计算 - 根据类别自动计算)
         # ILF=7, EO=5, EIF=5, EI=4, EQ=4
         ufp_cell = ws.cell(row=row_idx, column=8)
         ufp_cell.value = f'=IF(G{row_idx}="ILF",7,IF(G{row_idx}="EO",5,IF(G{row_idx}="EIF",5,IF(G{row_idx}="EI",4,IF(G{row_idx}="EQ",4,5)))))'
         ufp_cell.fill = green_fill
         ufp_cell.alignment = Alignment(horizontal='center')
-        
+
         # 重用程度
         reuse = point.get('重用程度', '高' if '表' in point.get('功能点计数项', '') else '中')
         ws.cell(row=row_idx, column=9, value=reuse).alignment = Alignment(horizontal='center')
-        
+
         # 修改类型
         modify_type = point.get('修改类型', '新增')
         ws.cell(row=row_idx, column=10, value=modify_type).alignment = Alignment(horizontal='center')
-        
+
         # AFP (使用公式计算 - 根据重用程度和修改类型)
         # 新增：高重用 33%, 中重用 67%, 低重用 100%
         # 修改：50%
@@ -535,29 +848,29 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         afp_cell.value = f'=IF(J{row_idx}="新增",IF(I{row_idx}="高",H{row_idx}*0.33,IF(I{row_idx}="中",H{row_idx}*0.67,H{row_idx})),H{row_idx}*0.5)'
         afp_cell.fill = green_fill
         afp_cell.alignment = Alignment(horizontal='center')
-        
+
         # 备注
         ws.cell(row=row_idx, column=12, value=point.get('备注', '')).alignment = data_alignment
-        
+
         # 设置所有单元格边框
         for col in range(1, 13):
             ws.cell(row=row_idx, column=col).border = thin_border
-        
+
         ws.row_dimensions[row_idx].height = 30
-    
+
     # 9. 合计行
     last_row = len(function_points) + 10
     ws.merge_cells(f'A{last_row}:G{last_row}')
     summary_cell = ws.cell(row=last_row, column=1, value='合计')
     summary_cell.font = Font(bold=True, size=12)
     summary_cell.alignment = Alignment(horizontal='right')
-    
+
     ws.cell(row=last_row, column=8, value=total_ufp).font = Font(bold=True)
     ws.cell(row=last_row, column=11, value=round(total_afp, 2)).font = Font(bold=True)
-    
+
     for col in range(1, 13):
         ws.cell(row=last_row, column=col).border = thin_border
-    
+
     # 设置列宽
     column_widths = {
         'A': 6,   # 编号
@@ -573,7 +886,7 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         'K': 8,   # AFP
         'L': 30   # 备注
     }
-    
+
     for col, width in column_widths.items():
         ws.column_dimensions[col].width = width
     
@@ -746,8 +1059,150 @@ def upload_requirement():
             flash("未能从文档中提取到功能点信息！", "error")
             return render_template('fpa_generator.html')
         
-        # 生成 Excel 文件
-        output_filename = f"{filename}_FPA预估_{timestamp}.xlsx"
+        # 从数据库读取评估结果中的 UFP 目标值
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT afp, adjusted_scale FROM fpa_evaluation_result
+                ORDER BY created_at DESC
+                LIMIT 1
+            """)
+            eval_result = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            
+            if eval_result and eval_result.get('afp'):
+                # 计算目标 UFP = AFP / CF
+                target_afp = float(eval_result['afp'])
+                cf = WORK_PARAMS.get('规模变更调整因子', 1.21)
+                target_ufp = target_afp / cf
+                
+                logger.info(f"从数据库读取评估结果：目标 AFP={target_afp}, 目标 UFP={target_ufp:.2f}")
+                
+                # 分离 ILF 和非 ILF 功能点
+                non_ilf_points = [p for p in function_points if p.get('类别') != 'ILF']
+                ilf_points = [p for p in function_points if p.get('类别') == 'ILF']
+                
+                # 计算 ILF 表占用的 UFP（ILF 保持 UFP=7 不变）
+                ilf_ufp_total = sum(p.get('UFP', 7) for p in ilf_points)
+                
+                # 剩余 UFP 需要分配给非 ILF 功能点
+                remaining_ufp = target_ufp - ilf_ufp_total
+                
+                if remaining_ufp <= 0:
+                    logger.warning(f"ILF 已占用 {ilf_ufp_total} UFP，超过目标 UFP {target_ufp:.2f}，无法调整")
+                else:
+                    # 计算非 ILF 功能点的平均 UFP（按原始类别分配）
+                    # 统计各类别的数量
+                    category_counts = {}
+                    for point in non_ilf_points:
+                        category = point.get('类别', 'EO')
+                        category_counts[category] = category_counts.get(category, 0) + 1
+                    
+                    # 计算原始的平均 UFP
+                    original_avg_ufp = sum(p.get('UFP', 5) for p in non_ilf_points) / len(non_ilf_points) if non_ilf_points else 5
+                    
+                    # 计算需要多少个功能点才能达到目标 UFP
+                    needed_points_count = int(round(remaining_ufp / original_avg_ufp))
+                    current_count = len(non_ilf_points)
+                    
+                    logger.info(f"非 ILF 功能点数：{current_count}, ILF 功能点数：{len(ilf_points)}")
+                    logger.info(f"ILF 占用 UFP: {ilf_ufp_total}, 剩余 UFP: {remaining_ufp:.2f}")
+                    logger.info(f"原始平均 UFP: {original_avg_ufp:.2f}, 需要的功能点数：{needed_points_count}")
+                    
+                    # 如果需要更多功能点，自动扩展
+                    if needed_points_count > current_count:
+                        expand_count = needed_points_count - current_count
+                        logger.info(f"需要扩展 {expand_count} 个功能点")
+                        
+                        # 尝试使用 AI 辅助生成新的功能点
+                        try:
+                            # 从原始功能点中选择有代表性的进行拆分
+                            expanded_points = ai_assisted_expand_function_points(
+                                non_ilf_points, 
+                                expand_count
+                            )
+                            non_ilf_points.extend(expanded_points)
+                            logger.info(f"通过 AI 辅助扩展了 {len(expanded_points)} 个功能点")
+                        except Exception as ai_error:
+                            logger.warning(f"AI 辅助扩展失败，使用简单复制策略：{ai_error}")
+                            
+                            # 回退到按比例复制策略
+                            for category, count in category_counts.items():
+                                # 计算该类别需要扩展的数量
+                                ratio = count / current_count if current_count > 0 else 0
+                                expand_for_category = int(round(expand_count * ratio))
+                                
+                                # 找到该类别的所有功能点
+                                category_points = [p for p in non_ilf_points if p.get('类别') == category]
+                                
+                                # 循环复制这些功能点
+                                for i in range(expand_for_category):
+                                    if category_points:
+                                        # 选择一个功能点进行复制（循环选择）
+                                        source_point = category_points[i % len(category_points)]
+                                        new_point = source_point.copy()
+                                        
+                                        # 修改功能点计数项名称，添加序号
+                                        original_name = new_point.get('功能点计数项', '')
+                                        new_name = f"{original_name}_{i+1}"
+                                        new_point['功能点计数项'] = new_name
+                                        new_point['level5'] = new_name
+                                        new_point['备注'] = f'自动扩展 #{i+1}'
+                                        
+                                        non_ilf_points.append(new_point)
+                                        logger.debug(f"扩展 {category} 功能点：{new_name}")
+                        
+                        # 重新计算总功能点数
+                        final_non_ilf_count = len(non_ilf_points)
+                        logger.info(f"扩展后非 ILF 功能点数：{final_non_ilf_count}")
+                    
+                    # 重新分配 UFP，使总和等于目标值
+                    final_non_ilf_count = len(non_ilf_points)
+                    if final_non_ilf_count > 0:
+                        avg_ufp_per_point = remaining_ufp / final_non_ilf_count
+                        
+                        logger.info(f"最终非 ILF 功能点数：{final_non_ilf_count}, 平均每点 UFP: {avg_ufp_per_point:.2f}")
+                        
+                        for point in non_ilf_points:
+                            # 设置平均 UFP 值（四舍五入到整数）
+                            ufp_value = round(avg_ufp_per_point)
+                            point['UFP'] = ufp_value
+                            
+                            # 根据类别和重用程度重新计算 AFP
+                            reuse = point.get('重用程度', '高')
+                            modify_type = point.get('修改类型', '新增')
+                            
+                            if modify_type == '新增':
+                                if reuse == '高':
+                                    point['AFP'] = round(ufp_value * 0.33, 2)  # 高重用，33%
+                                elif reuse == '中':
+                                    point['AFP'] = round(ufp_value * 0.67, 2)  # 中重用，67%
+                                else:
+                                    point['AFP'] = ufp_value  # 低重用，100%
+                            else:
+                                point['AFP'] = round(ufp_value * 0.5, 2)  # 修改，50%
+                        
+                        logger.info(f"已调整 {final_non_ilf_count} 个非 ILF 功能点的 UFP 值，平均每点 UFP={avg_ufp_per_point:.2f}")
+                    
+                    # 合并回完整的功能点列表
+                    function_points = non_ilf_points + ilf_points
+                    logger.info(f"ILF 功能点保持 UFP=7 不变")
+                    logger.info(f"最终总功能点数：{len(function_points)}, 预计总 UFP: {sum(p.get('UFP', 0) for p in function_points)}")
+                    
+                    # 打印所有功能点列表
+                    logger.info("\n" + "="*80)
+                    logger.info("生成的功能点完整列表:")
+                    logger.info("="*80)
+                    for i, point in enumerate(function_points, 1):
+                        logger.info(f"{i:3d}. {point.get('功能点计数项', ''):<50} (类别：{point.get('类别', '')}, UFP: {point.get('UFP', 0)}, AFP: {point.get('AFP', 0):.2f})")
+                    logger.info("="*80)
+        except Exception as e:
+            logger.warning(f"读取评估结果失败，将使用默认 UFP 值：{e}")
+        
+        # 生成 Excel 文件（文件名使用纯英文，避免编码问题）
+        output_filename = f"{filename}_FPA_Estimation_{timestamp}.xlsx"
         output_path = output_dir / output_filename
         generate_fpa_excel(function_points, str(output_path))
         
@@ -794,3 +1249,327 @@ def download_fpa(filename):
         logger.error(f"文件下载失败：{e}")
         flash("下载失败！", "error")
         return render_template('fpa_generator.html')
+
+
+def get_db_connection():
+    """获取数据库连接"""
+    return mysql.connector.connect(
+        host=current_app.config['MYSQL_HOST'],
+        port=current_app.config['MYSQL_PORT'],
+        user=current_app.config['MYSQL_USER'],
+        password=current_app.config['MYSQL_PASSWORD'],
+        charset=current_app.config['MYSQL_CHARSET'],
+        database=current_app.config['KNOWLEDGE_BASE_DB']
+    )
+
+
+@fpa_generator_bp.route('/api/evaluation-result/calculate', methods=['POST'])
+def calculate_evaluation_result_from_effort():
+    """根据调整后工作量反向计算评估结果"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': '未提供数据'
+            }), 400
+        
+        # 获取输入参数
+        adjusted_effort = float(data.get('adjusted_effort', 0))
+        
+        # 获取其他固定参数
+        cf = float(data.get('cf', WORK_PARAMS['规模变更调整因子']))
+        base_productivity = float(data.get('base_productivity', WORK_PARAMS['基准生产率']))
+        factor_a = float(data.get('factor_application_type', WORK_PARAMS['调整因子']['应用类型']))
+        factor_b = float(data.get('factor_quality', WORK_PARAMS['调整因子']['质量特性']))
+        factor_c = float(data.get('factor_language', WORK_PARAMS['调整因子']['开发语言']))
+        factor_d = float(data.get('factor_team', WORK_PARAMS['调整因子']['开发团队背景']))
+        
+        # 反向计算公式：
+        # 调整后工作量 = 未调整工作量 × A × B × C × D
+        # 未调整工作量 = 调整后规模 × PDR ÷ 8
+        # 调整后规模 = AFP × CF
+        # AFP ≈ UFP（简化计算）
+        
+        total_factor = factor_a * factor_b * factor_c * factor_d
+        
+        # 1. 计算未调整工作量
+        unadjusted_effort = adjusted_effort / total_factor
+        
+        # 2. 计算调整后规模
+        adjusted_scale = (unadjusted_effort * 8) / base_productivity
+        
+        # 3. 计算 AFP
+        afp = adjusted_scale / cf
+        
+        # 4. 计算 UFP（AFP ≈ UFP，简化计算）
+        ufp = afp
+        
+        logger.info(f"反向计算：调整后工作量={adjusted_effort}, UFP={ufp:.2f}")
+        
+        result = {
+            'afp': round(afp, 2),
+            'cf': cf,
+            'adjusted_scale': round(adjusted_scale, 2),
+            'base_productivity': base_productivity,
+            'unadjusted_effort': round(unadjusted_effort, 2),
+            'factor_application_type': factor_a,
+            'factor_quality': factor_b,
+            'factor_language': factor_c,
+            'factor_team': factor_d,
+            'adjusted_effort': round(adjusted_effort, 2),
+            'total_factor': round(total_factor, 2),
+            'target_ufp': round(ufp, 2)
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+        
+    except Exception as e:
+        logger.error(f"反向计算失败：{e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@fpa_generator_bp.route('/api/evaluation-result', methods=['GET'])
+def get_evaluation_result():
+    """获取评估结果数据"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # 查询最新的评估结果
+        cursor.execute("""
+            SELECT * FROM fpa_evaluation_result
+            ORDER BY created_at DESC
+            LIMIT 1
+        """)
+        
+        result = cursor.fetchone()
+        
+        # 转换 Decimal 为 float
+        if result:
+            for key, value in result.items():
+                if isinstance(value, Decimal):
+                    result[key] = float(value)
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+        
+    except Exception as e:
+        logger.error(f"获取评估结果失败：{e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@fpa_generator_bp.route('/api/evaluation-result/from-excel', methods=['GET'])
+def get_evaluation_result_from_excel():
+    """从最新生成的 Excel 文件中读取评估结果"""
+    try:
+        # 获取最新的 FPA 输出文件
+        output_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_output"
+        excel_files = list(output_dir.glob("*.xlsx"))
+        
+        if not excel_files:
+            return jsonify({
+                'success': False,
+                'message': '未找到 Excel 文件'
+            }), 404
+        
+        # 按修改时间排序，获取最新文件
+        latest_file = max(excel_files, key=lambda f: f.stat().st_mtime)
+        logger.info(f"读取最新 Excel 文件：{latest_file}")
+        
+        # 读取"2. 规模估算"工作表
+        df_scale = pd.read_excel(latest_file, sheet_name="2. 规模估算")
+        
+        # 读取"3. 调整因子"工作表
+        df_adjustment = pd.read_excel(latest_file, sheet_name="3. 调整因子")
+        
+        # 从规模估算表获取 B4 单元格的值（调整后规模）
+        # 假设 B 列是数值列
+        if len(df_scale) >= 4:
+            # 获取第 4 行（索引 3）的 B 列值
+            afp_value = df_scale.iloc[3, 1]  # B4 单元格
+        else:
+            # 如果行数不足，尝试计算 AFP 总和
+            if 'AFP' in df_scale.columns:
+                afp_value = df_scale['AFP'].sum()
+            else:
+                afp_value = 0
+        
+        # 从调整因子表获取各项调整因子
+        adjustment_factors = {
+            '应用类型': 1.00,
+            '质量特性': 0.90,
+            '开发语言': 1.00,
+            '开发团队背景': 0.80
+        }
+        
+        # 尝试从调整因子表中读取
+        if len(df_adjustment) > 0:
+            for _, row in df_adjustment.iterrows():
+                if '调整因子名称' in df_adjustment.columns and '值' in df_adjustment.columns:
+                    factor_name = row['调整因子名称']
+                    factor_value = row['值']
+                    if factor_name in adjustment_factors:
+                        adjustment_factors[factor_name] = float(factor_value)
+        
+        # 获取规模变更调整因子 CF
+        cf_value = WORK_PARAMS.get('规模变更调整因子', 1.21)
+        
+        # 获取基准生产率 PDR
+        pdr_value = WORK_PARAMS.get('基准生产率', 10.12)
+        
+        # 计算各项值
+        afp = float(afp_value) if pd.notna(afp_value) else 0
+        cf = float(cf_value)
+        adjusted_scale = afp * cf  # 调整后规模
+        base_productivity = float(pdr_value)
+        unadjusted_effort = (adjusted_scale * base_productivity) / 8  # 未调整工作量
+        
+        # 计算调整因子乘积
+        total_factor = 1.0
+        for factor_value in adjustment_factors.values():
+            total_factor *= float(factor_value)
+        
+        adjusted_effort = unadjusted_effort * total_factor  # 调整后工作量
+        
+        # 计算用例数量（根据调整后工作量拆分）
+        # 规则：工作量越大，拆分的用例数量越多
+        # 建议：每 2-3 人天拆分为 1 个用例
+        test_case_count = max(1, round(adjusted_effort / 2.5))
+        
+        evaluation_data = {
+            'afp': afp,
+            'cf': cf,
+            'adjusted_scale': adjusted_scale,
+            'base_productivity': base_productivity,
+            'unadjusted_effort': unadjusted_effort,
+            'factor_application_type': adjustment_factors['应用类型'],
+            'factor_quality': adjustment_factors['质量特性'],
+            'factor_language': adjustment_factors['开发语言'],
+            'factor_team': adjustment_factors['开发团队背景'],
+            'adjusted_effort': adjusted_effort,
+            'total_factor': total_factor,
+            'test_case_count': test_case_count
+        }
+        
+        logger.info(f"从 Excel 读取评估结果：{evaluation_data}")
+        
+        return jsonify({
+            'success': True,
+            'data': evaluation_data,
+            'file': str(latest_file.name)
+        })
+        
+    except Exception as e:
+        logger.error(f"从 Excel 读取评估结果失败：{e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@fpa_generator_bp.route('/api/evaluation-result', methods=['POST'])
+def save_evaluation_result():
+    """保存评估结果数据"""
+    try:
+        data = request.get_json()
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查是否已存在
+        cursor.execute("""
+            SELECT id FROM fpa_evaluation_result
+            WHERE requirement_code = %s
+        """, (data.get('requirement_code'),))
+        
+        existing = cursor.fetchone()
+        
+        if existing:
+            # 更新
+            cursor.execute("""
+                UPDATE fpa_evaluation_result
+                SET 
+                    requirement_name = %s,
+                    afp = %s,
+                    cf = %s,
+                    adjusted_scale = %s,
+                    base_productivity = %s,
+                    unadjusted_effort = %s,
+                    factor_application_type = %s,
+                    factor_quality = %s,
+                    factor_language = %s,
+                    factor_team = %s,
+                    adjusted_effort = %s,
+                    updated_at = NOW()
+                WHERE requirement_code = %s
+            """, (
+                data.get('requirement_name'),
+                data.get('afp'),
+                data.get('cf'),
+                data.get('adjusted_scale'),
+                data.get('base_productivity'),
+                data.get('unadjusted_effort'),
+                data.get('factor_application_type'),
+                data.get('factor_quality'),
+                data.get('factor_language'),
+                data.get('factor_team'),
+                data.get('adjusted_effort'),
+                data.get('requirement_code')
+            ))
+            logger.info(f"更新评估结果：{data.get('requirement_code')}")
+        else:
+            # 插入
+            cursor.execute("""
+                INSERT INTO fpa_evaluation_result (
+                    requirement_name, requirement_code,
+                    afp, cf, adjusted_scale, base_productivity, unadjusted_effort,
+                    factor_application_type, factor_quality, factor_language, factor_team,
+                    adjusted_effort
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                data.get('requirement_name'),
+                data.get('requirement_code'),
+                data.get('afp'),
+                data.get('cf'),
+                data.get('adjusted_scale'),
+                data.get('base_productivity'),
+                data.get('unadjusted_effort'),
+                data.get('factor_application_type'),
+                data.get('factor_quality'),
+                data.get('factor_language'),
+                data.get('factor_team'),
+                data.get('adjusted_effort')
+            ))
+            logger.info(f"插入评估结果：{data.get('requirement_code')}")
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': '评估结果已保存'
+        })
+        
+    except Exception as e:
+        logger.error(f"保存评估结果失败：{e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500

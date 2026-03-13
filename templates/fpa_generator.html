@@ -190,7 +190,7 @@
                                     <a href="{{ url_for('fpa_generator.download_fpa', filename=output_file) }}" 
                                        class="btn btn-download btn-lg">
                                         <i class="fas fa-download"></i>
-                                        下载 FPA预估表
+                                        下载 FPA 预估表
                                     </a>
                                     <a href="{{ url_for('fpa_generator.fpa_generator_page') }}" 
                                        class="btn btn-outline-secondary btn-lg ml-2">
@@ -199,7 +199,99 @@
                                     </a>
                                 </div>
                             </div>
-                        {% else %}
+                        {% endif %}
+                        
+                        <!-- 评估结果表 - 始终显示 -->
+                        <div class="mt-5">
+                            <h4 class="mb-3"><i class="fas fa-table"></i> 评估结果表</h4>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="evaluationResultTable">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width: 40%;">项目</th>
+                                            <th style="width: 20%;">数值</th>
+                                            <th style="width: 40%;">说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>规模估算结果（单位：功能点）</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="afp" value="125.27"></td>
+                                            <td>AFP</td>
+                                        </tr>
+                                        <tr>
+                                            <td>规模变更调整因子</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="cf" value="1.21"></td>
+                                            <td>CF，项目阶段</td>
+                                        </tr>
+                                        <tr style="background-color: #f0f0f0;">
+                                            <td><strong>调整后规模（单位：功能点）</strong></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="adjustedScale" value="151.57" readonly></td>
+                                            <td>S，等于 AFP*CF</td>
+                                        </tr>
+                                        <tr>
+                                            <td>基准生产率（单位：人时/功能点）</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="baseProductivity" value="10.12"></td>
+                                            <td>PDR，来自《2024 年软件行业基准数据》</td>
+                                        </tr>
+                                        <tr style="background-color: #f0f0f0;">
+                                            <td><strong>未调整工作量（单位：人天）</strong></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="unadjustedEffort" value="191.74" readonly></td>
+                                            <td>S*PDR/8h</td>
+                                        </tr>
+                                        <tr>
+                                            <td rowspan="5" class="align-middle"><strong>调整因子</strong></td>
+                                            <td>应用类型</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00"></td>
+                                            <td>A，应用类型调整因子</td>
+                                        </tr>
+                                        <tr>
+                                            <td>质量特性</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorQuality" value="0.90"></td>
+                                            <td>B，质量特性调整因子</td>
+                                        </tr>
+                                        <tr>
+                                            <td>开发语言</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00"></td>
+                                            <td>C，开发语言调整因子</td>
+                                        </tr>
+                                        <tr>
+                                            <td>开发团队背景</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80"></td>
+                                            <td>D，开发团队背景调整因子</td>
+                                        </tr>
+                                        <tr style="background-color: #f0f0f0;">
+                                            <td colspan="2"><strong>调整因子乘积：<span id="totalFactor">0.72</span></strong></td>
+                                        </tr>
+                                        <tr style="background-color: #d4edda;">
+                                            <td><strong>调整后工作量（单位：人天）</strong></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" readonly style="font-weight: bold; color: #155724;"></td>
+                                            <td>AE，S*PDR/8h*A*B*C*D</td>
+                                        </tr>
+                                        <tr style="background-color: #fff3cd;">
+                                            <td><strong>生成用例数量</strong></td>
+                                            <td><input type="number" step="1" class="form-control" id="testCaseCount" value="55" readonly style="font-weight: bold;"></td>
+                                            <td>根据调整后工作量自动拆分</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                                                        
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-success" onclick="loadFromExcel()">
+                                    <i class="fas fa-file-excel"></i> 从 Excel 加载
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="saveEvaluationResult()">
+                                    <i class="fas fa-save"></i> 保存评估结果
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="calculateEvaluationResult()">
+                                    <i class="fas fa-calculator"></i> 重新计算
+                                </button>
+                                <span id="saveStatus" class="ml-2"></span>
+                            </div>
+                        </div>
+                        
+                        {% if not success %}
                             <!-- 上传表单 -->
                             <form method="POST" action="{{ url_for('fpa_generator.upload_requirement') }}" 
                                   enctype="multipart/form-data" id="uploadForm" style="position: relative;">
@@ -265,6 +357,15 @@
                             <li><strong>生成表格：</strong>点击"开始生成 FPA预估表"按钮</li>
                             <li><strong>下载结果：</strong>生成成功后点击下载按钮获取 Excel 文件</li>
                         </ol>
+                        
+                        <h6 class="mt-4">相关功能：</h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-link"></i> 
+                            <a href="{{ url_for('adjustment.adjustment_factor_page') }}" target="_blank">
+                                <i class="fas fa-sliders-h"></i> 调整因子管理
+                            </a>
+                            - 管理和配置 FPA 调整因子，支持从 Excel 导入和公式编辑
+                        </div>
                         
                         <h6 class="mt-4">文档格式要求：</h6>
                         <pre class="bg-light p-3 rounded"><code>## 一级分类（如：监控管理应用）
@@ -393,7 +494,212 @@
                     // 表单会继续提交
                 });
             }
+            
+            // 评估结果表功能
+            // 页面加载时读取评估结果
+            loadEvaluationResult();
         });
+        
+        // 加载评估结果
+        function loadEvaluationResult() {
+            fetch('/fpa-generator/api/evaluation-result')
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success && response.data) {
+                        const data = response.data;
+                        document.getElementById('afp').value = data.afp || 125.27;
+                        document.getElementById('cf').value = data.cf || 1.21;
+                        document.getElementById('adjustedScale').value = data.adjusted_scale || 151.57;
+                        document.getElementById('baseProductivity').value = data.base_productivity || 10.12;
+                        document.getElementById('unadjustedEffort').value = data.unadjusted_effort || 191.74;
+                        document.getElementById('factorApplicationType').value = data.factor_application_type || 1.00;
+                        document.getElementById('factorQuality').value = data.factor_quality || 0.90;
+                        document.getElementById('factorLanguage').value = data.factor_language || 1.00;
+                        document.getElementById('factorTeam').value = data.factor_team || 0.80;
+                        document.getElementById('adjustedEffort').value = data.adjusted_effort || 138.05;
+                        calculateEvaluationResult(); // 重新计算以更新中间值
+                    }
+                })
+                .catch(error => console.error('加载评估结果失败:', error));
+        }
+        
+        // 计算评估结果
+        function calculateEvaluationResult() {
+            const afp = parseFloat(document.getElementById('afp').value) || 0;
+            const cf = parseFloat(document.getElementById('cf').value) || 0;
+            const baseProductivity = parseFloat(document.getElementById('baseProductivity').value) || 0;
+            const factorA = parseFloat(document.getElementById('factorApplicationType').value) || 0;
+            const factorB = parseFloat(document.getElementById('factorQuality').value) || 0;
+            const factorC = parseFloat(document.getElementById('factorLanguage').value) || 0;
+            const factorD = parseFloat(document.getElementById('factorTeam').value) || 0;
+            
+            // 计算调整后规模
+            const adjustedScale = afp * cf;
+            document.getElementById('adjustedScale').value = adjustedScale.toFixed(2);
+            
+            // 计算未调整工作量
+            const unadjustedEffort = (adjustedScale * baseProductivity) / 8;
+            document.getElementById('unadjustedEffort').value = unadjustedEffort.toFixed(2);
+            
+            // 计算总调整因子
+            const totalFactor = factorA * factorB * factorC * factorD;
+            document.getElementById('totalFactor').textContent = totalFactor.toFixed(2);
+            
+            // 计算调整后工作量
+            const adjustedEffort = unadjustedEffort * totalFactor;
+            document.getElementById('adjustedEffort').value = adjustedEffort.toFixed(2);
+            
+            // 计算用例数量（根据调整后工作量拆分）
+            // 规则：工作量越大，拆分的用例数量越多
+            // 建议：每 2-3 人天拆分为 1 个用例
+            const testCaseCount = Math.max(1, Math.round(adjustedEffort / 2.5));
+            document.getElementById('testCaseCount').value = testCaseCount;
+        }
+        
+        // 从调整后工作量反向计算 UFP
+        function calculateFromEffort(adjustedEffort) {
+            const cf = parseFloat(document.getElementById('cf').value) || 1.21;
+            const baseProductivity = parseFloat(document.getElementById('baseProductivity').value) || 10.12;
+            const factorA = parseFloat(document.getElementById('factorApplicationType').value) || 1.00;
+            const factorB = parseFloat(document.getElementById('factorQuality').value) || 0.90;
+            const factorC = parseFloat(document.getElementById('factorLanguage').value) || 1.00;
+            const factorD = parseFloat(document.getElementById('factorTeam').value) || 0.80;
+            
+            const totalFactor = factorA * factorB * factorC * factorD;
+            
+            // 反向计算
+            const unadjustedEffort = adjustedEffort / totalFactor;
+            const adjustedScale = (unadjustedEffort * 8) / baseProductivity;
+            const afp = adjustedScale / cf;
+            const ufp = afp; // AFP ≈ UFP
+            
+            return {
+                afp: ufp,
+                adjusted_scale: adjustedScale,
+                unadjusted_effort: unadjustedEffort,
+                target_ufp: ufp
+            };
+        }
+        
+        // 监听调整后工作量的变化，自动反向计算
+        let effortInputChanged = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const effortInput = document.getElementById('adjustedEffort');
+            if (effortInput) {
+                effortInput.addEventListener('input', function() {
+                    effortInputChanged = true;
+                    const adjustedEffort = parseFloat(this.value) || 0;
+                    
+                    if (adjustedEffort > 0) {
+                        const result = calculateFromEffort(adjustedEffort);
+                        
+                        // 更新其他字段
+                        document.getElementById('afp').value = result.afp.toFixed(2);
+                        document.getElementById('adjustedScale').value = result.adjusted_scale.toFixed(2);
+                        document.getElementById('unadjustedEffort').value = result.unadjusted_effort.toFixed(2);
+                        
+                        // 重新计算用例数量
+                        const testCaseCount = Math.max(1, Math.round(adjustedEffort / 2.5));
+                        document.getElementById('testCaseCount').value = testCaseCount;
+                        
+                        console.log(`反向计算：调整后工作量=${adjustedEffort}, 目标 UFP=${result.target_ufp.toFixed(2)}`);
+                    }
+                });
+            }
+        });
+        
+        // 从 Excel 加载评估结果
+        function loadFromExcel() {
+            fetch('/fpa-generator/api/evaluation-result/from-excel')
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        const data = response.data;
+                        // 填充数据
+                        document.getElementById('afp').value = data.afp.toFixed(2);
+                        document.getElementById('cf').value = data.cf.toFixed(2);
+                        document.getElementById('adjustedScale').value = data.adjusted_scale.toFixed(2);
+                        document.getElementById('baseProductivity').value = data.base_productivity.toFixed(2);
+                        document.getElementById('unadjustedEffort').value = data.unadjusted_effort.toFixed(2);
+                        document.getElementById('factorApplicationType').value = data.factor_application_type.toFixed(2);
+                        document.getElementById('factorQuality').value = data.factor_quality.toFixed(2);
+                        document.getElementById('factorLanguage').value = data.factor_language.toFixed(2);
+                        document.getElementById('factorTeam').value = data.factor_team.toFixed(2);
+                        document.getElementById('adjustedEffort').value = data.adjusted_effort.toFixed(2);
+                        document.getElementById('testCaseCount').value = data.test_case_count;
+                        
+                        // 重新计算总调整因子
+                        calculateEvaluationResult();
+                        
+                        alert(`从 Excel 文件加载成功！
+文件：${response.file}
+规模估算结果：${data.afp.toFixed(2)} 功能点
+调整后工作量：${data.adjusted_effort.toFixed(2)} 人天
+生成用例数量：${data.test_case_count} 个`);
+                    } else {
+                        alert('加载失败：' + response.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('加载失败:', error);
+                    alert('加载失败：' + error);
+                });
+        }
+        
+        // 保存评估结果
+        function saveEvaluationResult() {
+            const data = {
+                requirement_name: '关于集团事件业务影响分析开发需求',
+                requirement_code: '49900_20250721',
+                afp: parseFloat(document.getElementById('afp').value),
+                cf: parseFloat(document.getElementById('cf').value),
+                adjusted_scale: parseFloat(document.getElementById('adjustedScale').value),
+                base_productivity: parseFloat(document.getElementById('baseProductivity').value),
+                unadjusted_effort: parseFloat(document.getElementById('unadjustedEffort').value),
+                factor_application_type: parseFloat(document.getElementById('factorApplicationType').value),
+                factor_quality: parseFloat(document.getElementById('factorQuality').value),
+                factor_language: parseFloat(document.getElementById('factorLanguage').value),
+                factor_team: parseFloat(document.getElementById('factorTeam').value),
+                adjusted_effort: parseFloat(document.getElementById('adjustedEffort').value)
+            };
+            
+            fetch('/fpa-generator/api/evaluation-result', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    document.getElementById('saveStatus').innerHTML = '<span class="text-success"><i class="fas fa-check"></i> 保存成功！</span>';
+                    setTimeout(() => {
+                        document.getElementById('saveStatus').innerHTML = '';
+                    }, 3000);
+                    
+                    // 计算目标 UFP
+                    const targetUfp = data.afp;
+                    
+                    // 提示用户重新生成 FPA
+                    if (confirm(`评估结果已保存！
+
+目标 UFP: ${targetUfp.toFixed(2)}
+
+是否需要重新上传需求文档以生成 FPA 预估表？
+系统将自动调整功能点数量以达到目标 UFP 值。`)) {
+                        window.location.href = '/fpa-generator/';
+                    }
+                } else {
+                    alert('保存失败：' + response.message);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败：' + error);
+            });
+        }
     </script>
     {% endblock %}
 </body>

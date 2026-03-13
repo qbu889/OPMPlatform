@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}文档转换系统{% endblock %}</title>
     <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/vendor/fontawesome/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
     <style>
         :root {
@@ -297,6 +297,21 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-hover);
         }
+        
+        /* 全局模态框层级 - 防止被父容器 transform 影响 */
+        body .modal {
+            position: fixed;
+            z-index: 2000 !important;
+        }
+        body .modal-dialog {
+            z-index: 2010 !important;
+        }
+        body .modal-content {
+            z-index: 2020 !important;
+        }
+        body .modal-backdrop {
+            z-index: 1990 !important;
+        }
     </style>
 </head>
 <body>
@@ -327,13 +342,14 @@
         <footer class="mt-5 text-center text-muted animate-fade-in-up" style="animation-delay: 0.4s;">
             <div class="py-4 border-top">
                 <p class="mb-1">&copy; 2025 诺基亚OPM系统</p>
-                <small class="text-secondary">
-                    <i class="fas fa-code me-1">用心打造每一个细节</i>
-                </small>
+{#                <small class="text-secondary">#}
+{#                    <i class="fas fa-code me-1">用心打造每一个细节</i>#}
+{#                </small>#}
             </div>
         </footer>
     </div>
 
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/static/js/utils.js"></script>
     <script>

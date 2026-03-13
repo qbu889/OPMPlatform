@@ -19,7 +19,7 @@ ollama serve
 **另一个新终端窗口 2：**
 ```bash
 # 如果还没安装模型，拉取推荐模型
-#ollama pull qwen2.5:7b
+#ollama pull qwen3:8b
 ollama pull deepseek-r1:7b
 ```
 
@@ -132,7 +132,7 @@ http://localhost:5001/chatbot
 
 - **缓存热门问题**：相同问题会优先匹配历史答案
 - **批量上传**：一次性上传多个相关文档
-- **选择合适模型**：qwen2.5:7b 适合中文场景
+- **选择合适模型**：qwen3:8b 适合中文场景
 
 ### 🔍 故障排查
 
@@ -178,7 +178,7 @@ http://localhost:5001/chatbot
 | 问题 | 解决方案 |
 |------|---------|
 | Ollama 连接失败 | `ollama serve` |
-| 中文识别差 | 安装中文包，使用 qwen2.5 模型 |
+| 中文识别差 | 安装中文包，使用 qwen3:8b 模型 |
 | 回答慢 | 使用更小模型或升级硬件 |
 | 上传失败 | 检查格式和大小 |
 

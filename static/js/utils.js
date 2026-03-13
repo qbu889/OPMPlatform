@@ -60,7 +60,7 @@ class OPMUtils {
     static showNotification(message, type = 'info', duration = 5000) {
         const notification = document.createElement('div');
         notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
-        notification.style.zIndex = '9999';
+        notification.style.zIndex = '1070';
         notification.style.minWidth = '300px';
         notification.innerHTML = `
             <div class="d-flex justify-content-between align-items-center">

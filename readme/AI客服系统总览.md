@@ -74,7 +74,7 @@ pip install -r requirements-chatbot.txt
 ollama serve
 
 # 3. 拉取模型
-ollama pull qwen2.5:7b
+ollama pull qwen3:8b
 
 # 4. 启动应用
 python app.py
@@ -212,7 +212,7 @@ GET /chatbot/ollama/status
 {
     "success": true,
     "available": true,
-    "models": ["qwen2.5:7b", "llama2"],
+    "models": ["qwen3:8b", "llama2"],
     "endpoint": "http://localhost:11434"
 }
 ```
@@ -264,7 +264,7 @@ AI: [基于上下文的回答]
 ```bash
 # Ollama 配置
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_MODEL=qwen3:8b
 
 # Flask 配置
 FLASK_ENV=development
@@ -275,7 +275,7 @@ SECRET_KEY=your-secret-key-here
 
 推荐模型（按优先级）：
 
-1. **qwen2.5:7b** - 中文能力强，推荐 ⭐⭐⭐⭐⭐
+1. **qwen3:8b** - 中文能力强，推荐 ⭐⭐⭐⭐⭐
 2. **qwen2.5:14b** - 更强大但需要更多资源 ⭐⭐⭐⭐
 3. **llama2** - 通用模型 ⭐⭐⭐
 4. **mistral** - 轻量级选项 ⭐⭐⭐
@@ -307,7 +307,7 @@ ollama pull <model_name>
 
 **A:**
 1. 安装 Tesseract 中文包
-2. 使用中文能力强的模型（如 qwen2.5）
+2. 使用中文能力强的模型（如 qwen3:8b）
 3. 确保文档编码为 UTF-8
 
 ### Q: 如何提高回答质量？

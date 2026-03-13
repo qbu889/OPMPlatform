@@ -32,6 +32,8 @@ from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 from routes.chatbot_routes import chatbot_bp  # 导入智能客服蓝图
 from routes.category_routes import category_bp  # 导入专业领域管理蓝图
 from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA预估表生成器蓝图
+from routes.adjustment_routes import adjustment_bp  # 导入调整因子管理蓝图
+from routes.adjustment_calc_routes import adjustment_calc_bp  # 导入调整因子计算器蓝图
 
 # 配置日志 - 统一日志格式
 logging.basicConfig(
@@ -71,6 +73,8 @@ def create_app(config_name='default'):
     app.register_blueprint(chatbot_bp)  # 注册智能客服蓝图
     app.register_blueprint(category_bp)  # 注册专业领域管理蓝图
     app.register_blueprint(fpa_generator_bp)  # 注册 FPA预估表生成器蓝图
+    app.register_blueprint(adjustment_bp)  # 注册调整因子管理蓝图
+    app.register_blueprint(adjustment_calc_bp)  # 注册调整因子计算器蓝图
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
@@ -102,12 +106,6 @@ def index():
     }
     
     return render_template('index.html', demo_exists=demo_exists, user=user_info)
-
-@app.route('/test-icons')
-def test_icons():
-    """图标显示测试页面"""
-    return send_from_directory('.', 'test/Index_test/test_icon_display.html')
-
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5002

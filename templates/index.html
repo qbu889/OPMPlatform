@@ -33,6 +33,8 @@
                                 <li><a class="dropdown-item" href="/kafka-generator">Kafka消息生成</a></li>
                                 <li><a class="dropdown-item" href="/schedule-config">排班配置</a></li>
                                 <li><a class="dropdown-item" href="/fpa-generator/">FPA预估表生成</a></li>
+                                <li><a class="dropdown-item" href="/adjustment-calc/page">调整因子计算器</a></li>
+                                <li><a class="dropdown-item" href="/adjustment/page">调整因子管理</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -242,9 +244,43 @@
                                         <i class="fas fa-file-excel text-success" style="font-size: 2.5rem;"></i>
                                     </div>
                                     <h5 class="card-title">FPA预估表生成</h5>
-                                    <p class="card-text text-muted small">从需求文档自动生成 FPA功能点估算表</p>
+                                    <p class="card-text text-muted small">从需求文档自动生成 FPA 功能点估算表</p>
                                     <button class="btn btn-outline-success btn-sm"
                                             onclick="window.location.href='/fpa-generator/'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                                                
+                        <!-- 调整因子计算器 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-calculator text-warning" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">调整因子计算器</h5>
+                                    <p class="card-text text-muted small">根据项目条件动态计算 FPA 调整因子</p>
+                                    <button class="btn btn-outline-warning btn-sm"
+                                            onclick="window.location.href='/adjustment-calc/page'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                                                
+                        <!-- 调整因子管理 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-sliders-h text-primary" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">调整因子管理</h5>
+                                    <p class="card-text text-muted small">管理和维护调整因子数据</p>
+                                    <button class="btn btn-outline-primary btn-sm"
+                                            onclick="window.location.href='/adjustment/page'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
                                     </button>
                                 </div>
@@ -278,6 +314,9 @@
                                     </button>
                                     <button class="btn btn-success btn-animated" onclick="quickAction('fpa-generator')">
                                         <i class="fas fa-file-excel me-2"></i>FPA 转 Excel
+                                    </button>
+                                    <button class="btn btn-warning btn-animated" onclick="quickAction('adjustment-calc')">
+                                        <i class="fas fa-calculator me-2"></i>调整因子计算
                                     </button>
                                 </div>
 
@@ -407,6 +446,9 @@
                     break;
                 case 'fpa-generator':
                     window.location.href = '/fpa-generator/';
+                    break;
+                case 'adjustment-calc':
+                    window.location.href = '/adjustment-calc/page';
                     break;
                 default:
                     OPM.notify('功能即将上线', 'info');
