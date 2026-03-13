@@ -815,12 +815,12 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         ufp_cell.fill = green_fill
         ufp_cell.alignment = Alignment(horizontal='center')
 
-        # 重用程度
-        reuse = point.get('重用程度', '高' if '表' in point.get('功能点计数项', '') else '中')
+        # 重用程度（确保有默认值）
+        reuse = point.get('重用程度') or '高'
         ws.cell(row=row_idx, column=9, value=reuse).alignment = Alignment(horizontal='center')
 
-        # 修改类型
-        modify_type = point.get('修改类型', '新增')
+        # 修改类型（确保有默认值）
+        modify_type = point.get('修改类型') or '新增'
         ws.cell(row=row_idx, column=10, value=modify_type).alignment = Alignment(horizontal='center')
 
         # AFP (使用公式计算 - 根据重用程度和修改类型)
