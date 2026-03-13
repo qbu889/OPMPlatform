@@ -10,6 +10,8 @@ import logging
 import mysql.connector
 from decimal import Decimal
 from .fpa_ai_expander import ai_assisted_expand_function_points
+from utils.task_manager import get_task_manager
+import uuid
 
 fpa_generator_bp = Blueprint('fpa_generator', __name__, url_prefix='/fpa-generator')
 logger = logging.getLogger(__name__)
@@ -246,72 +248,63 @@ def parse_requirement_document(md_content: str) -> list:
         function_points.append(current_point)
         
     logger.info(f"解析完成，共提取 {len(function_points)} 个功能点")
-        
+            
     # 额外提取所有提到的内部逻辑文件 (表) 作为 ILF 功能点
     # 这是 FPA 标准格式的特殊要求
-    # 关键规则：ILF 表应该按照它们在期望文件中的顺序插入
-    # 插入策略：不是按首提位置，而是按照期望文件中出现的相对顺序
+    # 关键规则：ILF 表应该按照它们在文档中出现的顺序插入到对应的功能点之后
+            
+    # 收集所有在功能点中提到的 ILF 表
+    ilf_tables_mentioned = {}
+    for point in function_points:
+        ilf_files = point.get('新增/变更内部逻辑文件', '')
+        if ilf_files and ilf_files != '无':
+            # 可能有多个表，用逗号分隔
+            tables = [t.strip() for t in ilf_files.split(',')]
+            for table in tables:
+                if table and table.endswith('表'):
+                    # 记录这个表首次出现的位置
+                    if table not in ilf_tables_mentioned:
+                        ilf_tables_mentioned[table] = point.get('功能点计数项', '')
+            
+        # 同时检查原有未修改的文件
+        existing_files = point.get('原有未修改内部逻辑文件', '')
+        if existing_files and existing_files != '无':
+            tables = [t.strip() for t in existing_files.split(',')]
+            for table in tables:
+                if table and table.endswith('表'):
+                    if table not in ilf_tables_mentioned:
+                        ilf_tables_mentioned[table] = point.get('功能点计数项', '')
         
-    # 读取期望文件获取 ILF 表的正确顺序
-    order_file_path= Path(__file__).parent.parent / 'test' / 'fpa' / '期望表格的顺序.txt'
-    expected_ilf_order= []
-    ilf_to_ref_point = {}  # ILF 表名 -> 它应该跟随的非 ILF 功能点名称
-        
-    if order_file_path.exists():
-        with open(order_file_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            prev_non_ilf_name = None  # 上一个非 ILF 功能点名称
-            for line in lines[1:]:  # 跳过标题行
-                parts = line.strip().split('\t')
-                if len(parts) >= 2 and parts[0] != '必填':
-                    name = parts[0].strip()
-                    category = parts[1].strip()
-                        
-                    if category == 'ILF':
-                        # ILF 表应该跟在前一个非 ILF 功能点之后
-                        if prev_non_ilf_name:
-                            ilf_to_ref_point[name] = prev_non_ilf_name
-                    else:
-                        prev_non_ilf_name = name
-                            
-            # 只保留在期望文件中定义的 ILF 表
-            for line in lines[1:]:
-                parts = line.strip().split('\t')
-                if len(parts) >= 2 and parts[0].endswith('表') and parts[1] == 'ILF':
-                    expected_ilf_order.append(parts[0].strip())
-                        
-        logger.info(f"从期望文件读取了 {len(expected_ilf_order)} 个 ILF 表")
-    else:
-        logger.warning("期望文件不存在，无法确定 ILF 表顺序")
-        return function_points
-        
+    logger.info(f"从文档中提取到 {len(ilf_tables_mentioned)} 个 ILF 表")
+    for table_name, ref_point in ilf_tables_mentioned.items():
+        logger.info(f"  - {table_name} (首次出现在：{ref_point})")
+            
     # 过滤掉原有的 ILF 功能点（后面会重新插入）
     non_ilf_points = [p for p in function_points if p.get('类别') != 'ILF']
     logger.info(f"非 ILF 功能点：{len(non_ilf_points)}个")
-        
+            
     # 为每个 ILF 表找到它应该跟随的非 ILF 功能点索引
     ilf_insert_after = {}  # ILF 表名 -> 应该插入到哪个非 ILF 功能点索引之后
+            
+    for ilf_name, ref_point_name in ilf_tables_mentioned.items():
+        # 在非 ILF 列表中找到这个参考功能点
+        for idx, point in enumerate(non_ilf_points):
+            if point.get('功能点计数项', '').strip() == ref_point_name:
+                ilf_insert_after[ilf_name] = idx
+                logger.info(f"ILF 表 '{ilf_name}' 将插入到功能点 '{ref_point_name}' 之后 (索引：{idx})")
+                break
         
-    for ilf_name in expected_ilf_order:
-        ref_point_name = ilf_to_ref_point.get(ilf_name)
-        if ref_point_name:
-            # 在非 ILF 列表中找到这个参考功能点
-            for idx, point in enumerate(non_ilf_points):
-                if point.get('功能点计数项', '').strip() == ref_point_name:
-                    ilf_insert_after[ilf_name] = idx
-                    break
-        
-    logger.info(f"确 定了 {len(ilf_insert_after)} 个 ILF 表的插入位置")
-        
-    # 创建新的功能点列表，按正确顺序插入 ILF 表
+    logger.info(f"确定了 {len(ilf_insert_after)} 个 ILF 表的插入位置")
+            
+    # 创建新的功能点列表，按文档中的顺序插入 ILF 表
     new_function_points = []
     inserted_tables = set()
-        
+            
     for idx, point in enumerate(non_ilf_points):
         new_function_points.append(point)
-            
+                
         # 检查是否有 ILF 表应该插入到这个位置之后
-        for ilf_name in expected_ilf_order:
+        for ilf_name in ilf_tables_mentioned.keys():
             if ilf_name not in inserted_tables:
                 insert_after_idx = ilf_insert_after.get(ilf_name, -1)
                 if insert_after_idx == idx:
@@ -344,10 +337,10 @@ def parse_requirement_document(md_content: str) -> list:
                     }
                     new_function_points.append(ilf_point)
                     inserted_tables.add(ilf_name)
-                    logger.info(f"插 入 ILF 表 '{ilf_name}' 到位置 {len(new_function_points)} (跟随：{ref_point.get('功能点计数项', '')})")
-        
+                    logger.info(f"插入 ILF 表 '{ilf_name}' 到位置 {len(new_function_points)} (跟随：{ref_point.get('功能点计数项', '')})")
+            
     function_points = new_function_points
-    logger.info(f"添 加 ILF 表后，总功能点数：{len(function_points)}")
+    logger.info(f"添加 ILF 表后，总功能点数：{len(function_points)}")
         
     # 智能填充 FPA 字段
     # 首先从期望文件中加载已知的类别映射
@@ -412,21 +405,10 @@ def parse_requirement_document(md_content: str) -> list:
             point['类别'] = 'EO'  # 默认为 EO
             point['UFP'] = 5
         
-        # 2. 识别重用程度（默认为"高"）
-        # 包含"表"、"清单"、"配置"、"模板"、"列表"等都是"高"
-        # 只有纯逻辑处理、分析、计算等功能点才是"中"
-        # 注意："规则"单独出现时可能是"高"，但如果同时包含"处理"、"计算"等则是"中"
-        if any(keyword in item_text for keyword in ['表', '清单', '配置', '模板', '列表']):
-            point['重用程度'] = '高'
-        # elif any(keyword in item_text for keyword in ['分析', '判定', '计算', '处理', '识别', '匹配', '检测', '校验', '验证', '调度', '推送', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发', '运算']):
-        elif any(keyword in item_text for keyword in ['先不配置什么东西']):
-            point['重用程度'] = '中'
-        elif any(keyword in item_text for keyword in ['规则']):
-            point['重用程度'] = '高'
-        else:
-            point['重用程度'] = '高'  # 默认为高
+        # 2. 识别重用程度（全部设置为"高"）
+        point['重用程度'] = '高'
         
-        # 3. 修改类型 (默认为新增)
+        # 3. 修改类型 (全部设置为"新增")
         point['修改类型'] = '新增'
         
         # 4. 计算 AFP (根据重用程度和修改类型)
@@ -1126,33 +1108,8 @@ def upload_requirement():
                             non_ilf_points.extend(expanded_points)
                             logger.info(f"通过 AI 辅助扩展了 {len(expanded_points)} 个功能点")
                         except Exception as ai_error:
-                            logger.warning(f"AI 辅助扩展失败，使用简单复制策略：{ai_error}")
-                            
-                            # 回退到按比例复制策略
-                            for category, count in category_counts.items():
-                                # 计算该类别需要扩展的数量
-                                ratio = count / current_count if current_count > 0 else 0
-                                expand_for_category = int(round(expand_count * ratio))
-                                
-                                # 找到该类别的所有功能点
-                                category_points = [p for p in non_ilf_points if p.get('类别') == category]
-                                
-                                # 循环复制这些功能点
-                                for i in range(expand_for_category):
-                                    if category_points:
-                                        # 选择一个功能点进行复制（循环选择）
-                                        source_point = category_points[i % len(category_points)]
-                                        new_point = source_point.copy()
-                                        
-                                        # 修改功能点计数项名称，添加序号
-                                        original_name = new_point.get('功能点计数项', '')
-                                        new_name = f"{original_name}_{i+1}"
-                                        new_point['功能点计数项'] = new_name
-                                        new_point['level5'] = new_name
-                                        new_point['备注'] = f'自动扩展 #{i+1}'
-                                        
-                                        non_ilf_points.append(new_point)
-                                        logger.debug(f"扩展 {category} 功能点：{new_name}")
+                            logger.warning(f"AI 辅助扩展失败：{ai_error}，将使用原始功能点数量")
+                            # 不进行扩展，保持原有功能点
                         
                         # 重新计算总功能点数
                         final_non_ilf_count = len(non_ilf_points)
@@ -1201,8 +1158,9 @@ def upload_requirement():
         except Exception as e:
             logger.warning(f"读取评估结果失败，将使用默认 UFP 值：{e}")
         
-        # 生成 Excel 文件（文件名使用纯英文，避免编码问题）
-        output_filename = f"{filename}_FPA_Estimation_{timestamp}.xlsx"
+        # 生成 Excel 文件（文件名使用可读的时间戳格式：YYYYMMDD_HHMMSS）
+        timestamp_str = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+        output_filename = f"{filename}_FPA_Estimation_{timestamp_str}.xlsx"
         output_path = output_dir / output_filename
         generate_fpa_excel(function_points, str(output_path))
         
@@ -1573,3 +1531,7 @@ def save_evaluation_result():
             'success': False,
             'message': str(e)
         }), 500
+
+
+# 导入异步任务路由
+from .fpa_async_routes import generate_fpa_async, get_task_status

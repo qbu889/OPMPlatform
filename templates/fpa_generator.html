@@ -208,70 +208,58 @@
                                 <table class="table table-bordered table-hover" id="evaluationResultTable">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width: 40%;">项目</th>
-                                            <th style="width: 20%;">数值</th>
-                                            <th style="width: 40%;">说明</th>
+                                            <th style="width: 50%;">项目</th>
+                                            <th style="width: 50%;">数值</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>规模估算结果（单位：功能点）</td>
                                             <td><input type="number" step="0.01" class="form-control" id="afp" value="125.27"></td>
-                                            <td>AFP</td>
                                         </tr>
                                         <tr>
                                             <td>规模变更调整因子</td>
                                             <td><input type="number" step="0.01" class="form-control" id="cf" value="1.21"></td>
-                                            <td>CF，项目阶段</td>
                                         </tr>
                                         <tr style="background-color: #f0f0f0;">
                                             <td><strong>调整后规模（单位：功能点）</strong></td>
                                             <td><input type="number" step="0.01" class="form-control" id="adjustedScale" value="151.57" readonly></td>
-                                            <td>S，等于 AFP*CF</td>
                                         </tr>
                                         <tr>
                                             <td>基准生产率（单位：人时/功能点）</td>
                                             <td><input type="number" step="0.01" class="form-control" id="baseProductivity" value="10.12"></td>
-                                            <td>PDR，来自《2024 年软件行业基准数据》</td>
                                         </tr>
                                         <tr style="background-color: #f0f0f0;">
                                             <td><strong>未调整工作量（单位：人天）</strong></td>
                                             <td><input type="number" step="0.01" class="form-control" id="unadjustedEffort" value="191.74" readonly></td>
-                                            <td>S*PDR/8h</td>
                                         </tr>
                                         <tr>
                                             <td rowspan="5" class="align-middle"><strong>调整因子</strong></td>
                                             <td>应用类型</td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00"></td>
-                                            <td>A，应用类型调整因子</td>
                                         </tr>
                                         <tr>
                                             <td>质量特性</td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorQuality" value="0.90"></td>
-                                            <td>B，质量特性调整因子</td>
                                         </tr>
                                         <tr>
                                             <td>开发语言</td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00"></td>
-                                            <td>C，开发语言调整因子</td>
                                         </tr>
                                         <tr>
                                             <td>开发团队背景</td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80"></td>
-                                            <td>D，开发团队背景调整因子</td>
                                         </tr>
                                         <tr style="background-color: #f0f0f0;">
-                                            <td colspan="2"><strong>调整因子乘积：<span id="totalFactor">0.72</span></strong></td>
+                                            <td colspan="1"><strong>调整因子乘积：<span id="totalFactor">0.72</span></strong></td>
                                         </tr>
                                         <tr style="background-color: #d4edda;">
                                             <td><strong>调整后工作量（单位：人天）</strong></td>
                                             <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" readonly style="font-weight: bold; color: #155724;"></td>
-                                            <td>AE，S*PDR/8h*A*B*C*D</td>
                                         </tr>
                                         <tr style="background-color: #fff3cd;">
                                             <td><strong>生成用例数量</strong></td>
                                             <td><input type="number" step="1" class="form-control" id="testCaseCount" value="55" readonly style="font-weight: bold;"></td>
-                                            <td>根据调整后工作量自动拆分</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -310,6 +298,7 @@
                                         <li>请确保文档包含完整的功能点描述 (功能描述、输入、输出、处理过程等)</li>
                                         <li>文档应符合 FPA 规范的层级结构 (一级分类、二级分类、三级分类...)</li>
                                         <li>生成的 Excel 文件将自动保存到服务器，请及时下载</li>
+                                        <li><strong>生成过程较慢，系统会在后台处理，您可以实时查看进度和日志</strong></li>
                                     </ul>
                                 </div>
                                                             
@@ -325,6 +314,48 @@
                                 </div>
                             </form>
                         {% endif %}
+                        
+                        <!-- 异步任务进度查询 -->
+                        <div class="mt-4" id="asyncTaskSection" style="display: none;">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-tasks"></i> 任务进度查询</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">任务 ID：</label>
+                                        <input type="text" id="taskIdInput" class="form-control" placeholder="输入任务 ID">
+                                    </div>
+                                    <button type="button" class="btn btn-info" onclick="queryTaskProgress()">
+                                        <i class="fas fa-search"></i> 查询进度
+                                    </button>
+                                    
+                                    <!-- 进度显示 -->
+                                    <div id="progressDisplay" class="mt-3" style="display: none;">
+                                        <div class="progress" style="height: 30px;">
+                                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%;"></div>
+                                        </div>
+                                        <p id="progressMessage" class="mt-2 text-center"></p>
+                                        
+                                        <!-- 日志显示 -->
+                                        <div class="mt-3">
+                                            <h6>详细日志：</h6>
+                                            <div id="taskLogs" class="border p-3" style="max-height: 300px; overflow-y: auto; background: #f8f9fa;">
+                                                <!-- 日志内容将动态填充 -->
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 下载按钮 -->
+                                        <div id="downloadSection" class="mt-3 text-center" style="display: none;">
+                                            <a id="downloadLink" href="#" class="btn btn-success btn-lg">
+                                                <i class="fas fa-download"></i> 下载生成的 FPA 文件
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- 错误提示 -->
                         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -358,14 +389,14 @@
                             <li><strong>下载结果：</strong>生成成功后点击下载按钮获取 Excel 文件</li>
                         </ol>
                         
-                        <h6 class="mt-4">相关功能：</h6>
-                        <div class="alert alert-info">
-                            <i class="fas fa-link"></i> 
-                            <a href="{{ url_for('adjustment.adjustment_factor_page') }}" target="_blank">
-                                <i class="fas fa-sliders-h"></i> 调整因子管理
-                            </a>
-                            - 管理和配置 FPA 调整因子，支持从 Excel 导入和公式编辑
-                        </div>
+{#                        <h6 class="mt-4">相关功能：</h6>#}
+{#                        <div class="alert alert-info">#}
+{#                            <i class="fas fa-link"></i> #}
+{#                            <a href="{{ url_for('adjustment.adjustment_factor_page') }}" target="_blank">#}
+{#                                <i class="fas fa-sliders-h"></i> 调整因子管理#}
+{#                            </a>#}
+{#                            - 管理和配置 FPA 调整因子，支持从 Excel 导入和公式编辑#}
+{#                        </div>#}
                         
                         <h6 class="mt-4">文档格式要求：</h6>
                         <pre class="bg-light p-3 rounded"><code>## 一级分类（如：监控管理应用）
@@ -394,6 +425,10 @@
     
     <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
+        // 全局变量存储当前任务 ID
+        let currentTaskId = null;
+        let pollInterval = null;
+        
         document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
@@ -483,15 +518,22 @@
             // 表单提交时显示加载动画
             if (uploadForm) {
                 uploadForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
                     if (!fileInput.files || !fileInput.files.length) {
                         alert('请先选择要上传的文件!');
-                        e.preventDefault();
                         return false;
                     }
                         
+                    const file = fileInput.files[0];
+                    console.log('准备提交文件:', file.name);
+                        
+                    // 显示加载动画
                     if (submitBtn) submitBtn.style.display = 'none';
                     if (loadingSpinner) loadingSpinner.style.display = 'block';
-                    // 表单会继续提交
+                        
+                    // 使用异步任务方式提交
+                    startAsyncTask(file);
                 });
             }
             
@@ -699,6 +741,119 @@
                 console.error('保存失败:', error);
                 alert('保存失败：' + error);
             });
+        }
+        
+        // 异步任务相关函数
+        function startAsyncTask(file) {
+            const formData = new FormData();
+            formData.append('requirement_file', file);
+            
+            fetch('/fpa-generator/api/generate-async', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // 显示进度查询区域
+                    currentTaskId = result.task_id;
+                    document.getElementById('asyncTaskSection').style.display = 'block';
+                    document.getElementById('taskIdInput').value = currentTaskId;
+                    
+                    // 开始轮询进度
+                    startPolling(currentTaskId);
+                    
+                    alert('任务已创建！任务 ID: ' + currentTaskId);
+                } else {
+                    alert('创建任务失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('创建任务失败:', error);
+                alert('创建任务失败：' + error);
+            });
+        }
+        
+        function queryTaskProgress() {
+            const taskId = document.getElementById('taskIdInput').value;
+            if (!taskId) {
+                alert('请输入任务 ID');
+                return;
+            }
+            
+            currentTaskId = taskId;
+            startPolling(taskId);
+        }
+        
+        function startPolling(taskId) {
+            // 清除之前的轮询
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            // 显示进度区域
+            document.getElementById('progressDisplay').style.display = 'block';
+            
+            // 立即查询一次
+            pollTaskStatus(taskId);
+            
+            // 每 2 秒轮询一次
+            pollInterval = setInterval(() => {
+                pollTaskStatus(taskId);
+            }, 2000);
+        }
+        
+        function pollTaskStatus(taskId) {
+            fetch(`/fpa-generator/api/task-status/${taskId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const task = result.data;
+                        
+                        // 更新进度条
+                        const progressBar = document.getElementById('progressBar');
+                        progressBar.style.width = task.progress + '%';
+                        progressBar.setAttribute('aria-valuenow', task.progress);
+                        
+                        // 更新进度消息
+                        document.getElementById('progressMessage').textContent = 
+                            `[${task.status}] ${task.message}`;
+                        
+                        // 更新日志
+                        if (task.logs && task.logs.length > 0) {
+                            const logsContainer = document.getElementById('taskLogs');
+                            logsContainer.innerHTML = task.logs.map(log => 
+                                `<div class="mb-1"><small class="text-muted">[${new Date(log.timestamp).toLocaleTimeString()}]</small> ${log.message}</div>`
+                            ).join('');
+                            // 滚动到底部
+                            logsContainer.scrollTop = logsContainer.scrollHeight;
+                        }
+                        
+                        // 检查是否完成
+                        if (task.status === 'COMPLETED') {
+                            clearInterval(pollInterval);
+                            progressBar.classList.remove('progress-bar-animated');
+                            progressBar.classList.add('bg-success');
+                            
+                            // 显示下载按钮
+                            if (task.result && task.result.download_url) {
+                                document.getElementById('downloadLink').href = task.result.download_url;
+                                document.getElementById('downloadSection').style.display = 'block';
+                            }
+                        } else if (task.status === 'FAILED') {
+                            clearInterval(pollInterval);
+                            progressBar.classList.remove('progress-bar-animated');
+                            progressBar.classList.add('bg-danger');
+                            document.getElementById('progressMessage').textContent = 
+                                `任务失败：${task.error}`;
+                        }
+                    } else {
+                        console.error('查询失败:', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('查询进度失败:', error);
+                });
         }
     </script>
     {% endblock %}
