@@ -6,11 +6,43 @@ from pathlib import Path
 from datetime import datetime
 from flask import jsonify, current_app, request
 
-from routes.fpa_generator_routes import fpa_generator_bp, parse_requirement_document, generate_fpa_excel
+from routes.fpa_generator_routes import fpa_generator_bp, parse_requirement_document, generate_fpa_excel, get_db_connection
 from utils.task_manager import get_task_manager
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def init_export_history_table():
+    """初始化导出历史表"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS fpa_export_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                task_id VARCHAR(50) UNIQUE NOT NULL,
+                original_filename VARCHAR(255) NOT NULL,
+                output_filename VARCHAR(255) NOT NULL,
+                file_path VARCHAR(500) NOT NULL,
+                file_size BIGINT,
+                function_point_count INT,
+                status ENUM('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT 'PENDING',
+                progress INT DEFAULT 0,
+                message TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                completed_at DATETIME,
+                INDEX idx_task_id (task_id),
+                INDEX idx_created_at (created_at),
+                INDEX idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ''')
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info("[EXPORT_HISTORY] 导出历史表初始化成功")
+    except Exception as e:
+        logger.error(f"[EXPORT_HISTORY] 初始化导出历史表失败：{e}")
 
 
 @fpa_generator_bp.route('/api/generate-async', methods=['POST'])
@@ -55,6 +87,22 @@ def generate_fpa_async():
             timestamp
         )
         
+        # 记录到导出历史表
+        init_export_history_table()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO fpa_export_history 
+                (task_id, original_filename, output_filename, file_path, status, progress, message)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (task_id, file.filename, '', str(temp_md_path), 'PENDING', 0, '任务已创建'))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            logger.warning(f"记录导出历史失败：{e}")
+        
         logger.info(f"[ASYNC] 创建 FPA 生成任务：{task_id}")
         
         return jsonify({
@@ -80,6 +128,38 @@ def get_task_status(task_id):
     task_info = task_manager.get_task_status(task_id)
     
     if not task_info:
+        # 尝试从数据库查询历史任务
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('''
+                SELECT * FROM fpa_export_history 
+                WHERE task_id = %s 
+                ORDER BY created_at DESC LIMIT 1
+            ''', (task_id,))
+            history = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            
+            if history:
+                return jsonify({
+                    'success': True,
+                    'data': {
+                        'id': history['task_id'],
+                        'status': history['status'],
+                        'progress': history['progress'],
+                        'message': history['message'],
+                        'created_at': str(history['created_at']),
+                        'completed_at': str(history['completed_at']) if history['completed_at'] else None,
+                        'output_filename': history['output_filename'],
+                        'file_size': history['file_size'],
+                        'function_point_count': history['function_point_count'],
+                        'is_history': True
+                    }
+                })
+        except Exception as e:
+            logger.error(f"查询历史任务失败：{e}")
+        
         return jsonify({
             'success': False,
             'message': '任务不存在'
@@ -89,6 +169,248 @@ def get_task_status(task_id):
         'success': True,
         'data': task_info
     })
+
+
+@fpa_generator_bp.route('/api/task-cancel/<task_id>', methods=['POST'])
+def cancel_task(task_id):
+    """
+    取消/停止任务
+    """
+    try:
+        task_manager = get_task_manager()
+        task_info = task_manager.get_task_status(task_id)
+        
+        if not task_info:
+            # 任务不存在，可能是已经完成或被删除
+            # 检查数据库中是否存在
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT status FROM fpa_export_history WHERE task_id = %s', (task_id,))
+            db_record = cursor.fetchone()
+            
+            if db_record:
+                # 数据库中存在，但不是 RUNNING 状态
+                if db_record[0] != 'RUNNING':
+                    cursor.close()
+                    conn.close()
+                    return jsonify({
+                        'success': False,
+                        'message': f'任务已结束，当前状态：{db_record[0]}'
+                    }), 400
+                
+                # 数据库中存在且是 RUNNING 状态，但任务管理器中没有
+                # 说明任务可能异常退出，将状态更新为 FAILED
+                cursor.execute('''
+                    UPDATE fpa_export_history 
+                    SET status = 'FAILED',
+                        message = '任务异常终止（任务管理器中不存在）',
+                        completed_at = NOW()
+                    WHERE task_id = %s
+                ''', (task_id,))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                logger.warning(f"[TASK_CANCEL] 任务 {task_id} 在任务管理器中不存在，已标记为 FAILED")
+                
+                return jsonify({
+                    'success': True,
+                    'message': '任务已停止（任务异常终止）'
+                })
+            else:
+                # 数据库中也不存在
+                cursor.close()
+                conn.close()
+                return jsonify({
+                    'success': False,
+                    'message': '任务不存在'
+                }), 404
+        
+        if task_info['status'] in ['COMPLETED', 'FAILED', 'CANCELLED']:
+            return jsonify({
+                'success': False,
+                'message': f'任务已结束，当前状态：{task_info["status"]}'
+            }), 400
+        
+        # 更新任务状态为 CANCELLED
+        task_manager._update_task_status(task_id, 'CANCELLED', 0, '任务已被用户取消')
+        
+        # 更新导出历史表
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE fpa_export_history 
+                SET status = 'CANCELLED',
+                    message = '任务被用户取消',
+                    completed_at = NOW()
+                WHERE task_id = %s
+            ''', (task_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            logger.warning(f"更新导出历史失败：{e}")
+        
+        logger.info(f"[TASK_CANCEL] 任务已取消：{task_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': '任务已停止'
+        })
+        
+    except Exception as e:
+        logger.error(f"取消任务失败：{e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@fpa_generator_bp.route('/api/export-history', methods=['GET'])
+def get_export_history():
+    """
+    查询导出历史记录
+    """
+    try:
+        page = int(request.args.get('page', 1))
+        page_size = int(request.args.get('page_size', 20))
+        offset = (page - 1) * page_size
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # 查询总数
+        cursor.execute('SELECT COUNT(*) as total FROM fpa_export_history')
+        total = cursor.fetchone()['total']
+        
+        # 分页查询
+        cursor.execute('''
+            SELECT * FROM fpa_export_history 
+            ORDER BY created_at DESC 
+            LIMIT %s OFFSET %s
+        ''', (page_size, offset))
+        
+        history_list = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'list': history_list,
+                'total': total,
+                'page': page,
+                'page_size': page_size
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"查询导出历史失败：{e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+def update_task_progress(task_id, progress, message):
+    """
+    更新任务进度到数据库
+    
+    Args:
+        task_id: 任务 ID
+        progress: 进度百分比 (0-100)
+        message: 进度消息
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 先查询当前状态
+        cursor.execute('SELECT status FROM fpa_export_history WHERE task_id = %s', (task_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            cursor.close()
+            conn.close()
+            return
+        
+        current_status = result[0]
+        
+        # 如果任务已经结束（COMPLETED/FAILED/CANCELLED），不再更新状态
+        if current_status in ['COMPLETED', 'FAILED', 'CANCELLED']:
+            cursor.close()
+            conn.close()
+            return
+        
+        # 只在进度小于 100 时设置为 RUNNING
+        new_status = 'RUNNING' if progress < 100 else current_status
+        
+        cursor.execute('''
+            UPDATE fpa_export_history 
+            SET progress = %s,
+                message = %s,
+                status = %s
+            WHERE task_id = %s
+        ''', (progress, message, new_status, task_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.debug(f"[UPDATE_PROGRESS] task_id={task_id}, progress={progress}, message={message}, status={new_status}")
+    except Exception as e:
+        logger.error(f"更新任务进度失败：{e}")
+
+
+@fpa_generator_bp.route('/api/export-history/<task_id>', methods=['DELETE'])
+def delete_export_history(task_id):
+    """
+    删除导出历史记录
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 先查询记录是否存在
+        cursor.execute('SELECT id, status FROM fpa_export_history WHERE task_id = %s', (task_id,))
+        record = cursor.fetchone()
+        
+        if not record:
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': '记录不存在'
+            }), 404
+        
+        # 运行中的任务不允许删除
+        if record[1] == 'RUNNING':
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': '运行中的任务无法删除'
+            }), 400
+        
+        # 删除记录
+        cursor.execute('DELETE FROM fpa_export_history WHERE task_id = %s', (task_id,))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        logger.info(f"[DELETE_HISTORY] 删除导出历史记录：{task_id}")
+        
+        return jsonify({
+            'success': True,
+            'message': '删除成功'
+        })
+        
+    except Exception as e:
+        logger.error(f"删除导出历史失败：{e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 
 def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int, 
@@ -103,6 +425,14 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         task_id: 任务 ID
         progress_callback: 进度回调函数 (task_id, progress, message, log_entry)
     """
+    # 包装进度回调函数，使其同时更新到数据库
+    def wrapped_progress_callback(task_id, progress, message, log_entry):
+        # 调用原始回调（用于前端实时显示）
+        if progress_callback:
+            progress_callback(task_id, progress, message, log_entry)
+        # 同时更新到数据库（用于持久化存储）
+        update_task_progress(task_id, progress, message)
+    
     try:
         # 【第一步】先从数据库读取目标 UFP 值
         if progress_callback:
@@ -170,8 +500,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                 logger.info(f"    - {category}: {count}个 × {ufp_value} × 0.33 = {afp_value:.2f} AFP")
             logger.info(f"[步骤 3] AFP 计算验证：Σ(各类别 AFP) = {sum(afp_by_category.values()):.2f} = {current_afp:.2f}")
             
-            if progress_callback:
-                progress_callback(task_id, 25, f'AFP 对比分析', 
+            if wrapped_progress_callback:
+                wrapped_progress_callback(task_id, 25, f'AFP 对比分析', 
                                 f'当前:{current_afp:.2f}, 目标:{target_ufp:.2f}')
             
             need_ai_expansion = current_afp < target_ufp
@@ -185,8 +515,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                 expand_count = int((target_ufp - current_afp) / avg_afp_per_point + 0.5)
                 logger.info(f"[步骤 4] 需要扩展约 {expand_count} 个功能点 (AFP 差距：{target_ufp - current_afp:.2f})")
                 
-                if progress_callback:
-                    progress_callback(task_id, 30, f'开始 AI 扩展 (需要{expand_count}个)', 
+                if wrapped_progress_callback:
+                    wrapped_progress_callback(task_id, 30, f'开始 AI 扩展 (需要{expand_count}个)', 
                                     '正在进行 AI 辅助功能点拆分')
                 
                 # 调用 AI 扩展函数
@@ -194,7 +524,7 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                 new_points = ai_assisted_expand_function_points(
                     function_points, 
                     expand_count,
-                    progress_callback=progress_callback,
+                    progress_callback=wrapped_progress_callback,
                     task_id=task_id
                 )
                 
@@ -269,17 +599,17 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
             else:
                 # 不需要扩展
                 logger.info(f"[步骤 4] ✅ 当前 AFP ({current_afp:.2f}) >= 目标 AFP ({target_ufp:.2f})，无需 AI 扩展")
-                if progress_callback:
-                    progress_callback(task_id, 30, f'无需 AI 扩展', 
+                if wrapped_progress_callback:
+                    wrapped_progress_callback(task_id, 30, f'无需 AI 扩展', 
                                     f'当前 AFP 已满足要求')
         else:
             logger.warning(f"[步骤 3] 未获取到目标 UFP 值，跳过 UFP 对比")
-            if progress_callback:
-                progress_callback(task_id, 25, '未获取到目标 UFP', 
+            if wrapped_progress_callback:
+                wrapped_progress_callback(task_id, 25, '未获取到目标 UFP', 
                                 '将使用默认 UFP 值')
         
-        if progress_callback:
-            progress_callback(task_id, 70, '正在生成 Excel 文件...', '开始创建 FPA 预估表')
+        if wrapped_progress_callback:
+            wrapped_progress_callback(task_id, 70, '正在生成 Excel 文件...', '开始创建 FPA 预估表')
         
         # 生成 Excel 文件（文件名使用可读的时间戳格式：YYYYMMDD_HHMMSS）
         output_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_output"
@@ -297,8 +627,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         
         generate_fpa_excel(function_points, str(output_path))
         
-        if progress_callback:
-            progress_callback(task_id, 90, '正在清理临时文件...', '删除临时 Markdown 文件')
+        if wrapped_progress_callback:
+            wrapped_progress_callback(task_id, 90, '正在清理临时文件...', '删除临时 Markdown 文件')
         
         # 清理临时文件
         try:
@@ -306,8 +636,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         except Exception as e:
             logger.warning(f"临时文件删除失败：{e}")
         
-        if progress_callback:
-            progress_callback(task_id, 95, '任务即将完成', f'生成的文件：{output_filename}')
+        if wrapped_progress_callback:
+            wrapped_progress_callback(task_id, 95, '任务即将完成', f'生成的文件：{output_filename}')
         
         logger.info(f"FPA Excel 生成成功：{output_path}")
         
@@ -319,12 +649,72 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
             'download_url': f'/fpa-generator/download/{output_filename}'
         }
         
-        if progress_callback:
-            progress_callback(task_id, 100, '任务完成！', 
+        # 更新导出历史表
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 先获取文件大小
+            file_size = os.path.getsize(str(output_path))
+            
+            logger.info(f"[UPDATE_HISTORY] 开始更新导出历史表，task_id={task_id}")
+            logger.info(f"[UPDATE_HISTORY] output_filename={output_filename}, file_size={file_size}, function_point_count={len(function_points)}")
+            
+            sql = '''
+                UPDATE knowledge_base.fpa_export_history 
+                SET status = 'COMPLETED',
+                    progress = 100,
+                    message = '任务完成',
+                    output_filename = %s,
+                    file_path = %s,
+                    file_size = %s,
+                    function_point_count = %s,
+                    completed_at = NOW()
+                WHERE task_id = %s
+            '''
+            params = (output_filename, str(output_path), file_size, len(function_points), task_id)
+            
+            logger.info(f"[UPDATE_HISTORY] 执行 SQL: {sql}")
+            logger.info(f"[UPDATE_HISTORY] 参数：{params}")
+            
+            cursor.execute(sql, params)
+            conn.commit()
+            
+            # 验证更新结果
+            cursor.execute('SELECT output_filename, status FROM knowledge_base.fpa_export_history WHERE task_id = %s', (task_id,))
+            result = cursor.fetchone()
+            logger.info(f"[UPDATE_HISTORY] 验证更新结果：{result}")
+            
+            cursor.close()
+            conn.close()
+            
+            logger.info(f"[UPDATE_HISTORY] 导出历史表更新成功")
+        except Exception as e:
+            logger.error(f"[UPDATE_HISTORY] 更新导出历史失败：{e}", exc_info=True)
+            raise
+        
+        if wrapped_progress_callback:
+            wrapped_progress_callback(task_id, 100, '任务完成！', 
                             f'FPA 预估表生成成功，共 {len(function_points)} 个功能点')
         
         return result
         
     except Exception as e:
         logger.error(f"FPA 生成任务失败：{e}", exc_info=True)
+        # 更新导出历史表为失败状态
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE fpa_export_history 
+                SET status = 'FAILED',
+                    message = %s,
+                    completed_at = NOW()
+                WHERE task_id = %s
+            ''', (str(e), task_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as db_error:
+            logger.error(f"更新导出历史失败：{db_error}")
         raise

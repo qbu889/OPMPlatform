@@ -82,6 +82,8 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     
     processed_count = ThreadSafeCounter(0)
     stop_flag = threading.Event()
+    ai_failures = {'count': 0}  # 使用字典包装，避免作用域问题
+    max_ai_failures = 3  # 最多允许 3 次 AI 失败
     
     def process_single_point(args: Tuple[int, dict]) -> Tuple[int, List[dict], set]:
         """处理单个功能点的函数（在线程中执行）"""
@@ -138,6 +140,10 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
                 prompt=prompt,
                 stream=False
             )
+            
+            # 重置失败计数（成功一次后清零）
+            if ai_failures['count'] > 0:
+                ai_failures['count'] = 0
             
             # 解析 AI 响应
             import re
@@ -280,6 +286,18 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
                 
         except Exception as e:
             logger.warning(f"[AI_EXPAND] 功能点 {i+1} 处理失败：{e}")
+            
+            # 记录 AI 失败次数
+            ai_failures['count'] += 1
+            failures = ai_failures['count']
+            logger.error(f"[AI_EXPAND] AI 服务失败次数：{failures}/{max_ai_failures}")
+            
+            # 如果连续失败超过阈值，停止所有任务
+            if failures >= max_ai_failures:
+                logger.error(f"[AI_EXPAND] AI 服务连续失败{max_ai_failures}次，停止所有后续任务！")
+                logger.error(f"[AI_EXPAND] 请检查 Ollama 服务是否运行：http://localhost:11434")
+                stop_flag.set()  # 设置停止标志
+            
             return i, [], set()
     
     # 提交任务到线程池
@@ -308,6 +326,11 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
                 
                 logger.info(f"[AI_EXPAND] 完成 {total_processed}/{len(points_to_split)} 个功能点拆分")
                 
+                # 检查是否需要停止
+                if stop_flag.is_set():
+                    logger.error("[AI_EXPAND] 检测到停止标志，取消剩余任务")
+                    break
+                
             except Exception as e:
                 logger.error(f"[AI_EXPAND] 任务执行失败：{e}")
     
@@ -323,9 +346,20 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     logger.info(f"[AI_EXPAND] AI 扩展完成，共扩展 {len(expanded_points)} 个功能点")
     logger.info(f"[AI_EXPAND] 实际处理：{len(all_results)} 个功能点，平均每个拆分：{len(expanded_points)/max(len(all_results),1):.2f}个")
     
-    if progress_callback and task_id:
-        progress_callback(task_id, 70, f'AI 扩展完成，新增{len(expanded_points)}个功能点',
-                         f'成功扩展 {len(expanded_points)} 个功能点（多线程加速）')
+    # 如果是因为 AI 服务失败而停止，给出明确提示并抛出异常
+    if stop_flag.is_set():
+        logger.error(f"[AI_EXPAND] ⚠️  警告：AI 服务不可用，任务已提前终止")
+        logger.error(f"[AI_EXPAND] ⚠️  请启动 Ollama 服务：ollama serve")
+        logger.error(f"[AI_EXPAND] ⚠️  然后确保模型已下载：ollama pull qwen3:4b")
+        if progress_callback and task_id:
+            progress_callback(task_id, 40, 'AI 服务不可用，任务已停止',
+                            f'AI 服务连续失败{max_ai_failures}次，请检查服务状态')
+        # 抛出异常，让上层捕获并更新数据库状态为 FAILED
+        raise Exception(f"AI 服务不可用，连续失败{max_ai_failures}次。请检查 Ollama 服务是否运行。")
+    else:
+        if progress_callback and task_id:
+            progress_callback(task_id, 70, f'AI 扩展完成，新增{len(expanded_points)}个功能点',
+                             f'成功扩展 {len(expanded_points)} 个功能点（多线程加速）')
     
     return expanded_points
 

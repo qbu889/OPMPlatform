@@ -464,6 +464,9 @@
                                     <button type="button" class="btn btn-info" onclick="queryTaskProgress()">
                                         <i class="fas fa-search"></i> 查询进度
                                     </button>
+                                    <button type="button" class="btn btn-danger" id="stopTaskBtn" onclick="stopCurrentTask()" style="display: none;">
+                                        <i class="fas fa-stop-circle"></i> 停止任务
+                                    </button>
                                     
                                     <!-- 进度显示 -->
                                     <div id="progressDisplay" class="mt-3" style="display: none;">
@@ -488,6 +491,44 @@
                                             </a>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 导出历史记录 -->
+                        <div class="mt-4" id="exportHistorySection">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5><i class="fas fa-history"></i> 导出历史记录</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="historyTable">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>任务 ID</th>
+                                                    <th>原文件名</th>
+                                                    <th>生成文件名</th>
+                                                    <th>功能点数</th>
+                                                    <th>文件大小</th>
+                                                    <th>进度</th>
+                                                    <th>状态</th>
+                                                    <th>创建时间</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="historyTableBody">
+                                                <tr>
+                                                    <td colspan="9" class="text-center text-muted">加载中...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <nav aria-label="分页导航">
+                                        <ul class="pagination justify-content-center" id="historyPagination">
+                                            <!-- 分页按钮将动态生成 -->
+                                        </ul>
+                                    </nav>
                                 </div>
                             </div>
                         </div>
@@ -675,6 +716,9 @@
             // 评估结果表功能
             // 页面加载时读取评估结果
             loadEvaluationResult();
+            
+            // 加载导出历史记录
+            loadExportHistory(1);
         });
         
         // 加载评估结果
@@ -1090,6 +1134,9 @@
             // 显示进度区域
             document.getElementById('progressDisplay').style.display = 'block';
             
+            // 显示停止按钮
+            document.getElementById('stopTaskBtn').style.display = 'inline-block';
+            
             // 立即查询一次
             pollTaskStatus(taskId);
             
@@ -1097,6 +1144,34 @@
             pollInterval = setInterval(() => {
                 pollTaskStatus(taskId);
             }, 50000);
+        }
+        
+        function stopCurrentTask() {
+            if (!currentTaskId) {
+                alert('没有正在运行的任务');
+                return;
+            }
+            
+            if (!confirm('确定要停止当前任务吗？')) {
+                return;
+            }
+            
+            fetch(`/fpa-generator/api/task-cancel/${currentTaskId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('任务已停止');
+                        document.getElementById('stopTaskBtn').style.display = 'none';
+                        // 刷新历史记录
+                        loadExportHistory(1);
+                    } else {
+                        alert('停止失败：' + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('停止任务失败:', error);
+                    alert('停止失败：' + error);
+                });
         }
         
         function pollTaskStatus(taskId) {
@@ -1131,6 +1206,9 @@
                             progressBar.classList.remove('progress-bar-animated');
                             progressBar.classList.add('bg-success');
                             
+                            // 隐藏停止按钮
+                            document.getElementById('stopTaskBtn').style.display = 'none';
+                            
                             // 恢复按钮和隐藏加载动画
                             if (submitBtn) submitBtn.style.display = 'block';
                             if (loadingSpinner) loadingSpinner.style.display = 'none';
@@ -1140,10 +1218,16 @@
                                 document.getElementById('downloadLink').href = task.result.download_url;
                                 document.getElementById('downloadSection').style.display = 'block';
                             }
+                            
+                            // 刷新历史记录
+                            loadExportHistory(1);
                         } else if (task.status === 'FAILED') {
                             clearInterval(pollInterval);
                             progressBar.classList.remove('progress-bar-animated');
                             progressBar.classList.add('bg-danger');
+                            
+                            // 隐藏停止按钮
+                            document.getElementById('stopTaskBtn').style.display = 'none';
                             
                             // 恢复按钮和隐藏加载动画
                             if (submitBtn) submitBtn.style.display = 'block';
@@ -1151,6 +1235,19 @@
                             
                             document.getElementById('progressMessage').textContent = 
                                 `任务失败：${task.error}`;
+                        } else if (task.status === 'CANCELLED') {
+                            clearInterval(pollInterval);
+                            progressBar.classList.remove('progress-bar-animated');
+                            progressBar.classList.add('bg-warning');
+                            
+                            // 隐藏停止按钮
+                            document.getElementById('stopTaskBtn').style.display = 'none';
+                            
+                            document.getElementById('progressMessage').textContent = 
+                                '任务已被取消';
+                            
+                            // 刷新历史记录
+                            loadExportHistory(1);
                         }
                     } else {
                         console.error('查询失败:', result.message);
@@ -1159,6 +1256,282 @@
                 .catch(error => {
                     console.error('查询进度失败:', error);
                 });
+        }
+        
+        // 加载导出历史记录
+        function loadExportHistory(page = 1, page_size = 20) {
+            fetch(`/fpa-generator/api/export-history?page=${page}&page_size=${page_size}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const { list, total, page: currentPage } = result.data;
+                        renderHistoryTable(list);
+                        renderPagination(currentPage, page_size, total);
+                    } else {
+                        document.getElementById('historyTableBody').innerHTML = 
+                            '<tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载历史记录失败:', error);
+                    document.getElementById('historyTableBody').innerHTML = 
+                        '<tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>';
+                });
+        }
+        
+        // 渲染历史记录表格
+        function renderHistoryTable(historyList) {
+            const tbody = document.getElementById('historyTableBody');
+            
+            if (!historyList || historyList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无历史记录</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = historyList.map(item => {
+                const statusClass = {
+                    'PENDING': 'warning',
+                    'RUNNING': 'info',
+                    'COMPLETED': 'success',
+                    'FAILED': 'danger',
+                    'CANCELLED': 'secondary'
+                }[item.status] || 'secondary';
+                
+                const fileSize = item.file_size ? (item.file_size / 1024).toFixed(2) + ' KB' : '-';
+                const funcCount = item.function_point_count || '-';
+                            
+                // 格式化时间为 YYYY-MM-DD HH:mm:ss（使用 GMT 时间，不转换时区）
+                const formatDateTime = (dateStr) => {
+                    if (!dateStr) return '-';
+                    const date = new Date(dateStr);
+                    // 使用 UTC 方法获取时间，避免时区转换
+                    const year = date.getUTCFullYear();
+                    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(date.getUTCDate()).padStart(2, '0');
+                    const hours = String(date.getUTCHours()).padStart(2, '0');
+                    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+                    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                };
+                
+                // 渲染进度条
+                const renderProgress = (progress) => {
+                    if (progress === null || progress === undefined) return '-';
+                    const progressNum = parseInt(progress);
+                    if (isNaN(progressNum)) return '-';
+                    
+                    // 根据进度值选择颜色
+                    let progressClass = 'bg-secondary';
+                    if (progressNum < 30) progressClass = 'bg-info';
+                    else if (progressNum < 70) progressClass = 'bg-warning';
+                    else progressClass = 'bg-success';
+                    
+                    return `
+                        <div style="width: 100px;" title="${progressNum}%">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar ${progressClass}" role="progressbar" 
+                                     style="width: ${progressNum}%;" 
+                                     aria-valuenow="${progressNum}" aria-valuemin="0" aria-valuemax="100">
+                                    <small style="font-size: 11px;">${progressNum}%</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                };
+                
+                let actionBtn = '';
+                if (item.status === 'COMPLETED' && item.output_filename) {
+                    actionBtn = `
+                        <div class="btn-group btn-group-sm" role="group" style="gap: 4px;">
+                            <a href="/fpa-generator/download/${item.output_filename}" 
+                               class="btn btn-sm btn-success" target="_blank"
+                               style="padding: 4px 8px; min-width: 32px;" title="下载">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="deleteHistory('${item.task_id}', '${item.original_filename}')"
+                                    style="padding: 4px 8px; min-width: 32px;" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>`;
+                } else if (item.status === 'COMPLETED' && !item.output_filename) {
+                    // 状态是 COMPLETED 但没有文件名，说明任务异常
+                    actionBtn = `
+                        <div class="btn-group btn-group-sm" role="group" style="gap: 4px;">
+                            <span class="badge badge-danger mr-2" style="font-size: 12px; padding: 4px 8px;" title="任务异常完成，请联系管理员">异常完成</span>
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="deleteHistory('${item.task_id}', '${item.original_filename}')"
+                                    style="padding: 4px 8px; min-width: 32px;" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>`;
+                } else if (item.status === 'RUNNING') {
+                    actionBtn = `
+                        <div class="btn-group btn-group-sm" role="group" style="gap: 4px;">
+                            <button type="button" class="btn btn-sm btn-warning" 
+                                    onclick="stopTask('${item.task_id}', '${item.original_filename}')"
+                                    style="padding: 4px 8px; min-width: 32px;" title="停止">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary" disabled style="padding: 4px 8px;">
+                                 <i class="fas fa-spinner fa-spin"></i>
+                            </button>
+                        </div>`;
+                } else if (item.status === 'PENDING') {
+                    actionBtn = `
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="deleteHistory('${item.task_id}', '${item.original_filename}')"
+                                style="padding: 4px 8px; min-width: 32px;" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>`;
+                } else if (item.status === 'FAILED') {
+                    actionBtn = `
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="deleteHistory('${item.task_id}', '${item.original_filename}')"
+                                style="padding: 4px 8px; min-width: 32px;" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>`;
+                } else if (item.status === 'CANCELLED') {
+                    actionBtn = `
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="deleteHistory('${item.task_id}', '${item.original_filename}')"
+                                style="padding: 4px 8px; min-width: 32px;" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>`;
+                } else {
+                    actionBtn = `<span class="badge badge-warning">等待中</span>`;
+                }
+                
+                return `
+                    <tr>
+                        <td><small>${item.task_id}</small></td>
+                        <td><small>${item.original_filename}</small></td>
+                        <td><small>${item.output_filename || '-'}</small></td>
+                        <td>${funcCount}</td>
+                        <td>${fileSize}</td>
+                        <td>${renderProgress(item.progress)}</td>
+                        <td><span class="badge badge-${statusClass}">${item.status}</span></td>
+                        <td><small>${formatDateTime(item.created_at)}</small></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // 渲染分页
+        function renderPagination(currentPage, pageSize, total) {
+            const totalPages = Math.ceil(total / pageSize);
+            const pagination = document.getElementById('historyPagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // 上一页
+            if (currentPage > 1) {
+                html += `<li class="page-item">
+                    <a class="page-link" href="#" onclick="loadExportHistory(${currentPage - 1}); return false;">上一页</a>
+                </li>`;
+            }
+            
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<li class="page-item active">
+                        <a class="page-link" href="#">${i}</a>
+                    </li>`;
+                } else {
+                    html += `<li class="page-item">
+                        <a class="page-link" href="#" onclick="loadExportHistory(${i}); return false;">${i}</a>
+                    </li>`;
+                }
+            }
+            
+            // 下一页
+            if (currentPage < totalPages) {
+                html += `<li class="page-item">
+                    <a class="page-link" href="#" onclick="loadExportHistory(${currentPage + 1}); return false;">下一页</a>
+                </li>`;
+            }
+            
+            pagination.innerHTML = html;
+        }
+        
+        // 删除历史记录
+        function deleteHistory(taskId, filename) {
+            // 二次确认提示框
+            const confirmed = confirm(`确定要删除这条历史记录吗？
+
+文件名：${filename}
+任务 ID：${taskId}
+
+此操作不可恢复！`);
+            
+            if (!confirmed) {
+                return; // 用户取消操作
+            }
+            
+            // 发送删除请求
+            fetch(`/fpa-generator/api/export-history/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('删除成功！');
+                    // 重新加载历史记录
+                    loadExportHistory(1);
+                } else {
+                    alert('删除失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败：' + error);
+            });
+        }
+        
+        // 停止运行中的任务
+        function stopTask(taskId, filename) {
+            // 二次确认提示框
+            const confirmed = confirm(`确定要停止这个运行中的任务吗？
+
+文件名：${filename}
+任务 ID：${taskId}
+
+停止后任务将无法恢复！`);
+            
+            if (!confirmed) {
+                return; // 用户取消操作
+            }
+            
+            // 发送停止请求
+            fetch(`/fpa-generator/api/task-cancel/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('任务已停止！');
+                    // 重新加载历史记录
+                    loadExportHistory(1);
+                } else {
+                    alert('停止失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('停止失败:', error);
+                alert('停止失败：' + error);
+            });
         }
     </script>
     {% endblock %}
