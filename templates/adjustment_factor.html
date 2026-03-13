@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}调整因子管理{% endblock %}
+
+{% block content %}
+<style>
+    /* 模态框层级优化 - 确保模态框在遮罩之上 */
+    .modal {
+        z-index: 2000 !important;
+    }
+    .modal-dialog {
+        z-index: 2010 !important;
+    }
+    .modal-content {
+        z-index: 2020 !important;
+        box-shadow: 0 10px 50px rgba(0,0,0,0.3);  /* 更强的阴影效果 */
+        border: 1px solid rgba(67, 97, 238, 0.2);  /* 淡蓝色边框 */
+    }
+    /* 完全隐藏遮罩层 */
+    .modal-backdrop {
+        display: none !important;
+    }
+    /* 模态框头部渐变效果 */
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, #4361ee, #3f37c9) !important;
+        box-shadow: 0 2px 10px rgba(67, 97, 238, 0.2);
+    }
+    .modal-header.bg-success {
+        background: linear-gradient(135deg, #4ade80, #22c55e) !important;
+        box-shadow: 0 2px 10px rgba(74, 222, 128, 0.2);
+    }
+    /* 模态框主体背景提亮 */
+    .modal-body {
+        background: #ffffff;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-sliders-h"></i>
+                调整因子管理
+            </h2>
+
+            <!-- 配置区域 -->
+            <div class="config-section">
+                <h4><i class="fas fa-cog"></i> 全局配置</h4>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <label>规模计数时机</label>
+                        <select id="scaleTiming" class="form-control">
+                            <option value="估算早期">估算早期</option>
+                            <option value="估算中期">估算中期</option>
+                            <option value="估算晚期">估算晚期</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>默认应用类型</label>
+                        <select id="applicationType" class="form-control">
+                            <option value="业务处理">业务处理</option>
+                            <option value="查询统计">查询统计</option>
+                            <option value="决策支持">决策支持</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-light btn-block" onclick="saveConfig()">
+                            <i class="fas fa-save"></i> 保存配置
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="showAddFactorModal()">
+                        <i class="fas fa-plus"></i> 新增调整因子
+                    </button>
+                    <button class="btn btn-success ml-2" onclick="showImportModal()">
+                        <i class="fas fa-file-excel"></i> 从 Excel 导入
+                    </button>
+                    <button class="btn btn-info ml-2" onclick="loadFactors()">
+                        <i class="fas fa-sync"></i> 刷新列表
+                    </button>
+                </div>
+            </div>
+
+            <!-- 调整因子列表 -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> 调整因子列表</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="factorTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="15%">因子分类</th>
+                                    <th width="20%">因子名称</th>
+                                    <th width="20%">选项名称</th>
+                                    <th width="10%">分值</th>
+                                    <th width="20%">公式</th>
+                                    <th width="10%">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="factorTableBody">
+                                <!-- 动态加载数据 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增/编辑调整因子模态框 -->
+<div class="modal fade" id="factorModal" tabindex="-1" aria-labelledby="factorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="factorModalLabel">新增调整因子</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="factorForm">
+                    <input type="hidden" id="factorId">
+                    <div class="form-group mb-3">
+                        <label>因子分类 *</label>
+                        <select id="factorCategory" class="form-control" required>
+                            <option value="应用类型">应用类型</option>
+                            <option value="质量特性">质量特性</option>
+                            <option value="开发语言">开发语言</option>
+                            <option value="开发团队背景">开发团队背景</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>因子名称 *</label>
+                        <input type="text" id="factorName" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>选项名称</label>
+                        <textarea id="optionName" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>分值</label>
+                        <input type="number" step="0.01" id="scoreValue" class="form-control" value="0">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>公式</label>
+                        <textarea id="formula" class="form-control" rows="2" placeholder="例如：=IF(C3=B12,D12,IF(C3=B13,D13,0))"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>显示顺序</label>
+                        <input type="number" id="displayOrder" class="form-control" value="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveFactor()">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导入 Excel 模态框 -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="importModalLabel">从 Excel 导入</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="form-group mb-3">
+                        <label>选择 Excel 文件</label>
+                        <input type="file" id="excelFile" class="form-control" accept=".xlsx,.xls">
+                        <small class="form-text text-muted">支持调整因子.xlsx 格式</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="importExcel()">
+                    <i class="fas fa-upload"></i> 导入
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // =============================================
+    // 工具函数：清理残留遮罩，防止模态框叠加卡死
+    // =============================================
+    function cleanupModal() {
+        // 移除所有残留的遮罩层
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        // 恢复 body 滚动状态
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    }
+
+    // 统一的模态框打开函数，防止重复实例
+    function openModal(modalId) {
+    const modalEl = document.getElementById(modalId);
+
+    // 先获取并销毁已有实例
+    let existingModal = bootstrap.Modal.getInstance(modalEl);
+    if (existingModal) {
+        existingModal.dispose();
+    }
+
+    // 清理残留 backdrop（在 dispose 之后）
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // 重新创建实例并显示 - 不使用 backdrop
+    const modal = new bootstrap.Modal(modalEl, {
+        backdrop: false,  // 完全禁用 backdrop
+        keyboard: true
+    });
+    
+    modal.show();
+    return modal;
+}
+
+    // 统一的模态框关闭函数
+    function closeModal(modalId) {
+    const modalEl = document.getElementById(modalId);
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+        modal.hide();
+        // hide 后 Bootstrap 会自动清理 backdrop，不需要手动干预
+    }
+}
+
+    // =============================================
+    // 页面加载初始化
+    // =============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('页面加载完成 - 调整因子管理');
+        
+        // 页面加载时先清理可能残留的遮罩
+        cleanupModal();
+        
+        loadFactors();
+        loadConfig();
+
+        // 监听所有模态框关闭事件，统一清理
+        document.getElementById('factorModal').addEventListener('hidden.bs.modal', function () {
+            setTimeout(() => {
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop && !document.querySelector('.modal.show')) {
+                    backdrop.remove();
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            }, 300); // 等待 Bootstrap 动画完成
+        });
+        
+        document.getElementById('importModal').addEventListener('hidden.bs.modal', function () {
+            setTimeout(() => {
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop && !document.querySelector('.modal.show')) {
+                    backdrop.remove();
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            }, 300);
+        });
+    });
+
+    // =============================================
+    // 调整因子列表
+    // =============================================
+    function loadFactors() {
+        $.get('/adjustment/api/factors', function(response) {
+            if (response.success) {
+                renderFactorTable(response.data);
+            } else {
+                alert('加载失败：' + response.message);
+            }
+        });
+    }
+
+    function renderFactorTable(data) {
+        const tbody = document.getElementById('factorTableBody');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>';
+            return;
+        }
+
+        data.forEach(function(factor) {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${factor.id}</td>
+                <td>${factor.factor_category || ''}</td>
+                <td>${factor.factor_name}</td>
+                <td>${factor.option_name || ''}</td>
+                <td>${factor.score_value || 0}</td>
+                <td><code class="formula-display">${factor.formula || ''}</code></td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editFactor(${factor.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger ml-1" onclick="deleteFactor(${factor.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+        });
+    }
+
+    // =============================================
+    // 全局配置
+    // =============================================
+    function loadConfig() {
+        $.get('/adjustment/api/config', function(response) {
+            if (response.success) {
+                response.data.forEach(function(config) {
+                    if (config.config_key === 'scale_timing') {
+                        document.getElementById('scaleTiming').value = config.config_value;
+                    } else if (config.config_key === 'application_type_default') {
+                        document.getElementById('applicationType').value = config.config_value;
+                    }
+                });
+            }
+        });
+    }
+
+    function saveConfig() {
+        const configs = [{
+            config_key: 'scale_timing',
+            config_value: document.getElementById('scaleTiming').value,
+            config_type: 'scale_timing',
+            description: '规模计数时机'
+        }];
+
+        $.ajax({
+            url: '/adjustment/api/config',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(configs[0]),
+            success: function(response) {
+                if (response.success) {
+                    alert('配置保存成功！');
+                } else {
+                    alert('保存失败：' + response.message);
+                }
+            }
+        });
+    }
+
+    // =============================================
+    // 新增调整因子
+    // =============================================
+    function showAddFactorModal() {
+        document.getElementById('factorModalLabel').textContent = '新增调整因子';
+        document.getElementById('factorForm').reset();
+        document.getElementById('factorId').value = '';
+        openModal('factorModal');
+    }
+
+    // =============================================
+    // 编辑调整因子
+    // =============================================
+    function editFactor(id) {
+        $.get('/adjustment/api/factors', function(response) {
+            if (response.success) {
+                const factor = response.data.find(f => f.id === id);
+                if (factor) {
+                    document.getElementById('factorId').value = factor.id;
+                    document.getElementById('factorCategory').value = factor.factor_category;
+                    document.getElementById('factorName').value = factor.factor_name;
+                    document.getElementById('optionName').value = factor.option_name || '';
+                    document.getElementById('scoreValue').value = factor.score_value;
+                    document.getElementById('formula').value = factor.formula || '';
+                    document.getElementById('displayOrder').value = factor.display_order;
+                    document.getElementById('factorModalLabel').textContent = '编辑调整因子';
+                    openModal('factorModal');
+                }
+            }
+        });
+    }
+
+    // =============================================
+    // 保存调整因子
+    // =============================================
+    function saveFactor() {
+        const factorId = document.getElementById('factorId').value;
+        const data = {
+            factor_name: document.getElementById('factorName').value,
+            factor_category: document.getElementById('factorCategory').value,
+            option_name: document.getElementById('optionName').value,
+            score_value: parseFloat(document.getElementById('scoreValue').value) || 0,
+            formula: document.getElementById('formula').value,
+            display_order: parseInt(document.getElementById('displayOrder').value) || 0
+        };
+
+        const url = factorId ? `/adjustment/api/factor/${factorId}` : '/adjustment/api/factor';
+        const method = factorId ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('保存成功！');
+                    closeModal('factorModal');
+                    loadFactors();
+                } else {
+                    alert('保存失败：' + response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('保存失败：' + (xhr.responseJSON?.message || '网络错误'));
+            }
+        });
+    }
+
+    // =============================================
+    // 删除调整因子
+    // =============================================
+    function deleteFactor(id) {
+        if (!confirm('确定要删除这个调整因子吗？')) {
+            return;
+        }
+
+        $.ajax({
+            url: `/adjustment/api/factor/${id}`,
+            method: 'DELETE',
+            success: function(response) {
+                if (response.success) {
+                    alert('删除成功！');
+                    loadFactors();
+                } else {
+                    alert('删除失败：' + response.message);
+                }
+            }
+        });
+    }
+
+    // =============================================
+    // 导入 Excel
+    // =============================================
+    function showImportModal() {
+        document.getElementById('importForm').reset();
+        openModal('importModal');
+    }
+
+    function importExcel() {
+        const fileInput = document.getElementById('excelFile');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('请选择文件');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        $.ajax({
+            url: '/adjustment/api/import-excel',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    closeModal('importModal');
+                    loadFactors();
+                } else {
+                    alert('导入失败：' + response.message);
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
