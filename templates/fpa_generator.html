@@ -1093,10 +1093,10 @@
             // 立即查询一次
             pollTaskStatus(taskId);
             
-            // 每 2 秒轮询一次
+            // 每 50 秒轮询一次
             pollInterval = setInterval(() => {
                 pollTaskStatus(taskId);
-            }, 2000);
+            }, 50000);
         }
         
         function pollTaskStatus(taskId) {

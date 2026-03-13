@@ -148,16 +148,16 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
             
             # 尝试多种模式提取 JSON
             sub_points_data = None
-            
+                        
             # 模式 1: 提取 ```json 包裹的内容
             json_match = re.search(r'```json\s*(.+?)\s*```', response, re.DOTALL)
             if json_match:
                 try:
                     sub_points_data = json.loads(json_match.group(1))
                     logger.info(f"[AI_EXPAND] 功能点 {i+1}: 从 markdown json 块中解析成功")
-                except json.JSONDecodeError:
-                    pass
-            
+                except json.JSONDecodeError as e:
+                    logger.warning(f"[AI_EXPAND] 功能点 {i+1}: markdown json 解析失败 - {e}")
+                        
             # 模式 2: 直接查找 JSON 数组（没有 markdown 标记）
             if not sub_points_data:
                 json_array_match = re.search(r'\[\s*\{.*?\}\s*\]', response, re.DOTALL)
@@ -165,23 +165,40 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
                     try:
                         sub_points_data = json.loads(json_array_match.group(0))
                         logger.info(f"[AI_EXPAND] 功能点 {i+1}: 从纯 JSON 数组中解析成功")
-                    except json.JSONDecodeError:
-                        pass
-            
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"[AI_EXPAND] 功能点 {i+1}: 纯 JSON 解析失败 - {e}")
+                        # 记录失败时的原始内容片段
+                        logger.warning(f"[AI_EXPAND] 功能点 {i+1}: 失败内容片段：{json_array_match.group(0)[:200]}")
+                        
             # 模式 3: 尝试修复常见的 JSON 格式问题
             if not sub_points_data:
                 # 移除可能的中文冒号，替换为英文冒号
-                fixed_response = response.replace(':', ':').replace(':', ':')
+                fixed_response = response.replace(',', ',').replace(':', ':')
                 json_array_match = re.search(r'\[\s*\{.*?\}\s*\]', fixed_response, re.DOTALL)
                 if json_array_match:
                     try:
                         sub_points_data = json.loads(json_array_match.group(0))
                         logger.info(f"[AI_EXPAND] 功能点 {i+1}: 从修复后的 JSON 中解析成功")
                     except json.JSONDecodeError as e:
-                        logger.warning(f"[AI_EXPAND] 功能点 {i+1}: JSON 解析失败 - {e}")
+                        logger.warning(f"[AI_EXPAND] 功能点 {i+1}: 修复后 JSON 仍失败 - {e}")
                         logger.warning(f"[AI_EXPAND] 功能点 {i+1}: 原始响应片段：{response[:300]}")
+                        
+            # 模式 4: 如果还是失败，尝试直接使用 eval（仅在内网环境，安全性可控）
+            if not sub_points_data:
+                try:
+                    # 清理响应，只保留 JSON 部分
+                    json_start = response.find('[')
+                    json_end = response.rfind(']') + 1
+                    if json_start >= 0 and json_end > json_start:
+                        json_str = response[json_start:json_end]
+                        # 替换中文标点
+                        json_str = json_str.replace(',', ',').replace(':', ':')
+                        sub_points_data = eval(json_str)
+                        logger.info(f"[AI_EXPAND] 功能点 {i+1}: 使用 eval 解析成功（不推荐）")
+                except Exception as e:
+                    logger.warning(f"[AI_EXPAND] 功能点 {i+1}: eval 也失败了 - {e}")
             
-            if sub_points_data:
+            if sub_points_data and isinstance(sub_points_data, list) and len(sub_points_data) > 0:
                 logger.info(f"[AI_EXPAND] 功能点 {i+1}: 解析到 {len(sub_points_data)} 个子功能点")
                 
                 # 创建新的功能点
