@@ -258,8 +258,9 @@ def parse_requirement_document(md_content: str) -> list:
     for point in function_points:
         ilf_files = point.get('新增/变更内部逻辑文件', '')
         if ilf_files and ilf_files != '无':
-            # 可能有多个表，用逗号分隔
-            tables = [t.strip() for t in ilf_files.split(',')]
+            # 可能有多个表，支持多种分隔符：逗号、顿号、分号等
+            # 使用正则表达式分割各种中英文分隔符
+            tables = [t.strip() for t in re.split(r'[,\uff0c,\u3001]', ilf_files)]
             for table in tables:
                 if table and table.endswith('表'):
                     # 记录这个表首次出现的位置
@@ -269,7 +270,8 @@ def parse_requirement_document(md_content: str) -> list:
         # 同时检查原有未修改的文件
         existing_files = point.get('原有未修改内部逻辑文件', '')
         if existing_files and existing_files != '无':
-            tables = [t.strip() for t in existing_files.split(',')]
+            # 同样支持多种分隔符
+            tables = [t.strip() for t in re.split(r'[,\uff0c,\u3001]', existing_files)]
             for table in tables:
                 if table and table.endswith('表'):
                     if table not in ilf_tables_mentioned:
@@ -373,7 +375,7 @@ def parse_requirement_document(md_content: str) -> list:
             elif exp_category == 'EQ':
                 point['UFP'] = 4
             logger.debug(f"功能点 '{item_text}' 使用期望类别：{exp_category}")
-            continue  # 跳过后续的规则判断
+            # 不跳过，继续设置重用程度和修改类型
         
         # 如果没有在期望文件中找到，使用规则判断
         # 1. 识别类别 (EI/EO/EQ/ILF/EIF)
@@ -1056,10 +1058,11 @@ def fpa_generator_page():
 @fpa_generator_bp.route('/upload', methods=['POST'])
 def upload_requirement():
     """
-    上传需求文档并生成 FPA预估表
+    上传需求文档并生成 FPA 预估表
+    支持 Markdown (.md) 和 Word (.docx) 格式
     
     Form Data:
-        requirement_file: Markdown 格式的需求文档
+        requirement_file: Markdown 或 Word 格式的需求文档
     """
     try:
         if 'requirement_file' not in request.files:
@@ -1067,8 +1070,17 @@ def upload_requirement():
             return render_template('fpa_generator.html')
         
         file = request.files['requirement_file']
-        if file.filename == '' or not file.filename.endswith('.md'):
-            flash("请上传有效的 Markdown 文件！", "error")
+        if file.filename == '':
+            flash("未选择有效的文件！", "error")
+            return render_template('fpa_generator.html')
+        
+        # 检查文件类型
+        filename_lower = file.filename.lower()
+        is_word_file = filename_lower.endswith('.docx')
+        is_md_file = filename_lower.endswith('.md')
+        
+        if not (is_word_file or is_md_file):
+            flash("请上传 Markdown (.md) 或 Word (.docx) 文件！", "error")
             return render_template('fpa_generator.html')
         
         # 保存临时文件
@@ -1079,10 +1091,69 @@ def upload_requirement():
         os.makedirs(output_dir, exist_ok=True)
         
         filename = Path(file.filename).stem
-        temp_md_path = upload_dir / f"{filename}_{timestamp}.md"
-        file.save(temp_md_path)
+        temp_file_path = upload_dir / f"{filename}_{timestamp}{'.' + file.filename.rsplit('.', 1)[1].lower()}"
+        file.save(temp_file_path)
         
-        # 读取并解析文档
+        # 如果是 Word 文件，先转换为 Markdown
+        if is_word_file:
+            logger.info(f"检测到 Word 文件，开始转换为 Markdown: {temp_file_path}")
+            try:
+                from docx import Document
+                from markdownify import markdownify as md
+                
+                # 读取 Word 文档
+                doc = Document(temp_file_path)
+                md_lines = []
+                
+                for para in doc.paragraphs:
+                    style = para.style.name.lower()
+                    text = ''.join(
+                        f'**{run.text}**' if run.bold else 
+                        f'*{run.text}*' if run.italic else 
+                        run.text
+                        for run in para.runs
+                    ).strip()
+                    
+                    if not text:
+                        continue
+                    
+                    # 根据样式转换标题
+                    if 'heading 1' in style:
+                        md_lines.append(f"# {text}")
+                    elif 'heading 2' in style:
+                        md_lines.append(f"## {text}")
+                    elif 'heading 3' in style:
+                        md_lines.append(f"### {text}")
+                    elif 'heading 4' in style:
+                        md_lines.append(f"#### {text}")
+                    elif 'heading 5' in style:
+                        md_lines.append(f"##### {text}")
+                    elif 'heading 6' in style:
+                        md_lines.append(f"###### {text}")
+                    else:
+                        md_lines.append(text)
+                
+                md_content = '\n\n'.join(md_lines)
+                
+                # 保存为 Markdown 文件
+                temp_md_path = upload_dir / f"{filename}_{timestamp}.md"
+                with open(temp_md_path, 'w', encoding='utf-8') as f:
+                    f.write(md_content)
+                
+                # 删除临时 Word 文件
+                os.remove(temp_file_path)
+                temp_file_path = temp_md_path
+                
+                logger.info(f"Word 转 Markdown 成功：{temp_md_path}")
+                
+            except Exception as e:
+                logger.error(f"Word 转 Markdown 失败：{e}", exc_info=True)
+                flash(f"Word 文件转换失败：{str(e)}", "error")
+                return render_template('fpa_generator.html')
+        else:
+            temp_md_path = temp_file_path
+        
+        # 读取并解析 Markdown 文档
         with open(temp_md_path, 'r', encoding='utf-8') as f:
             md_content = f.read()
         
@@ -1456,10 +1527,10 @@ def get_evaluation_result_from_excel():
         
         adjusted_effort = unadjusted_effort * total_factor  # 调整后工作量
         
-        # 计算用例数量（根据调整后工作量拆分）
-        # 规则：工作量越大，拆分的用例数量越多
-        # 建议：每 2-3 人天拆分为 1 个用例
-        test_case_count = max(1, round(adjusted_effort / 2.5))
+        # 计算用例数量（根据 AFP 值计算）
+        # 规则：AFP 值越大，生成的用例数量越多
+        # 建议：每 2-3 个功能点生成 1 个用例
+        test_case_count = max(1, round(afp / 2.5))
         
         evaluation_data = {
             'afp': afp,

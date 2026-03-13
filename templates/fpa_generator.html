@@ -404,9 +404,9 @@
                                 <button type="button" class="btn btn-success" onclick="loadFromExcel()">
                                     <i class="fas fa-file-excel"></i> 从 Excel 加载
                                 </button>
-                                <button type="button" class="btn btn-secondary" onclick="calculateEvaluationResult()">
-                                    <i class="fas fa-calculator"></i> 重新计算
-                                </button>
+{#                                <button type="button" class="btn btn-secondary" onclick="calculateEvaluationResult()">#}
+{#                                    <i class="fas fa-calculator"></i> 重新计算#}
+{#                                </button>#}
                                 <button type="button" class="btn btn-primary" onclick="saveEvaluationResult()">
                                     <i class="fas fa-save"></i> 保存评估结果
                                 </button>
@@ -421,9 +421,9 @@
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt icon-upload"></i>
                                     <h4>点击选择文件或拖拽到此处</h4>
-                                    <p class="text-muted">支持 Markdown (.md) 格式的需求规格说明书</p>
+                                    <p class="text-muted">支持 Markdown (.md) 和 Word (.docx) 格式的需求规格说明书</p>
                                     <input type="file" id="fileInput" name="requirement_file" 
-                                           accept=".md" style="display: none;">
+                                           accept=".md,.docx" style="display: none;">
                                 </div>
                                                             
                                 <div class="alert alert-warning mt-3">
@@ -518,9 +518,9 @@
                     <div class="card-body">
                         <h6>操作步骤：</h6>
                         <ol>
-                            <li><strong>准备文档：</strong>确保需求文档为 Markdown 格式，包含完整的功能点描述</li>
+                            <li><strong>准备文档：</strong>确保需求文档为 Markdown (.md) 或 Word (.docx) 格式，包含完整的功能点描述</li>
                             <li><strong>上传文档：</strong>点击上传区域或拖拽文件到上传框</li>
-                            <li><strong>生成表格：</strong>点击"开始生成 FPA预估表"按钮</li>
+                            <li><strong>生成表格：</strong>点击“开始生成 FPA 预估表”按钮</li>
                             <li><strong>下载结果：</strong>生成成功后点击下载按钮获取 Excel 文件</li>
                         </ol>
                         
