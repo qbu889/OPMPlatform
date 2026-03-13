@@ -625,33 +625,50 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
     ws3 = wb.create_sheet(title='3. 调整因子')
     
     # 设置"3. 调整因子"的标题
-    ws3.merge_cells('A1:I1')
-    ws3['A1'] = '2.调整因子列表'
+    ws3.merge_cells('A1:C1')
+    ws3['A1'] = '3. 调整因子列表'
     ws3['A1'].font = Font(bold=True, size=16)
     ws3['A1'].alignment = Alignment(horizontal='center', vertical='center')
     ws3.row_dimensions[1].height = 40
     
-    # 调整因子表头 (A~D 列)
-    ws3['A2'] = '规模计数时机'
-    ws3['C2'] = '估算中期'
-    ws3['D2'] = 1.21
+    # 表头 (第 2 行)
+    ws3['A2'] = '因子类型'
+    ws3['B2'] = '因子名称'
+    ws3['C2'] = '因子计算结果'
     
-    # 完整的调整因子数据
-    full_factor_data = [
+    # 设置表头样式
+    for col in ['A', 'B', 'C']:
+        cell = ws3.cell(row=2, column=ord(col) - ord('A') + 1)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = thin_border
+    ws3.row_dimensions[2].height = 30
+    
+    # 完整的调整因子数据（按照参考 Excel 格式）
+    factor_data = [
+        # 规模计数时机
+        ('规模计数时机', '估算中期', "=IF('3. 调整因子'!B3='3. 调整因子'!B37,'3. 调整因子'!D37,IF('3. 调整因子'!B3='3. 调整因子'!B38,'3. 调整因子'!D38,IF('3. 调整因子'!B3='3. 调整因子'!B39,'3. 调整因子'!D39,IF('3. 调整因子'!B3='3. 调整因子'!B40,'3. 调整因子'!D40,1.21))))"),
         # 应用类型
-        ('应用类型', None, '业务处理', 1),
-        ('质量特性', '分布式处理', '没有明示对分布式处理的需求事项', -1),
-        (None, '性能', '没有明示对性能的特别需求事项或活动，因此提供基本性能', -1),
-        (None, '可靠性', '没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性', -1),
-        (None, '多重站点', '在相同用途的硬件或软件环境下运行', -1),
-        ('开发语言', None, 'JAVA、C++、C#及其他同级别语言/平台', 1),
-        ('开发团队背景', None, '为本行业 (政府) 开发过类似的软件', 0.8),
+        ('应用类型', '业务处理', "=IF(B4=B13,C13,IF(B4=B14,C14,IF(B4=B15,C15,IF(B4=B16,C16,IF(B4=B17,C17,IF(B4=B18,C18,IF(B4=B19,C19,IF(B4=B20,C20,IF(B4=B21,C21,1)))))))))"),
+        # 质量特性 - 分布式处理
+        ('质量特性 - 分布式处理', '没有明示对分布式处理的需求事项', "=IF(B5=C23,D23,IF(B5=C24,D24,IF(B5=C25,D25,-10)))"),
+        # 质量特性 - 性能
+        ('质量特性 - 性能', '没有明示对性能的特别需求事项或活动，因此提供基本性能', "=IF(B6=C26,D26,IF(B6=C27,D27,IF(B6=C28,D28,-10)))"),
+        # 质量特性 - 可靠性
+        ('质量特性 - 可靠性', '没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性', "=IF(B7=C29,D29,IF(B7=C30,D30,IF(B7=C31,D31,-10)))"),
+        # 质量特性 - 多重站点
+        ('质量特性 - 多重站点', '在相同用途的硬件或软件环境下运行', "=IF(B8=C32,D32,IF(B8=C33,D33,IF(B8=C34,D34,-10)))"),
+        # 开发语言
+        ('开发语言', 'JAVA、C++、C#及其他同级别语言/平台', "=IF(B9=B44,C44,IF(B9=B45,C45,IF(B9=B46,C46,1)))"),
+        # 开发团队背景
+        ('开发团队背景', '为本行业（政府）开发过类似的软件', "=IF(B10=B49,C49,IF(B10=B50,C50,IF(B10=B51,C51,0.8)))"),
         # 空行
-        (None, None, None, None),
+        (None, None, None),
         # 应用类型详细说明
-        (None, '应用类型', '描述', '调整因子'),
+        ('应用类型', '描述', '调整因子'),
         (None, '业务处理', '办公自动化系统：人事、会计、工资、销售等经营管理及业务处理用软件等', 1),
-        (None, '应用集成', '企业总线、应用集成等', 1.2),
+        (None, '应用集成', '企业服务总线、应用集成等', 1.2),
         (None, '科技', '科学计算、仿真、基于复杂算法的统计分析等', 1.2),
         (None, '多媒体', '图形、影像、声音等多媒体应用领域：地理信息系统：教育和娱乐等', 1.5),
         (None, '智能信息', '自然语言处理、大模型、计算机视觉、智能决策、专家系统等', 1.7),
@@ -659,19 +676,53 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         (None, '通信控制', '通信协议、仿真、交换机软件、全球定位系统等', 1.9),
         (None, '流程控制', '实时系统控制、机器人控制、嵌入式软件等', 2),
         # 空行
-        (None, None, None, None),
-        # 功能点类别说明
-        (None, '功能点类别', '说明', 'UFP 值'),
-        (None, 'ILF', 'ILF 为内部逻辑文件数量', 7),
-        (None, 'EO', 'EO 为外部输出数量', 5),
-        (None, 'EIF', 'EIF 为外部逻辑文件数量', 5),
-        (None, 'EI', 'EI 为外部输入数量', 4),
-        (None, 'EQ', 'EQ 为外部查询数量', 4),
+        (None, None, None),
+        # 质量特性详细说明
+        ('调整因子', '判断标准', '调整因子'),
+        (None, '分布式处理', '没有明示对分布式处理的需求事项', -1),
+        (None, None, '通过网络进行客户端/服务器及网络基础应用分布处理和传输', 0),
+        (None, None, '在多个服务器及处理器上同时相互执行计算机系统中的处理功能', 1),
+        (None, '性能', '没有明示对性能的特别需求事项或活动，因此提供基本性能', -1),
+        (None, None, '应答时间或处理率对高峰时间或所有业务时间来说都很重要，对连动系统结束处理时间的限制', 0),
+        (None, None, '为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具', 1),
+        (None, '可靠性', '没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性', -1),
+        (None, None, '发生故障时可轻易修复，带来一定不便或经济损失', 0),
+        (None, None, '发生故障时很难复，发生重大经济损失或有生命危害', 1),
+        (None, '多重站点', '在相同用途的硬件或软件环境下运行', -1),
+        (None, None, '在用途类似的硬件或软件环境下运行', 0),
+        (None, None, '在不同用途的硬件或软件环境下运行', 1),
+        # 空行
+        (None, None, None),
+        # 规模变更调整因子 (CF)
+        (None, '规模变更调整因子 (CF)', None),
+        (None, '估算早期', '概算、预算阶段', 1.39),
+        (None, '估算中期', '投标、项目计划阶段', 1.21),
+        (None, '估算晚期', '需求分析阶段', 1.1),
+        (None, '项目完成', '项目交付后及运维阶段', 1),
+        # 空行
+        (None, None, None),
+        # 开发语言详细说明
+        (None, '开发语言', None, '调整因子'),
+        (None, 'C 及其他同级别语言/平台', None, 1.2),
+        (None, 'JAVA、C++、C#及其他同级别语言/平台', None, 1),
+        (None, 'PowerBuilder、ASP 及其他同级别语言/平台', None, 0.8),
+        # 空行
+        (None, None, None),
+        # 开发团队背景详细说明
+        (None, '开发团队背景', None, '调整因子'),
+        (None, '为本行业（政府）开发过类似的软件', None, 0.8),
+        (None, '为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件', None, 1),
+        (None, '未开发过类似软件', None, 1.2),
     ]
     
     row_idx = 3
-    for data in full_factor_data:
-        col_a, col_b, col_c, col_d = data
+    for data in factor_data:
+        if len(data) == 3:
+            col_a, col_b, col_c = data
+            col_d = None
+        else:
+            col_a, col_b, col_c, col_d = data
+            
         if col_a is not None:
             ws3.cell(row=row_idx, column=1, value=col_a).alignment = Alignment(horizontal='left', vertical='center')
         if col_b is not None:
@@ -689,9 +740,9 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
         row_idx += 1
     
     # 设置列宽
-    ws3.column_dimensions['A'].width = 15
-    ws3.column_dimensions['B'].width = 20
-    ws3.column_dimensions['C'].width = 50
+    ws3.column_dimensions['A'].width = 25
+    ws3.column_dimensions['B'].width = 50
+    ws3.column_dimensions['C'].width = 15
     ws3.column_dimensions['D'].width = 12
     # E~I 列设置为空但需要存在
     for col in ['E', 'F', 'G', 'H', 'I']:

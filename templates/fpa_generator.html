@@ -201,6 +201,133 @@
                             </div>
                         {% endif %}
                         
+                        <!-- 调整因子列表 - 始终显示 -->
+                        <div class="mt-5">
+                            <h4 class="mb-3"><i class="fas fa-list"></i> 调整因子列表</h4>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="adjustmentFactorTable">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th style="width: 25%;">因子类型</th>
+                                            <th style="width: 50%;">因子名称</th>
+                                            <th style="width: 25%;">因子计算结果</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 规模计数时机 -->
+                                        <tr>
+                                            <td><strong>规模计数时机</strong></td>
+                                            <td>
+                                                <select class="form-control" id="cfTiming">
+                                                    <option value="估算早期">估算早期（概算、预算阶段）</option>
+                                                    <option value="估算中期" selected>估算中期（投标、项目计划阶段）</option>
+                                                    <option value="估算晚期">估算晚期（需求分析阶段）</option>
+                                                    <option value="项目完成">项目完成（项目交付后及运维阶段）</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="cf" value="1.21" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 应用类型 -->
+                                        <tr>
+                                            <td><strong>应用类型</strong></td>
+                                            <td>
+                                                <select class="form-control" id="applicationType">
+                                                    <option value="业务处理" selected>业务处理（办公自动化系统：人事、会计、工资、销售等经营管理及业务处理用软件等）</option>
+                                                    <option value="应用集成">应用集成（企业服务总线、应用集成等）</option>
+                                                    <option value="科技">科技（科学计算、仿真、基于复杂算法的统计分析等）</option>
+                                                    <option value="多媒体">多媒体（图形、影像、声音等多媒体应用领域：地理信息系统：教育和娱乐等）</option>
+                                                    <option value="智能信息">智能信息（自然语言处理、大模型、计算机视觉、智能决策、专家系统等）</option>
+                                                    <option value="基础软件/支撑软件">基础软件/支撑软件（操作系统、数据库系统、集成开发环境、自动化开发/设计工具等）</option>
+                                                    <option value="通信控制">通信控制（通信协议、仿真、交换机软件、全球定位系统等）</option>
+                                                    <option value="流程控制">流程控制（实时系统控制、机器人控制、嵌入式软件等）</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 质量特性 - 分布式处理 -->
+                                        <tr>
+                                            <td><strong>质量特性 - 分布式处理</strong></td>
+                                            <td>
+                                                <select class="form-control" id="distributedProcessing">
+                                                    <option value="没有明示对分布式处理的需求事项" selected>没有明示对分布式处理的需求事项 (-1)</option>
+                                                    <option value="通过网络进行客户端/服务器及网络基础应用分布处理和传输">通过网络进行客户端/服务器及网络基础应用分布处理和传输 (0)</option>
+                                                    <option value="在多个服务器及处理器上同时相互执行计算机系统中的处理功能">在多个服务器及处理器上同时相互执行计算机系统中的处理功能 (1)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorDistributed" value="-1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 质量特性 - 性能 -->
+                                        <tr>
+                                            <td><strong>质量特性 - 性能</strong></td>
+                                            <td>
+                                                <select class="form-control" id="performance">
+                                                    <option value="没有明示对性能的特别需求事项或活动，因此提供基本性能" selected>没有明示对性能的特别需求事项或活动，因此提供基本性能 (-1)</option>
+                                                    <option value="应答时间或处理率对高峰时间或所有业务时间来说都很重要，对连动系统结束处理时间的限制">应答时间或处理率对高峰时间或所有业务时间来说都很重要 (0)</option>
+                                                    <option value="为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具">为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具 (1)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorPerformance" value="-1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 质量特性 - 可靠性 -->
+                                        <tr>
+                                            <td><strong>质量特性 - 可靠性</strong></td>
+                                            <td>
+                                                <select class="form-control" id="reliability">
+                                                    <option value="没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性" selected>没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性 (-1)</option>
+                                                    <option value="发生故障时可轻易修复，带来一定不便或经济损失">发生故障时可轻易修复，带来一定不便或经济损失 (0)</option>
+                                                    <option value="发生故障时很难复，发生重大经济损失或有生命危害">发生故障时很难复，发生重大经济损失或有生命危害 (1)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorReliability" value="-1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 质量特性 - 多重站点 -->
+                                        <tr>
+                                            <td><strong>质量特性 - 多重站点</strong></td>
+                                            <td>
+                                                <select class="form-control" id="multiSite">
+                                                    <option value="在相同用途的硬件或软件环境下运行" selected>在相同用途的硬件或软件环境下运行 (-1)</option>
+                                                    <option value="在用途类似的硬件或软件环境下运行">在用途类似的硬件或软件环境下运行 (0)</option>
+                                                    <option value="在不同用途的硬件或软件环境下运行">在不同用途的硬件或软件环境下运行 (1)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorMultiSite" value="-1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 开发语言 -->
+                                        <tr>
+                                            <td><strong>开发语言</strong></td>
+                                            <td>
+                                                <select class="form-control" id="language">
+                                                    <option value="C 及其他同级别语言/平台">C 及其他同级别语言/平台 (1.2)</option>
+                                                    <option value="JAVA、C++、C#及其他同级别语言/平台" selected>JAVA、C++、C#及其他同级别语言/平台 (1.0)</option>
+                                                    <option value="PowerBuilder、ASP 及其他同级别语言/平台">PowerBuilder、ASP 及其他同级别语言/平台 (0.8)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00" readonly></td>
+                                        </tr>
+                                        
+                                        <!-- 开发团队背景 -->
+                                        <tr>
+                                            <td><strong>开发团队背景</strong></td>
+                                            <td>
+                                                <select class="form-control" id="teamBackground">
+                                                    <option value="为本行业（政府）开发过类似的软件" selected>为本行业（政府）开发过类似的软件 (0.8)</option>
+                                                    <option value="为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件">为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件 (1.0)</option>
+                                                    <option value="未开发过类似软件">未开发过类似软件 (1.2)</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80" readonly></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
                         <!-- 评估结果表 - 始终显示 -->
                         <div class="mt-5">
                             <h4 class="mb-3"><i class="fas fa-table"></i> 评估结果表</h4>
@@ -208,58 +335,66 @@
                                 <table class="table table-bordered table-hover" id="evaluationResultTable">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width: 50%;">项目</th>
-                                            <th style="width: 50%;">数值</th>
+                                            <th style="width: 30%;">类别</th>
+                                            <th style="width: 20%;">数值</th>
+                                            <th style="width: 50%;">说明</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>规模估算结果（单位：功能点）</td>
                                             <td><input type="number" step="0.01" class="form-control" id="afp" value="125.27"></td>
+                                            <td class="align-middle">AFP</td>
                                         </tr>
                                         <tr>
                                             <td>规模变更调整因子</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="cf" value="1.21"></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="cf" readonly value="1.21"></td>
+                                            <td class="align-middle">CF、项目阶段</td>
                                         </tr>
                                         <tr style="background-color: #f0f0f0;">
                                             <td><strong>调整后规模（单位：功能点）</strong></td>
-                                            <td><input type="number" step="0.01" class="form-control" id="adjustedScale" value="151.57" readonly></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="adjustedScale" value="151.57" readonly style="font-weight: bold;"></td>
+                                            <td class="align-middle">S，等于 AFP*CF</td>
                                         </tr>
                                         <tr>
                                             <td>基准生产率（单位：人时/功能点）</td>
                                             <td><input type="number" step="0.01" class="form-control" id="baseProductivity" value="10.12"></td>
+                                            <td class="align-middle">PDR，来自《2024 年软件行业基准数据》</td>
                                         </tr>
                                         <tr style="background-color: #f0f0f0;">
                                             <td><strong>未调整工作量（单位：人天）</strong></td>
-                                            <td><input type="number" step="0.01" class="form-control" id="unadjustedEffort" value="191.74" readonly></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="unadjustedEffort" value="191.74" readonly style="font-weight: bold;"></td>
+                                            <td class="align-middle">S*PDR/8h</td>
                                         </tr>
                                         <tr>
-                                            <td rowspan="5" class="align-middle"><strong>调整因子</strong></td>
-                                            <td>应用类型</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00"></td>
+                                            <td>调整因子 - 应用类型</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00" readonly></td>
+                                            <td class="align-middle">A，应用类型调整因子</td>
                                         </tr>
                                         <tr>
-                                            <td>质量特性</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="factorQuality" value="0.90"></td>
+                                            <td>调整因子 - 质量特性</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorQuality" value="0.90" readonly></td>
+                                            <td class="align-middle">B，质量特性调整因子</td>
                                         </tr>
                                         <tr>
-                                            <td>开发语言</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00"></td>
+                                            <td>调整因子 - 开发语言</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00" readonly></td>
+                                            <td class="align-middle">C，开发语言调整因子</td>
                                         </tr>
                                         <tr>
-                                            <td>开发团队背景</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80"></td>
-                                        </tr>
-                                        <tr style="background-color: #f0f0f0;">
-                                            <td colspan="1"><strong>调整因子乘积：<span id="totalFactor">0.72</span></strong></td>
+                                            <td>调整因子 - 开发团队背景</td>
+                                            <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80" readonly></td>
+                                            <td class="align-middle">D，开发团队背景调整因子</td>
                                         </tr>
                                         <tr style="background-color: #d4edda;">
                                             <td><strong>调整后工作量（单位：人天）</strong></td>
-                                            <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" readonly style="font-weight: bold; color: #155724;"></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" style="font-weight: bold; color: #155724;"></td>
+                                            <td class="align-middle"><strong>AE,S*PDR/8h*A*B*C*D</strong></td>
                                         </tr>
                                         <tr style="background-color: #fff3cd;">
-                                            <td><strong>生成用例数量</strong></td>
+                                            <td><strong>预计生成用例数量</strong></td>
                                             <td><input type="number" step="1" class="form-control" id="testCaseCount" value="55" readonly style="font-weight: bold;"></td>
+                                            <td class="align-middle">根据调整后工作量拆分</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -269,11 +404,11 @@
                                 <button type="button" class="btn btn-success" onclick="loadFromExcel()">
                                     <i class="fas fa-file-excel"></i> 从 Excel 加载
                                 </button>
-                                <button type="button" class="btn btn-primary" onclick="saveEvaluationResult()">
-                                    <i class="fas fa-save"></i> 保存评估结果
-                                </button>
                                 <button type="button" class="btn btn-secondary" onclick="calculateEvaluationResult()">
                                     <i class="fas fa-calculator"></i> 重新计算
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="saveEvaluationResult()">
+                                    <i class="fas fa-save"></i> 保存评估结果
                                 </button>
                                 <span id="saveStatus" class="ml-2"></span>
                             </div>
@@ -567,6 +702,11 @@
         
         // 计算评估结果
         function calculateEvaluationResult() {
+            // 如果用户正在编辑调整后工作量，跳过正向计算
+            if (effortInputChanged) {
+                return;
+            }
+            
             const afp = parseFloat(document.getElementById('afp').value) || 0;
             const cf = parseFloat(document.getElementById('cf').value) || 0;
             const baseProductivity = parseFloat(document.getElementById('baseProductivity').value) || 0;
@@ -585,20 +725,19 @@
             
             // 计算总调整因子
             const totalFactor = factorA * factorB * factorC * factorD;
-            document.getElementById('totalFactor').textContent = totalFactor.toFixed(2);
             
             // 计算调整后工作量
             const adjustedEffort = unadjustedEffort * totalFactor;
             document.getElementById('adjustedEffort').value = adjustedEffort.toFixed(2);
             
-            // 计算用例数量（根据调整后工作量拆分）
-            // 规则：工作量越大，拆分的用例数量越多
-            // 建议：每 2-3 人天拆分为 1 个用例
-            const testCaseCount = Math.max(1, Math.round(adjustedEffort / 2.5));
+            // 计算用例数量（根据 AFP 值计算）
+            // 规则：AFP 值越大，生成的用例数量越多
+            // 建议：每 2-3 个功能点生成 1 个用例
+            const testCaseCount = Math.max(1, Math.round(afp / 2.5));
             document.getElementById('testCaseCount').value = testCaseCount;
         }
         
-        // 从调整后工作量反向计算 UFP
+        // 从调整后工作量反向计算 AFP
         function calculateFromEffort(adjustedEffort) {
             const cf = parseFloat(document.getElementById('cf').value) || 1.21;
             const baseProductivity = parseFloat(document.getElementById('baseProductivity').value) || 10.12;
@@ -613,13 +752,11 @@
             const unadjustedEffort = adjustedEffort / totalFactor;
             const adjustedScale = (unadjustedEffort * 8) / baseProductivity;
             const afp = adjustedScale / cf;
-            const ufp = afp; // AFP ≈ UFP
             
             return {
-                afp: ufp,
+                afp: afp,
                 adjusted_scale: adjustedScale,
-                unadjusted_effort: unadjustedEffort,
-                target_ufp: ufp
+                unadjusted_effort: unadjustedEffort
             };
         }
         
@@ -627,6 +764,16 @@
         let effortInputChanged = false;
         
         document.addEventListener('DOMContentLoaded', function() {
+            // AFP 输入变化时，正向计算
+            const afpInput = document.getElementById('afp');
+            if (afpInput) {
+                afpInput.addEventListener('input', function() {
+                    effortInputChanged = false;
+                    calculateEvaluationResult();
+                });
+            }
+            
+            // 调整后工作量输入变化时，反向计算
             const effortInput = document.getElementById('adjustedEffort');
             if (effortInput) {
                 effortInput.addEventListener('input', function() {
@@ -645,11 +792,160 @@
                         const testCaseCount = Math.max(1, Math.round(adjustedEffort / 2.5));
                         document.getElementById('testCaseCount').value = testCaseCount;
                         
-                        console.log(`反向计算：调整后工作量=${adjustedEffort}, 目标 UFP=${result.target_ufp.toFixed(2)}`);
+                        console.log(`反向计算：调整后工作量=${adjustedEffort}, 目标 AFP=${result.afp.toFixed(2)}`);
                     }
                 });
             }
+            
+            // 基准生产率变化时，重新计算
+            const productivityInput = document.getElementById('baseProductivity');
+            if (productivityInput) {
+                productivityInput.addEventListener('input', function() {
+                    if (!effortInputChanged) {
+                        calculateEvaluationResult();
+                    }
+                });
+            }
+            
+            // 添加调整因子下拉框的事件监听器，自动更新因子值
+            addFactorEventListeners();
         });
+        
+        // 添加因子事件监听器
+        function addFactorEventListeners() {
+            // 规模计数时机
+            const cfTimingSelect = document.getElementById('cfTiming');
+            if (cfTimingSelect) {
+                cfTimingSelect.addEventListener('change', updateCfValue);
+                updateCfValue(); // 初始化
+            }
+            
+            // 应用类型
+            const appTypeSelect = document.getElementById('applicationType');
+            if (appTypeSelect) {
+                appTypeSelect.addEventListener('change', updateApplicationTypeFactor);
+                updateApplicationTypeFactor(); // 初始化
+            }
+            
+            // 质量特性的四个子项
+            ['distributedProcessing', 'performance', 'reliability', 'multiSite'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.addEventListener('change', updateQualityFactor);
+                }
+            });
+            updateQualityFactor(); // 初始化质量特性
+            
+            // 开发语言
+            const languageSelect = document.getElementById('language');
+            if (languageSelect) {
+                languageSelect.addEventListener('change', updateLanguageFactor);
+                updateLanguageFactor(); // 初始化
+            }
+            
+            // 开发团队背景
+            const teamSelect = document.getElementById('teamBackground');
+            if (teamSelect) {
+                teamSelect.addEventListener('change', updateTeamFactor);
+                updateTeamFactor(); // 初始化
+            }
+        }
+        
+        // 更新规模变更调整因子 (CF)
+        function updateCfValue() {
+            const timing = document.getElementById('cfTiming').value;
+            const cfMap = {
+                '估算早期': 1.39,
+                '估算中期': 1.21,
+                '估算晚期': 1.1,
+                '项目完成': 1.0
+            };
+            document.getElementById('cf').value = cfMap[timing] || 1.21;
+            calculateEvaluationResult();
+        }
+        
+        // 更新应用类型因子
+        function updateApplicationTypeFactor() {
+            const appType = document.getElementById('applicationType').value;
+            const factorMap = {
+                '业务处理': 1.0,
+                '应用集成': 1.2,
+                '科技': 1.2,
+                '多媒体': 1.5,
+                '智能信息': 1.7,
+                '基础软件/支撑软件': 1.7,
+                '通信控制': 1.9,
+                '流程控制': 2.0
+            };
+            document.getElementById('factorApplicationType').value = factorMap[appType] || 1.0;
+            calculateEvaluationResult();
+        }
+        
+        // 更新质量特性因子（四个子项分别计算）
+        function updateQualityFactor() {
+            const distributed = document.getElementById('distributedProcessing').value;
+            const performance = document.getElementById('performance').value;
+            const reliability = document.getElementById('reliability').value;
+            const multiSite = document.getElementById('multiSite').value;
+            
+            // 每个子项的分值
+            const scoreMap = {
+                '没有明示对分布式处理的需求事项': -1,
+                '通过网络进行客户端/服务器及网络基础应用分布处理和传输': 0,
+                '在多个服务器及处理器上同时相互执行计算机系统中的处理功能': 1,
+                '没有明示对性能的特别需求事项或活动，因此提供基本性能': -1,
+                '应答时间或处理率对高峰时间或所有业务时间来说都很重要，对连动系统结束处理时间的限制': 0,
+                '为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具': 1,
+                '没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性': -1,
+                '发生故障时可轻易修复，带来一定不便或经济损失': 0,
+                '发生故障时很难复，发生重大经济损失或有生命危害': 1,
+                '在相同用途的硬件或软件环境下运行': -1,
+                '在用途类似的硬件或软件环境下运行': 0,
+                '在不同用途的硬件或软件环境下运行': 1
+            };
+            
+            // 更新每个子项的因子值
+            document.getElementById('factorDistributed').value = (scoreMap[distributed] || -1).toFixed(2);
+            document.getElementById('factorPerformance').value = (scoreMap[performance] || -1).toFixed(2);
+            document.getElementById('factorReliability').value = (scoreMap[reliability] || -1).toFixed(2);
+            document.getElementById('factorMultiSite').value = (scoreMap[multiSite] || -1).toFixed(2);
+            
+            // 计算质量特性综合因子 = 1 + 0.025 * 总分
+            const totalScore = (scoreMap[distributed] || -1) + 
+                              (scoreMap[performance] || -1) + 
+                              (scoreMap[reliability] || -1) + 
+                              (scoreMap[multiSite] || -1);
+            const qualityFactor = 1 + 0.025 * totalScore;
+            
+            // 更新质量特性因子（用于后续计算）
+            document.getElementById('factorQuality').value = qualityFactor.toFixed(2);
+            
+            calculateEvaluationResult();
+        }
+        
+        // 更新开发语言因子
+        function updateLanguageFactor() {
+            const language = document.getElementById('language').value;
+            const factorMap = {
+                'C 及其他同级别语言/平台': 1.2,
+                'JAVA、C++、C#及其他同级别语言/平台': 1.0,
+                'PowerBuilder、ASP 及其他同级别语言/平台': 0.8
+            };
+            document.getElementById('factorLanguage').value = factorMap[language] || 1.0;
+            calculateEvaluationResult();
+        }
+        
+        // 更新开发团队背景因子
+        function updateTeamFactor() {
+            const team = document.getElementById('teamBackground').value;
+            const factorMap = {
+                '为本行业（政府）开发过类似的软件': 0.8,
+                '为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件': 1.0,
+                '未开发过类似软件': 1.2
+            };
+            document.getElementById('factorTeam').value = factorMap[team] || 0.8;
+            calculateEvaluationResult();
+        }
         
         // 从 Excel 加载评估结果
         function loadFromExcel() {
@@ -678,7 +974,7 @@
 文件：${response.file}
 规模估算结果：${data.afp.toFixed(2)} 功能点
 调整后工作量：${data.adjusted_effort.toFixed(2)} 人天
-生成用例数量：${data.test_case_count} 个`);
+预计生成用例数量：${data.test_case_count} 个`);
                     } else {
                         alert('加载失败：' + response.message);
                     }
@@ -835,6 +1131,10 @@
                             progressBar.classList.remove('progress-bar-animated');
                             progressBar.classList.add('bg-success');
                             
+                            // 恢复按钮和隐藏加载动画
+                            if (submitBtn) submitBtn.style.display = 'block';
+                            if (loadingSpinner) loadingSpinner.style.display = 'none';
+                            
                             // 显示下载按钮
                             if (task.result && task.result.download_url) {
                                 document.getElementById('downloadLink').href = task.result.download_url;
@@ -844,6 +1144,11 @@
                             clearInterval(pollInterval);
                             progressBar.classList.remove('progress-bar-animated');
                             progressBar.classList.add('bg-danger');
+                            
+                            // 恢复按钮和隐藏加载动画
+                            if (submitBtn) submitBtn.style.display = 'block';
+                            if (loadingSpinner) loadingSpinner.style.display = 'none';
+                            
                             document.getElementById('progressMessage').textContent = 
                                 `任务失败：${task.error}`;
                         }
