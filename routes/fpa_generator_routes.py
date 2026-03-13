@@ -1079,8 +1079,11 @@ def upload_requirement():
         is_word_file = filename_lower.endswith('.docx')
         is_md_file = filename_lower.endswith('.md')
         
+        logger.info(f"上传文件：{file.filename}, 是否 Word: {is_word_file}, 是否 MD: {is_md_file}")
+        
         if not (is_word_file or is_md_file):
-            flash("请上传 Markdown (.md) 或 Word (.docx) 文件！", "error")
+            logger.error(f"不支持的文件类型：{file.filename}")
+            flash(f"请上传 Markdown (.md) 或 Word (.docx) 文件！当前文件：{file.filename}", "error")
             return render_template('fpa_generator.html')
         
         # 保存临时文件
@@ -1163,7 +1166,7 @@ def upload_requirement():
             flash("未能从文档中提取到功能点信息！", "error")
             return render_template('fpa_generator.html')
         
-        # 从数据库读取评估结果中的 UFP 目标值
+        # 从数据库读取评估结果中的 AFP 目标值
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
@@ -1175,108 +1178,139 @@ def upload_requirement():
             eval_result = cursor.fetchone()
             cursor.close()
             conn.close()
-            
+                            
             if eval_result and eval_result.get('afp'):
-                # 计算目标 UFP = AFP / CF
-                target_afp = float(eval_result['afp'])
+                # 获取目标 AFP 值（来自 Excel 的"规模估算结果 (单位：功能点)"）
+                target_afp_from_excel = float(eval_result['afp'])
                 cf = WORK_PARAMS.get('规模变更调整因子', 1.21)
-                target_ufp = target_afp / cf
-                
-                logger.info(f"从数据库读取评估结果：目标 AFP={target_afp}, 目标 UFP={target_ufp:.2f}")
-                
-                # 分离 ILF 和非 ILF 功能点
-                non_ilf_points = [p for p in function_points if p.get('类别') != 'ILF']
-                ilf_points = [p for p in function_points if p.get('类别') == 'ILF']
-                
-                # 计算 ILF 表占用的 UFP（ILF 保持 UFP=7 不变）
-                ilf_ufp_total = sum(p.get('UFP', 7) for p in ilf_points)
-                
-                # 剩余 UFP 需要分配给非 ILF 功能点
-                remaining_ufp = target_ufp - ilf_ufp_total
-                
-                if remaining_ufp <= 0:
-                    logger.warning(f"ILF 已占用 {ilf_ufp_total} UFP，超过目标 UFP {target_ufp:.2f}，无法调整")
-                else:
-                    # 计算非 ILF 功能点的平均 UFP（按原始类别分配）
-                    # 统计各类别的数量
-                    category_counts = {}
-                    for point in non_ilf_points:
-                        category = point.get('类别', 'EO')
-                        category_counts[category] = category_counts.get(category, 0) + 1
-                    
-                    # 计算原始的平均 UFP
-                    original_avg_ufp = sum(p.get('UFP', 5) for p in non_ilf_points) / len(non_ilf_points) if non_ilf_points else 5
-                    
-                    # 计算需要多少个功能点才能达到目标 UFP
-                    needed_points_count = int(round(remaining_ufp / original_avg_ufp))
-                    current_count = len(non_ilf_points)
-                    
-                    logger.info(f"非 ILF 功能点数：{current_count}, ILF 功能点数：{len(ilf_points)}")
-                    logger.info(f"ILF 占用 UFP: {ilf_ufp_total}, 剩余 UFP: {remaining_ufp:.2f}")
-                    logger.info(f"原始平均 UFP: {original_avg_ufp:.2f}, 需要的功能点数：{needed_points_count}")
-                    
-                    # 如果需要更多功能点，自动扩展
-                    if needed_points_count > current_count:
-                        expand_count = needed_points_count - current_count
-                        logger.info(f"需要扩展 {expand_count} 个功能点")
-                        
-                        # 尝试使用 AI 辅助生成新的功能点
-                        try:
-                            # 从原始功能点中选择有代表性的进行拆分
-                            expanded_points = ai_assisted_expand_function_points(
-                                non_ilf_points, 
-                                expand_count
-                            )
-                            non_ilf_points.extend(expanded_points)
-                            logger.info(f"通过 AI 辅助扩展了 {len(expanded_points)} 个功能点")
-                        except Exception as ai_error:
-                            logger.warning(f"AI 辅助扩展失败：{ai_error}，将使用原始功能点数量")
-                            # 不进行扩展，保持原有功能点
-                        
-                        # 重新计算总功能点数
-                        final_non_ilf_count = len(non_ilf_points)
-                        logger.info(f"扩展后非 ILF 功能点数：{final_non_ilf_count}")
-                    
-                    # 重新分配 UFP，使总和等于目标值
-                    final_non_ilf_count = len(non_ilf_points)
-                    if final_non_ilf_count > 0:
-                        avg_ufp_per_point = remaining_ufp / final_non_ilf_count
-                        
-                        logger.info(f"最终非 ILF 功能点数：{final_non_ilf_count}, 平均每点 UFP: {avg_ufp_per_point:.2f}")
-                        
-                        for point in non_ilf_points:
-                            # 设置平均 UFP 值（四舍五入到整数）
-                            ufp_value = round(avg_ufp_per_point)
-                            point['UFP'] = ufp_value
                             
-                            # 根据类别和重用程度重新计算 AFP
-                            reuse = point.get('重用程度', '高')
-                            modify_type = point.get('修改类型', '新增')
+                # 计算当前解析的功能点 AFP 总和
+                current_afp = sum(point.get('AFP', 0) for point in function_points)
                             
-                            if modify_type == '新增':
-                                if reuse == '高':
-                                    point['AFP'] = round(ufp_value * 0.33, 2)  # 高重用，33%
-                                elif reuse == '中':
-                                    point['AFP'] = round(ufp_value * 0.67, 2)  # 中重用，67%
-                                else:
-                                    point['AFP'] = ufp_value  # 低重用，100%
+                # 计算 AFP 差值和扩展需求
+                afp_difference = target_afp_from_excel - current_afp
+                need_ai_expansion = current_afp < target_afp_from_excel
+                            
+                # 详细日志输出
+                logger.info("=" * 80)
+                logger.info("📊 AFP 数据对比分析")
+                logger.info("=" * 80)
+                logger.info(f"【1】从数据库读取的目标 AFP 值:")
+                logger.info(f"    - 来源：fpa_evaluation_result 表最新记录")
+                logger.info(f"    - target_afp_from_excel = {target_afp_from_excel:.2f}")
+                logger.info(f"")
+                logger.info(f"【2】当前生成的功能点 AFP 总和:")
+                logger.info(f"    - 功能点总数：{len(function_points)}个")
+                logger.info(f"    - current_afp = Σ(每个功能点的 AFP) = {current_afp:.2f}")
+                logger.info(f"")
+                logger.info(f"【3】AFP 差值计算:")
+                logger.info(f"    - afp_difference = target_afp_from_excel - current_afp")
+                logger.info(f"    - afp_difference = {target_afp_from_excel:.2f} - {current_afp:.2f}")
+                logger.info(f"    - afp_difference = {afp_difference:.2f}")
+                logger.info(f"")
+                logger.info(f"【4】AI 扩展判断:")
+                logger.info(f"    - 判断条件：current_afp < target_afp_from_excel")
+                logger.info(f"    - 判断公式：{current_afp:.2f} < {target_afp_from_excel:.2f}")
+                logger.info(f"    - need_ai_expansion = {need_ai_expansion}")
+                logger.info(f"")
+                            
+                if need_ai_expansion:
+                    logger.info(f"✅ 结论：需要 AI 扩展（当前 AFP {current_afp:.2f} < 目标 AFP {target_afp_from_excel:.2f}）")
+                    logger.info(f"   AFP 缺口：{afp_difference:.2f}")
+                                
+                    # 计算需要扩展的功能点数量
+                    avg_afp_per_point = 1.65  # UFP=5 × 0.33（高重用新增功能点）
+                    needed_expand_count = int((afp_difference / avg_afp_per_point) + 0.5)
+                                
+                    logger.info(f"")
+                    logger.info(f"【5】扩展功能点数量估算:")
+                    logger.info(f"    - 假设每功能点平均 AFP: {avg_afp_per_point:.2f} (UFP=5 × 0.33)")
+                    logger.info(f"    - 计算公式：needed_expand_count = afp_difference / avg_afp_per_point")
+                    logger.info(f"    - needed_expand_count = {afp_difference:.2f} / {avg_afp_per_point:.2f}")
+                    logger.info(f"    - needed_expand_count = {needed_expand_count}个")
+                    logger.info(f"")
+                    logger.info(f"   🎯 目标：通过 AI 扩展约 {needed_expand_count} 个功能点，使总 AFP 达到或超过 {target_afp_from_excel:.2f}")
+                    logger.info("=" * 80)
+                                
+                    # 尝试使用 AI 辅助生成新的功能点
+                    try:
+                        logger.info("")
+                        logger.info("🤖 [AI_EXPAND] 开始调用 AI 模型进行功能点拆分...")
+                        logger.info(f"[AI_EXPAND] 扩展目标：{needed_expand_count}个功能点")
+                        logger.info(f"[AI_EXPAND] AFP 目标：弥补 {afp_difference:.2f} 的差距")
+                        logger.info(f"[AI_EXPAND] 参考功能点：{len(function_points)}个")
+                                
+                        # 从原始功能点中选择有代表性的进行拆分
+                        expanded_points = ai_assisted_expand_function_points(
+                            function_points,  # 传入所有功能点作为参考
+                            needed_expand_count
+                        )
+                                                    
+                        if expanded_points:
+                            function_points.extend(expanded_points)
+                                                    
+                            # 重新计算扩展后的 AFP 总和
+                            new_afp_total = sum(point.get('AFP', 0) for point in function_points)
+                            afp_increase = new_afp_total - current_afp
+                            actual_avg_afp = afp_increase / len(expanded_points) if expanded_points else 0
+                                                    
+                            logger.info(f"")
+                            logger.info("✅ [AI_EXPAND] AI 扩展成功！详细统计:")
+                            logger.info(f"  【1】扩展功能点数量:")
+                            logger.info(f"      - 扩展前功能点总数：{len(function_points) - len(expanded_points)}个")
+                            logger.info(f"      - 扩展后功能点总数：{len(function_points)}个")
+                            logger.info(f"      - 新增功能点数量：{len(expanded_points)}个")
+                            logger.info(f"")
+                            logger.info(f"  【2】AFP 变化统计:")
+                            logger.info(f"      - 扩展前 AFP 总和：{current_afp:.2f}")
+                            logger.info(f"      - 扩展后 AFP 总和：{new_afp_total:.2f}")
+                            logger.info(f"      - AFP 增加量：{afp_increase:.2f}")
+                            logger.info(f"      - 实际平均每功能点 AFP: {actual_avg_afp:.2f}")
+                            logger.info(f"")
+                            logger.info(f"  【3】目标达成情况:")
+                            logger.info(f"      - 目标 AFP: {target_afp_from_excel:.2f}")
+                            logger.info(f"      - 扩展后 AFP: {new_afp_total:.2f}")
+                            logger.info(f"      - 剩余差距：{target_afp_from_excel - new_afp_total:.2f}")
+                                                    
+                            if new_afp_total >= target_afp_from_excel:
+                                logger.info(f"      ✅ 成功！扩展后 AFP ({new_afp_total:.2f}) >= 目标 AFP ({target_afp_from_excel:.2f})")
+                                logger.info(f"      🎉 超额完成：超出 {new_afp_total - target_afp_from_excel:.2f}")
                             else:
-                                point['AFP'] = round(ufp_value * 0.5, 2)  # 修改，50%
-                        
-                        logger.info(f"已调整 {final_non_ilf_count} 个非 ILF 功能点的 UFP 值，平均每点 UFP={avg_ufp_per_point:.2f}")
-                    
-                    # 合并回完整的功能点列表
-                    function_points = non_ilf_points + ilf_points
-                    logger.info(f"ILF 功能点保持 UFP=7 不变")
-                    logger.info(f"最终总功能点数：{len(function_points)}, 预计总 UFP: {sum(p.get('UFP', 0) for p in function_points)}")
-                    
-                    # 打印所有功能点列表
-                    logger.info("\n" + "="*80)
-                    logger.info("生成的功能点完整列表:")
-                    logger.info("="*80)
-                    for i, point in enumerate(function_points, 1):
-                        logger.info(f"{i:3d}. {point.get('功能点计数项', ''):<50} (类别：{point.get('类别', '')}, UFP: {point.get('UFP', 0)}, AFP: {point.get('AFP', 0):.2f})")
-                    logger.info("="*80)
+                                remaining_gap = target_afp_from_excel - new_afp_total
+                                logger.info(f"      ⚠️ AFP 仍有差距：{remaining_gap:.2f}")
+                                logger.info(f"      💡 建议：可能需要手动添加更多功能点或调整现有功能点类别")
+                                                    
+                            logger.info(f"")
+                            logger.info(f"  【4】新增功能点详情 (前 5 个):")
+                            for i, point in enumerate(expanded_points[:5], 1):
+                                logger.info(f"      [{i}] {point.get('功能点计数项', '')}")
+                                logger.info(f"          备注：{point.get('备注', '')}")
+                                logger.info(f"          类别：{point.get('类别', '')}")
+                                logger.info(f"          UFP: {point.get('UFP', 0)}, AFP: {point.get('AFP', 0):.2f}")
+                                                    
+                            if len(expanded_points) > 5:
+                                logger.info(f"      ... 还有 {len(expanded_points) - 5} 个功能点（详见日志级别 DEBUG）")
+                                                    
+                            logger.info(f"")
+                            logger.info(f"  【5】验证公式:")
+                            logger.info(f"      - 新 AFP = 原 AFP + 新增 AFP")
+                            logger.info(f"      - {new_afp_total:.2f} = {current_afp:.2f} + {afp_increase:.2f} ✓")
+                            logger.info(f"      - 达成率 = 新 AFP / 目标 AFP × 100%")
+                            achievement_rate = (new_afp_total / target_afp_from_excel) * 100
+                            logger.info(f"      - 达成率 = {new_afp_total:.2f} / {target_afp_from_excel:.2f} × 100% = {achievement_rate:.2f}%")
+                            logger.info(f"")
+                            logger.info("=" * 80)
+                        else:
+                            logger.warning("⚠️ [AI_EXPAND] AI 返回空结果，未扩展任何功能点")
+                                                            
+                    except Exception as ai_error:
+                        logger.error(f"❌ [AI_EXPAND] AI 辅助扩展失败：{ai_error}", exc_info=True)
+                        logger.warning(f"将使用原始功能点，不进行 AI 扩展")
+                else:
+                    logger.info(f"❌ 结论：不需要 AI 扩展（当前 AFP {current_afp:.2f} >= 目标 AFP {target_afp_from_excel:.2f}）")
+                    logger.info(f"   富余 AFP: {current_afp - target_afp_from_excel:.2f}")
+                    logger.info(f"   💡 说明：当前功能点已足够，无需扩展")
+                    logger.info("=" * 80)
         except Exception as e:
             logger.warning(f"读取评估结果失败，将使用默认 UFP 值：{e}")
         

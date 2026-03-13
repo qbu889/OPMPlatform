@@ -15,18 +15,54 @@ logger = logging.getLogger(__name__)
 class OllamaClient:
     """Ollama AI 客户端"""
     
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "qwen2.5:7b"):
+    def __init__(self, base_url: str = None, model: str = None):
         """
         初始化 Ollama 客户端
         
         Args:
             base_url: Ollama API 基础 URL
-            model: 默认使用的模型名称
+            model: 默认使用的模型名称（如果为 None 则从.env 读取）
         """
-        self.base_url = base_url.rstrip('/')
-        self.model = model
+        # 优先使用传入参数，否则从环境变量读取
+        import os
+        self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip('/')
+        self.model = model or os.getenv("OLLAMA_MODEL", "qwen3:4b")
         self.api_endpoint = f"{self.base_url}/api/generate"
         self.chat_endpoint = f"{self.base_url}/api/chat"
+        
+        logger.info(f"[OLLAMA_INIT] 初始化 - URL: {self.base_url}, Model: {self.model}")
+        
+        # 验证模型是否存在
+        self._validate_model()
+    
+    def _validate_model(self):
+        """验证模型是否存在，如果不存在则尝试切换到可用模型"""
+        try:
+            available_models = self.list_models()
+            if not available_models:
+                logger.warning(f"[OLLAMA_INIT] 无法获取模型列表，使用默认模型：{self.model}")
+                return
+            
+            if self.model not in available_models:
+                # 模型不存在，尝试找最接近的
+                logger.warning(f"[OLLAMA_INIT] 模型 '{self.model}' 不存在！")
+                logger.info(f"[OLLAMA_INIT] 可用模型：{', '.join(available_models)}")
+                
+                # 优先选择 qwen3 系列或 qwen:1.8b
+                for fallback in ['qwen:1.8b', 'qwen3:4b', 'qwen3:8b', 'qwen3:14b', 'qwen3']:
+                    if fallback in available_models:
+                        logger.info(f"[OLLAMA_INIT] 自动切换到可用模型：{fallback}")
+                        self.model = fallback
+                        return
+                
+                # 如果都没有，使用第一个可用模型
+                if available_models:
+                    self.model = available_models[0]
+                    logger.warning(f"[OLLAMA_INIT] 使用第一个可用模型：{self.model}")
+            else:
+                logger.info(f"[OLLAMA_INIT] 模型验证成功：{self.model}")
+        except Exception as e:
+            logger.error(f"[OLLAMA_INIT] 模型验证失败：{e}")
         
     def generate(self, 
                  prompt: str, 
@@ -35,7 +71,7 @@ class OllamaClient:
                  stream: bool = False,
                  options: Optional[Dict] = None) -> str:
         """
-        生成文本回复（基于 chat API 实现）
+        生成文本回复（直接使用 generate API）
         
         Args:
             prompt: 输入提示词
@@ -47,13 +83,52 @@ class OllamaClient:
         Returns:
             生成的文本内容
         """
-        # 使用 chat API 实现 generate
-        messages = []
-        if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": prompt})
+        # 直接使用 /api/generate 接口
+        payload = {
+            "model": model or self.model,
+            "prompt": prompt,
+            "stream": stream
+        }
         
-        return self.chat(messages, model=model, stream=stream, options=options)
+        if system:
+            payload["system"] = system
+        
+        if options:
+            payload["options"] = options
+        
+        try:
+            # 添加详细日志，诊断 404 问题
+            logger.info(f"[OLLAMA_REQUEST] URL: {self.api_endpoint}")
+            logger.info(f"[OLLAMA_REQUEST] Model: {model or self.model}")
+            logger.info(f"[OLLAMA_REQUEST] Prompt length: {len(prompt)} chars")
+            
+            response = requests.post(
+                self.api_endpoint,
+                json=payload,
+                stream=stream,
+                timeout=300  # 5 分钟
+            )
+            
+            # 如果是 404，记录详细信息
+            if response.status_code == 404:
+                logger.error(f"[OLLAMA_404] Endpoint not found: {self.api_endpoint}")
+                logger.error(f"[OLLAMA_404] Payload: {payload}")
+                logger.error(f"[OLLAMA_404] Response headers: {dict(response.headers)}")
+            
+            response.raise_for_status()
+            
+            if stream:
+                return self._parse_stream_response(response)
+            else:
+                result = response.json()
+                return result.get("response", "")
+                
+        except requests.exceptions.RequestException as e:
+            logger.error(f"[OLLAMA_GENERATE] Failed: {e}")
+            raise Exception(f"AI 服务不可用：{str(e)}")
+        except json.JSONDecodeError as e:
+            logger.error(f"[OLLAMA_JSON] Parse error: {e}")
+            raise Exception("AI 响应格式错误")
     
     def chat(self,
              messages: List[Dict[str, str]],
@@ -203,7 +278,7 @@ def get_ollama_client(base_url: str = None, model: str = None) -> OllamaClient:
         # 从环境变量或配置读取
         import os
         ollama_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3:8b")
+        ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen:1.8b")  # 改为 qwen:1.8b，更轻量
 
         _ollama_client = OllamaClient(base_url=ollama_url, model=ollama_model)
         logger.info(f"[OLLAMA_INIT] URL: {ollama_url} | Model: {ollama_model}")
