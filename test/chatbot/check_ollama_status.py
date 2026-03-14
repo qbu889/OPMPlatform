@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Ollama 状态诊断脚本
+Ollama 状态诊断脚本（从.env 读取配置）
 """
-import requests
+import os
 import sys
+from pathlib import Path
+from dotenv import load_dotenv
+import requests
 
 def check_ollama():
     """检查 Ollama 服务状态"""
@@ -12,7 +15,17 @@ def check_ollama():
     print("Ollama 状态诊断")
     print("=" * 60)
     
-    base_url = "http://localhost:11434"
+    # 从 .env 文件加载配置
+    env_path = Path('.env')
+    if env_path.exists():
+        load_dotenv()
+        print("\n📄 从 .env 文件加载配置...")
+    
+    base_url = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
+    model_name = os.getenv('OLLAMA_MODEL', 'deepseek-r1:7b')
+    
+    print(f"   OLLAMA_BASE_URL: {base_url}")
+    print(f"   OLLAMA_MODEL: {model_name}")
     
     # 1. 检查服务是否运行
     print("\n1. 检查 Ollama 服务...")
@@ -47,8 +60,7 @@ def check_ollama():
         print(f"   ❌ 获取模型列表失败：{e}")
     
     # 3. 检查特定模型
-    print("\n3. 检查 deepseek-r1:7b 模型...")
-    model_name = "deepseek-r1:7b"
+    print(f"\n3. 检查 {model_name} 模型...")
     model_found = any(m.get('name') == model_name for m in models)
     
     if model_found:

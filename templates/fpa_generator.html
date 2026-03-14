@@ -1282,6 +1282,10 @@
                             // 隐藏停止按钮
                             document.getElementById('stopTaskBtn').style.display = 'none';
                             
+                            // 恢复按钮和隐藏加载动画
+                            if (submitBtn) submitBtn.style.display = 'block';
+                            if (loadingSpinner) loadingSpinner.style.display = 'none';
+                            
                             document.getElementById('progressMessage').textContent = 
                                 '任务已被取消';
                             
@@ -1557,7 +1561,14 @@
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                // 先检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                // 尝试解析 JSON
+                return response.json();
+            })
             .then(result => {
                 if (result.success) {
                     alert('任务已停止！');
@@ -1569,7 +1580,7 @@
             })
             .catch(error => {
                 console.error('停止失败:', error);
-                alert('停止失败：' + error);
+                alert('停止失败：' + (error.message || error));
             });
         }
     </script>

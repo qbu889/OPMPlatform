@@ -66,10 +66,10 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     # 根据 CPU 负载动态调整并发数，避免过热降频
     # M3 Max 建议：4 线程平衡性能和温度，8 线程性能最强但温度高
     import os
-    cpu_cores = os.cpu_count() or 1
+    cpu_cores = os.cpu_count() or 8
     
     # 智能选择并发数：使用 4 线程平衡性能和稳定性
-    max_workers = 1  # 4 线程并发，提高处理速度
+    max_workers = 4  # 4 线程并发，提高处理速度
     temp_estimate = "65-75°C"
     cpu_estimate = "35-45%"
     
@@ -122,13 +122,30 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
    - 配置类功能：可以拆分为"参数配置编辑"、"规则有效性校验"、"配置保存生效"
    - 处理类功能：可以拆分为"数据预处理"、"核心逻辑运算"、"结果持久化存储"
    - 界面类功能：可以拆分为"界面元素渲染"、"用户交互响应"、"数据实时更新"
+   - 采集类功能：可以拆分为"数据源连接"、"实时数据采集"、"采集结果存储"
+   - 告警类功能：可以拆分为"阈值监测判断"、"告警信息生成"、"通知发送处理"
+
 2. 如果确实无法拆分成 3 个有实际意义的子功能，再拆分成 2 个
-3. name 必须是有实际意义的功能名称，要从需求上下文推断具体功能
+
+3. **name 字段命名规范**（非常重要！）：
+   - 必须是有实际意义的功能名称，要从需求上下文推断具体功能
+   - **推荐使用后缀方式**：原始功能点名称_操作类型，例如：
+     * "时段规则参数配置_查询"、"时段规则参数配置_保存"、"时段规则参数配置_校验"
+     * "工单流转管理_新增"、"工单流转管理_修改"、"工单流转管理_删除"
+     * "业务影响分析_数据采集"、"业务影响分析_数据处理"、"业务影响分析_结果显示"
+   - 或者使用简短的业务术语，例如："条件筛选"、"结果排序"、"详情查看"
+   - **绝对不要用**："子功能 1"、"功能点 A"、"具体子功能名称"等无意义占位符
+
 4. **绝对不能使用**"子功能名称 1"、"功能点 1"、"具体子功能名称"等任何占位符
+
 5. name 不能与"{point.get('功能点计数项', '')}"重复
-6. description、input、output、process 都要根据原始功能点的实际内容生成
+
+6. description、input、output、process 都要根据原始功能点的实际内容生成，要具体、明确
+
 7. 必须是合法的 JSON 数组
+
 8. 只返回 JSON，不要任何其他文字
+
 9. 不要用 markdown 标记
 
 现在直接返回 JSON：
@@ -212,35 +229,55 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
                 new_names = set()
                 
                 # 每个原始功能点最多拆分出 3 个子功能点
-                for sub_point in sub_points_data[:3]:
+                for idx, sub_point in enumerate(sub_points_data[:3]):
                     # 生成唯一的名称
                     base_name = sub_point.get('name', '').strip()
                     
                     # 检查名称是否为空或是占位符
-                    if not base_name or any(placeholder in base_name for placeholder in ['子功能名称', '功能点', '具体子功能', '子功能']):
+                    if not base_name or any(placeholder in base_name for placeholder in ['子功能名称', '功能点', '具体子功能', '子功能', '名称']):
                         # 如果是占位符或空值，根据功能描述生成有意义的名称
                         desc = sub_point.get('description', '')
                         process = sub_point.get('process', '')
+                        input_data = sub_point.get('input', '')
+                        output_data = sub_point.get('output', '')
                         
-                        # 从描述和过程中提取关键字生成名称
-                        if '查询' in desc or '搜索' in process:
+                        # 从描述和过程中提取关键字生成名称（优先级顺序）
+                        if '查询' in desc or '搜索' in process or '检索' in desc:
                             base_name = f"{point.get('功能点计数项', '')}_查询"
-                        elif '配置' in desc or '设置' in process:
+                        elif '配置' in desc or '设置' in process or '参数' in desc:
                             base_name = f"{point.get('功能点计数项', '')}_配置"
-                        elif '保存' in desc or '存储' in process:
+                        elif '保存' in desc or '存储' in process or '持久化' in desc:
                             base_name = f"{point.get('功能点计数项', '')}_保存"
-                        elif '校验' in desc or '验证' in process:
+                        elif '校验' in desc or '验证' in process or '审核' in desc:
                             base_name = f"{point.get('功能点计数项', '')}_校验"
-                        elif '显示' in desc or '呈现' in process:
+                        elif '显示' in desc or '呈现' in process or '展示' in desc:
                             base_name = f"{point.get('功能点计数项', '')}_显示"
+                        elif '新增' in desc or '创建' in process or '添加' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_新增"
+                        elif '修改' in desc or '更新' in process or '编辑' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_修改"
+                        elif '删除' in desc or '移除' in process or '注销' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_删除"
+                        elif '导入' in desc or '导出' in process or '转换' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_数据交换"
+                        elif '统计' in desc or '分析' in process or '报表' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_统计分析"
+                        elif '告警' in desc or '通知' in process or '提醒' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_告警通知"
+                        elif '采集' in desc or '收集' in process or '获取' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_数据采集"
+                        elif '处理' in desc or '计算' in process or '运算' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_数据处理"
+                        elif '同步' in desc or '异步' in process or '消息' in desc:
+                            base_name = f"{point.get('功能点计数项', '')}_同步通信"
                         else:
-                            # 默认使用序号区分
-                            base_name = f"{point.get('功能点计数项', '')}_子功能_{sub_points_data.index(sub_point) + 1}"
+                            # 默认使用序号区分，使用短横线连接
+                            base_name = f"{point.get('功能点计数项', '')}-{idx + 1}"
                     
                     # 线程安全地检查和添加名称
                     with names_lock:
                         if base_name in existing_names:
-                            # 如果重复，生成唯一名称
+                            # 如果重复，生成唯一名称（使用短横线 + 序号）
                             counter = 1
                             while f"{base_name}-{counter}" in existing_names and counter < 100:
                                 counter += 1

@@ -68,13 +68,14 @@ def generate_fpa_async():
         # 生成任务 ID
         task_id = f"fpa_{uuid.uuid4().hex[:12]}"
         
-        # 保存临时文件
+        # 保存临时文件（使用 task_id 确保唯一性）
         timestamp = int(time.time() * 1000)
         upload_dir = Path(current_app.config['UPLOAD_FOLDER']) / "fpa_input"
         os.makedirs(upload_dir, exist_ok=True)
         
         filename = Path(file.filename).stem
-        temp_md_path = upload_dir / f"{filename}_{timestamp}.md"
+        # 使用 task_id + 时间戳确保文件名绝对唯一
+        temp_md_path = upload_dir / f"{filename}_{task_id}_{timestamp}.md"
         file.save(temp_md_path)
         
         # 创建异步任务
@@ -183,48 +184,60 @@ def cancel_task(task_id):
         if not task_info:
             # 任务不存在，可能是已经完成或被删除
             # 检查数据库中是否存在
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT status FROM fpa_export_history WHERE task_id = %s', (task_id,))
-            db_record = cursor.fetchone()
-            
-            if db_record:
-                # 数据库中存在，但不是 RUNNING 状态
-                if db_record[0] != 'RUNNING':
+            conn = None
+            cursor = None
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('SELECT status FROM fpa_export_history WHERE task_id = %s', (task_id,))
+                db_record = cursor.fetchone()
+                
+                if db_record:
+                    # 数据库中存在，但不是 RUNNING 状态
+                    if db_record[0] != 'RUNNING':
+                        cursor.close()
+                        conn.close()
+                        return jsonify({
+                            'success': False,
+                            'message': f'任务已结束，当前状态：{db_record[0]}'
+                        }), 400
+                    
+                    # 数据库中存在且是 RUNNING 状态，但任务管理器中没有
+                    # 说明任务可能异常退出，将状态更新为 FAILED
+                    cursor.execute('''
+                        UPDATE fpa_export_history 
+                        SET status = 'FAILED',
+                            message = '任务异常终止（任务管理器中不存在）',
+                            completed_at = NOW()
+                        WHERE task_id = %s
+                    ''', (task_id,))
+                    conn.commit()
                     cursor.close()
                     conn.close()
+                    
+                    logger.warning(f"[TASK_CANCEL] 任务 {task_id} 在任务管理器中不存在，已标记为 FAILED")
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': '任务已停止（任务异常终止）'
+                    })
+                else:
+                    # 数据库中也不存在
+                    if cursor:
+                        cursor.close()
+                    if conn:
+                        conn.close()
                     return jsonify({
                         'success': False,
-                        'message': f'任务已结束，当前状态：{db_record[0]}'
-                    }), 400
-                
-                # 数据库中存在且是 RUNNING 状态，但任务管理器中没有
-                # 说明任务可能异常退出，将状态更新为 FAILED
-                cursor.execute('''
-                    UPDATE fpa_export_history 
-                    SET status = 'FAILED',
-                        message = '任务异常终止（任务管理器中不存在）',
-                        completed_at = NOW()
-                    WHERE task_id = %s
-                ''', (task_id,))
-                conn.commit()
-                cursor.close()
-                conn.close()
-                
-                logger.warning(f"[TASK_CANCEL] 任务 {task_id} 在任务管理器中不存在，已标记为 FAILED")
-                
-                return jsonify({
-                    'success': True,
-                    'message': '任务已停止（任务异常终止）'
-                })
-            else:
-                # 数据库中也不存在
-                cursor.close()
-                conn.close()
-                return jsonify({
-                    'success': False,
-                    'message': '任务不存在'
-                }), 404
+                        'message': '任务不存在'
+                    }), 404
+            except Exception as e:
+                logger.error(f"查询数据库失败：{e}", exc_info=True)
+                if cursor:
+                    cursor.close()
+                if conn:
+                    conn.close()
+                raise
         
         if task_info['status'] in ['COMPLETED', 'FAILED', 'CANCELLED']:
             return jsonify({
@@ -263,7 +276,7 @@ def cancel_task(task_id):
         logger.error(f"取消任务失败：{e}", exc_info=True)
         return jsonify({
             'success': False,
-            'message': str(e)
+            'message': f'服务器内部错误：{str(e)}'
         }), 500
 
 
@@ -622,7 +635,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
             timestamp_seconds = timestamp
         
         timestamp_str = datetime.fromtimestamp(timestamp_seconds).strftime('%Y%m%d_%H%M%S')
-        output_filename = f"{filename}_FPA_Estimation_{timestamp_str}.xlsx"
+        # 使用 task_id 确保文件名绝对唯一，防止多用户同时生成时重名
+        output_filename = f"{filename}_FPA_Estimation_{task_id}_{timestamp_str}.xlsx"
         output_path = output_dir / output_filename
         
         generate_fpa_excel(function_points, str(output_path))

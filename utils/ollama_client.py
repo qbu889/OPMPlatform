@@ -4,10 +4,13 @@
 Ollama AI 客户端工具类
 封装本地 Ollama AI 模型的 API 调用
 """
+import os
 import requests
 import json
 import logging
+from pathlib import Path
 from typing import List, Dict, Optional, Generator
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +26,25 @@ class OllamaClient:
             base_url: Ollama API 基础 URL
             model: 默认使用的模型名称（如果为 None 则从.env 读取）
         """
+        # 显式加载 .env 文件
+        env_path = Path('.env')
+        if env_path.exists():
+            load_dotenv()
+            logger.debug(f"[OLLAMA_ENV] 已加载 .env 文件：{env_path.absolute()}")
+        
         # 优先使用传入参数，否则从环境变量读取
-        import os
         self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip('/')
         self.model = model or os.getenv("OLLAMA_MODEL", "qwen3:4b")
         self.api_endpoint = f"{self.base_url}/api/generate"
         self.chat_endpoint = f"{self.base_url}/api/chat"
+        
+        # 创建 requests session，复用连接
+        self.session = requests.Session()
+        # 设置默认请求头
+        self.session.headers.update({
+            'Content-Type': 'application/json',
+            'User-Agent': 'Ollama-Client/1.0'
+        })
         
         logger.info(f"[OLLAMA_INIT] 初始化 - URL: {self.base_url}, Model: {self.model}")
         
@@ -69,7 +85,8 @@ class OllamaClient:
                  model: Optional[str] = None,
                  system: Optional[str] = None,
                  stream: bool = False,
-                 options: Optional[Dict] = None) -> str:
+                 options: Optional[Dict] = None,
+                 retry: int = 3) -> str:
         """
         生成文本回复（直接使用 generate API）
         
@@ -79,6 +96,7 @@ class OllamaClient:
             system: 系统提示
             stream: 是否流式输出
             options: 其他配置选项
+            retry: 重试次数（默认 3 次）
             
         Returns:
             生成的文本内容
@@ -96,39 +114,59 @@ class OllamaClient:
         if options:
             payload["options"] = options
         
-        try:
-            # 添加详细日志，诊断 404 问题
-            logger.info(f"[OLLAMA_REQUEST] URL: {self.api_endpoint}")
-            logger.info(f"[OLLAMA_REQUEST] Model: {model or self.model}")
-            logger.info(f"[OLLAMA_REQUEST] Prompt length: {len(prompt)} chars")
-            
-            response = requests.post(
-                self.api_endpoint,
-                json=payload,
-                stream=stream,
-                timeout=300  # 5 分钟
-            )
-            
-            # 如果是 404，记录详细信息
-            if response.status_code == 404:
-                logger.error(f"[OLLAMA_404] Endpoint not found: {self.api_endpoint}")
-                logger.error(f"[OLLAMA_404] Payload: {payload}")
-                logger.error(f"[OLLAMA_404] Response headers: {dict(response.headers)}")
-            
-            response.raise_for_status()
-            
-            if stream:
-                return self._parse_stream_response(response)
-            else:
-                result = response.json()
-                return result.get("response", "")
+        attempt = 0
+        last_error = None
+        
+        while attempt <= retry:
+            try:
+                # 添加详细日志，诊断 404 问题
+                logger.info(f"[OLLAMA_REQUEST] URL: {self.api_endpoint}")
+                logger.info(f"[OLLAMA_REQUEST] Model: {model or self.model}")
+                logger.info(f"[OLLAMA_REQUEST] Prompt length: {len(prompt)} chars")
+                logger.info(f"[OLLAMA_REQUEST] Attempt: {attempt + 1}/{retry + 1}")
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"[OLLAMA_GENERATE] Failed: {e}")
-            raise Exception(f"AI 服务不可用：{str(e)}")
-        except json.JSONDecodeError as e:
-            logger.error(f"[OLLAMA_JSON] Parse error: {e}")
-            raise Exception("AI 响应格式错误")
+                response = self.session.post(
+                    self.api_endpoint,
+                    json=payload,
+                    stream=stream,
+                    timeout=300  # 5 分钟
+                )
+                
+                # 如果是 404，记录详细信息
+                if response.status_code == 404:
+                    logger.error(f"[OLLAMA_404] Endpoint not found: {self.api_endpoint}")
+                    logger.error(f"[OLLAMA_404] Payload: {payload}")
+                    logger.error(f"[OLLAMA_404] Response headers: {dict(response.headers)}")
+                
+                response.raise_for_status()
+                
+                if stream:
+                    return self._parse_stream_response(response)
+                else:
+                    result = response.json()
+                    return result.get("response", "")
+                    
+            except requests.exceptions.ConnectionError as e:
+                last_error = e
+                attempt += 1
+                if attempt <= retry:
+                    wait_time = 2 ** attempt  # 指数退避：2, 4, 8 秒
+                    logger.warning(f"[OLLAMA_CONNECTION_ERROR] 连接失败，{wait_time}秒后重试 (Attempt {attempt}/{retry + 1}): {e}")
+                    import time
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"[OLLAMA_GENERATE] 连接失败，已达最大重试次数：{e}")
+                    raise Exception(f"AI 服务连接失败：{str(e)}")
+            except requests.exceptions.RequestException as e:
+                last_error = e
+                logger.error(f"[OLLAMA_GENERATE] Failed: {e}")
+                raise Exception(f"AI 服务不可用：{str(e)}")
+            except json.JSONDecodeError as e:
+                logger.error(f"[OLLAMA_JSON] Parse error: {e}")
+                raise Exception("AI 响应格式错误")
+        
+        # 不应该到这里，但为了类型安全
+        raise Exception(f"AI 服务不可用：{str(last_error)}")
     
     def chat(self,
              messages: List[Dict[str, str]],
@@ -164,7 +202,12 @@ class OllamaClient:
         
         while attempt <= retry:
             try:
-                response = requests.post(
+                logger.info(f"[OLLAMA_CHAT] URL: {self.chat_endpoint}")
+                logger.info(f"[OLLAMA_CHAT] Model: {model or self.model}")
+                logger.info(f"[OLLAMA_CHAT] Messages: {len(messages)}条")
+                logger.info(f"[OLLAMA_CHAT] Attempt: {attempt + 1}/{retry + 1}")
+                
+                response = self.session.post(
                     self.chat_endpoint,
                     json=payload,
                     stream=stream,
@@ -184,6 +227,17 @@ class OllamaClient:
                     result = response.json()
                     return result.get("message", {}).get("content", "")
                     
+            except requests.exceptions.ConnectionError as e:
+                last_error = e
+                attempt += 1
+                if attempt <= retry:
+                    wait_time = 2 ** attempt  # 指数退避
+                    logger.warning(f"[OLLAMA_CHAT_CONNECTION_ERROR] 连接失败，{wait_time}秒后重试 (Attempt {attempt}/{retry + 1}): {e}")
+                    import time
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"[OLLAMA_CHAT_FAILED] 连接失败，已达最大重试次数：{e}")
+                    raise Exception(f"AI 服务连接失败：{str(e)}")
             except requests.exceptions.RequestException as e:
                 last_error = e
                 logger.warning(f"[OLLAMA_CHAT_RETRY] Attempt {attempt + 1}/{retry + 1} failed: {e}")
