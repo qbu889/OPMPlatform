@@ -299,6 +299,13 @@ JSON 格式（每个功能点对应一个数组）：
                         # 生成唯一的名称 - 不使用后缀格式
                         base_name = sub_point.get('name', '').strip()
                         
+                        # 重要：去除名称末尾的数字序号（如"规则校验 1" -> "规则校验"）
+                        # 避免写入 Excel 时变成"规则校验 -1"
+                        import re
+                        # 匹配末尾的数字（包括可能的前导空格或短横线）
+                        base_name = re.sub(r'[\s-]?\d+$', '', base_name).strip()
+                        logger.info(f"[AI_EXPAND] 原始 AI 名称：{sub_point.get('name', '')}, 清理后：{base_name}")
+                        
                         # 如果名称为空或是占位符，根据功能描述生成有意义的名称
                         if not base_name or any(placeholder in base_name for placeholder in ['子功能名称', '功能点', '具体子功能', '子功能', '名称']):
                             desc = sub_point.get('description', '')

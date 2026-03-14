@@ -33,7 +33,11 @@ class OllamaClient:
             logger.debug(f"[OLLAMA_ENV] 已加载 .env 文件：{env_path.absolute()}")
         
         # 优先使用传入参数，否则从环境变量读取
-        self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip('/')
+        self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL"))
+        if not self.base_url:
+            # 如果环境变量未设置，使用默认值
+            self.base_url = "http://localhost:11434"
+        self.base_url = self.base_url.rstrip('/')
         self.model = model or os.getenv("OLLAMA_MODEL", "qwen3:4b")
         self.api_endpoint = f"{self.base_url}/api/generate"
         self.chat_endpoint = f"{self.base_url}/api/chat"
@@ -48,8 +52,17 @@ class OllamaClient:
         
         logger.info(f"[OLLAMA_INIT] 初始化 - URL: {self.base_url}, Model: {self.model}")
         
-        # 验证模型是否存在
-        self._validate_model()
+        # 快速检查服务是否可用（不阻塞）
+        if not self._quick_check():
+            logger.warning(f"[OLLAMA_INIT] 服务可能不可用，将在首次请求时报错")
+    
+    def _quick_check(self) -> bool:
+        """快速检查服务是否可用（超时 2 秒）"""
+        try:
+            response = requests.get(f"{self.base_url}/api/tags", timeout=2)
+            return response.status_code == 200
+        except:
+            return False
     
     def _validate_model(self):
         """验证模型是否存在，如果不存在则尝试切换到可用模型"""
@@ -125,11 +138,19 @@ class OllamaClient:
                 logger.info(f"[OLLAMA_REQUEST] Prompt length: {len(prompt)} chars")
                 logger.info(f"[OLLAMA_REQUEST] Attempt: {attempt + 1}/{retry + 1}")
                 
+                # 生成对应的 CURL 命令用于调试
+                import json as json_module
+                curl_cmd = f'curl -X POST "{self.api_endpoint}" \\'
+                curl_cmd += f'\n  -H "Content-Type: application/json" \\'
+                json_payload = json_module.dumps(payload, ensure_ascii=False)
+                curl_cmd += f'\n  -d \'{json_payload}\''
+                logger.info(f"[OLLAMA_CURL]\n{curl_cmd}")
+                
                 response = self.session.post(
                     self.api_endpoint,
                     json=payload,
                     stream=stream,
-                    timeout=300  # 5 分钟
+                    timeout=600  # 10 分钟超时（远程服务器需要更长时间）
                 )
                 
                 # 如果是 404，记录详细信息
@@ -150,13 +171,25 @@ class OllamaClient:
                 last_error = e
                 attempt += 1
                 if attempt <= retry:
-                    wait_time = 2 ** attempt  # 指数退避：2, 4, 8 秒
+                    wait_time = 2 ** attempt * 3  # 指数退避：6, 12, 24, 48, 96 秒
                     logger.warning(f"[OLLAMA_CONNECTION_ERROR] 连接失败，{wait_time}秒后重试 (Attempt {attempt}/{retry + 1}): {e}")
                     import time
                     time.sleep(wait_time)
                 else:
                     logger.error(f"[OLLAMA_GENERATE] 连接失败，已达最大重试次数：{e}")
                     raise Exception(f"AI 服务连接失败：{str(e)}")
+            except requests.exceptions.HTTPError as e:
+                # 处理 HTTP 错误（包括 502、503、504 等服务器错误）
+                last_error = e
+                attempt += 1
+                if attempt <= retry:
+                    wait_time = 2 ** attempt * 3  # 指数退避：6, 12, 24, 48, 96 秒
+                    logger.warning(f"[OLLAMA_HTTP_ERROR] HTTP 错误 {response.status_code}，{wait_time}秒后重试 (Attempt {attempt}/{retry + 1}): {e}")
+                    import time
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"[OLLAMA_GENERATE] HTTP 错误，已达最大重试次数：{e}")
+                    raise Exception(f"AI 服务不可用：{str(e)}")
             except requests.exceptions.RequestException as e:
                 last_error = e
                 logger.error(f"[OLLAMA_GENERATE] Failed: {e}")

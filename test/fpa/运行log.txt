@@ -1,621 +1,309 @@
-FLASK_APP = app.py
-FLASK_ENV = development
-FLASK_DEBUG = 0
-In folder /Users/linziwang/PycharmProjects/wordToWord
-/Users/linziwang/PycharmProjects/wordToWord/.venv/bin/python -m flask run
-[CLEANUP_THREAD] Started | Retention: 1h | Interval: 1800s
- * Serving Flask app 'app.py'
- * Debug mode: off
 INFO:werkzeug:WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on http://127.0.0.1:5000
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.31.76:5001
 INFO:werkzeug:Press CTRL+C to quit
-INFO:mysql.connector:package: mysql.connector.plugins
-INFO:mysql.connector:plugin_name: caching_sha2_password
-INFO:mysql.connector:AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
-INFO:routes.fpa_generator_routes:更新评估结果：49900_20250721
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:10] "POST /fpa-generator/api/evaluation-result HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:11] "GET /fpa-generator/ HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:11] "GET /static/vendor/bootstrap/bootstrap.min.css HTTP/1.1" 304 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:11] "GET /static/css/styles.css HTTP/1.1" 304 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:11] "GET /static/js/utils.js HTTP/1.1" 304 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:11] "GET /static/vendor/bootstrap/bootstrap.bundle.min.js HTTP/1.1" 304 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:12] "GET /fpa-generator/api/evaluation-result HTTP/1.1" 200 -
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 5% - 正在读取评估结果...
-INFO:utils.task_manager:[TASK] 创建任务：fpa_3aad11c35db0
-INFO:routes.fpa_async_routes:[ASYNC] 创建 FPA 生成任务：fpa_3aad11c35db0
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:16] "POST /fpa-generator/api/generate-async HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_async_routes:[步骤 1] 从数据库读取目标 UFP (使用 AFP): 163.36
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 10% - 正在读取需求文档...
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 15% - 正在解析功能点...
+INFO:werkzeug: * Restarting with stat
+'FLASK_ENV' is deprecated and will not be used in Flask 2.3. Use 'FLASK_DEBUG' instead.
+[CLEANUP_THREAD] Started | Retention: 1h | Interval: 1800s
+'FLASK_ENV' is deprecated and will not be used in Flask 2.3. Use 'FLASK_DEBUG' instead.
+'FLASK_ENV' is deprecated and will not be used in Flask 2.3. Use 'FLASK_DEBUG' instead.
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 539-892-373
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 5% - 正在读取评估结果...
+INFO:utils.task_manager:[TASK] 创建任务：fpa_e3a2c03da917
+INFO:routes.fpa_async_routes:[EXPORT_HISTORY] 导出历史表初始化成功
+INFO:routes.fpa_async_routes:[步骤 1] 从数据库读取目标 UFP (使用 AFP): 145.18
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 10% - 正在读取需求文档...
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 15% - 正在解析功能点...
 INFO:routes.fpa_generator_routes:截取'功能需求'章节之后的内容进行解析
-INFO:routes.fpa_generator_routes:解析完成，共提取 57 个功能点
-INFO:routes.fpa_generator_routes:从文档中提取到 18 个 ILF 表
-INFO:routes.fpa_generator_routes:  - 工单管控时段规则配置表 (首次出现在：工单管控时段剔除列表查询)
-INFO:routes.fpa_generator_routes:  - 工单管控时段规则权限配置表 (首次出现在：工单管控时段规则权限配置)
-INFO:routes.fpa_generator_routes:  - 工单管控时段规则基本信息配置表 (首次出现在：规则字段映射处理)
-INFO:routes.fpa_generator_routes:  - 工单管剔除规则条件表 (首次出现在：规则字段映射处理)
-INFO:routes.fpa_generator_routes:  - 条件操作符逻辑详单表 (首次出现在：条件操作符逻辑处理)
-INFO:routes.fpa_generator_routes:  - 多组规则条件表 (首次出现在：多组规则条件添加)
-INFO:routes.fpa_generator_routes:  - 事件处理类工单表 (首次出现在：多组规则条件逻辑运算)
-INFO:routes.fpa_generator_routes:  - 个人语音配置表 (首次出现在：全局声音开关控制)
-INFO:routes.fpa_generator_routes:  - 声音提示配置待办列表 (首次出现在：刷新频率自定义配置)
-INFO:routes.fpa_generator_routes:  - 生效时间段配置表 (首次出现在：时间段生效规则配置)
-INFO:routes.fpa_generator_routes:  - 场景处置配置表 (首次出现在：场景配置处理)
-INFO:routes.fpa_generator_routes:  - 工单语音提醒详单表 (首次出现在：不同状态工单语音提醒生成)
-INFO:routes.fpa_generator_routes:  - 多场景语音调度表 (首次出现在：多场景语音播报调度)
-INFO:routes.fpa_generator_routes:  - 生效时段监听表 (首次出现在：生效时段状态监听器)
-INFO:routes.fpa_generator_routes:  - 多流程配置表 (首次出现在：多端配置同步冲突解决)
-INFO:routes.fpa_generator_routes:  - 关联子单表 (首次出现在：事件信息全显示与换行支持)
-INFO:routes.fpa_generator_routes:  - 事件工单回单模板表 (首次出现在：回单模板修改)
-INFO:routes.fpa_generator_routes:  - 规则状态变更历史记录表 (首次出现在：规则配置数据导入功能)
-INFO:routes.fpa_generator_routes:非 ILF 功能点：57个
-INFO:routes.fpa_generator_routes:ILF 表 '工单管控时段规则配置表' 将插入到功能点 '工单管控时段剔除列表查询' 之后 (索引：0)
-INFO:routes.fpa_generator_routes:ILF 表 '工单管控时段规则权限配置表' 将插入到功能点 '工单管控时段规则权限配置' 之后 (索引：2)
-INFO:routes.fpa_generator_routes:ILF 表 '工单管控时段规则基本信息配置表' 将插入到功能点 '规则字段映射处理' 之后 (索引：4)
-INFO:routes.fpa_generator_routes:ILF 表 '工单管剔除规则条件表' 将插入到功能点 '规则字段映射处理' 之后 (索引：4)
-INFO:routes.fpa_generator_routes:ILF 表 '条件操作符逻辑详单表' 将插入到功能点 '条件操作符逻辑处理' 之后 (索引：5)
-INFO:routes.fpa_generator_routes:ILF 表 '多组规则条件表' 将插入到功能点 '多组规则条件添加' 之后 (索引：6)
-INFO:routes.fpa_generator_routes:ILF 表 '事件处理类工单表' 将插入到功能点 '多组规则条件逻辑运算' 之后 (索引：7)
-INFO:routes.fpa_generator_routes:ILF 表 '个人语音配置表' 将插入到功能点 '全局声音开关控制' 之后 (索引：16)
-INFO:routes.fpa_generator_routes:ILF 表 '声音提示配置待办列表' 将插入到功能点 '刷新频率自定义配置' 之后 (索引：17)
-INFO:routes.fpa_generator_routes:ILF 表 '生效时间段配置表' 将插入到功能点 '时间段生效规则配置' 之后 (索引：18)
-INFO:routes.fpa_generator_routes:ILF 表 '场景处置配置表' 将插入到功能点 '场景配置处理' 之后 (索引：19)
-INFO:routes.fpa_generator_routes:ILF 表 '工单语音提醒详单表' 将插入到功能点 '不同状态工单语音提醒生成' 之后 (索引：23)
-INFO:routes.fpa_generator_routes:ILF 表 '多场景语音调度表' 将插入到功能点 '多场景语音播报调度' 之后 (索引：24)
-INFO:routes.fpa_generator_routes:ILF 表 '生效时段监听表' 将插入到功能点 '生效时段状态监听器' 之后 (索引：28)
-INFO:routes.fpa_generator_routes:ILF 表 '多流程配置表' 将插入到功能点 '多端配置同步冲突解决' 之后 (索引：31)
-INFO:routes.fpa_generator_routes:ILF 表 '关联子单表' 将插入到功能点 '事件信息全显示与换行支持' 之后 (索引：33)
-INFO:routes.fpa_generator_routes:ILF 表 '事件工单回单模板表' 将插入到功能点 '回单模板修改' 之后 (索引：46)
-INFO:routes.fpa_generator_routes:ILF 表 '规则状态变更历史记录表' 将插入到功能点 '规则配置数据导入功能' 之后 (索引：50)
-INFO:routes.fpa_generator_routes:确定了 18 个 ILF 表的插入位置
-INFO:routes.fpa_generator_routes:插入 ILF 表 '工单管控时段规则配置表' 到位置 2 (跟随：工单管控时段剔除列表查询)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '工单管控时段规则权限配置表' 到位置 5 (跟随：工单管控时段规则权限配置)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '工单管控时段规则基本信息配置表' 到位置 8 (跟随：规则字段映射处理)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '工单管剔除规则条件表' 到位置 9 (跟随：规则字段映射处理)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '条件操作符逻辑详单表' 到位置 11 (跟随：条件操作符逻辑处理)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '多组规则条件表' 到位置 13 (跟随：多组规则条件添加)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '事件处理类工单表' 到位置 15 (跟随：多组规则条件逻辑运算)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '个人语音配置表' 到位置 25 (跟随：全局声音开关控制)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '声音提示配置待办列表' 到位置 27 (跟随：刷新频率自定义配置)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '生效时间段配置表' 到位置 29 (跟随：时间段生效规则配置)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '场景处置配置表' 到位置 31 (跟随：场景配置处理)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '工单语音提醒详单表' 到位置 36 (跟随：不同状态工单语音提醒生成)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '多场景语音调度表' 到位置 38 (跟随：多场景语音播报调度)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '生效时段监听表' 到位置 43 (跟随：生效时段状态监听器)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '多流程配置表' 到位置 47 (跟随：多端配置同步冲突解决)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '关联子单表' 到位置 50 (跟随：事件信息全显示与换行支持)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '事件工单回单模板表' 到位置 64 (跟随：回单模板修改)
-INFO:routes.fpa_generator_routes:插入 ILF 表 '规则状态变更历史记录表' 到位置 69 (跟随：规则配置数据导入功能)
+INFO:routes.fpa_generator_routes:解析完成，共提取 64 个功能点
+INFO:routes.fpa_generator_routes:从文档中提取到 11 个 ILF 表
+INFO:routes.fpa_generator_routes:  - 指标保障阈值配置表 (首次出现在：指标保障阈值配置新增)
+INFO:routes.fpa_generator_routes:  - 指标保障统计表 (首次出现在：根因分类准确率天和月粒度数据统计)
+INFO:routes.fpa_generator_routes:  - 根因调控配置表 (首次出现在：根因调控配置化处理)
+INFO:routes.fpa_generator_routes:  - 集团事件工单表 (首次出现在：回单内容调整)
+INFO:routes.fpa_generator_routes:  - 勘误工单表 (首次出现在：回单根因不一致的工单自动触发勘误单)
+INFO:routes.fpa_generator_routes:  - 监控短信派发配置表 (首次出现在：监控短信派发对象配置化)
+INFO:routes.fpa_generator_routes:  - 监控短信记录表 (首次出现在：监控短信触发)
+INFO:routes.fpa_generator_routes:  - 异常库工单表 (首次出现在：新入网网元无维护组信息工单入异常库)
+INFO:routes.fpa_generator_routes:  - 勘误流水记录表 (首次出现在：规则勘误工单受理自动流转)
+INFO:routes.fpa_generator_routes:  - 勘误自动受理的时间表 (首次出现在：规则勘误自动受理的时间配置)
+INFO:routes.fpa_generator_routes:  - 回单模板配置表 (首次出现在：维护勘误回单模板配置)
+INFO:routes.fpa_generator_routes:非 ILF 功能点：64个
+INFO:routes.fpa_generator_routes:ILF 表 '指标保障阈值配置表' 将插入到功能点 '指标保障阈值配置新增' 之后 (索引：1)
+INFO:routes.fpa_generator_routes:ILF 表 '指标保障统计表' 将插入到功能点 '根因分类准确率天和月粒度数据统计' 之后 (索引：4)
+INFO:routes.fpa_generator_routes:ILF 表 '根因调控配置表' 将插入到功能点 '根因调控配置化处理' 之后 (索引：16)
+INFO:routes.fpa_generator_routes:ILF 表 '集团事件工单表' 将插入到功能点 '回单内容调整' 之后 (索引：18)
+INFO:routes.fpa_generator_routes:ILF 表 '勘误工单表' 将插入到功能点 '回单根因不一致的工单自动触发勘误单' 之后 (索引：19)
+INFO:routes.fpa_generator_routes:ILF 表 '监控短信派发配置表' 将插入到功能点 '监控短信派发对象配置化' 之后 (索引：40)
+INFO:routes.fpa_generator_routes:ILF 表 '监控短信记录表' 将插入到功能点 '监控短信触发' 之后 (索引：41)
+INFO:routes.fpa_generator_routes:ILF 表 '异常库工单表' 将插入到功能点 '新入网网元无维护组信息工单入异常库' 之后 (索引：44)
+INFO:routes.fpa_generator_routes:ILF 表 '勘误流水记录表' 将插入到功能点 '规则勘误工单受理自动流转' 之后 (索引：50)
+INFO:routes.fpa_generator_routes:ILF 表 '勘误自动受理的时间表' 将插入到功能点 '规则勘误自动受理的时间配置' 之后 (索引：53)
+INFO:routes.fpa_generator_routes:ILF 表 '回单模板配置表' 将插入到功能点 '维护勘误回单模板配置' 之后 (索引：59)
+INFO:routes.fpa_generator_routes:确定了 11 个 ILF 表的插入位置
+INFO:routes.fpa_generator_routes:插入 ILF 表 '指标保障阈值配置表' 到位置 3 (跟随：指标保障阈值配置新增)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '指标保障统计表' 到位置 7 (跟随：根因分类准确率天和月粒度数据统计)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '根因调控配置表' 到位置 20 (跟随：根因调控配置化处理)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '集团事件工单表' 到位置 23 (跟随：回单内容调整)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '勘误工单表' 到位置 25 (跟随：回单根因不一致的工单自动触发勘误单)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '监控短信派发配置表' 到位置 47 (跟随：监控短信派发对象配置化)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '监控短信记录表' 到位置 49 (跟随：监控短信触发)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '异常库工单表' 到位置 53 (跟随：新入网网元无维护组信息工单入异常库)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '勘误流水记录表' 到位置 60 (跟随：规则勘误工单受理自动流转)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '勘误自动受理的时间表' 到位置 64 (跟随：规则勘误自动受理的时间配置)
+INFO:routes.fpa_generator_routes:插入 ILF 表 '回单模板配置表' 到位置 71 (跟随：维护勘误回单模板配置)
 INFO:routes.fpa_generator_routes:添加 ILF 表后，总功能点数：75
 INFO:routes.fpa_generator_routes:从期望文件加载了 75 个类别映射
 INFO:routes.fpa_async_routes:[步骤 2] 解析完成，共提取 75 个功能点
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 20% - 已解析 75 个功能点
-INFO:routes.fpa_async_routes:[步骤 3] AFP 对比分析 - 当前 AFP: 125.73, 目标 AFP: 163.36
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 20% - 已解析 75 个功能点
+INFO:routes.fpa_async_routes:[步骤 3] AFP 对比分析 - 当前 AFP: 124.41, 目标 AFP: 145.18
 INFO:routes.fpa_async_routes:[步骤 3] 功能点类别分布详情:
-INFO:routes.fpa_async_routes:    - EI: 21个 × 4 × 0.33 = 27.72 AFP
-INFO:routes.fpa_async_routes:    - EO: 27个 × 5 × 0.33 = 44.55 AFP
-INFO:routes.fpa_async_routes:    - EQ: 9个 × 4 × 0.33 = 11.88 AFP
-INFO:routes.fpa_async_routes:    - ILF: 18个 × 7 × 0.33 = 41.58 AFP
-INFO:routes.fpa_async_routes:[步骤 3] AFP 计算验证：Σ(各类别 AFP) = 125.73 = 125.73
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 25% - AFP 对比分析
-INFO:routes.fpa_async_routes:[步骤 3] 判断结果：need_ai_expansion = True (125.73 < 163.36)
-INFO:routes.fpa_async_routes:[步骤 4] 需要扩展约 23 个功能点 (AFP 差距：37.63)
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 30% - 开始 AI 扩展 (需要23个)
+INFO:routes.fpa_async_routes:    - EI: 17个 × 4 × 0.33 = 22.44 AFP
+INFO:routes.fpa_async_routes:    - EO: 44个 × 5 × 0.33 = 72.60 AFP
+INFO:routes.fpa_async_routes:    - EQ: 3个 × 4 × 0.33 = 3.96 AFP
+INFO:routes.fpa_async_routes:    - ILF: 11个 × 7 × 0.33 = 25.41 AFP
+INFO:routes.fpa_async_routes:[步骤 3] AFP 计算验证：Σ(各类别 AFP) = 124.41 = 124.41
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 25% - AFP 对比分析
+INFO:routes.fpa_async_routes:[ASYNC] 创建 FPA 生成任务：fpa_e3a2c03da917
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:23] "POST /fpa-generator/api/generate-async HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:23] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:routes.fpa_async_routes:[步骤 3] 判断结果：need_ai_expansion = True (124.41 < 145.18)
+INFO:routes.fpa_async_routes:[步骤 4] 需要扩展约 13 个功能点 (AFP 差距：20.77)
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 30% - 开始 AI 扩展 (需要13个)
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:23] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
 INFO:utils.ollama_client:[OLLAMA_INIT] 初始化 - URL: http://localhost:11434, Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_INIT] 模型验证成功：qwen3:4b
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 开始 AI 辅助扩展，需要扩展 23 个功能点
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 选择了 11 个复杂功能点进行拆分（目标：11个）
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 开始 AI 辅助扩展，需要扩展 13 个功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 选择了 6 个复杂功能点进行拆分（目标：6个）
 INFO:routes.fpa_ai_expander:[AI_EXPAND] 使用多线程模式，最大并发数：8
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 40% - 开始 AI 拆分，目标扩展23个功能点
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 40% - 开始 AI 拆分，目标扩展13个功能点
 INFO:routes.fpa_ai_expander:[AI_EXPAND] 启动线程池，工作线程数：1 (CPU 核心数：16)
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 预计 CPU 使用率：35-45%，温度：65-75°C
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 处理 11 个功能点，预计耗时：88.0秒（4 线程并发）
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 预计 CPU 使用率：15-25%，温度：40-50°C
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 处理 6 个功能点，预计耗时：48.0秒（4 线程并发）
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 处理批次 1: 功能点 1 到 5（共5个）
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 批次1的提示词内容:
+功能点1:
+原始功能点：勘误自动受理的时间表
+功能描述：勘误自动受理的时间表的维护与管理
+输入：
+输出：
+处理过程：
+
+功能点2:
+原始功能点：指标保障阈值配置表
+功能描述：指标保障阈值配置表的维护与管理
+输入：
+输出：
+处理过程：
+
+功能点3:
+原始功能点：监控短信派发配置表
+功能描述：监控短信派发配置表的维护与管理
+输入：
+输出：
+处理过程：
+
+功能点4:
+原始功能点：指标保障统计表
+功能描述：指标保障统计表的维护与管理
+输入：
+输出：
+处理过程：
+
+功能点5:
+原始功能点：根因调控配置表
+功能描述：根因调控配置表的维护与管理
+输入：
+输出：
+处理过程：...
 INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
 INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 808 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 1 的完整响应：[
-  {
-    "name": "工单时段规则时间范围设置",
-    "description": "用户定义工单处理时段的起始和结束时间，以创建有效的时间窗口规则",
-    "input": "起始时间、结束时间",
-    "output": "配置的时段规则对象",
-    "process": "校验时间格式，确保起始时间早于结束时间，更新配置表"
-  },
-  {
-    "name": "规则状态过滤查询",
-    "description": "根据规则的启用或禁用状态，筛选出当前有效的工单时段规则列表",
-    "input": "状态标识（启用/禁用）",
-    "output": "状态匹配的规则列表",
-    "process": "从配置表查询状态匹配的记录，返回结果"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 1 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 42% - 正在拆分功能点 1/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 1/11 个功能点拆分
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 802 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:31:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 2 的完整响应：[
-  {
-    "name": "规则条件编辑",
-    "description": "对工单时段规则的条件进行精细化配置，支持时间范围、排除时段等参数的设置",
-    "input": "工单时段规则配置表的字段数据",
-    "output": "已验证的规则条件配置",
-    "process": "解析用户输入，执行格式校验，更新配置表并同步至权限服务"
-  },
-  {
-    "name": "权限规则生效管理",
-    "description": "将配置的时段规则应用到工单处理权限中，确保规则在工单创建时自动生效",
-    "input": "规则配置ID和工单类型",
-    "output": "权限生效状态（成功/失败）",
-    "process": "查询规则配置，匹配工单类型，更新权限缓存并通知相关服务"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 2 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 45% - 正在拆分功能点 2/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 2/11 个功能点拆分
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 796 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:32:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 3 的完整响应：[
-  {
-    "name": "规则条件编辑",
-    "description": "用户可修改工单管控时段规则的起始时间、结束时间及剔除规则等参数",
-    "input": "规则ID、新起始时间、新结束时间、剔除规则类型",
-    "output": "更新后的规则配置对象",
-    "process": "验证输入参数是否符合规则格式，更新数据库中对应规则配置"
-  },
-  {
-    "name": "规则状态过滤",
-    "description": "根据规则当前状态（如生效、失效）筛选工单管控时段规则列表",
-    "input": "状态类型（生效/失效）",
-    "output": "状态匹配的规则列表",
-    "process": "从数据库查询规则配置表，应用状态过滤条件，返回过滤后结果"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 3 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 48% - 正在拆分功能点 3/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 3/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 796 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 4 的完整响应：[
-  {
-    "name": "规则状态历史查询",
-    "description": "支持按时间范围、规则ID、状态类型等多维度条件筛选规则状态变更历史记录",
-    "input": "时间区间、规则标识、状态类型",
-    "output": "规则状态变更历史记录列表",
-    "process": "根据用户输入的筛选参数，执行数据库查询并返回分页、倒序排序后的历史记录数据"
-  },
-  {
-    "name": "历史记录实时同步",
-    "description": "在规则状态发生变更时，自动捕获并更新历史记录表以确保数据实时性",
-    "input": "规则状态变更事件",
-    "output": "新增的历史记录条目",
-    "process": "监听规则引擎的状态变更事件，解析事件数据并持久化到历史记录表，同时触发前端数据刷新"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 4 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 50% - 正在拆分功能点 4/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 4/11 个功能点拆分
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 793 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:33:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 5 的完整响应：[
-  {
-    "name": "工单剔除规则条件编辑",
-    "description": "支持工单剔除规则条件字段的添加、修改和删除操作",
-    "input": "规则条件配置数据（字段名、操作符、比较值）",
-    "output": "更新后的规则条件表记录",
-    "process": "用户在配置表单中填写条件信息，提交后系统进行数据格式校验并持久化至数据库"
-  },
-  {
-    "name": "工单剔除规则条件校验",
-    "description": "在规则条件保存前执行逻辑有效性校验",
-    "input": "待校验的规则条件配置",
-    "output": "校验状态（有效/无效）及具体错误信息",
-    "process": "解析规则条件表达式，检查字段映射、操作符兼容性及逻辑一致性，生成校验报告"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 5 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 53% - 正在拆分功能点 5/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 5/11 个功能点拆分
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 793 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:34:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 6 的完整响应：[
-  {
-    "name": "规则条件编辑",
-    "description": "支持用户创建、修改和删除条件操作符的逻辑规则配置",
-    "input": "条件规则配置数据（包括操作符类型、比较值、逻辑表达式）",
-    "output": "更新后的逻辑详单表数据",
-    "process": "接收用户输入的条件规则，进行语法校验和逻辑一致性检查，将有效规则保存至规则引擎数据库"
-  },
-  {
-    "name": "逻辑详单表查询筛选",
-    "description": "提供多维度筛选和排序功能，用于查询条件操作符逻辑详单表数据",
-    "input": "筛选条件（如操作符类型、规则状态、生效时间）和排序参数",
-    "output": "筛选并排序后的逻辑详单表分页数据",
-    "process": "根据用户输入的筛选条件和排序参数，从数据库查询符合条件的记录，应用分页逻辑，返回结果列表"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 6 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 56% - 正在拆分功能点 6/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 6/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 793 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:35:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 7 的完整响应：[
-  {
-    "name": "声音提示规则条件编辑",
-    "description": "编辑声音提示的触发条件，如待办事项到期时间",
-    "input": "待办事项ID、触发时间阈值、声音类型",
-    "output": "更新后的规则配置",
-    "process": "校验规则条件逻辑，保存到规则引擎"
-  },
-  {
-    "name": "待办列表声音状态监控",
-    "description": "实时监控待办列表中声音提示的生效状态",
-    "input": "待办事项ID、当前系统时间",
-    "output": "声音提示事件状态",
-    "process": "比较待办事项截止时间与当前时间，触发声音提示"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 7 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 59% - 正在拆分功能点 7/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 7/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 790 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:36:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 8 的完整响应：[
-  {
-    "name": "工单语音提醒详单专业筛选查询",
-    "description": "支持多维度条件筛选和分页显示工单语音提醒详单表数据",
-    "input": "工单ID、时间范围、状态类型、关键词等查询条件",
-    "output": "分页后的详单表数据列表",
-    "process": "解析用户输入条件，构建查询语句，从数据库获取匹配记录，应用分页逻辑"
-  },
-  {
-    "name": "工单语音提醒详单记录更新",
-    "description": "允许对工单语音提醒详单表的记录进行编辑和保存操作",
-    "input": "详单记录ID和需更新的字段值（如状态、处理时间）",
-    "output": "更新后的详单记录",
-    "process": "校验数据完整性，更新数据库记录，触发事件通知"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 8 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 61% - 正在拆分功能点 8/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 8/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 790 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:37:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 9 的完整响应：[
-  {
-    "name": "模板字段映射管理",
-    "description": "配置事件工单回单模板的字段映射关系，确保输入和输出数据的对应",
-    "input": "字段映射配置表单数据",
-    "output": "验证通过的模板字段映射结构",
-    "process": "解析用户输入的字段配置，校验字段类型和必填项，生成映射规则"
-  },
-  {
-    "name": "模板规则条件编辑",
-    "description": "设置事件工单回单模板的业务规则条件，如时间阈值和状态过滤规则",
-    "input": "规则条件编辑表单",
-    "output": "生效的模板规则条件配置",
-    "process": "校验规则条件的逻辑一致性，应用规则到模板"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 9 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 64% - 正在拆分功能点 9/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 9/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 787 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:44] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:46] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:48] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:50] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:52] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:54] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:56] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:38:58] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:00] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:02] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 10 的完整响应：[
-  {
-    "name": "专业筛选查询",
-    "description": "支持用户根据工单状态、创建时间、处理人等多维度条件进行事件处理工单的筛选和查询",
-    "input": "筛选条件（包括状态、时间范围、处理人等）",
-    "output": "符合筛选条件的工单列表，包含工单ID、状态、创建时间等信息",
-    "process": "系统接收用户输入的筛选条件，查询数据库，过滤工单数据并返回结果"
-  },
-  {
-    "name": "工单状态流转管理",
-    "description": "实现事件处理工单状态的自动或手动流转，确保工单状态符合处理流程",
-    "input": "工单ID和目标状态",
-    "output": "更新后的工单状态信息",
-    "process": "系统验证目标状态是否在允许的流转路径中，执行状态更新操作"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 10 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 67% - 正在拆分功能点 10/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 10/11 个功能点拆分
-INFO:utils.ollama_client:[OLLAMA_REQUEST] URL: http://localhost:11434/api/generate
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Model: qwen3:4b
-INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 787 chars
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:04] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:06] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:08] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:10] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:12] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:14] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:16] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:18] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:20] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:22] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:24] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:26] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:28] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:30] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:32] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:34] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:36] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:38] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点 11 的完整响应：[
-  {
-    "name": "时间段规则编辑",
-    "description": "允许用户创建、修改或删除生效时间段的配置规则，包括起始时间、结束时间和生效状态",
-    "input": "起始时间、结束时间、生效状态",
-    "output": "更新后的配置表记录",
-    "process": "校验时间范围有效性，检查规则冲突，保存配置"
-  },
-  {
-    "name": "生效时间段查询",
-    "description": "支持按时间范围、生效状态等条件筛选生效时间段配置列表",
-    "input": "查询条件：起始时间范围、结束时间范围、生效状态",
-    "output": "生效时间段列表数据",
-    "process": "从配置表中检索数据，应用筛选条件，返回匹配结果"
-  }
-]
-WARNING:routes.fpa_ai_expander:[AI_EXPAND] 功能点 11 处理失败：'NoneType' object has no attribute 'group'
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 70% - 正在拆分功能点 11/11
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 完成 11/11 个功能点拆分
-INFO:routes.fpa_ai_expander:[AI_EXPAND] AI 扩展完成，共扩展 0 个功能点
-INFO:routes.fpa_ai_expander:[AI_EXPAND] 实际处理：11 个功能点，平均每个拆分：0.00个
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 70% - AI 扩展完成，新增0个功能点
-INFO:routes.fpa_async_routes:开始按文档顺序插入 0 个 AI 扩展功能点
-INFO:routes.fpa_async_routes:AI 扩展完成，新增 0 个功能点，已按文档顺序插入
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 70% - 正在生成 Excel 文件...
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:40] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:routes.fpa_generator_routes:FPA Excel 生成成功：uploads/fpa_output/事件处理类工单流程应用场景_1773402867648_FPA_Estimation_20260313_203116.xlsx
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 90% - 正在清理临时文件...
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 95% - 任务即将完成
-INFO:routes.fpa_async_routes:FPA Excel 生成成功：uploads/fpa_output/事件处理类工单流程应用场景_1773402867648_FPA_Estimation_20260313_203116.xlsx
-INFO:utils.task_manager:[TASK:fpa_3aad11c35db0] 100% - 任务完成！
-INFO:utils.task_manager:[TASK] 任务完成：fpa_3aad11c35db0
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:39:42] "GET /fpa-generator/api/task-status/fpa_3aad11c35db0 HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [13/Mar/2026 20:40:22] "GET /fpa-generator/download/事件处理类工单流程应用场景_1773402867648_FPA_Estimation_20260313_203116.xlsx HTTP/1.1" 200 -
+INFO:utils.ollama_client:[OLLAMA_REQUEST] Prompt length: 1207 chars
+INFO:utils.ollama_client:[OLLAMA_REQUEST] Attempt: 1/4
+INFO:utils.ollama_client:[OLLAMA_CURL]
+curl -X POST "http://localhost:11434/api/generate" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "qwen3:4b", "prompt": "\n只返回 JSON 对象，不要其他文字。\n\n任务：将以下 5 个功能点分别拆分成 3 个子功能点（优先），无法拆分则返回 2 个\n\n功能点1:\n原始功能点n功能点2:\n原始功能点：指标保障阈值配置表\n功能描述：指标保障阈值配置表的维护与管理\n输入：\n输出：\n处理过程：\n\n功能点3:\n原始功能点：监控短信派发配置表\n功能描述：监控短信派：\n\n功能点4:\n原始功能点：指标保障统计表\n功能描述：指标保障统计表的维护与管理\n输入：\n输出：\n处理过程：\n\n功能点5:\n原始功能点：根因调控配置表\n功能描述：根因调控配置表的name\": \"功能名称\", \"description\": \"描述\", \"input\": \"输入\", \"output\": \"输出\", \"process\": \"处理过程\"},\n    {\"name\": \"功能名称\", \"description\": \"描述\",\"output\": \"输出\", \"process\": \"处理过程\"},\n    {\"name\": \"功能名称\", \"description\": \"描述\", \"input\": \"输入\", \"output\": \"输出\", \"process\": \"处理过程\"} [...],\n  ...\n}\n\n命名规则（重要）：\n- **不要使用下划线或空格**，直接连接：\"勘误自动受理时间表查询\"、\"工单流转管理新增\"、\"业务影响分析数据处理\"\n- 或使用简短术语：\"条\"详情查看\"\n- 禁止使用：\"子功能 1\"、\"功能点 A\"、\"XXX_YYY\"等无意义或带下划线的名称\n- name 不能与对应的原始功能点名称重复\n- **功能点计数项字段要求**：名称中不要有空格、详情下钻查看\n- 配置类：参数配置编辑、规则有效性校验、配置保存生效\n- 处理类：数据预处理、核心逻辑运算、结果持久化存储\n- 采集类：数据源连接、实时数据采集、采集结果存储\n\n要求. 合法 JSON 对象，直接用 {} 包裹，不要用代码\n4. name 字段保持简洁，去除所有空格和特殊符号\n5. 按功能点顺序依次返回结果\n\n现在直接返回 JSON：\n", "stream": false}'
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:24] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:26] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:26] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:29] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:29] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:32] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:32] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:35] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:35] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:38] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:38] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:41] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:41] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:44] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:44] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:47] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:47] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:50] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:50] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:53] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:53] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:56] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:56] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:59] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:03:59] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:02] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:02] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:05] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:05] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:08] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:08] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:11] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:11] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:14] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:14] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:17] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:17] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:20] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:20] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:23] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:23] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:26] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:26] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:29] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:29] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:32] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:32] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:35] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:35] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:38] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:38] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:41] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:41] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:44] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:44] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:47] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:47] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:50] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:50] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:53] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:53] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:56] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:56] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:59] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:04:59] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:02] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:02] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:05] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:05] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:08] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:08] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:11] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:11] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:14] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:14] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:17] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:17] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:20] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:20] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:23] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:23] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:26] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:26] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 批量处理 5 个功能点的完整响应：{
+  "功能点 1": [
+    {
+      "name": "勘误自动受理时间表条件筛选",
+      "description": "支持按时间范围、状态等条件筛选勘误自动受理时间表",
+      "input": "时间范围、状态参数",
+      "output": "符合条件的时间表列表",
+      "process": "根据条件进行数据过滤和匹配"
+    },
+    {
+      "name": "勘误自动受理时间表参数配置",
+      "description": "编辑时间表的参数规则，如触发条件",
+      "input": "时间表规则参数",
+      "output": "配置后的参数规则",
+      "process": "解析并存储参数配置"
+    },
+    {
+      "name": "勘误自动受理时间表自动更新",
+      "description": "实时更新时间表以反映最新状态",
+      "input": "实时事件数据",
+      "output": "更新后的时间表",
+     ...
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 从纯 JSON 对象中解析成功
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 解析到 5 个功能点的拆分结果
+INFO:routes.fpa_ai_expander:[AI_EXPAND] JSON 键名列表：['功能点 1', '功能点 2', '功能点 3', '功能点 4', '功能点 5']
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点1: 使用键名 '功能点 1' 找到数据
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点1: 解析到 3 个子功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 当前已扩展功能点总数：3
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点2: 使用键名 '功能点 2' 找到数据
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点2: 解析到 3 个子功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 当前已扩展功能点总数：6
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点3: 使用键名 '功能点 3' 找到数据
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点3: 解析到 3 个子功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 当前已扩展功能点总数：9
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点4: 使用键名 '功能点 4' 找到数据
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点4: 解析到 3 个子功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 当前已扩展功能点总数：12
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点5: 使用键名 '功能点 5' 找到数据
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 功能点5: 解析到 3 个子功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 当前已扩展功能点总数：15
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 已达到目标数量 13，停止扩展
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 本批次成功匹配 5/5 个功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] AI 扩展完成，共扩展 13 个功能点
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 实际处理：5 个批次，平均每批拆分：2.60个
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置列表呈现' 后面：勘误自动受理时间表条件筛选
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置列表呈现' 后面：勘误自动受理时间表参数配置
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置列表呈现' 后面：勘误自动受理时间表自动更新
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置新增' 后面：指标保障阈值参数配置
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置新增' 后面：阈值规则校验
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置新增' 后面：阈值配置生效
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置表' 后面：短信派发规则配置
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置表' 后面：短信派发规则校验
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值配置表' 后面：短信派发配置生效
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值开关' 后面：指标保障统计查询
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值开关' 后面：指标保障结果排序
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值开关' 后面：指标保障详情查看
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值是否开启显性化处理' 后面：根因调控规则配置
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值是否开启显性化处理' 后面：根因调控规则校验
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入扩展功能点到原始功能点 '指标保障阈值是否开启显性化处理' 后面：根因调控配置生效
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 最终扩展功能点总数：15
+INFO:routes.fpa_ai_expander:[AI_EXPAND] 插入位置验证：原始功能点数=75, 最终列表数=90
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 70% - AI 扩展完成，新增15个功能点
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 70% - AI 扩展完成，新增15个功能点
+INFO:routes.fpa_async_routes:开始按文档顺序插入 90 个 AI 扩展功能点
+INFO:routes.fpa_async_routes:AI 扩展完成，新增 90 个功能点，已按文档顺序插入
+INFO:routes.fpa_async_routes:开始重新识别 90 个功能点的类别和计算 AFP
+INFO:routes.fpa_async_routes:功能点类别识别和 AFP 计算完成
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 70% - 正在生成 Excel 文件...
+INFO:routes.fpa_generator_routes:FPA Excel 生成成功：uploads/fpa_output/---48900_20250717-_V4.1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 90% - 正在清理临时文件...
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 95% - 任务即将完成
+INFO:routes.fpa_async_routes:FPA Excel 生成成功：uploads/fpa_output/---48900_20250717-_V4.1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] 开始更新导出历史表，task_id=fpa_e3a2c03da917
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] output_filename=---48900_20250717-_V4.1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx, file_size=21299, function_point_count=90
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] 执行 SQL:
+                UPDATE knowledge_base.fpa_export_history
+                SET status = 'COMPLETED',
+                    progress = 100,
+                    message = '任务完成',
+                    output_filename = %s,
+                    file_path = %s,
+                    file_size = %s,
+                    function_point_count = %s,
+                    completed_at = NOW()
+                WHERE task_id = %s
+
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] 参数：('---48900_20250717-_V4.1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx', 'uploads/fpa_output/---48900_20250717-_1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx', 21299, 90, 'fpa_e3a2c03da917')
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] 验证更新结果：('---48900_20250717-_V4.1 (1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx', 'COMPLETED', datetime.datetime(, 15, 1, 5, 29))
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] completed_at = 2026-03-15 01:05:29
+INFO:routes.fpa_async_routes:[UPDATE_HISTORY] 导出历史表更新成功
+INFO:utils.task_manager:[TASK:fpa_e3a2c03da917] 100% - 任务完成！
+INFO:utils.task_manager:[TASK] 任务完成：fpa_e3a2c03da917
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:29] "GET /fpa-generator/api/task-status/fpa_e3a2c03da917 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:29] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:29] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:32] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:33] "GET /fpa-generator/api/export-history?page=1&page_size=20 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Mar/2026 01:05:34] "GET /fpa-generator/download/---48900_20250717-_V4.1%20(1)_FPA_Estimation_fpa_e3a2c03da917_20260315_010323.xlsx HTTP/1.1" 200 -
+
