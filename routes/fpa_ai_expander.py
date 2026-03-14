@@ -4,8 +4,42 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Tuple
 import threading
 import time
+import re
 
 logger = logging.getLogger(__name__)
+
+
+def clean_function_point_name(name: str) -> str:
+    """
+    清理功能点计数项名称，移除不适合的特殊符号
+    
+    规则：
+    1. 移除中文引号（""）和英文引号（""）
+    2. 移除小括号（包括全角和半角）及内容
+    3. 移除其他标点符号
+    
+    Args:
+        name: 原始名称
+    Returns:
+        清理后的名称
+    """
+    # 移除中文引号及内容："..."
+    name = re.sub(r'"[^"]*"', '', name)
+    
+    # 移除英文引号及内容："..."
+    name = re.sub(r'"[^"]*"', '', name)
+    
+    # 移除小括号及内容（全角和半角）
+    name = re.sub(r'[（(][^)）]*[)）]', '', name)
+    
+    # 移除其他可能的特殊符号（保留中文、英文、数字、下划线、点号）
+    # 只保留：中文、英文、数字、下划线、点号、空格
+    name = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9_\.\s]', '', name)
+    
+    # 清理多余空格
+    name = ' '.join(name.split())
+    
+    return name.strip()
 
 # 线程安全的计数器
 class ThreadSafeCounter:
@@ -116,6 +150,8 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
         # 使用 join 连接，避免在 f-string 中使用反斜杠
         points_info_text = '\n\n'.join(points_info)
         
+        logger.info(f"[AI_EXPAND] 批次{batch_start//batch_size + 1}的提示词内容:\n{points_info_text[:1000]}...")
+        
         prompt = f"""
 只返回 JSON 对象，不要其他文字。
 
@@ -135,12 +171,11 @@ JSON 格式（每个功能点对应一个数组）：
 }}
 
 命名规则（重要）：
-- 使用后缀方式：原始功能点名称_操作类型
-  例："时段规则参数配置_查询"、"工单流转管理_新增"、"业务影响分析_数据处理"
+- **不要使用下划线或空格**，直接连接："勘误自动受理时间表查询"、"工单流转管理新增"、"业务影响分析数据处理"
 - 或使用简短术语："条件筛选"、"结果排序"、"详情查看"
-- 禁止使用："子功能 1"、"功能点 A"等无意义名称
+- 禁止使用："子功能 1"、"功能点 A"、"XXX_YYY"等无意义或带下划线的名称
 - name 不能与对应的原始功能点名称重复
-- **功能点计数项字段要求**：名称中不要有空格、特殊符号（如括号、引号、逗号等），只用中文、英文、数字和下划线
+- **功能点计数项字段要求**：名称中不要有空格、特殊符号（如括号、引号、逗号、下划线等），只用中文、英文、数字
 
 拆分维度参考：
 - 查询类：条件筛选查询、结果列表排序、详情下钻查看
@@ -210,14 +245,31 @@ JSON 格式（每个功能点对应一个数组）：
             
             if json_data and isinstance(json_data, dict):
                 logger.info(f"[AI_EXPAND] 解析到 {len(json_data)} 个功能点的拆分结果")
+                logger.info(f"[AI_EXPAND] JSON 键名列表：{list(json_data.keys())}")
                 
                 # 按顺序处理每个功能点的结果
                 for idx, (orig_idx, point) in enumerate(batch_points):
-                    key = f"功能点{idx+1}"
-                    sub_points_data = json_data.get(key, [])
+                    # 尝试多种可能的键名格式（兼容 AI 返回的不同格式）
+                    possible_keys = [
+                        f"功能点{idx+1}",      # 功能点 1
+                        f"功能点 {idx+1}",     # 功能点 1（带空格）
+                        f"功能点{idx + 1}",    # 功能点 1（空格 variations）
+                        f"功能点 {idx + 1}",   # 功能点 1（全空格）
+                    ]
+                    
+                    sub_points_data = None
+                    used_key = None
+                    
+                    for key in possible_keys:
+                        sub_points_data = json_data.get(key, [])
+                        if sub_points_data:
+                            used_key = key
+                            logger.info(f"[AI_EXPAND] 功能点{idx+1}: 使用键名 '{key}' 找到数据")
+                            break
                     
                     if not sub_points_data:
-                        logger.warning(f"[AI_EXPAND] 功能点{idx+1}未找到拆分结果")
+                        logger.warning(f"[AI_EXPAND] 功能点{idx+1}未找到拆分结果（尝试的键名：{possible_keys}）")
+                        logger.warning(f"[AI_EXPAND] 可用的键名：{list(json_data.keys())}")
                         all_results.append((orig_idx, [], set()))
                         continue
                     
@@ -229,33 +281,46 @@ JSON 格式（每个功能点对应一个数组）：
                     
                     # 每个原始功能点最多拆分出 3 个子功能点
                     for sub_idx, sub_point in enumerate(sub_points_data[:3]):
-                        # 生成唯一的名称
+                        # 生成唯一的名称 - 不使用后缀格式
                         base_name = sub_point.get('name', '').strip()
                         
-                        # 检查名称是否为空或是占位符
+                        # 如果名称为空或是占位符，根据功能描述生成有意义的名称
                         if not base_name or any(placeholder in base_name for placeholder in ['子功能名称', '功能点', '具体子功能', '子功能', '名称']):
                             desc = sub_point.get('description', '')
                             process = sub_point.get('process', '')
                             
-                            # 从描述中提取关键字生成名称
-                            if '查询' in desc or '搜索' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_查询"
+                            # 从描述和过程中提取关键字生成简短名称（不使用后缀）
+                            if '查询' in desc or '搜索' in process or '检索' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}查询"
                             elif '配置' in desc or '设置' in process or '参数' in desc:
-                                base_name = f"{point.get('功能点计数项', '')}_配置"
-                            elif '保存' in desc or '存储' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_保存"
-                            elif '校验' in desc or '验证' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_校验"
-                            elif '显示' in desc or '呈现' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_显示"
-                            elif '新增' in desc or '创建' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_新增"
-                            elif '修改' in desc or '更新' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_修改"
-                            elif '删除' in desc or '移除' in process:
-                                base_name = f"{point.get('功能点计数项', '')}_删除"
+                                base_name = f"{point.get('功能点计数项', '')}配置"
+                            elif '保存' in desc or '存储' in process or '持久化' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}保存"
+                            elif '校验' in desc or '验证' in process or '审核' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}校验"
+                            elif '显示' in desc or '呈现' in process or '展示' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}显示"
+                            elif '新增' in desc or '创建' in process or '添加' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}新增"
+                            elif '修改' in desc or '更新' in process or '编辑' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}修改"
+                            elif '删除' in desc or '移除' in process or '注销' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}删除"
+                            elif '导入' in desc or '导出' in process or '转换' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}数据交换"
+                            elif '统计' in desc or '分析' in process or '报表' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}统计分析"
+                            elif '告警' in desc or '通知' in process or '提醒' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}告警通知"
+                            elif '采集' in desc or '收集' in process or '获取' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}数据采集"
+                            elif '处理' in desc or '计算' in process or '运算' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}数据处理"
+                            elif '同步' in desc or '异步' in process or '消息' in desc:
+                                base_name = f"{point.get('功能点计数项', '')}同步通信"
                             else:
-                                base_name = f"{point.get('功能点计数项', '')}-{sub_idx + 1}"
+                                # 默认使用序号区分，使用短横线连接（不用下划线）
+                                base_name = f"{point.get('功能点计数项', '')}-{idx + 1}"
                         
                         # 线程安全地检查和添加名称
                         with names_lock:
@@ -275,7 +340,7 @@ JSON 格式（每个功能点对应一个数组）：
                             'level3': point.get('level3', ''),
                             'level4': point.get('level4', ''),
                             'level5': unique_name,
-                            '功能点计数项': unique_name,
+                            '功能点计数项': clean_function_point_name(unique_name),
                             '功能描述': sub_point.get('description', point.get('功能描述', '')),
                             '系统界面': point.get('系统界面', ''),
                             '输入': sub_point.get('input', point.get('输入', '')),

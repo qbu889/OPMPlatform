@@ -695,9 +695,10 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
             conn.commit()
             
             # 验证更新结果
-            cursor.execute('SELECT output_filename, status FROM knowledge_base.fpa_export_history WHERE task_id = %s', (task_id,))
+            cursor.execute('SELECT output_filename, status, completed_at FROM knowledge_base.fpa_export_history WHERE task_id = %s', (task_id,))
             result = cursor.fetchone()
             logger.info(f"[UPDATE_HISTORY] 验证更新结果：{result}")
+            logger.info(f"[UPDATE_HISTORY] completed_at = {result[2] if result and len(result) > 2 else 'N/A'}")
             
             cursor.close()
             conn.close()

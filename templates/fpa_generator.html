@@ -517,6 +517,7 @@
                                                     <th>进度</th>
                                                     <th>状态</th>
                                                     <th>创建时间</th>
+                                                    <th>完成时间</th>
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
@@ -1138,6 +1139,9 @@
                     // 开始轮询进度
                     startPolling(currentTaskId);
                     
+                    // 立即刷新历史记录，显示新创建的任务
+                    loadExportHistory(1);
+                    
                     alert('任务已创建！任务 ID: ' + currentTaskId);
                 } else {
                     alert('创建任务失败：' + result.message);
@@ -1234,6 +1238,9 @@
                             // 滚动到底部
                             logsContainer.scrollTop = logsContainer.scrollHeight;
                         }
+                        
+                        // 每次查询都刷新历史记录，确保数据同步
+                        loadExportHistory(1);
                         
                         // 检查是否完成
                         if (task.status === 'COMPLETED') {
@@ -1452,12 +1459,13 @@
                     <tr>
                         <td><small>${item.task_id}</small></td>
                         <td><small>${item.original_filename}</small></td>
-                        <td><small>${item.output_filename || '-'}</small></td>
+                        <td title="${item.output_filename || '-'}"><small>${(item.output_filename || '-').length > 20 ? (item.output_filename || '-').substring(0, 20) + '...' : (item.output_filename || '-')}</small></td>
                         <td>${funcCount}</td>
                         <td>${fileSize}</td>
                         <td>${renderProgress(item.progress)}</td>
                         <td><span class="badge badge-${statusClass}">${item.status}</span></td>
                         <td><small>${formatDateTime(item.created_at)}</small></td>
+                        <td><small>${item.completed_at ? formatDateTime(item.completed_at) : '-'}</small></td>
                         <td>${actionBtn}</td>
                     </tr>
                 `;

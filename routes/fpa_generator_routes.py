@@ -44,6 +44,41 @@ WORK_PARAMS = {
 }
 
 
+def clean_function_point_name(name: str) -> str:
+    """
+    清理功能点计数项名称，移除不适合的特殊符号
+    
+    规则：
+    1. 移除中文引号（""）和英文引号（""）
+    2. 移除小括号（包括全角和半角）及内容
+    3. 移除其他标点符号
+    
+    Args:
+        name: 原始名称
+    Returns:
+        清理后的名称
+    """
+    import re
+    
+    # 移除中文引号及内容："..."
+    name = re.sub(r'"[^"]*"', '', name)
+    
+    # 移除英文引号及内容："..."
+    name = re.sub(r'"[^"]*"', '', name)
+    
+    # 移除小括号及内容（全角和半角）
+    name = re.sub(r'[（(][^)）]*[)）]', '', name)
+    
+    # 移除其他可能的特殊符号（保留中文、英文、数字、下划线、点号）
+    # 只保留：中文、英文、数字、下划线、点号、空格
+    name = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9_\.\s]', '', name)
+    
+    # 清理多余空格
+    name = ' '.join(name.split())
+    
+    return name.strip()
+
+
 def parse_requirement_document(md_content: str) -> list:
     """
     解析需求文档，提取 FPA 功能点信息
