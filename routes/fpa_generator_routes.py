@@ -49,9 +49,10 @@ def clean_function_point_name(name: str) -> str:
     清理功能点计数项名称，移除不适合的特殊符号
     
     规则：
-    1. 移除中文引号（""）和英文引号（""）
-    2. 移除小括号（包括全角和半角）及内容
-    3. 移除其他标点符号
+    1. 将斜杠/替换为"和"字
+    2. 移除中文引号（""）和英文引号（""）及内容
+    3. 移除小括号（包括全角和半角）及内容
+    4. 移除其他标点符号
     
     Args:
         name: 原始名称
@@ -60,6 +61,9 @@ def clean_function_point_name(name: str) -> str:
     """
     import re
     
+    # 特殊规则：将/替换为"和"字
+    name = name.replace('/', '和')
+    
     # 移除中文引号及内容："..."
     name = re.sub(r'"[^"]*"', '', name)
     
@@ -67,7 +71,7 @@ def clean_function_point_name(name: str) -> str:
     name = re.sub(r'"[^"]*"', '', name)
     
     # 移除小括号及内容（全角和半角）
-    name = re.sub(r'[（(][^)）]*[)）]', '', name)
+    name = re.sub(r'[（ (][^)）]*[)）]', '', name)
     
     # 移除其他可能的特殊符号（保留中文、英文、数字、下划线、点号）
     # 只保留：中文、英文、数字、下划线、点号、空格
@@ -165,6 +169,8 @@ def parse_requirement_document(md_content: str) -> list:
                     # 清洗标题中的注释和零宽字符
                     title_clean = re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', title).strip()
                     title_clean = title_clean.replace('\u200D', '').strip()
+                    # 使用清理函数处理特殊符号
+                    title_clean = clean_function_point_name(title_clean)
                                     
                     # 开始新的功能点 (同时清洗之前积累的 level1-4)
                     current_point = {
@@ -1282,7 +1288,38 @@ def upload_requirement():
                         )
                                                     
                         if expanded_points:
-                            function_points.extend(expanded_points)
+                            # 关键修复：将扩展的功能点插入到对应原始功能点之后，保持文档顺序
+                            # 1. 首先给每个原始功能点添加索引标记
+                            for idx, point in enumerate(function_points):
+                                point['_original_index'] = idx
+                            
+                            # 2. 按原始索引分组扩展的功能点
+                            from collections import defaultdict
+                            expanded_by_parent = defaultdict(list)
+                            for exp_point in expanded_points:
+                                parent_idx = exp_point.get('_parent_index', -1)
+                                expanded_by_parent[parent_idx].append(exp_point)
+                            
+                            # 3. 从后向前插入，避免索引偏移问题
+                            # （从大到小排序，这样插入时不会影响前面的索引）
+                            sorted_indices = sorted(expanded_by_parent.keys(), reverse=True)
+                            
+                            for parent_idx in sorted_indices:
+                                children = expanded_by_parent[parent_idx]
+                                if parent_idx < len(function_points):
+                                    # 在原始功能点之后插入所有子功能点
+                                    insert_pos = parent_idx + 1
+                                    for child in children:
+                                        function_points.insert(insert_pos, child)
+                                        insert_pos += 1
+                                    logger.debug(f"在索引 {parent_idx} 后插入 {len(children)} 个子功能点")
+                            
+                            # 4. 清理临时索引字段
+                            for point in function_points:
+                                if '_original_index' in point:
+                                    del point['_original_index']
+                                if '_parent_index' in point:
+                                    del point['_parent_index']
                                                     
                             # 重新计算扩展后的 AFP 总和
                             new_afp_total = sum(point.get('AFP', 0) for point in function_points)

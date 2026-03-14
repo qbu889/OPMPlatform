@@ -14,15 +14,19 @@ def clean_function_point_name(name: str) -> str:
     清理功能点计数项名称，移除不适合的特殊符号
     
     规则：
-    1. 移除中文引号（""）和英文引号（""）
-    2. 移除小括号（包括全角和半角）及内容
-    3. 移除其他标点符号
+    1. 将斜杠/替换为"和"字
+    2. 移除中文引号（""）和英文引号（""）及内容
+    3. 移除小括号（包括全角和半角）及内容
+    4. 移除其他标点符号
     
     Args:
         name: 原始名称
     Returns:
         清理后的名称
     """
+    # 特殊规则：将/替换为"和"字
+    name = name.replace('/', '和')
+    
     # 移除中文引号及内容："..."
     name = re.sub(r'"[^"]*"', '', name)
     
@@ -30,7 +34,7 @@ def clean_function_point_name(name: str) -> str:
     name = re.sub(r'"[^"]*"', '', name)
     
     # 移除小括号及内容（全角和半角）
-    name = re.sub(r'[（(][^)）]*[)）]', '', name)
+    name = re.sub(r'[（ (][^)）]*[)）]', '', name)
     
     # 移除其他可能的特殊符号（保留中文、英文、数字、下划线、点号）
     # 只保留：中文、英文、数字、下划线、点号、空格
@@ -78,24 +82,31 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     names_lock = threading.Lock()  # 保护 existing_names 的锁
     
     # 选择有代表性的功能点进行拆分（优先选择复杂的、描述详细的功能点）
-    sorted_points = sorted(
-        original_points,
-        key=lambda p: len(p.get('功能描述', '')) + len(p.get('处理过程', '')),
+    # 重要：保留原始索引，用于后续正确插入
+    indexed_points = [(i, p) for i, p in enumerate(original_points)]
+    
+    sorted_indexed_points = sorted(
+        indexed_points,
+        key=lambda x: len(x[1].get('功能描述', '')) + len(x[1].get('处理过程', '')),
         reverse=True
     )
     
     # 根据需要的扩展数量，动态决定选择多少个功能点进行拆分
     # 每个功能点平均拆分出 2-3 个子功能点
     points_needed = max(1, expand_count // 2)  # 至少选择 1 个
-    points_to_split = sorted_points[:min(points_needed, len(sorted_points), 50)]  # 最多选择 50 个
+    sorted_to_split = sorted_indexed_points[:min(points_needed, len(sorted_indexed_points), 50)]  # 最多选择 50 个
     
     logger.info(f"[AI_EXPAND] 开始 AI 辅助扩展，需要扩展 {expand_count} 个功能点")
-    logger.info(f"[AI_EXPAND] 选择了 {len(points_to_split)} 个复杂功能点进行拆分（目标：{points_needed}个）")
+    logger.info(f"[AI_EXPAND] 选择了 {len(sorted_to_split)} 个复杂功能点进行拆分（目标：{points_needed}个）")
     logger.info(f"[AI_EXPAND] 使用多线程模式，最大并发数：8")
+    
+    # 打印选择的拆分对象及其原始索引，便于调试
+    for idx, (orig_idx, point) in enumerate(sorted_to_split[:10]):  # 只显示前 10 个
+        logger.info(f"[AI_EXPAND] 选择拆分 #{idx+1}: 原始索引={orig_idx}, 功能点={point.get('功能点计数项', '')}")
     
     if progress_callback and task_id:
         progress_callback(task_id, 40, f'开始 AI 拆分，目标扩展{expand_count}个功能点',
-                         f'选择了{len(points_to_split)}个功能点进行 AI 拆分（多线程模式）')
+                         f'选择了{len(sorted_to_split)}个功能点进行 AI 拆分（多线程模式）')
     
     # 使用线程池并行处理
     # 根据 CPU 负载动态调整并发数，避免过热降频
@@ -109,11 +120,11 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     cpu_estimate = "15-25%"
     
     # 确保不超过待处理数量
-    max_workers = min(max_workers, len(points_to_split))
+    max_workers = min(max_workers, len(sorted_to_split))
     
     logger.info(f"[AI_EXPAND] 启动线程池，工作线程数：{max_workers} (CPU 核心数：{cpu_cores})")
     logger.info(f"[AI_EXPAND] 预计 CPU 使用率：{cpu_estimate}，温度：{temp_estimate}")
-    logger.info(f"[AI_EXPAND] 处理 {len(points_to_split)} 个功能点，预计耗时：{len(points_to_split) * 8 / max_workers:.1f}秒（4 线程并发）")
+    logger.info(f"[AI_EXPAND] 处理 {len(sorted_to_split)} 个功能点，预计耗时：{len(sorted_to_split) * 8 / max_workers:.1f}秒（4 线程并发）")
     
     processed_count = ThreadSafeCounter(0)
     stop_flag = threading.Event()
@@ -124,9 +135,9 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     batch_size = 5
     all_results = []
     
-    for batch_start in range(0, len(points_to_split), batch_size):
-        batch_end = min(batch_start + batch_size, len(points_to_split))
-        batch_points = [(idx, points_to_split[idx]) for idx in range(batch_start, batch_end)]
+    for batch_start in range(0, len(sorted_to_split), batch_size):
+        batch_end = min(batch_start + batch_size, len(sorted_to_split))
+        batch_points = sorted_to_split[batch_start:batch_end]  # 直接使用带原始索引的元组
         
         logger.info(f"[AI_EXPAND] 处理批次 {batch_start//batch_size + 1}: 功能点 {batch_start+1} 到 {batch_end}（共{len(batch_points)}个）")
         
@@ -247,6 +258,9 @@ JSON 格式（每个功能点对应一个数组）：
                 logger.info(f"[AI_EXPAND] 解析到 {len(json_data)} 个功能点的拆分结果")
                 logger.info(f"[AI_EXPAND] JSON 键名列表：{list(json_data.keys())}")
                 
+                # 统计成功匹配的数量
+                success_count = 0
+                
                 # 按顺序处理每个功能点的结果
                 for idx, (orig_idx, point) in enumerate(batch_points):
                     # 尝试多种可能的键名格式（兼容 AI 返回的不同格式）
@@ -265,6 +279,7 @@ JSON 格式（每个功能点对应一个数组）：
                         if sub_points_data:
                             used_key = key
                             logger.info(f"[AI_EXPAND] 功能点{idx+1}: 使用键名 '{key}' 找到数据")
+                            success_count += 1
                             break
                     
                     if not sub_points_data:
@@ -366,9 +381,14 @@ JSON 格式（每个功能点对应一个数组）：
                     all_results.append((orig_idx, new_points, new_names))
                     expanded_points.extend(new_points)
                     
+                    logger.info(f"[AI_EXPAND] 当前已扩展功能点总数：{len(expanded_points)}")
+                    
                     if len(expanded_points) >= expand_count:
                         expanded_points = expanded_points[:expand_count]
+                        logger.info(f"[AI_EXPAND] 已达到目标数量 {expand_count}，停止扩展")
                         break
+                
+                logger.info(f"[AI_EXPAND] 本批次成功匹配 {success_count}/{len(batch_points)} 个功能点")
             else:
                 logger.warning(f"[AI_EXPAND] 批量解析失败，返回空结果")
                 for idx, (orig_idx, _) in enumerate(batch_points):
@@ -396,10 +416,35 @@ JSON 格式（每个功能点对应一个数组）：
         
     logger.info(f"[AI_EXPAND] AI 扩展完成，共扩展 {len(expanded_points)} 个功能点")
     logger.info(f"[AI_EXPAND] 实际处理：{len(all_results)} 个批次，平均每批拆分：{len(expanded_points)/max(len(all_results),1):.2f}个")
+    
+    # 重要：将扩展的功能点插入到对应的原始功能点后面
+    # 按照原始功能点的索引位置，将扩展功能点插入到其后面
+    final_expanded_points = []
+    expanded_count = 0
+    
+    # 构建一个映射：原始索引 -> 扩展的功能点列表
+    from collections import defaultdict
+    expanded_map = defaultdict(list)
+    for orig_idx, new_points, _ in all_results:
+        if new_points:
+            expanded_map[orig_idx].extend(new_points)
+    
+    # 遍历原始功能点，将扩展的功能点插入到对应位置后面
+    for i, point in enumerate(original_points):
+        final_expanded_points.append(point)  # 先添加原始功能点
+        # 如果有扩展功能点，插入到原始功能点后面
+        if i in expanded_map:
+            for exp_point in expanded_map[i]:
+                final_expanded_points.append(exp_point)
+                expanded_count += 1
+                logger.info(f"[AI_EXPAND] 插入扩展功能点到原始功能点 '{point.get('功能点计数项', '')}' 后面：{exp_point.get('功能点计数项', '')}")
+    
+    logger.info(f"[AI_EXPAND] 最终扩展功能点总数：{expanded_count}")
+    logger.info(f"[AI_EXPAND] 插入位置验证：原始功能点数={len(original_points)}, 最终列表数={len(final_expanded_points)}")
         
     if progress_callback and task_id:
-        progress_callback(task_id, 70, f'AI 扩展完成，新增{len(expanded_points)}个功能点',
-                         f'成功扩展 {len(expanded_points)} 个功能点（批量处理加速）')
+        progress_callback(task_id, 70, f'AI 扩展完成，新增{expanded_count}个功能点',
+                         f'成功扩展 {expanded_count} 个功能点（已插入到对应原始功能点后）')
 
     # 如果是因为 AI 服务失败而停止，给出明确提示并抛出异常
     if stop_flag.is_set():
@@ -413,10 +458,10 @@ JSON 格式（每个功能点对应一个数组）：
         raise Exception(f"AI 服务不可用，连续失败{max_ai_failures}次。请检查 Ollama 服务是否运行。")
     else:
         if progress_callback and task_id:
-            progress_callback(task_id, 70, f'AI 扩展完成，新增{len(expanded_points)}个功能点',
-                             f'成功扩展 {len(expanded_points)} 个功能点（多线程加速）')
+            progress_callback(task_id, 70, f'AI 扩展完成，新增{expanded_count}个功能点',
+                             f'成功扩展 {expanded_count} 个功能点（已正确插入位置）')
 
-    return expanded_points
+    return final_expanded_points
 
 
 def ensure_unique_name(base_name: str, existing_names: set) -> str:
