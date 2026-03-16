@@ -532,13 +532,23 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                     wrapped_progress_callback(task_id, 30, f'开始 AI 扩展 (需要{expand_count}个)', 
                                     '正在进行 AI 辅助功能点拆分')
                 
+                # 配置项：是否使用 OMLX 模型（Qwen3.5-4B-OptiQ-4bit）
+                # True = 使用 OMLX 在线模型，False = 使用本地 Ollama 模型
+                USE_OMLX = True  # 修改这里来切换模型：True=OMLX, False=本地 Ollama
+                
+                if USE_OMLX:
+                    logger.info("[AI_EXPAND] 🌐 使用 OMLX 模型：Qwen3.5-4B-OptiQ-4bit")
+                else:
+                    logger.info("[AI_EXPAND] 💻 使用本地 Ollama 模型：qwen3:4b")
+                
                 # 调用 AI 扩展函数
                 from routes.fpa_ai_expander import ai_assisted_expand_function_points
                 new_points = ai_assisted_expand_function_points(
                     function_points, 
                     expand_count,
                     progress_callback=wrapped_progress_callback,
-                    task_id=task_id
+                    task_id=task_id,
+                    use_omlx=USE_OMLX  # 传递模型选择参数
                 )
                 
                 # 将 AI 扩展的功能点插入到对应的父功能点之后（保持文档顺序）

@@ -31,17 +31,50 @@ from routes.auth_routes import auth_bp
 from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 from routes.chatbot_routes import chatbot_bp  # 导入智能客服蓝图
 from routes.category_routes import category_bp  # 导入专业领域管理蓝图
-from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA预估表生成器蓝图
+from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA 预估表生成器蓝图
 from routes.adjustment_routes import adjustment_bp  # 导入调整因子管理蓝图
 from routes.adjustment_calc_routes import adjustment_calc_bp  # 导入调整因子计算器蓝图
+from utils.ollama_client import init_ollama_service, check_omlx_connectivity  # 导入 OMLX 服务初始化工具
 
-# 配置日志 - 统一日志格式
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
+# 配置日志 - 统一日志格式（同时输出到控制台和文件）
+log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
+# 创建 logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# 清除已有的 handler（避免重复）
+if logger.handlers:
+    logger.handlers.clear()
+
+# 控制台处理器
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_formatter = logging.Formatter(
+    '%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-logger = logging.getLogger(__name__)
+console_handler.setFormatter(console_formatter)
+
+# 文件处理器
+file_handler = logging.FileHandler(
+    os.path.join(log_dir, f'app_{datetime.now().strftime("%Y%m%d")}.log'),
+    encoding='utf-8'
+)
+file_handler.setLevel(logging.INFO)
+file_formatter = logging.Formatter(
+    '%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+file_handler.setFormatter(file_formatter)
+
+# 添加处理器
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+# 获取应用 logger
+app_logger = logging.getLogger(__name__)
 
 # 确保models目录存在
 import sys
@@ -58,6 +91,30 @@ def create_app(config_name='default'):
 
     # 创建上传目录
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    # 初始化 OMLX 服务并验证连通性（不阻塞应用启动）
+    with app.app_context():
+        try:
+            logger.info("=" * 80)
+            logger.info("🚀 正在初始化 OMLX AI 服务...")
+            logger.info("=" * 80)
+            
+            # 初始化 OMLX 客户端
+            init_ollama_service(use_omlx=True)
+            
+            # 验证连通性
+            is_available = check_omlx_connectivity()
+            
+            if is_available:
+                logger.info("✅ OMLX 服务验证成功！可以正常使用 AI 功能")
+            else:
+                logger.error("❌ OMLX 服务验证失败！请检查 OMLX 服务是否正常运行")
+                logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
+        except Exception as e:
+            logger.error(f"❌ OMLX 服务初始化异常：{e}")
+            logger.error("   应用将继续运行，但 AI 功能可能不可用")
+        finally:
+            logger.info("=" * 80)
 
     # 注册蓝图
     app.register_blueprint(document_bp)
@@ -72,7 +129,7 @@ def create_app(config_name='default'):
     app.register_blueprint(auth_bp)
     app.register_blueprint(chatbot_bp)  # 注册智能客服蓝图
     app.register_blueprint(category_bp)  # 注册专业领域管理蓝图
-    app.register_blueprint(fpa_generator_bp)  # 注册 FPA预估表生成器蓝图
+    app.register_blueprint(fpa_generator_bp)  # 注册 FPA 预估表生成器蓝图
     app.register_blueprint(adjustment_bp)  # 注册调整因子管理蓝图
     app.register_blueprint(adjustment_calc_bp)  # 注册调整因子计算器蓝图
     # 初始化并启动清理线程
@@ -109,5 +166,6 @@ def index():
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5002
-    logger.info(f"启动Flask应用，端口: {port}")
-    app.run(debug=True, host='0.0.0.0', port=port)
+    logger.info(f"启动 Flask 应用，端口：{port}")
+    # 禁用 debug 模式以确保模块正确重新加载
+    app.run(debug=False, host='0.0.0.0', port=port)

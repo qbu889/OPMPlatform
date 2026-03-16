@@ -1280,11 +1280,21 @@ def upload_requirement():
                         logger.info(f"[AI_EXPAND] 扩展目标：{needed_expand_count}个功能点")
                         logger.info(f"[AI_EXPAND] AFP 目标：弥补 {afp_difference:.2f} 的差距")
                         logger.info(f"[AI_EXPAND] 参考功能点：{len(function_points)}个")
+                        
+                        # 配置项：是否使用 OMLX 模型（Qwen3.5-4B-OptiQ-4bit）
+                        # True = 使用 OMLX 在线模型，False = 使用本地 Ollama 模型
+                        USE_OMLX = True  # 修改这里来切换模型：True=OMLX, False=本地 Ollama
+                        
+                        if USE_OMLX:
+                            logger.info("[AIC_EXPAND] 🌐 使用 OMLX 模型：Qwen3.5-4B-OptiQ-4bit")
+                        else:
+                            logger.info("[AI_EXPAND] 💻 使用本地 Ollama 模型：qwen3:4b")
                                 
                         # 从原始功能点中选择有代表性的进行拆分
                         expanded_points = ai_assisted_expand_function_points(
                             function_points,  # 传入所有功能点作为参考
-                            needed_expand_count
+                            needed_expand_count,
+                            use_omlx=USE_OMLX  # 传递模型选择参数
                         )
                                                     
                         if expanded_points:
