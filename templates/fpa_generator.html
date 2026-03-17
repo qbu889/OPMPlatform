@@ -113,6 +113,57 @@
             font-size: 2rem;
             color: #007bff;
         }
+        
+        /* 调整因子表格样式优化 - 使用!important 覆盖 Bootstrap 默认样式 */
+        #adjustmentFactorTable select.form-control {
+            width: 100% !important;
+            min-width: 400px !important;  /* 减小最小宽度 */
+            font-size: 0.85rem !important;
+            white-space: normal !important;  /* 允许换行 */
+            overflow: hidden !important;  /* 隐藏溢出 */
+            text-overflow: ellipsis !important;  /* 显示省略号 */
+            cursor: pointer;
+            max-width: 600px !important;  /* 减小最大宽度 */
+            height: auto !important;  /* 自动高度 */
+            line-height: 1.5 !important;
+        }
+        
+        /* 下拉框展开时的选项样式 */
+        #adjustmentFactorTable select.form-control option {
+            white-space: normal !important;  /* 允许换行 */
+            padding: 8px !important;
+            max-width: 600px !important;
+            overflow: visible !important;
+            line-height: 1.5 !important;
+        }
+        
+        /* 鼠标悬停时显示完整文本的 tooltip */
+        #adjustmentFactorTable select.form-control {
+            position: relative;
+        }
+        
+        /* 确保表格单元格不会限制内容宽度 */
+        #adjustmentFactorTable td:nth-child(2) {
+            min-width: 400px !important;
+            max-width: 600px !important;
+        }
+        
+        /* 优化下拉框显示 - 允许多行显示 */
+        #adjustmentFactorTable select.form-control {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        /* 响应式调整：在小屏幕上使用自动宽度 */
+        @media (max-width: 768px) {
+            #adjustmentFactorTable select.form-control {
+                min-width: 200px !important;
+                font-size: 0.8rem !important;
+            }
+            #adjustmentFactorTable td:nth-child(2) {
+                min-width: 200px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -208,9 +259,9 @@
                                 <table class="table table-bordered table-hover" id="adjustmentFactorTable">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width: 25%;">因子类型</th>
-                                            <th style="width: 50%;">因子名称</th>
-                                            <th style="width: 25%;">因子计算结果</th>
+                                            <th style="width: 15%;">因子类型</th>
+                                            <th style="width: 65%;">因子名称</th>
+                                            <th style="width: 20%;">因子计算结果</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -218,11 +269,11 @@
                                         <tr>
                                             <td><strong>规模计数时机</strong></td>
                                             <td>
-                                                <select class="form-control" id="cfTiming">
-                                                    <option value="估算早期">估算早期（概算、预算阶段）</option>
-                                                    <option value="估算中期" selected>估算中期（投标、项目计划阶段）</option>
-                                                    <option value="估算晚期">估算晚期（需求分析阶段）</option>
-                                                    <option value="项目完成">项目完成（项目交付后及运维阶段）</option>
+                                                <select class="form-control" id="cfTiming" title="规模计数时机选择">
+                                                    <option value="估算早期" title="估算早期（概算、预算阶段）">估算早期</option>
+                                                    <option value="估算中期" selected title="估算中期（投标、项目计划阶段）">估算中期</option>
+                                                    <option value="估算晚期" title="估算晚期（需求分析阶段）">估算晚期</option>
+                                                    <option value="项目完成" title="项目完成（项目交付后及运维阶段）">项目完成</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="cf" value="1.21" readonly></td>
@@ -232,15 +283,15 @@
                                         <tr>
                                             <td><strong>应用类型</strong></td>
                                             <td>
-                                                <select class="form-control" id="applicationType">
-                                                    <option value="业务处理" selected>业务处理（办公自动化系统：人事、会计、工资、销售等经营管理及业务处理用软件等）</option>
-                                                    <option value="应用集成">应用集成（企业服务总线、应用集成等）</option>
-                                                    <option value="科技">科技（科学计算、仿真、基于复杂算法的统计分析等）</option>
-                                                    <option value="多媒体">多媒体（图形、影像、声音等多媒体应用领域：地理信息系统：教育和娱乐等）</option>
-                                                    <option value="智能信息">智能信息（自然语言处理、大模型、计算机视觉、智能决策、专家系统等）</option>
-                                                    <option value="基础软件/支撑软件">基础软件/支撑软件（操作系统、数据库系统、集成开发环境、自动化开发/设计工具等）</option>
-                                                    <option value="通信控制">通信控制（通信协议、仿真、交换机软件、全球定位系统等）</option>
-                                                    <option value="流程控制">流程控制（实时系统控制、机器人控制、嵌入式软件等）</option>
+                                                <select class="form-control" id="applicationType" title="应用类型选择">
+                                                    <option value="业务处理" selected title="业务处理（办公自动化系统：人事、会计、工资、销售等经营管理及业务处理用软件等）">业务处理</option>
+                                                    <option value="应用集成" title="应用集成（企业服务总线、应用集成等）">应用集成</option>
+                                                    <option value="科技" title="科技（科学计算、仿真、基于复杂算法的统计分析等）">科技</option>
+                                                    <option value="多媒体" title="多媒体（图形、影像、声音等多媒体应用领域：地理信息系统：教育和娱乐等）">多媒体</option>
+                                                    <option value="智能信息" title="智能信息（自然语言处理、大模型、计算机视觉、智能决策、专家系统等）">智能信息</option>
+                                                    <option value="基础软件/支撑软件" title="基础软件/支撑软件（操作系统、数据库系统、集成开发环境、自动化开发/设计工具等）">基础软件/支撑软件</option>
+                                                    <option value="通信控制" title="通信控制（通信协议、仿真、交换机软件、全球定位系统等）">通信控制</option>
+                                                    <option value="流程控制" title="流程控制（实时系统控制、机器人控制、嵌入式软件等）">流程控制</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorApplicationType" value="1.00" readonly></td>
@@ -250,10 +301,10 @@
                                         <tr>
                                             <td><strong>质量特性 - 分布式处理</strong></td>
                                             <td>
-                                                <select class="form-control" id="distributedProcessing">
-                                                    <option value="没有明示对分布式处理的需求事项" selected>没有明示对分布式处理的需求事项 (-1)</option>
-                                                    <option value="通过网络进行客户端/服务器及网络基础应用分布处理和传输">通过网络进行客户端/服务器及网络基础应用分布处理和传输 (0)</option>
-                                                    <option value="在多个服务器及处理器上同时相互执行计算机系统中的处理功能">在多个服务器及处理器上同时相互执行计算机系统中的处理功能 (1)</option>
+                                                <select class="form-control" id="distributedProcessing" title="分布式处理需求选择">
+                                                    <option value="没有明示对分布式处理的需求事项" selected title="没有明示对分布式处理的需求事项 (-1)">没有明示</option>
+                                                    <option value="通过网络进行客户端/服务器及网络基础应用分布处理和传输" title="通过网络进行客户端/服务器及网络基础应用分布处理和传输 (0)">客户端/服务器分布处理</option>
+                                                    <option value="在多个服务器及处理器上同时相互执行计算机系统中的处理功能" title="在多个服务器及处理器上同时相互执行计算机系统中的处理功能 (1)">多服务器并发处理</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorDistributed" value="-1.00" readonly></td>
@@ -263,10 +314,10 @@
                                         <tr>
                                             <td><strong>质量特性 - 性能</strong></td>
                                             <td>
-                                                <select class="form-control" id="performance">
-                                                    <option value="没有明示对性能的特别需求事项或活动，因此提供基本性能" selected>没有明示对性能的特别需求事项或活动，因此提供基本性能 (-1)</option>
-                                                    <option value="应答时间或处理率对高峰时间或所有业务时间来说都很重要，对连动系统结束处理时间的限制">应答时间或处理率对高峰时间或所有业务时间来说都很重要 (0)</option>
-                                                    <option value="为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具">为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具 (1)</option>
+                                                <select class="form-control" id="performance" title="性能需求选择">
+                                                    <option value="没有明示对性能的特别需求事项或活动，因此提供基本性能" selected title="没有明示对性能的特别需求事项或活动，因此提供基本性能 (-1)">没有明示性能需求</option>
+                                                    <option value="应答时间或处理率对高峰时间或所有业务时间来说都很重要，对连动系统结束处理时间的限制" title="应答时间或处理率对高峰时间或所有业务时间来说都很重要 (0)">应答时间重要</option>
+                                                    <option value="为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具" title="为满足性能需求事项，要求设计阶段开始进行性能分析，或在设计、开发阶段使用分析工具 (1)">需要性能分析</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorPerformance" value="-1.00" readonly></td>
@@ -276,10 +327,10 @@
                                         <tr>
                                             <td><strong>质量特性 - 可靠性</strong></td>
                                             <td>
-                                                <select class="form-control" id="reliability">
-                                                    <option value="没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性" selected>没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性 (-1)</option>
-                                                    <option value="发生故障时可轻易修复，带来一定不便或经济损失">发生故障时可轻易修复，带来一定不便或经济损失 (0)</option>
-                                                    <option value="发生故障时很难复，发生重大经济损失或有生命危害">发生故障时很难复，发生重大经济损失或有生命危害 (1)</option>
+                                                <select class="form-control" id="reliability" title="可靠性需求选择">
+                                                    <option value="没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性" selected title="没有明示对可靠性的特别需求事项或活动，因此提供基本的可靠性 (-1)">没有明示可靠性需求</option>
+                                                    <option value="发生故障时可轻易修复，带来一定不便或经济损失" title="发生故障时可轻易修复，带来一定不便或经济损失 (0)">故障可轻易修复</option>
+                                                    <option value="发生故障时很难复，发生重大经济损失或有生命危害" title="发生故障时很难复，发生重大经济损失或有生命危害 (1)">故障难修复/重大损失</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorReliability" value="-1.00" readonly></td>
@@ -289,10 +340,10 @@
                                         <tr>
                                             <td><strong>质量特性 - 多重站点</strong></td>
                                             <td>
-                                                <select class="form-control" id="multiSite">
-                                                    <option value="在相同用途的硬件或软件环境下运行" selected>在相同用途的硬件或软件环境下运行 (-1)</option>
-                                                    <option value="在用途类似的硬件或软件环境下运行">在用途类似的硬件或软件环境下运行 (0)</option>
-                                                    <option value="在不同用途的硬件或软件环境下运行">在不同用途的硬件或软件环境下运行 (1)</option>
+                                                <select class="form-control" id="multiSite" title="多重站点环境选择">
+                                                    <option value="在相同用途的硬件或软件环境下运行" selected title="在相同用途的硬件或软件环境下运行 (-1)">相同环境</option>
+                                                    <option value="在用途类似的硬件或软件环境下运行" title="在用途类似的硬件或软件环境下运行 (0)">类似环境</option>
+                                                    <option value="在不同用途的硬件或软件环境下运行" title="在不同用途的硬件或软件环境下运行 (1)">不同环境</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorMultiSite" value="-1.00" readonly></td>
@@ -302,10 +353,10 @@
                                         <tr>
                                             <td><strong>开发语言</strong></td>
                                             <td>
-                                                <select class="form-control" id="language">
-                                                    <option value="C 及其他同级别语言/平台">C 及其他同级别语言/平台 (1.2)</option>
-                                                    <option value="JAVA、C++、C#及其他同级别语言/平台" selected>JAVA、C++、C#及其他同级别语言/平台 (1.0)</option>
-                                                    <option value="PowerBuilder、ASP 及其他同级别语言/平台">PowerBuilder、ASP 及其他同级别语言/平台 (0.8)</option>
+                                                <select class="form-control" id="language" title="开发语言选择">
+                                                    <option value="C 及其他同级别语言/平台" title="C 及其他同级别语言/平台 (1.2)">C 及同级别语言</option>
+                                                    <option value="JAVA、C++、C#及其他同级别语言/平台" selected title="JAVA、C++、C#及其他同级别语言/平台 (1.0)">JAVA、C++、C#</option>
+                                                    <option value="PowerBuilder、ASP 及其他同级别语言/平台" title="PowerBuilder、ASP 及其他同级别语言/平台 (0.8)">PowerBuilder、ASP</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorLanguage" value="1.00" readonly></td>
@@ -315,10 +366,10 @@
                                         <tr>
                                             <td><strong>开发团队背景</strong></td>
                                             <td>
-                                                <select class="form-control" id="teamBackground">
-                                                    <option value="为本行业（政府）开发过类似的软件" selected>为本行业（政府）开发过类似的软件 (0.8)</option>
-                                                    <option value="为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件">为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件 (1.0)</option>
-                                                    <option value="未开发过类似软件">未开发过类似软件 (1.2)</option>
+                                                <select class="form-control" id="teamBackground" title="开发团队背景选择">
+                                                    <option value="为本行业（政府）开发过类似的软件" selected title="为本行业（政府）开发过类似的软件 (0.8)">本行业有类似经验</option>
+                                                    <option value="为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件" title="为其他行业开发过类似的软件，或为本行业（政府）开发过不同但相关的软件 (1.0)">其他行业有类似经验</option>
+                                                    <option value="未开发过类似软件" title="未开发过类似软件 (1.2)">无类似经验</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" step="0.01" class="form-control" id="factorTeam" value="0.80" readonly></td>
@@ -894,7 +945,26 @@
             
             // 添加调整因子下拉框的事件监听器，自动更新因子值
             addFactorEventListeners();
+            
+            // 初始化下拉框的 tooltip
+            initFactorTooltips();
         });
+        
+        // 初始化因子 tooltip
+        function initFactorTooltips() {
+            // 为所有调整因子下拉框添加 title 属性作为 tooltip
+            document.querySelectorAll('#adjustmentFactorTable select').forEach(select => {
+                // 监听变化，更新 title
+                select.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    this.title = selectedOption.title || selectedOption.text;
+                });
+                
+                // 初始化 title
+                const selectedOption = select.options[select.selectedIndex];
+                select.title = selectedOption.title || selectedOption.text;
+            });
+        }
         
         // 添加因子事件监听器
         function addFactorEventListeners() {
