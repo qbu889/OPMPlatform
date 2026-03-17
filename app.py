@@ -96,30 +96,6 @@ def create_app(config_name='default'):
 
     # 创建上传目录
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
-    # 初始化 OMLX 服务并验证连通性（不阻塞应用启动）
-    with app.app_context():
-        try:
-            logger.info("=" * 80)
-            logger.info("🚀 正在初始化 OMLX AI 服务...")
-            logger.info("=" * 80)
-            
-            # 初始化 OMLX 客户端
-            init_ollama_service(use_omlx=True)
-            
-            # 验证连通性
-            is_available = check_omlx_connectivity()
-            
-            if is_available:
-                logger.info("✅ OMLX 服务验证成功！可以正常使用 AI 功能")
-            else:
-                logger.error("❌ OMLX 服务验证失败！请检查 OMLX 服务是否正常运行")
-                logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
-        except Exception as e:
-            logger.error(f"❌ OMLX 服务初始化异常：{e}")
-            logger.error("   应用将继续运行，但 AI 功能可能不可用")
-        finally:
-            logger.info("=" * 80)
 
     # 创建数据库表（如果不存在）
     with app.app_context():
@@ -143,14 +119,46 @@ def create_app(config_name='default'):
     app.register_blueprint(auth_bp)
     app.register_blueprint(chatbot_bp)  # 注册智能客服蓝图
     app.register_blueprint(category_bp)  # 注册专业领域管理蓝图
-    app.register_blueprint(fpa_generator_bp)  # 注册 FPA预估表生成器蓝图
+    app.register_blueprint(fpa_generator_bp)  # 注册 FPA 预估表生成器蓝图
     app.register_blueprint(adjustment_bp)  # 注册调整因子管理蓝图
     app.register_blueprint(adjustment_calc_bp)  # 注册调整因子计算器蓝图
     app.register_blueprint(fpa_rules_bp)  # 注册 FPA 类别规则管理蓝图
+        
+    # 在后台异步初始化 OMLX 服务（不阻塞应用启动）
+    def init_omlx_async():
+        """异步初始化 OMLX 服务（在后台线程中执行）"""
+        try:
+            logger.info("=" * 80)
+            logger.info("🚀 正在异步初始化 OMLX AI 服务...")
+            logger.info("=" * 80)
+                
+            # 初始化 OMLX 客户端
+            init_ollama_service(use_omlx=True)
+                
+            # 验证连通性（超时 10 秒）
+            is_available = check_omlx_connectivity()
+                
+            if is_available:
+                logger.info("✅ OMLX 服务验证成功！可以正常使用 AI 功能")
+            else:
+                logger.error("❌ OMLX 服务验证失败！请检查 OMLX 服务是否正常运行")
+                logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
+        except Exception as e:
+            logger.error(f"❌ OMLX 服务异步初始化异常：{e}")
+            logger.error("   应用将继续运行，但 AI 功能可能不可用")
+        finally:
+            logger.info("=" * 80)
+        
+    # 启动后台线程进行异步初始化
+    import threading
+    omlx_init_thread = threading.Thread(target=init_omlx_async, daemon=True)
+    omlx_init_thread.start()
+    logger.info("📡 OMLX 服务初始化线程已启动（后台运行，不阻塞应用）")
+    
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()
-
+    
     return app
 
 
