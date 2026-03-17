@@ -580,29 +580,28 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                     for point in function_points:
                         item_text = point.get('功能点计数项', '')
                         
-                        # 跳过 ILF 表（已经在 parse_requirement_document 中处理）
-                        if point.get('类别') == 'ILF' and item_text.endswith('表'):
-                            # ILF 已经正确设置
-                            pass
-                        else:
-                            # 根据功能点名称重新识别类别
-                            # ILF: 结尾有"表"字，并且是系统内部维护的数据表
+                        # 使用数据库中的规则判断类别（与 fpa_generator_routes.py 保持一致）
+                        try:
+                            from models.fpa_category_rules import FPACategoryRule
+                            category, ufp = FPACategoryRule.apply_rules(item_text)
+                            point['类别'] = category
+                            point['UFP'] = ufp
+                            logger.info(f"功能点 '{item_text}' -> 类别={category}, UFP={ufp}")
+                        except Exception as e:
+                            logger.error(f"应用类别规则失败：{e}，使用默认规则")
+                            # 降级到硬编码规则（如果数据库不可用）
                             if item_text.endswith('表') or any(keyword in item_text for keyword in ['数据表', '配置表', '结果表', '详单表']):
                                 point['类别'] = 'ILF'
                                 point['UFP'] = 7
-                            # EI: 包含"赋值/新增/修改/删除"等关键字
                             elif any(keyword in item_text for keyword in ['赋值', '新增', '修改', '删除', '增', '删', '改', '同步', '导入', '配置', '管理', '添加', '设置', '保存', '提交', '派发', '移交', '回单']):
                                 point['类别'] = 'EI'
                                 point['UFP'] = 4
-                            # EQ: 包含"列表呈现/列表/快速查询/查询/搜索/查看/浏览"等
                             elif any(keyword in item_text for keyword in ['列表呈现', '列表', '快速查询', '查询', '搜索', '查看', '浏览', '筛选', '详情', '展示', '显示', '获取', '读取']):
                                 point['类别'] = 'EQ'
                                 point['UFP'] = 4
-                            # EO: 查询统计及逻辑计算
                             elif any(keyword in item_text for keyword in ['判定', '分析', '计算', '处理', '识别', '匹配', '切换', '呈现', '导出', '上报', '调度', '推送', '验证', '检测', '剔除', '运算', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发']):
                                 point['类别'] = 'EO'
                                 point['UFP'] = 5
-                            # EIF: 外部系统表
                             elif any(keyword in item_text for keyword in ['引用', '外部', '财务', 'HR', '架构', '同步']):
                                 point['类别'] = 'EIF'
                                 point['UFP'] = 5
