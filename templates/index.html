@@ -12,7 +12,7 @@
                     <i class="fas fa-rocket me-2"></i>OPM系统
                 </a>
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 
@@ -22,7 +22,7 @@
                             <a class="nav-link" href="#"><i class="fas fa-home me-1"></i>首页</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
                                 <i class="fas fa-tools me-1"></i>工具
                             </a>
                             <ul class="dropdown-menu">
@@ -42,7 +42,7 @@
                     <ul class="navbar-nav">
                         {% if user.logged_in %}
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
                                     <i class="fas fa-user-circle me-1"></i>{{ user.username }}
                                     {% if user.role == 'admin' %}
                                         <span class="badge bg-danger ms-1">管理员</span>
@@ -390,14 +390,14 @@
             if (tabButton) {
                 try {
                     // 尝试使用Bootstrap Tab组件
-                    const tab = new bootstrap.Tab(tabButton);
+            const tab = new bootstrap.Tab(tabButton);
                     tab.show();
 
                     // 平滑滚动到标签内容
                     setTimeout(() => {
                         const tabContent = document.querySelector('.tab-content');
                         if (tabContent) {
-                            OPM.smoothScrollTo(tabContent, 80);
+                    OPM.smoothScrollTo(tabContent, 80);
                         }
                     }, 100);
                 } catch (e) {
@@ -420,7 +420,7 @@
                     const navLinks = document.querySelectorAll('.nav-link');
                     navLinks.forEach(link => link.classList.remove('active'));
                     const correspondingNavLink = Array.from(navLinks).find(link =>
-                        link.getAttribute('data-bs-target') === '#' + tabId.replace('-tab', '')
+                        link.getAttribute('data-target') === '#' + tabId.replace('-tab', '')
                     );
                     if (correspondingNavLink) {
                         correspondingNavLink.classList.add('active');
@@ -525,7 +525,7 @@
                                                 <div class="toast-body">
                                                     ${result.message}
                                                 </div>
-                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                                <button type="button" class="close btn-close-white me-2 m-auto" data-dismiss="toast"></button>
                                             </div>
                                         </div>
                                     `.trim()
@@ -672,7 +672,7 @@
                     <h5 class="modal-title">
                         <i class="fas fa-key me-2"></i>修改密码
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="changePasswordForm">
@@ -692,7 +692,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" id="savePasswordBtn">
                         <i class="fas fa-save me-1"></i>保存更改
                     </button>
@@ -731,7 +731,7 @@
                                                 <div class="toast-body">
                                                     ${result.message}
                                                 </div>
-                                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                                <button type="button" class="close btn-close-white me-2 m-auto" data-dismiss="toast"></button>
                                             </div>
                                         </div>
                                     `.trim()

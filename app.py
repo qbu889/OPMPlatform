@@ -31,10 +31,12 @@ from routes.auth_routes import auth_bp
 from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 from routes.chatbot_routes import chatbot_bp  # 导入智能客服蓝图
 from routes.category_routes import category_bp  # 导入专业领域管理蓝图
-from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA 预估表生成器蓝图
+from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA预估表生成器蓝图
 from routes.adjustment_routes import adjustment_bp  # 导入调整因子管理蓝图
 from routes.adjustment_calc_routes import adjustment_calc_bp  # 导入调整因子计算器蓝图
+from routes.fpa_category_rules_routes import fpa_rules_bp  # 导入 FPA 类别规则管理蓝图
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity  # 导入 OMLX 服务初始化工具
+from models.fpa_category_rules import db as fpa_db  # 导入 FPA 规则数据库实例
 
 # 配置日志 - 统一日志格式（同时输出到控制台和文件）
 log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
@@ -88,6 +90,9 @@ def create_app(config_name='default'):
     # 确保设置了 secret key
     if not app.config.get('SECRET_KEY'):
         app.config['SECRET_KEY'] = 'your-temporary-secret-key-for-development'
+    
+    # 初始化 FPA 规则数据库
+    fpa_db.init_app(app)
 
     # 创建上传目录
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -116,6 +121,15 @@ def create_app(config_name='default'):
         finally:
             logger.info("=" * 80)
 
+    # 创建数据库表（如果不存在）
+    with app.app_context():
+        try:
+            logger.info("正在初始化 FPA 规则数据库表...")
+            fpa_db.create_all()
+            logger.info("FPA 规则数据库表初始化完成")
+        except Exception as e:
+            logger.error(f"创建数据库表失败：{e}")
+
     # 注册蓝图
     app.register_blueprint(document_bp)
     app.register_blueprint(sql_bp)
@@ -129,9 +143,10 @@ def create_app(config_name='default'):
     app.register_blueprint(auth_bp)
     app.register_blueprint(chatbot_bp)  # 注册智能客服蓝图
     app.register_blueprint(category_bp)  # 注册专业领域管理蓝图
-    app.register_blueprint(fpa_generator_bp)  # 注册 FPA 预估表生成器蓝图
+    app.register_blueprint(fpa_generator_bp)  # 注册 FPA预估表生成器蓝图
     app.register_blueprint(adjustment_bp)  # 注册调整因子管理蓝图
     app.register_blueprint(adjustment_calc_bp)  # 注册调整因子计算器蓝图
+    app.register_blueprint(fpa_rules_bp)  # 注册 FPA 类别规则管理蓝图
     # 初始化并启动清理线程
     cleanup_thread = CleanupThread(app)  # 传递 Flask 应用实例
     cleanup_thread.start()

@@ -441,6 +441,11 @@
                                     <i class="fas fa-cog"></i>
                                     开始生成 FPA 预估表
                                 </button>
+                                
+                                <button type="button" class="btn btn-info btn-lg mt-3 ml-2" onclick="openRulesManagement()" title="配置类别判断规则">
+                                    <i class="fas fa-tools"></i>
+                                    类别生成规则配置
+                                </button>
                                                             
                                 <!-- 加载动画 -->
                                 <div class="loading-spinner" id="loadingSpinner">
@@ -1593,6 +1598,11 @@
                 console.error('停止失败:', error);
                 alert('停止失败：' + (error.message || error));
             });
+        }
+        
+        // 打开规则管理页面
+        function openRulesManagement() {
+            window.open('/fpa-rules/management', '_blank');
         }
     </script>
     {% endblock %}

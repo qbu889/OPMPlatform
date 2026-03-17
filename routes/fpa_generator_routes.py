@@ -12,6 +12,7 @@ from decimal import Decimal
 from .fpa_ai_expander import ai_assisted_expand_function_points
 from utils.task_manager import get_task_manager
 import uuid
+from models.fpa_category_rules import FPACategoryRule
 
 fpa_generator_bp = Blueprint('fpa_generator', __name__, url_prefix='/fpa-generator')
 logger = logging.getLogger(__name__)
@@ -384,69 +385,51 @@ def parse_requirement_document(md_content: str) -> list:
             
     function_points = new_function_points
     logger.info(f"添加 ILF 表后，总功能点数：{len(function_points)}")
-        
-    # 智能填充 FPA 字段
-    # 首先从期望文件中加载已知的类别映射
-    expected_categories = {}
-    order_file_path = Path(__file__).parent.parent / 'test' / 'fpa' / '期望表格的顺序.txt'
-    if order_file_path.exists():
-        with open(order_file_path, 'r', encoding='utf-8') as f:
-            for line in f.readlines()[1:]:
-                parts = line.strip().split('\t')
-                if len(parts) >= 2 and parts[0] != '必填':
-                    expected_categories[parts[0].strip()] = parts[1].strip()
-        logger.info(f"从期望文件加载了 {len(expected_categories)} 个类别映射")
-    
+
+    # 智能填充 FPA 字段 - 使用数据库配置的规则
     for point in function_points:
         item_text = point.get('功能点计数项', '')
         
-        # 优先使用期望文件中的类别（如果存在）
-        if item_text in expected_categories:
-            exp_category = expected_categories[item_text]
-            point['类别'] = exp_category
-            # 根据类别设置 UFP
-            if exp_category == 'ILF':
+        # 使用数据库中的规则判断类别
+        try:
+            category, ufp = FPACategoryRule.apply_rules(item_text)
+            point['类别'] = category
+            point['UFP'] = ufp
+            logger.info(f"功能点 '{item_text}' -> 类别={category}, UFP={ufp}")
+        except Exception as e:
+            logger.error(f"应用类别规则失败：{e}，使用默认规则")
+            # 降级到硬编码规则（如果数据库不可用）
+            if item_text.endswith('表') or any(kw in item_text for kw in ['数据表', '配置表', '结果表', '详单表']):
+                point['类别'] = 'ILF'
                 point['UFP'] = 7
-            elif exp_category == 'EO':
-                point['UFP'] = 5
-            elif exp_category == 'EIF':
-                point['UFP'] = 5
-            elif exp_category == 'EI':
+            elif any(keyword in item_text for keyword in [
+                '录入', '修改', '删除', '增', '删', '改', '同步', '导入', '添加', '设置', '保存', '提交', '移交', '回单', '赋值'
+            ]):
+                point['类别'] = 'EI'
                 point['UFP'] = 4
-            elif exp_category == 'EQ':
+            elif any(kw in item_text for kw in [
+                '判定', '分析', '计算', '处理', '识别', '匹配', '切换', '导出', '上报', '调度', '推送',
+                '验证', '检测', '剔除', '运算', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发',
+                '过滤', '建议输出', '排查', '关联', '复盘', '审核', '流转', '总结', '报告',
+                '标签输出', '执行情况', '存在问题', '简要说明', '照片上传', '自动流转',
+                '消息通知', '确认', '驳回', '归档', '选择', '执行', '映射', '采集',
+                '自动派发', '人工派发', '配置化', '下钻'
+            ]):
+                point['类别'] = 'EO'
+                point['UFP'] = 5
+            elif any(kw in item_text for kw in ['列表', '快速查询', '查询', '搜索', '查看', '浏览', '筛选', '详情', '展示', '显示', '获取', '读取']):
+                point['类别'] = 'EQ'
                 point['UFP'] = 4
-            logger.debug(f"功能点 '{item_text}' 使用期望类别：{exp_category}")
-            # 不跳过，继续设置重用程度和修改类型
-        
-        # 如果没有在期望文件中找到，使用规则判断
-        # 1. 识别类别 (EI/EO/EQ/ILF/EIF)
-        item_text = point.get('功能点计数项', '')
-        
-        # 根据用户提供的规则进行类别判断
-        # ILF: 结尾有"表"字，并且是系统内部维护的数据表
-        if item_text.endswith('表') or any(keyword in item_text for keyword in ['数据表', '配置表', '结果表', '详单表']):
-            point['类别'] = 'ILF'  # 内部逻辑文件
-            point['UFP'] = 7
-        # EI: 包含"赋值/新增/修改/删除"等关键字，表示对数据的增删改操作
-        # todo 把这些类型作为配置，可以在前端进行配置，存入MySQL表中
-        elif any(keyword in item_text for keyword in ['赋值', '新增', '修改', '删除', '增', '删', '改', '同步', '导入', '配置', '管理', '添加', '设置', '保存', '提交', '派发', '移交', '回单']):
-            point['类别'] = 'EI'  # 外部输入
-            point['UFP'] = 4
-        # EQ: 包含"列表呈现/列表/快速查询/查询/搜索/查看/浏览"等，纯查询无计算
-        elif any(keyword in item_text for keyword in ['列表呈现', '列表', '快速查询', '查询', '搜索', '查看', '浏览', '筛选', '详情', '展示', '显示', '获取', '读取']):
-            point['类别'] = 'EQ'  # 外部查询
-            point['UFP'] = 4
-        # EO: 查询统计及逻辑计算（包含判定、分析、计算、处理、识别、匹配、切换、呈现、导出、上报等）
-        elif any(keyword in item_text for keyword in ['判定', '分析', '计算', '处理', '识别', '匹配', '切换', '呈现', '导出', '上报', '调度', '推送', '验证', '检测', '剔除', '运算', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发']):
-            point['类别'] = 'EO'  # 外部输出
-            point['UFP'] = 5
-        # EIF: 外部系统表（引用外部数据）
-        elif any(keyword in item_text for keyword in ['引用', '外部', '财务', 'HR', '架构', '同步']):
-            point['类别'] = 'EIF'  # 外部逻辑文件
-            point['UFP'] = 5
-        else:
-            point['类别'] = 'EO'  # 默认为 EO
-            point['UFP'] = 5
+            elif '呈现' in item_text:
+                if any(kw in item_text for kw in ['关联', '隐患', '规则', '列表']):
+                    point['类别'] = 'EO'
+                    point['UFP'] = 5
+                else:
+                    point['类别'] = 'EQ'
+                    point['UFP'] = 4
+            else:
+                point['类别'] = 'EO'
+                point['UFP'] = 5
         
         # 2. 识别重用程度（全部设置为"高"）
         point['重用程度'] = '高'
