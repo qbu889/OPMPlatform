@@ -10,7 +10,6 @@ from flask import Flask, render_template, request, jsonify, session
 import os
 import logging
 from dotenv import load_dotenv
-from routes.fpa_generator_routes import fpa_generator_bp
 
  # 加载 .env 文件
 load_dotenv()
@@ -19,24 +18,26 @@ load_dotenv()
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from config import config
-from routes.document_routes import document_bp
-from routes.excel2word_routes import excel2word_bp
-# from routes.kafka_routes import kafka_bp, generate_unique_fp, BASE_KAFKA_MSG
-from routes.markdown_upload_routes import markdown_upload_bp
-from routes.schedule_config_routes import schedule_config_bp
-from routes.kafka_generator_routes import kafka_generator_bp
-from routes.sql_routes import sql_bp
-from routes.event_routes import event_bp
-from routes.word_to_md_routes import word_to_md_bp
-from routes.auth_routes import auth_bp
-from utils.cleanup_thread import CleanupThread  # 导入清理线程类
-from routes.chatbot_routes import chatbot_bp  # 导入智能客服蓝图
-from routes.category_routes import category_bp  # 导入专业领域管理蓝图
-from routes.fpa_generator_routes import fpa_generator_bp  # 导入 FPA预估表生成器蓝图
-from routes.adjustment_routes import adjustment_bp  # 导入调整因子管理蓝图
-from routes.adjustment_calc_routes import adjustment_calc_bp  # 导入调整因子计算器蓝图
-from routes.fpa_category_rules_routes import fpa_rules_bp  # 导入 FPA 类别规则管理蓝图
+
+# 导入路由蓝图
+from routes.document_convert.document_routes import document_bp
+from routes.document_convert.excel2word_routes import excel2word_bp
+from routes.document_convert.markdown_upload_routes import markdown_upload_bp
+from routes.document_convert.word_to_md_routes import word_to_md_bp
+from routes.schedule.schedule_config_routes import schedule_config_bp
+from routes.kafka.kafka_routes import kafka_bp
+from routes.kafka.kafka_generator_routes import kafka_generator_bp
+from routes.fpa.sql_routes import sql_bp
+from routes.fpa.event_routes import event_bp
+from routes.auth.auth_routes import auth_bp
+from routes.chat.chatbot_routes import chatbot_bp
+from routes.fpa.category_routes import category_bp
+from routes.fpa.fpa_generator_routes import fpa_generator_bp
+from routes.fpa.adjustment_routes import adjustment_bp
+from routes.fpa.adjustment_calc_routes import adjustment_calc_bp
+from routes.fpa.fpa_category_rules_routes import fpa_rules_bp
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity  # 导入 OMLX 服务初始化工具
+from utils.cleanup_thread import CleanupThread  # 导入清理线程类
 from models.fpa_category_rules import db as fpa_db  # 导入 FPA 规则数据库实例
 from models.visit_log import VisitLog  # 导入访问日志模型（暂时不使用）
 

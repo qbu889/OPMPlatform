@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime
 from flask import jsonify, current_app, request
 
-from routes.fpa_generator_routes import fpa_generator_bp, parse_requirement_document, generate_fpa_excel, get_db_connection
+from .fpa_generator_routes import fpa_generator_bp, parse_requirement_document, generate_fpa_excel, get_db_connection
 from utils.task_manager import get_task_manager
 import logging
 

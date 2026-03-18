@@ -114,4 +114,4 @@ def word_to_md():
             mimetype='text/markdown'
         )
 
-    return render_template('word_to_md.html')
+    return render_template('document_convert/word_to_md.html')

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 @sql_bp.route('/sql-formatter')
 def sql_formatter():
     """SQL ID格式化工具页面"""
-    return render_template('sql_formatter.html')
+    return render_template('fpa/sql_formatter.html')
 
 @sql_bp.route('/format_ids', methods=['POST'])
 def format_ids():

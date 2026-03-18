@@ -102,15 +102,71 @@ OPMPlatform/
 ├── config.py              # 配置文件
 ├── models/                # 数据模型
 │   └── auth_models.py     # 认证数据模型
-├── routes/                # 路由控制器
-│   ├── auth_routes.py     # 认证相关路由
-│   ├── kafka_generator_routes.py  # Kafka生成器路由
-│   ├── excel2word_routes.py       # Excel转Word路由
-│   └── ...                # 其他功能路由
-├── templates/             # 前端模板
-│   ├── auth/              # 认证页面模板
-│   ├── 排班/              # 排班系统模板
-│   └── ...                # 其他页面模板
+├── routes/
+   ├── __init__.py
+   ├── fpa/                          # FPA 相关功能
+   │   ├── __init__.py
+   │   ├── fpa_generator_routes.py   # FPA 预估表生成器
+   │   ├── fpa_async_routes.py       # FPA 异步任务
+   │   ├── fpa_ai_expander.py        # FPA AI 扩展
+   │   ├── fpa_category_rules_routes.py  # FPA 类别规则
+   │   ├── adjustment_routes.py      # 调整因子管理
+   │   ├── adjustment_calc_routes.py # 调整因子计算器
+   │   ├── category_routes.py        # 专业领域管理
+   │   ├── event_routes.py           # 事件管理
+   │   └── sql_routes.py             # SQL 格式化
+   ├── auth/                         # 认证相关功能
+   │   ├── __init__.py
+   │   └── auth_routes.py            # 登录/注册/密码找回
+   ├── chat/                         # 聊天/客服功能
+   │   ├── __init__.py
+   │   ├── chatbot_routes.py         # 智能客服
+   │   └── chatai_routes.py          # AI 聊天
+   ├── document_convert/             # 文档转换功能
+   │   ├── __init__.py
+   │   ├── document_routes.py        # 文档处理
+   │   ├── excel2word_routes.py      # Excel 转 Word
+   │   ├── markdown_upload_routes.py # Markdown 上传
+   │   ├── word_to_md_routes.py      # Word 转 Markdown
+   │   └── mdtoword.py               # MD 转 Word
+   ├── kafka/                        # Kafka 相关功能
+   │   ├── __init__.py
+   │   ├── kafka_routes.py           # Kafka 消息生成
+   │   └── kafka_generator_routes.py # Kafka 生成器
+   ├── schedule/                     # 排班相关功能
+   │   ├── __init__.py
+   │   └── schedule_config_routes.py # 排班配置
+   └── 排班/                         # 排班子系统（保留原结构）
+
+   templates/
+   ├── fpa/                          # FPA 相关页面
+   │   ├── fpa_generator.html
+   │   ├── fpa_category_rules.html
+   │   ├── adjustment_calculator.html
+   │   └── adjustment_factor.html
+   ├── auth/                         # 认证相关页面
+   │   ├── login.html
+   │   ├── register.html
+   │   └── forgot_password.html
+   ├── chat/                         # 聊天/客服页面
+   │   ├── chatbot.html
+   │   ├── chat.html
+   │   └── faq_preview.html
+   ├── document_convert/             # 文档转换页面
+   │   ├── document_formatter.html
+   │   ├── excel2word.html
+   │   ├── excel2word_content.html
+   │   ├── markdown_upload.html
+   │   ├── word_to_md.html
+   │   └── convert_upload.html
+   ├── kafka/                        # Kafka 相关页面
+   │   ├── generate_kafka.html
+   │   ├── kafka_bp_new.html
+   │   └── es_to_kafka.html
+   ├── schedule/                     # 排班相关页面
+   │   └── schedule_config.html
+   └── 排班/                         # 排班子系统页面
+
 ├── static/                # 静态资源
 │   ├── css/styles.css     # 样式文件
 │   └── js/utils.js        # 工具函数
@@ -228,6 +284,10 @@ style: 代码格式调整
 refactor: 代码重构
 test: 测试相关
 chore: 构建过程或辅助工具的变动
+```
+### 运行命令
+```
+cd /Users/linziwang/PycharmProjects/wordToWord && lsof -ti:5001 | xargs kill -9 2>/dev/null; sleep 1
 ```
 
 ## 🤝 贡献指南

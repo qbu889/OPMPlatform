@@ -38,7 +38,7 @@ def serialize_datetime_objects(obj):
 @schedule_config_bp.route('/')
 def schedule_config_page():
     """排班配置页面"""
-    return render_template('schedule_config.html')
+    return render_template('schedule/schedule_config.html')
 
 @schedule_config_bp.route('/api/staff-config', methods=['GET', 'POST'])
 def staff_config():

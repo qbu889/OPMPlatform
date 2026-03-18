@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @event_bp.route('/clean-event-page', methods=['GET', 'POST'])
 def clean_event_page():
     """事件数据清洗页面"""
-    return render_template('clean_event.html')
+    return render_template('fpa/clean_event.html')
 
 @event_bp.route('/clean-event', methods=['POST'])
 def clean_event():

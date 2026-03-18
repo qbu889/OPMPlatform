@@ -20,13 +20,13 @@ chatbot_bp = Blueprint('chatbot', __name__, url_prefix='/chatbot')
 @chatbot_bp.route('/')
 def chatbot_index():
     """智能客服首页"""
-    return render_template('chatbot.html')
+    return render_template('chat/chatbot.html')
 
 
 @chatbot_bp.route('/faq_preview')
 def faq_preview_page():
     """FAQ 预览页面"""
-    return render_template('faq_preview.html')
+    return render_template('chat/faq_preview.html')
 
 
 @chatbot_bp.route('/chat', methods=['POST'])

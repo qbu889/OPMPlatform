@@ -1075,8 +1075,8 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
 
 @fpa_generator_bp.route('/')
 def fpa_generator_page():
-    """FPA预估表生成主页面"""
-    return render_template('fpa_generator.html')
+    """FPA 预估表生成主页面"""
+    return render_template('fpa/fpa_generator.html')
 
 
 @fpa_generator_bp.route('/upload', methods=['POST'])
@@ -1091,12 +1091,12 @@ def upload_requirement():
     try:
         if 'requirement_file' not in request.files:
             flash("未选择上传文件！", "error")
-            return render_template('fpa_generator.html')
+            return render_template('fpa/fpa_generator.html')
         
         file = request.files['requirement_file']
         if file.filename == '':
             flash("未选择有效的文件！", "error")
-            return render_template('fpa_generator.html')
+            return render_template('fpa/fpa_generator.html')
         
         # 检查文件类型
         filename_lower = file.filename.lower()
@@ -1108,7 +1108,7 @@ def upload_requirement():
         if not (is_word_file or is_md_file):
             logger.error(f"不支持的文件类型：{file.filename}")
             flash(f"请上传 Markdown (.md) 或 Word (.docx) 文件！当前文件：{file.filename}", "error")
-            return render_template('fpa_generator.html')
+            return render_template('fpa/fpa_generator.html')
         
         # 保存临时文件
         timestamp = int(time.time() * 1000)
@@ -1176,7 +1176,7 @@ def upload_requirement():
             except Exception as e:
                 logger.error(f"Word 转 Markdown 失败：{e}", exc_info=True)
                 flash(f"Word 文件转换失败：{str(e)}", "error")
-                return render_template('fpa_generator.html')
+                return render_template('fpa/fpa_generator.html')
         else:
             temp_md_path = temp_file_path
         
@@ -1188,7 +1188,7 @@ def upload_requirement():
         
         if not function_points:
             flash("未能从文档中提取到功能点信息！", "error")
-            return render_template('fpa_generator.html')
+            return render_template('fpa/fpa_generator.html')
         
         # 从数据库读取评估结果中的 AFP 目标值
         try:

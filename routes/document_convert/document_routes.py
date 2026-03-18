@@ -71,12 +71,12 @@ def upload_demo():
     logger.info("开始处理Demo模板上传请求")
     if 'demo_file' not in request.files:
         logger.warning("未选择文件")
-        return render_template('demo_upload.html', success=False, msg='未选择文件')
+        return render_template('document_convert/demo_upload.html', success=False, msg='未选择文件')
 
     demo_file = request.files['demo_file']
     if demo_file.filename == '':
         logger.warning("文件名为空")
-        return render_template('demo_upload.html', success=False, msg='文件名不能为空')
+        return render_template('document_convert/demo_upload.html', success=False, msg='文件名不能为空')
 
     # 保存临时文件
     temp_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'temp_demo.docx')
@@ -91,12 +91,12 @@ def upload_demo():
     if not validation_result:
         logger.warning(f"Demo格式验证失败，错误详情: {error_details}")
         os.remove(temp_path)  # 删除无效文件
-        return render_template('demo_upload.html', success=False, msg='Demo格式验证失败', error_details=error_details)
+        return render_template('document_convert/demo_upload.html', success=False, msg='Demo 格式验证失败', error_details=error_details)
 
     # 验证通过：保存为正式模板
     os.rename(temp_path, current_app.config['DEMO_TEMPLATE_PATH'])
     logger.info(f"Demo模板验证通过，已保存为正式模板: {current_app.config['DEMO_TEMPLATE_PATH']}")
-    return render_template('demo_upload.html', success=True, msg='Demo模板上传验证成功，可进行下一步文档转换')
+    return render_template('document_convert/demo_upload.html', success=True, msg='Demo 模板上传验证成功，可进行下一步文档转换')
 
 
 @document_bp.route('/convert-page')
@@ -211,13 +211,13 @@ def format_check():
 
     if 'document_file' not in request.files:
         logger.warning("未选择文件")
-        return render_template('format_check.html',
+        return render_template('document_convert/format_check.html',
                                result={"match_rate": 0, "errors": ["未选择文件"]})
 
     doc_file = request.files['document_file']
     if doc_file.filename == '':
         logger.warning("文件名为空")
-        return render_template('format_check.html',
+        return render_template('document_convert/format_check.html',
                                result={"match_rate": 0, "errors": ["文件名不能为空"]})
 
     # 保存临时文件
@@ -234,7 +234,7 @@ def format_check():
     os.remove(temp_path)
 
     logger.info(f"格式检查完成，匹配度: {match_result['match_rate']:.2f}")
-    return render_template('format_check.html', result=match_result)
+    return render_template('document_convert/format_check.html', result=match_result)
 @document_bp.route('/format-document', methods=['POST'])
 def format_document():
     """处理文档格式化请求"""

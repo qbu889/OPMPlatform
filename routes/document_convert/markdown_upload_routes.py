@@ -97,12 +97,12 @@ def markdown_upload():
 
             return response
 
-        # GET请求显示上传页面
-        return render_template('markdown_upload.html')
+        # GET 请求显示上传页面
+        return render_template('document_convert/markdown_upload.html')
 
     except Exception as e:
-        logging.error(f"文件处理异常: {e}", exc_info=True)
-        return render_template('markdown_upload.html', error="处理过程中发生错误，请稍后再试")
+        logging.error(f"文件处理异常：{e}", exc_info=True)
+        return render_template('document_convert/markdown_upload.html', error="处理过程中发生错误，请稍后再试")
 
 
 def set_font(run, name='宋体', size=None, bold=False):

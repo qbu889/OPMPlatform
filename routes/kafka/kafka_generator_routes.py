@@ -673,7 +673,7 @@ def generate_org_text(kafka_data):
 @kafka_generator_bp.route('/')
 def kafka_generator_page():
     """Kafka消息生成器页面"""
-    return render_template('kafka_generator.html')
+    return render_template('kafka/kafka_generator.html')
 
 
 @kafka_generator_bp.route('/field-meta')
@@ -1061,7 +1061,7 @@ def generate_kafka_message():
 
 @kafka_generator_bp.route('/fixer')
 def json_fixer_page():
-    return render_template('json_fixer.html')
+    return render_template('kafka/json_fixer.html')
 
 
 @kafka_generator_bp.route('/config')

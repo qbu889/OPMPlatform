@@ -152,4 +152,4 @@ def delete_category():
 @category_bp.route('/page')
 def category_management_page():
     """专业领域管理页面"""
-    return render_template('category_management.html')
+    return render_template('chat/category_management.html')
