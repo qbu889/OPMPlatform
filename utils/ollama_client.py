@@ -499,26 +499,41 @@ def check_omlx_connectivity() -> bool:
 
 def get_ollama_client_for_fpa() -> Optional[OllamaClient]:
     """
-    为 FPA 生成获取 OMLX 客户端（带服务状态检查）
+    为 FPA 生成获取 Ollama 客户端（根据环境变量选择 OMLX 或本地 Ollama）
     
     Returns:
         OllamaClient 实例或 None（如果服务不可用）
     """
-    global _omlx_client
+    global _omlx_client, _ollama_client
     
     try:
-        # 如果客户端未初始化，先初始化
-        if _omlx_client is None:
-            logger.info("[FPA_AI] OMLX 客户端未初始化，正在初始化...")
-            _omlx_client = OllamaClient(use_omlx=True)
+        # 从环境变量读取配置
+        import os
+        use_omlx = os.getenv("USE_OMLX_FOR_CHATBOT", "true").lower() == "true"
         
-        # 对于 OMLX 服务，不进行快速检查（因为使用不同的 API 端点）
-        # 直接返回客户端，让实际请求时验证可用性
-        logger.info(f"[FPA_AI] OMLX 客户端已就绪，模型：{_omlx_client.model}")
-        return _omlx_client
+        if use_omlx:
+            # 使用 OMLX 客户端
+            if _omlx_client is None:
+                logger.info("[FPA_AI] OMLX 客户端未初始化，正在初始化...")
+                omlx_url = os.getenv("OMLX_BASE_URL", "http://localhost:8000/v1")
+                omlx_model = os.getenv("OMLX_MODEL", "Qwen3.5-4B-OptiQ-4bit")
+                _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
+            
+            logger.info(f"[FPA_AI] OMLX 客户端已就绪，模型：{_omlx_client.model}")
+            return _omlx_client
+        else:
+            # 使用本地 Ollama 客户端
+            if _ollama_client is None:
+                logger.info("[FPA_AI] 本地 Ollama 客户端未初始化，正在初始化...")
+                ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+                ollama_model = os.getenv("OLLAMA_MODEL", "qwen3:4b")
+                _ollama_client = OllamaClient(base_url=ollama_url, model=ollama_model, use_omlx=False)
+            
+            logger.info(f"[FPA_AI] 本地 Ollama 客户端已就绪，模型：{_ollama_client.model}")
+            return _ollama_client
         
     except Exception as e:
-        logger.error(f"[FPA_AI] 获取 OMLX 客户端失败：{e}")
+        logger.error(f"[FPA_AI] 获取客户端失败：{e}")
         return None
 
 
