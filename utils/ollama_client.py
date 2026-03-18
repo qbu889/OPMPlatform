@@ -410,17 +410,22 @@ _ollama_client = None
 _omlx_client = None  # OMLX 专用客户端
 
 
-def init_ollama_service(use_omlx: bool = True) -> OllamaClient:
+def init_ollama_service(use_omlx: bool = None) -> OllamaClient:
     """
     初始化 OMLX/Ollama 服务（在应用启动时调用）
     
     Args:
-        use_omlx: 是否使用 OMLX 模型（默认 True）
+        use_omlx: 是否使用OMLX 模型（如果为 None，则从环境变量 USE_OMLX_FOR_CHATBOT 读取）
         
     Returns:
         OllamaClient 实例
     """
     global _omlx_client, _ollama_client
+    
+    # 如果没有显式传入参数，从环境变量读取
+    if use_omlx is None:
+        use_omlx = os.getenv("USE_OMLX_FOR_CHATBOT", "true").lower() == "true"
+        logger.info(f"[OLLAMA_INIT_SERVICE] 从环境变量读取 USE_OMLX_FOR_CHATBOT={use_omlx}")
     
     try:
         if use_omlx:
@@ -443,31 +448,52 @@ def init_ollama_service(use_omlx: bool = True) -> OllamaClient:
 
 def check_omlx_connectivity() -> bool:
     """
-    检查 OMLX 服务是否连通（快速验证）
+    检查 AI 服务是否连通（快速验证）
+    根据环境变量配置检查对应的服务（OMLX 或本地 Ollama）
     
     Returns:
         bool: True 表示连通，False 表示不连通
     """
-    global _omlx_client
+    global _omlx_client, _ollama_client
+    
+    # 从环境变量读取配置
+    import os
+    use_omlx = os.getenv("USE_OMLX_FOR_CHATBOT", "true").lower() == "true"
     
     try:
-        if _omlx_client is None:
-            logger.warning("[OMLX_CONNECTIVITY] OMLX 客户端未初始化")
-            return False
-        
-        # 尝试发送一个简单的测试请求
-        test_prompt = "你只需要直接回复我：are you ok?"
-        response = _omlx_client.generate(test_prompt, options={'timeout': 10})
-        
-        if response and len(response.strip()) > 0:
-            logger.info(f"[OMLX_CONNECTIVITY] ✅ 连通性验证成功")
-            return True
+        if use_omlx:
+            # 检查 OMLX 服务
+            if _omlx_client is None:
+                logger.warning("[AI_CONNECTIVITY] OMLX 客户端未初始化")
+                return False
+            
+            test_prompt = "你只需要直接回复我：are you ok?"
+            response = _omlx_client.generate(test_prompt, options={'timeout': 10})
+            
+            if response and len(response.strip()) > 0:
+                logger.info(f"[AI_CONNECTIVITY] ✅ OMLX 服务连通性验证成功")
+                return True
+            else:
+                logger.warning(f"[AI_CONNECTIVITY] ⚠️ OMLX 响应为空")
+                return False
         else:
-            logger.warning(f"[OMLX_CONNECTIVITY] ⚠️ 响应为空")
-            return False
+            # 检查本地 Ollama 服务
+            if _ollama_client is None:
+                logger.warning("[AI_CONNECTIVITY] 本地 Ollama 客户端未初始化")
+                return False
+            
+            test_prompt = "你只需要直接回复我：are you ok?"
+            response = _ollama_client.generate(test_prompt, options={'timeout': 10})
+            
+            if response and len(response.strip()) > 0:
+                logger.info(f"[AI_CONNECTIVITY] ✅ 本地 Ollama 服务连通性验证成功")
+                return True
+            else:
+                logger.warning(f"[AI_CONNECTIVITY] ⚠️ 本地 Ollama 响应为空")
+                return False
             
     except Exception as e:
-        logger.error(f"[OMLX_CONNECTIVITY] ❌ 连通性验证失败：{e}")
+        logger.error(f"[AI_CONNECTIVITY] ❌ 连通性验证失败：{e}")
         return False
 
 

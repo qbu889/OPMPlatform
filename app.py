@@ -126,25 +126,25 @@ def create_app(config_name='default'):
         
     # 在后台异步初始化 OMLX 服务（不阻塞应用启动）
     def init_omlx_async():
-        """异步初始化 OMLX 服务（在后台线程中执行）"""
+        """异步初始化 AI 服务（在后台线程中执行）"""
         try:
             logger.info("=" * 80)
-            logger.info("🚀 正在异步初始化 OMLX AI 服务...")
+            logger.info("🚀 正在异步初始化 AI 服务...")
             logger.info("=" * 80)
                 
-            # 初始化 OMLX 客户端
-            init_ollama_service(use_omlx=True)
+            # 初始化 OLLAMA/OMLX 客户端（从环境变量读取配置）
+            init_ollama_service()
                 
             # 验证连通性（超时 10 秒）
             is_available = check_omlx_connectivity()
                 
             if is_available:
-                logger.info("✅ OMLX 服务验证成功！可以正常使用 AI 功能")
+                logger.info("✅ AI 服务验证成功！可以正常使用 AI 功能")
             else:
-                logger.error("❌ OMLX 服务验证失败！请检查 OMLX 服务是否正常运行")
+                logger.error("❌ AI 服务验证失败！请检查服务是否正常运行")
                 logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
         except Exception as e:
-            logger.error(f"❌ OMLX 服务异步初始化异常：{e}")
+            logger.error(f"❌ AI 服务异步初始化异常：{e}")
             logger.error("   应用将继续运行，但 AI 功能可能不可用")
         finally:
             logger.info("=" * 80)
