@@ -21,10 +21,12 @@ def get_rules():
         # 获取查询参数
         category = request.args.get('category', None)
         is_active = request.args.get('is_active', None)
+        keyword = request.args.get('keyword', None)
+        priority = request.args.get('priority', None)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         
-        current_app.logger.info(f"查询参数：category={category}, is_active={is_active}, page={page}, per_page={per_page}")
+        current_app.logger.info(f"查询参数：category={category}, is_active={is_active}, keyword={keyword}, priority={priority}, page={page}, per_page={per_page}")
         
         # 构建查询
         query = FPACategoryRule.query
@@ -35,6 +37,13 @@ def get_rules():
         if is_active is not None and is_active != '':
             is_active_bool = is_active.lower() == 'true'
             query = query.filter_by(is_active=is_active_bool)
+        
+        if keyword:
+            # 模糊匹配关键词字段
+            query = query.filter(FPACategoryRule.keyword.like(f'%{keyword}%'))
+        
+        if priority:
+            query = query.filter_by(priority=int(priority))
         
         # 按优先级和 ID 排序
         query = query.order_by(FPACategoryRule.priority.asc(), FPACategoryRule.id.asc())
