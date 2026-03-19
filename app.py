@@ -267,8 +267,25 @@ def index():
 # 应用主入口
 # ============================================================================
 if __name__ == '__main__':
+    import webbrowser
+    import threading
+    
     port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5001
     app_logger.info(f"启动 Flask 应用，端口：{port}")
+    
+    # 延迟打开浏览器（等待服务器启动）
+    def open_browser():
+        """在服务器启动后自动打开浏览器"""
+        import time
+        time.sleep(2)  # 等待 2 秒确保服务器已启动
+        try:
+            webbrowser.open(f'http://127.0.0.1:{port}')
+            app_logger.info(f"已在浏览器中打开 http://127.0.0.1:{port}")
+        except Exception as e:
+            app_logger.error(f"打开浏览器失败：{e}")
+    
+    # 在后台线程中打开浏览器
+    threading.Thread(target=open_browser, daemon=True).start()
     
     # 禁用 debug 模式以确保模块正确重新加载
     app.run(

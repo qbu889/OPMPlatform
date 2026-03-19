@@ -452,7 +452,9 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
             progress_callback(task_id, 5, '正在读取评估结果...', '从数据库加载目标 UFP 值')
         
         # 从数据库读取评估结果（使用 afp 作为目标 UFP）
-        from routes.fpa_generator_routes import get_db_connection
+        import sys
+        sys.path.insert(0, '/Users/linziwang/PycharmProjects/wordToWord')
+        from routes.fpa.fpa_generator_routes import get_db_connection
         from decimal import Decimal
         
         target_ufp = None
