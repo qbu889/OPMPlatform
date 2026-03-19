@@ -48,7 +48,7 @@
 **技术架构：**
 - 后端：Python 3.13 + Flask 3.0.0
 - AI 模型：Ollama (qwen3:4b) / OMLX (Qwen3.5-4B-OptiQ-4bit)
-- 数据库：MySQL + SQLite
+- 数据库：MySQL
 - 前端：Bootstrap 5 + JavaScript
 
 ### 2. Kafka 消息生成器
