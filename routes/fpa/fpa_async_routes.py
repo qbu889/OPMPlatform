@@ -544,7 +544,7 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                     logger.info("[AI_EXPAND] 💻 使用本地 Ollama 模型：qwen3:4b")
                 
                 # 调用 AI 扩展函数
-                from routes.fpa_ai_expander import ai_assisted_expand_function_points
+                from routes.fpa.fpa_ai_expander import ai_assisted_expand_function_points
                 new_points = ai_assisted_expand_function_points(
                     function_points, 
                     expand_count,
