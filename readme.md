@@ -1,181 +1,235 @@
-# OPMPlatform 综合平台系统
+# 诺基亚 OPM 综合业务系统
 
 ## 📋 项目概述
 
-OPMPlatform是一个基于Flask的综合业务平台，集成了多种实用功能模块，包括文档处理、数据转换、排班管理、认证系统等企业级应用功能。
+诺基亚 OPM（Operation & Maintenance Platform）是一个基于 Flask 的企业级综合业务平台，集成了 FPA 功能点估算、Kafka 消息生成、智能客服、文档转换、排班管理等多种实用功能模块。
 
 ## 🚀 快速开始
 
 ### 环境要求
-- Python 3.8+
-- Flask 3.0.1
-- 相关依赖包（详见requirements-windows.txt）
+- Python 3.13+
+- Flask 3.0.0+
+- MySQL 5.7+（可选，用于部分功能）
+- Ollama（可选，用于 AI 功能）
 
 ### 安装步骤
 1. 克隆项目到本地
-2. 安装依赖包：
+2. 创建虚拟环境：
    ```bash
-   pip install -r requirements-windows.txt --trusted-host mirrors.aliyun.com
+   python -m venv .venv
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
    ```
-3. 启动应用：
+3. 安装依赖包：
    ```bash
-   python app.py
+   pip install -r requirements.txt
    ```
-4. 访问地址：http://localhost:5000
+4. 配置环境变量：
+   ```bash
+   cp .env.example .env
+   # 编辑 .env 文件配置数据库和 AI 服务
+   ```
+5. 启动应用：
+   ```bash
+   .venv/bin/python -m flask run --port 5001
+   ```
+6. 访问地址：http://127.0.0.1:5001
 
 ## 🔧 系统功能模块
 
-### 1. 认证系统
-完整的用户认证和授权功能，支持：
-- 用户注册和登录
-- 安全问题设置和验证
-- 密码修改和重置
-- 基于角色的访问控制
-- 会话管理
+### 1. FPA 功能点估算系统
+专业的软件功能点估算工具，支持：
+- 从需求文档自动提取功能点
+- UFP（未调整功能点）计算
+- AFP（调整功能点）计算
+- 调整因子管理（14 个通用系统特性）
+- AI 辅助功能点扩展
+- 预估表自动生成
 
 **技术架构：**
-- 后端：Python 3.10.8 + Flask 2.2.5 + SQLite3
-- 前端：Bootstrap 5 + JavaScript ES6+ + Font Awesome
-- 安全：PBKDF2密码哈希算法
+- 后端：Python 3.13 + Flask 3.0.0
+- AI 模型：Ollama (qwen3:4b) / OMLX (Qwen3.5-4B-OptiQ-4bit)
+- 数据库：MySQL + SQLite
+- 前端：Bootstrap 5 + JavaScript
 
-### 2. Kafka消息生成器
-专业的Kafka消息生成和处理工具：
-- 支持多种数据格式转换
+### 2. Kafka 消息生成器
+企业级 Kafka 消息生成和处理工具：
+- ES 数据转 Kafka 消息
 - 灵活的字段映射配置
+- 维表数据关联查询
 - 实时数据预览和验证
-- 批量消息生成功能
+- 批量消息生成
+- JSON 格式修复工具
 
 **核心特性：**
-- ✅ 字段映射准确率高（除动态字段外基本一致）
-- ✅ TOPIC_PARTITION强制设置为固定值7
-- ✅ 支持自定义字段覆盖
-- ✅ 完整的数据验证机制
+- ✅ 支持 28 个 Kafka 字段映射
+- ✅ TOPIC_PARTITION 强制设置为固定值 7
+- ✅ 地域字段智能映射（省部接口保障）
+- ✅ 完整的维表查询系统
+- ✅ JSON 格式自动修复
 
-### 3. 文档处理模块
+### 3. 智能客服系统
+基于知识库的智能问答系统：
+- FAQ 知识库管理
+- 专业领域分类
+- AI 智能问答
+- 文档上传和解析
+- 问题去重检测
+- 聊天上下文记忆
+
+**技术特色：**
+- 支持 PDF/Word 文档解析
+- 并行 FAQ 提取（大文档优化）
+- 语义相似度匹配
+- 本地 AI 模型集成
+
+### 4. 文档转换模块
 多种文档格式转换和处理功能：
-- Excel转Word文档
-- Markdown上传和处理
-- Word转Markdown格式
+- Excel 转 Word 文档
+- Markdown 上传和处理
+- Word 转 Markdown 格式
+- Markdown 转 Word 文档
 - 文档格式化和清理
+- 格式匹配度检查
 
-### 4. 排班管理系统
+### 5. 排班管理系统
 智能化排班解决方案：
 - 自动排班算法
 - 节假日系统集成
 - 班次配置管理
+- 人员配置管理
+- 请假记录管理
 - 排班结果导出
 
-### 5. 数据处理工具
+### 6. 数据处理工具
 各类数据处理和转换功能：
-- SQL格式化
-- JSON数据清洗
-- ES数据转Kafka
+- SQL ID 格式化
+- JSON 数据清洗
+- ES 数据转 Kafka
+- 事件数据清洗
 - 格式匹配和验证
 
 ## 🛠 技术架构
 
 ### 后端技术栈
 ```
-Python 3.9.7
-Flask 3.0.1
-SQLite3 (内置数据库)
-Bootstrap-Flask 2.5.0
-Pydantic 1.10.12
-BeautifulSoup4 4.14.3
+Python 3.13
+Flask 3.0.0
+Flask-SQLAlchemy 3.1.1
 Flask-Cors 5.0.0
+MySQL Connector
+BeautifulSoup4 4.14.3
+python-docx
+markdownify
+Pydantic
 ```
 
 ### 前端技术栈
 ```
-Bootstrap 5
+Bootstrap 5.1.3
+jQuery 3.6.0
 JavaScript ES6+
-jQuery
-Font Awesome 图标库
-现代化CSS3
+Font Awesome 6.0.0
+现代化 CSS3
 响应式设计
+```
+
+### AI 服务
+```
+Ollama (本地): qwen3:4b
+OMLX (在线): Qwen3.5-4B-OptiQ-4bit
+支持切换和降级
 ```
 
 ### 项目结构
 ```
-OPMPlatform/
-├── app.py                 # 主应用入口
-├── config.py              # 配置文件
-├── models/                # 数据模型
-│   └── auth_models.py     # 认证数据模型
-├── routes/
-   ├── __init__.py
-   ├── fpa/                          # FPA 相关功能
-   │   ├── __init__.py
-   │   ├── fpa_generator_routes.py   # FPA 预估表生成器
-   │   ├── fpa_async_routes.py       # FPA 异步任务
-   │   ├── fpa_ai_expander.py        # FPA AI 扩展
-   │   ├── fpa_category_rules_routes.py  # FPA 类别规则
-   │   ├── adjustment_routes.py      # 调整因子管理
-   │   ├── adjustment_calc_routes.py # 调整因子计算器
-   │   ├── category_routes.py        # 专业领域管理
-   │   ├── event_routes.py           # 事件管理
-   │   └── sql_routes.py             # SQL 格式化
-   ├── auth/                         # 认证相关功能
-   │   ├── __init__.py
-   │   └── auth_routes.py            # 登录/注册/密码找回
-   ├── chat/                         # 聊天/客服功能
-   │   ├── __init__.py
-   │   ├── chatbot_routes.py         # 智能客服
-   │   └── chatai_routes.py          # AI 聊天
-   ├── document_convert/             # 文档转换功能
-   │   ├── __init__.py
-   │   ├── document_routes.py        # 文档处理
-   │   ├── excel2word_routes.py      # Excel 转 Word
-   │   ├── markdown_upload_routes.py # Markdown 上传
-   │   ├── word_to_md_routes.py      # Word 转 Markdown
-   │   └── mdtoword.py               # MD 转 Word
-   ├── kafka/                        # Kafka 相关功能
-   │   ├── __init__.py
-   │   ├── kafka_routes.py           # Kafka 消息生成
-   │   └── kafka_generator_routes.py # Kafka 生成器
-   ├── schedule/                     # 排班相关功能
-   │   ├── __init__.py
-   │   └── schedule_config_routes.py # 排班配置
-   └── 排班/                         # 排班子系统（保留原结构）
-
-   templates/
-   ├── fpa/                          # FPA 相关页面
-   │   ├── fpa_generator.html
-   │   ├── fpa_category_rules.html
-   │   ├── adjustment_calculator.html
-   │   └── adjustment_factor.html
-   ├── auth/                         # 认证相关页面
-   │   ├── login.html
-   │   ├── register.html
-   │   └── forgot_password.html
-   ├── chat/                         # 聊天/客服页面
-   │   ├── chatbot.html
-   │   ├── chat.html
-   │   └── faq_preview.html
-   ├── document_convert/             # 文档转换页面
-   │   ├── document_formatter.html
-   │   ├── excel2word.html
-   │   ├── excel2word_content.html
-   │   ├── markdown_upload.html
-   │   ├── word_to_md.html
-   │   └── convert_upload.html
-   ├── kafka/                        # Kafka 相关页面
-   │   ├── generate_kafka.html
-   │   ├── kafka_bp_new.html
-   │   └── es_to_kafka.html
-   ├── schedule/                     # 排班相关页面
-   │   └── schedule_config.html
-   └── 排班/                         # 排班子系统页面
-
-├── static/                # 静态资源
-│   ├── css/styles.css     # 样式文件
-│   └── js/utils.js        # 工具函数
-├── utils/                 # 工具类
-│   ├── kafka/             # Kafka相关工具
-│   ├── document_formatter.py  # 文档格式化
-│   └── ...                # 其他工具
-├── test/                  # 测试文件
-└── uploads/               # 上传文件目录
+wordToWord/
+├── app.py                          # 主应用入口
+├── config.py                       # 配置文件
+├── .env                            # 环境变量配置
+├── requirements.txt                # 项目依赖
+│
+├── models/                         # 数据模型层
+│   ├── __init__.py
+│   ├── auth_models.py              # 认证数据模型
+│   ├── knowledge_base.py           # 知识库数据模型
+│   └── visit_log.py                # 访问日志模型
+│
+├── routes/                         # 路由控制器
+│   ├── __init__.py
+│   ├── fpa/                        # FPA 相关功能
+│   │   ├── __init__.py
+│   │   ├── fpa_generator_routes.py # FPA 预估表生成器
+│   │   ├── fpa_async_routes.py     # FPA 异步任务
+│   │   ├── fpa_ai_expander.py      # FPA AI 扩展
+│   │   ├── fpa_category_rules_routes.py  # FPA 类别规则
+│   │   ├── adjustment_routes.py    # 调整因子管理
+│   │   ├── adjustment_calc_routes.py # 调整因子计算器
+│   │   ├── category_routes.py      # 专业领域管理
+│   │   ├── event_routes.py         # 事件管理
+│   │   └── sql_routes.py           # SQL 格式化
+│   │
+│   ├── auth/                       # 认证相关功能
+│   │   ├── __init__.py
+│   │   └── auth_routes.py          # 登录/注册/密码找回
+│   │
+│   ├── chat/                       # 聊天/客服功能
+│   │   ├── __init__.py
+│   │   ├── chatbot_routes.py       # 智能客服
+│   │   └── chatai_routes.py        # AI 聊天
+│   │
+│   ├── document_convert/           # 文档转换功能
+│   │   ├── __init__.py
+│   │   ├── document_routes.py      # 文档处理
+│   │   ├── excel2word_routes.py    # Excel 转 Word
+│   │   ├── markdown_upload_routes.py # Markdown 上传
+│   │   ├── word_to_md_routes.py    # Word 转 Markdown
+│   │   └── mdtoword.py             # MD 转 Word
+│   │
+│   ├── kafka/                      # Kafka 相关功能
+│   │   ├── __init__.py
+│   │   ├── kafka_routes.py         # Kafka 消息生成
+│   │   └── kafka_generator_routes.py # Kafka 生成器
+│   │
+│   ├── schedule/                   # 排班相关功能
+│   │   ├── __init__.py
+│   │   └── schedule_config_routes.py # 排班配置
+│   │
+│   └── 排班/                       # 排班子系统（保留原结构）
+│
+├── templates/                      # HTML 模板
+│   ├── base.html                   # 基础模板
+│   ├── index.html                  # 首页
+│   ├── index_modern.html           # 现代化首页
+│   ├── fpa/                        # FPA 相关页面
+│   ├── auth/                       # 认证相关页面
+│   ├── chat/                       # 聊天/客服页面
+│   ├── document_convert/           # 文档转换页面
+│   ├── kafka/                      # Kafka 相关页面
+│   ├── schedule/                   # 排班相关页面
+│   └── 排班/                       # 排班子系统页面
+│
+├── utils/                          # 工具函数
+│   ├── __init__.py
+│   ├── ollama_client.py            # Ollama AI 客户端
+│   ├── mysql_helper.py             # MySQL 数据库助手
+│   ├── chatbot_core.py             # 聊天机器人核心
+│   ├── document_processor.py       # 文档处理器
+│   └── ...                         # 其他工具
+│
+├── static/                         # 静态资源
+│   ├── css/
+│   │   └── styles.css
+│   ├── js/
+│   │   └── utils.js
+│   └── vendor/                     # 第三方库
+│
+├── uploads/                        # 上传文件目录
+│   ├── fpa_input/                  # FPA 输入文件
+│   ├── fpa_output/                 # FPA 输出文件
+│   └── other/                      # 其他文件
+│
+├── test/                           # 测试文件
+└── logs/                           # 日志文件
 ```
 
 ## 🔒 安全特性
@@ -193,51 +247,93 @@ OPMPlatform/
 - XSS攻击防护
 - CSRF保护机制
 
-## 📊 API接口文档
+## 📊 主要 API 接口
 
-### 认证相关接口
+### FPA 相关接口
 ```
-POST /api/register          # 用户注册
-POST /api/login             # 用户登录
-POST /api/logout            # 用户登出
-POST /api/change-password   # 修改密码
-POST /api/forgot-password   # 忘记密码
-```
-
-### Kafka生成器接口
-```
-POST /api/generate-kafka    # 生成Kafka消息
-POST /api/validate-kafka    # 验证Kafka消息
-GET  /api/kafka-template    # 获取模板
+POST   /fpa-generator/upload              # 上传需求文档生成 FPA
+GET    /fpa-generator/adjustment-factor   # 获取调整因子
+POST   /fpa-generator/calculate-afp       # 计算 AFP
+GET    /api/category/list                 # 获取专业领域列表
+POST   /api/category/add                  # 添加专业领域
 ```
 
-### 文档处理接口
+### Kafka 相关接口
 ```
-POST /api/excel-to-word     # Excel转Word
-POST /api/markdown-upload   # Markdown上传
-POST /api/word-to-markdown  # Word转Markdown
+POST   /kafka-generator/generate          # 生成 Kafka 消息
+GET    /kafka-generator/field-meta        # 获取字段元数据
+GET    /kafka-generator/field-options     # 获取字段选项
+POST   /kafka-generator/fix-json          # 修复 JSON 格式
+```
+
+### 智能客服接口
+```
+POST   /chatbot/chat                      # 聊天接口
+POST   /chatbot/upload_document/preview   # 上传文档预览 FAQ
+GET    /chatbot/faq_preview               # FAQ 预览
+GET    /api/category/page                 # 专业领域管理页面
+```
+
+### 文档转换接口
+```
+POST   /excel2word                        # Excel 转 Word
+POST   /markdown-upload                   # Markdown 上传
+POST   /word-to-md                        # Word 转 Markdown
+POST   /format-check                       # 文档格式检查
+```
+
+### 排班管理接口
+```
+GET    /schedule-config/api/staff-config  # 获取人员配置
+POST   /schedule-config/api/staff-config  # 更新人员配置
+GET    /schedule-config/api/leave-records # 获取请假记录
+POST   /schedule-config/api/leave-records # 添加请假记录
 ```
 
 ## 🐛 常见问题解决
 
-### 1. 数据库连接失败
+### 1. Flask 启动失败 - 端口被占用
 ```
-错误信息: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
-解决方案: pip install cryptography
-```
-
-### 2. pip安装包时SSL证书问题
-```
-错误信息: WARNING: The repository located at mirrors.aliyun.com is not a trusted or secure host
-解决方案: 
-pip config set global.index-url http://mirrors.aliyun.com/pypi/simple/
-pip config set global.trusted-host mirrors.aliyun.com
+错误信息：Address already in use, Port 5001 is in use
+解决方案:
+lsof -ti:5001 | xargs kill -9 2>/dev/null; sleep 1
+.venv/bin/python -m flask run --port 5001
 ```
 
-### 3. Flask版本兼容性问题
+### 2. 数据库连接失败
 ```
-当前版本: Flask 3.0.1
-如需降级: pip install Flask==2.3.3
+错误信息：'cryptography' package is required
+解决方案：pip install cryptography
+```
+
+### 3. AI 服务无法连接
+```
+错误信息：Ollama service unavailable
+解决方案:
+1. 检查 Ollama 服务是否启动：ollama list
+2. 启动 Ollama 服务：ollama serve
+3. 拉取模型：ollama pull qwen3:4b
+```
+
+### 4. 模板文件未找到
+```
+错误信息：TemplateNotFound: xxx.html
+解决方案:
+检查 templates 目录下是否有对应文件，路径是否正确
+确保路由中 render_template 使用正确的相对路径
+```
+
+### 5. 虚拟环境激活失败
+```
+Windows: .venv\Scripts\activate
+Mac/Linux: source .venv/bin/activate
+```
+
+### 6. 依赖安装失败
+```
+建议使用国内镜像源：
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements.txt
 ```
 
 ## 📈 系统性能指标
@@ -254,18 +350,43 @@ pip config set global.trusted-host mirrors.aliyun.com
 ## 🔄 部署指南
 
 ### 开发环境部署
-1. 安装Python环境
+1. 安装 Python 3.13 环境
 2. 克隆项目代码
-3. 安装依赖包
-4. 配置环境变量
-5. 启动开发服务器
+3. 创建并激活虚拟环境
+4. 安装依赖包
+5. 配置 .env 环境变量
+6. 启动 Ollama 服务（可选）
+7. 启动开发服务器
 
 ### 生产环境部署建议
-1. 使用Nginx作为反向代理
-2. 配置SSL证书启用HTTPS
-3. 设置适当的SECRET_KEY
-4. 定期备份数据库
-5. 监控系统日志和性能指标
+1. 使用 Gunicorn 或 uWSGI 作为 WSGI 服务器
+2. 使用 Nginx 作为反向代理
+3. 配置 SSL 证书启用 HTTPS
+4. 设置适当的 SECRET_KEY
+5. 配置 MySQL 数据库
+6. 定期备份数据库
+7. 监控系统日志和性能指标
+8. 配置日志轮转
+
+### 环境变量配置示例
+```bash
+# Flask 配置
+FLASK_APP=app.py
+FLASK_ENV=production
+SECRET_KEY=your-secret-key-here
+
+# 数据库配置
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=your_user
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=opm_platform
+
+# AI 服务配置
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=qwen3:4b
+USE_OMLX_FOR_CHATBOT=false
+```
 
 ## 📝 开发规范
 
@@ -285,9 +406,40 @@ refactor: 代码重构
 test: 测试相关
 chore: 构建过程或辅助工具的变动
 ```
-### 运行命令
+## 📝 常用命令
+
+### 启动应用
+```bash
+# Mac/Linux
+lsof -ti:5001 | xargs kill -9 2>/dev/null; sleep 1
+.venv/bin/python -m flask run --port 5001
+
+# Windows
+taskkill /F /IM python.exe /FI "WINDOWTITLE eq *5001*"
+.venv\python -m flask run --port 5001
 ```
-cd /Users/linziwang/PycharmProjects/wordToWord && lsof -ti:5001 | xargs kill -9 2>/dev/null; sleep 1
+
+### 数据库操作
+```bash
+# 初始化数据库
+python scripts/init_all_databases.sql
+
+# 导入调整因子数据
+python scripts/import_adjustment_factor_excel.py
+
+# 导入维表数据
+python scripts/import_dimension_table.py
+```
+
+### 清理和维护
+```bash
+# 清理缓存
+find . -type d -name "__pycache__" -exec rm -rf {} +
+find . -name "*.pyc" -delete
+
+# 检查依赖
+pip check
+pip install --upgrade pip
 ```
 
 ## 🤝 贡献指南
@@ -312,4 +464,5 @@ cd /Users/linziwang/PycharmProjects/wordToWord && lsof -ti:5001 | xargs kill -9 
 - 查看详细的FAQ文档
 
 ---
-*最后更新时间：2026年3月*
+*最后更新时间：2026 年 3 月 18 日*
+*当前版本：v2.1.0*
