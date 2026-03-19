@@ -3,66 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPA 类别规则管理</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>FPA 类别规则管理 - OPM 系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d6;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --danger-color: #f87171;
+            --info-color: #60a5fa;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-accent: #f1f5f9;
+            
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            
+            --border-color: #e2e8f0;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
         .container {
             max-width: 1400px;
         }
+        
+        /* 导航栏样式 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--primary-hover) !important;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: var(--border-radius);
+            padding: 0.5rem 1rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background: var(--bg-accent);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color) !important;
+            background: var(--bg-accent);
+        }
+        
+        /* 卡片样式 */
         .card {
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
         }
+        
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--bg-accent), #e0f2fe);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
         }
+        
+        .card-body {
+            padding: 1.5rem;
+            background: var(--bg-primary);
+        }
+        
+        /* 表单样式 */
+        .form-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted);
+            opacity: 1;
+        }
+        
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-color);
+            padding: 0.625rem 0.875rem;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
+            outline: none;
+            background-color: #fafbff;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--text-secondary), var(--text-muted));
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+        
+        /* 按钮加载状态 */
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        
+        /* 表格样式 */
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: var(--bg-accent);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            padding: 0.75rem;
+        }
+        
+        .table tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: var(--bg-accent);
+            transition: all 0.2s ease;
+        }
+        
+        /* Badge 样式 */
+        .badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        .badge-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, var(--success-color), #22c55e);
+        }
+        
+        .badge-secondary {
+            background: linear-gradient(135deg, var(--text-secondary), var(--text-muted));
+        }
+        
+        /* Badge 状态样式 */
+        .badge-active {
+            background: linear-gradient(135deg, var(--success-color), #22c55e);
+        }
+        
+        .badge-inactive {
+            background: linear-gradient(135deg, var(--text-secondary), var(--text-muted));
+        }
+        
+        /* 规则项样式 */
         .rule-item {
-            border-left: 4px solid #1890ff;
+            border-left: 4px solid var(--primary-color);
             transition: all 0.3s ease;
         }
+        
         .rule-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .badge-active {
-            background-color: #52c41a;
+        
+        /* 关键词代码样式 */
+        code {
+            background: var(--bg-accent);
+            color: var(--primary-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875em;
+            font-weight: 500;
         }
-        .badge-inactive {
-            background-color: #d9d9d9;
+        
+        .category-EI { border-left-color: #3b82f6; }
+        .category-EO { border-left-color: #22c55e; }
+        .category-EQ { border-left-color: #f59e0b; }
+        .category-ILF { border-left-color: #ef4444; }
+        .category-EIF { border-left-color: #8b5cf6; }
+        
+        /* 分页样式 */
+        .pagination .page-link {
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-color);
+            color: var(--primary-color);
+            padding: 0.5rem 0.875rem;
+            margin: 0 0.25rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
-        .category-EI { border-left-color: #1890ff; }
-        .category-EO { border-left-color: #52c41a; }
-        .category-EQ { border-left-color: #faad14; }
-        .category-ILF { border-left-color: #f5222d; }
-        .category-EIF { border-left-color: #722ed1; }
+        
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .pagination .page-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            color: var(--text-muted);
+            pointer-events: none;
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+        
+        /* 筛选区域样式 */
+        .filter-section {
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section:hover {
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            
+            .table-responsive {
+                border-radius: var(--border-radius);
+            }
+            
+            .filter-section h6 {
+                font-size: 0.9rem;
+            }
+            
+            .btn-sm {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white rounded shadow-sm mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="/fpa-generator">
-                <i class="fas fa-arrow-left me-2"></i>返回 FPA 生成器
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-cubes me-2"></i>OPM 系统
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>首页</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="/fpa-rules/management">
-                            <i class="fas fa-ruler me-1"></i>类别规则管理
+                            <i class="fas fa-ruler me-1"></i>FPA 规则管理
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/fpa-generator"><i class="fas fa-file-excel me-1"></i>FPA 生成器</a>
                     </li>
                 </ul>
             </div>
@@ -70,9 +359,19 @@
     </nav>
 
     <div class="container">
+        <!-- 页面标题 -->
+        <div class="card mb-4">
+            <div class="card-body text-center" style="background: linear-gradient(135deg, var(--bg-accent), #e0f2fe);">
+                <h2 class="mb-2" style="color: var(--primary-color); font-weight: 700;">
+                    <i class="fas fa-ruler me-2"></i>FPA 类别规则管理
+                </h2>
+                <p class="text-muted mb-0">配置和管理 FPA 功能点的自动分类规则</p>
+            </div>
+        </div>
+        
         <!-- 添加规则卡片 -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, var(--bg-accent), #e0f2fe); color: var(--primary-color);">
                 <i class="fas fa-plus-circle me-2"></i>添加类别判断规则
             </div>
             <div class="card-body">
@@ -120,7 +419,7 @@
                             </div>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">
+                            <button type="submit" class="btn btn-primary w-100" style="white-space: nowrap;">
                                 <i class="fas fa-plus me-1"></i>添加
                             </button>
                         </div>
@@ -135,12 +434,16 @@
 
         <!-- 规则列表卡片 -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, var(--bg-accent), #e0f2fe); color: var(--primary-color);">
                 <i class="fas fa-list me-2"></i>FPA 类别判断规则列表
             </div>
             <div class="card-body">
                 <!-- 筛选条件 -->
-                <div class="row mb-3">
+                <div class="filter-section">
+                    <h6 class="mb-3" style="color: var(--primary-color); font-weight: 600;">
+                        <i class="fas fa-filter me-2"></i>筛选条件
+                    </h6>
+                    <div class="row">
                     <div class="col-md-2">
                         <label for="filterCategory" class="form-label">类别</label>
                         <select class="form-select" id="filterCategory">
@@ -192,7 +495,7 @@
                 </div>
                 
                 <!-- 重置按钮 -->
-                <div class="row mb-3">
+                <div class="row mt-3">
                     <div class="col-md-12 text-end">
                         <button class="btn btn-secondary" onclick="resetFilters()">
                             <i class="fas fa-redo me-1"></i>重置所有筛选
@@ -203,17 +506,17 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>优先级</th>
-                                <th>类别</th>
-                                <th>规则类型</th>
-                                <th>关键词</th>
-                                <th>描述</th>
-                                <th>UFP 值</th>
-                                <th>状态</th>
-                                <th>创建时间</th>
-                                <th>更新时间</th>
-                                <th>操作</th>
+                            <tr style="background: var(--bg-accent);">
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">优先级</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">类别</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">规则类型</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">关键词</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">描述</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">UFP 值</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">状态</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">创建时间</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">更新时间</th>
+                                <th style="color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">操作</th>
                             </tr>
                         </thead>
                         <tbody id="ruleList">
@@ -235,10 +538,14 @@
     <!-- 编辑模态框 -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">编辑规则</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-content" style="border-radius: var(--border-radius); border: none; box-shadow: var(--shadow-lg);">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--bg-accent), #e0f2fe); border-bottom: 1px solid var(--border-color); border-radius: var(--border-radius) var(--border-radius) 0 0;">
+                    <h5 class="modal-title" style="color: var(--primary-color); font-weight: 600;">
+                        <i class="fas fa-edit me-2"></i>编辑规则
+                    </h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="editRuleId">
@@ -300,16 +607,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEdit()">保存</button>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 0 0 var(--border-radius) var(--border-radius);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>取消
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveEdit()">
+                        <i class="fas fa-save me-1"></i>保存
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.7.0/sweetalert2.all.min.js"></script>
     <script>
         let editModal;
         let currentPage = 1;
@@ -364,7 +675,7 @@
             container.innerHTML = '';
 
             if (rules.length === 0) {
-                container.innerHTML = '<tr><td colspan="10" class="text-center text-muted">暂无规则</td></tr>';
+                container.innerHTML = '<tr><td colspan="10" class="text-center text-muted" style="padding: 3rem; color: var(--text-muted) !important;">暂无规则</td></tr>';
                 return;
             }
 
@@ -372,19 +683,19 @@
                 const row = document.createElement('tr');
                 row.className = `rule-item category-${rule.category}`;
                 row.innerHTML = `
-                    <td><span class="badge bg-secondary">${rule.priority}</span></td>
-                    <td><span class="badge bg-primary">${rule.category}</span></td>
+                    <td><span class="badge badge-secondary">${rule.priority}</span></td>
+                    <td><span class="badge badge-primary">${rule.category}</span></td>
                     <td>${getRuleTypeText(rule.rule_type)}</td>
                     <td><code>${rule.keyword}</code></td>
                     <td>${rule.description || '-'}</td>
-                    <td><span class="badge bg-success">${rule.ufp_value}</span></td>
+                    <td><span class="badge badge-success">${rule.ufp_value}</span></td>
                     <td>
                         <span class="badge ${rule.is_active ? 'badge-active' : 'badge-inactive'}">
                             ${rule.is_active ? '启用' : '禁用'}
                         </span>
                     </td>
-                    <td><small>${rule.created_at || '-'}</small></td>
-                    <td><small>${rule.updated_at || '-'}</small></td>
+                    <td><small style="color: var(--text-muted);">${rule.created_at || '-'}</small></td>
+                    <td><small style="color: var(--text-muted);">${rule.updated_at || '-'}</small></td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="editRule(${rule.id})">
                             <i class="fas fa-edit"></i>
