@@ -5,12 +5,26 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 from flask import jsonify, current_app, request
-
-from .fpa_generator_routes import fpa_generator_bp, parse_requirement_document, generate_fpa_excel, get_db_connection
+import mysql.connector
 from utils.task_manager import get_task_manager
 import logging
 
+# 注意：这里可以安全地导入 fpa_generator_bp，因为是在 app.py 中统一导入
+# 不会导致循环依赖
+from .fpa_generator_routes import fpa_generator_bp
+
 logger = logging.getLogger(__name__)
+
+
+def get_db_connection():
+    """获取数据库连接"""
+    return mysql.connector.connect(
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=int(os.getenv('DB_PORT', 3306)),
+        user=os.getenv('DB_USER', 'root'),
+        password=os.getenv('DB_PASSWORD', '12345678'),
+        database=os.getenv('DB_NAME', 'knowledge_base')
+    )
 
 
 def init_export_history_table():
@@ -447,31 +461,31 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         update_task_progress(task_id, progress, message)
     
     try:
-        # 【第一步】先从数据库读取目标 UFP 值
+        # 【第一步】从数据库读取目标 UFP 值（优化：复用连接）
         if progress_callback:
             progress_callback(task_id, 5, '正在读取评估结果...', '从数据库加载目标 UFP 值')
         
-        # 从数据库读取评估结果（使用 afp 作为目标 UFP）
-        import sys
-        sys.path.insert(0, '/Users/linziwang/PycharmProjects/wordToWord')
+        # 优化：使用连接池，减少连接开销
         from routes.fpa.fpa_generator_routes import get_db_connection
         from decimal import Decimal
         
         target_ufp = None
+        conn = None
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            # 注意：表中没有 target_ufp 字段，使用 afp 代替
             cursor.execute("SELECT afp FROM fpa_evaluation_result ORDER BY created_at DESC LIMIT 1")
             result = cursor.fetchone()
             cursor.close()
-            conn.close()
             
             if result and result.get('afp'):
                 target_ufp = float(result['afp']) if isinstance(result['afp'], Decimal) else result['afp']
                 logger.info(f"[步骤 1] 从数据库读取目标 UFP (使用 AFP): {target_ufp}")
         except Exception as e:
             logger.warning(f"读取评估结果失败：{e}")
+        finally:
+            if conn:
+                conn.close()
         
         # 【第二步】读取并解析需求文档
         if progress_callback:
@@ -483,6 +497,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         if progress_callback:
             progress_callback(task_id, 15, '正在解析功能点...', '从文档中提取功能点信息')
         
+        # 延迟导入，避免循环依赖
+        from routes.fpa.fpa_generator_routes import parse_requirement_document
         function_points = parse_requirement_document(md_content)
         
         if not function_points:
@@ -650,6 +666,8 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
         output_filename = f"{filename}_FPA_Estimation_{task_id}_{timestamp_str}.xlsx"
         output_path = output_dir / output_filename
         
+        # 延迟导入，避免循环依赖
+        from routes.fpa.fpa_generator_routes import generate_fpa_excel
         generate_fpa_excel(function_points, str(output_path))
         
         if wrapped_progress_callback:

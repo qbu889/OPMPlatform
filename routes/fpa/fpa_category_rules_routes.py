@@ -11,7 +11,7 @@ fpa_rules_bp = Blueprint('fpa_rules', __name__, url_prefix='/fpa-rules')
 @fpa_rules_bp.route('/management')
 def rules_management_page():
     """规则管理页面"""
-    return render_template('fpa_category_rules.html')
+    return render_template('fpa/fpa_category_rules.html')
 
 @fpa_rules_bp.route('/api/rules')
 def get_rules():

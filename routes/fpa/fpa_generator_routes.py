@@ -10,12 +10,43 @@ import logging
 import mysql.connector
 from decimal import Decimal
 from .fpa_ai_expander import ai_assisted_expand_function_points
-from utils.task_manager import get_task_manager
-import uuid
 from models.fpa_category_rules import FPACategoryRule
 
 fpa_generator_bp = Blueprint('fpa_generator', __name__, url_prefix='/fpa-generator')
 logger = logging.getLogger(__name__)
+
+# ========== 预编译正则表达式（性能优化） ==========
+# 在模块加载时只编译一次，避免重复编译开销
+PATTERNS = {
+    'level1': re.compile(r'^##\s+(.+)$'),  # 一级分类
+    'level2': re.compile(r'^###\s+(.+)$'),  # 二级分类
+    'level3': re.compile(r'^####\s+(.+)$'),  # 三级分类
+    'level4': re.compile(r'^#####\s+(.+)$'),  # 功能点名称
+    'level5': re.compile(r'^######\s*(.+?)(?:（注.*?）)?$'),  # 功能点计数项
+    'bold': re.compile(r'\*\*'),  # 加粗符号
+    'note_zh': re.compile(r'[（ (]注.*?[)）]'),  # 中文注释
+    'note_end': re.compile(r'\s*[（ (]注.*?[)）]\s*$'),  # 末尾注释
+    'zero_width': re.compile(r'[\u200B\u200D]'),  # 零宽字符
+    'special_chars': re.compile(r'[^\u4e00-\u9fa5a-zA-Z0-9_\.\s]'),  # 特殊字符
+    'func_desc': re.compile(r'[：**]\s*(.+?)(?:[：**]|$)'),  # 字段值提取
+    'ilf_count': re.compile(r'涉及到 (\d+) 个内部逻辑文件'),  # ILF 数量
+    'elf_count': re.compile(r'，(\d+) 个外部逻辑文件'),  # ELF 数量
+    'ilf_files': re.compile(r'本期新增/变更的内部逻辑文件\s*[:：]\s*(.+)'),  # ILF 文件列表
+    'table_split': re.compile(r'[,,\u3001]'),  # 表格分隔符
+    'category_note': re.compile(r'\s*[（ (]注.*?[)）]\s*$'),  # 类别注释
+}
+
+# 关键词匹配模式（用于类别识别）
+KEYWORD_PATTERNS = {
+    'ilf_suffix': re.compile(r'.*表$'),  # ILF 后缀
+    'ilf_keywords': re.compile(r'数据表 | 配置表 | 结果表 | 详单表'),
+    'ei_keywords': re.compile(r'录入 | 修改 | 删除 | 增 | 删 | 改 | 同步 | 导入 | 添加 | 设置 | 保存 | 提交 | 移交 | 回单 | 赋值'),
+    'eo_keywords': re.compile(r'判定 | 分析 | 计算 | 处理 | 识别 | 匹配 | 切换 | 导出 | 上报 | 调度 | 推送 | 验证 | 检测 | 剔除 | 运算 | 渲染 | 生成 | 跳转 | 控制 | 监听 | 播报 | 触发 | 过滤 | 建议输出 | 排查 | 关联 | 复盘 | 审核 | 流转 | 总结 | 报告 | 标签输出 | 执行情况 | 存在问题 | 简要说明 | 照片上传 | 自动流转 | 消息通知 | 确认 | 驳回 | 归档 | 选择 | 执行 | 映射 | 采集 | 自动派发 | 人工派发 | 配置化 | 下钻'),
+    'eq_keywords': re.compile(r'列表 | 快速查询 | 查询 | 搜索 | 查看 | 浏览 | 筛选 | 详情 | 展示 | 显示 | 获取 | 读取'),
+    'present_keywords': re.compile(r'呈现'),
+    'present_eq_keywords': re.compile(r'关联 | 隐患 | 规则 | 列表'),
+}
+# ================================================
 
 # FPA 模板配置
 FPA_TEMPLATE = {
@@ -66,17 +97,17 @@ def clean_function_point_name(name: str) -> str:
     name = name.replace('/', '和')
     
     # 移除中文引号及内容："..."
-    name = re.sub(r'"[^"]*"', '', name)
+    name = PATTERNS['note_zh'].sub('', name)
     
     # 移除英文引号及内容："..."
-    name = re.sub(r'"[^"]*"', '', name)
+    name = PATTERNS['note_zh'].sub('', name)
     
     # 移除小括号及内容（全角和半角）
-    name = re.sub(r'[（ (][^)）]*[)）]', '', name)
+    name = PATTERNS['note_zh'].sub('', name)
     
     # 移除其他可能的特殊符号（保留中文、英文、数字、下划线、点号）
     # 只保留：中文、英文、数字、下划线、点号、空格
-    name = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9_\.\s]', '', name)
+    name = PATTERNS['special_chars'].sub('', name)
     
     # 清理多余空格
     name = ' '.join(name.split())
@@ -97,7 +128,7 @@ def parse_requirement_document(md_content: str) -> list:
     function_points = []
     
     # 清理零宽空格 (U+200B)
-    md_content = md_content.replace('\u200B', '')
+    md_content = PATTERNS['zero_width'].sub('', md_content)
     
     # 只解析"功能需求"章节之后的内容
     # 找到"# 功能需求"的位置
@@ -109,14 +140,8 @@ def parse_requirement_document(md_content: str) -> list:
     else:
         logger.warning("未找到'功能需求'章节，将解析全文")
     
-    # 定义正则表达式模式
-    patterns = {
-        'level1': r'^##\s+(.+)$',  # 一级分类：##
-        'level2': r'^###\s+(.+)$',  # 二级分类：###
-        'level3': r'^####\s+(.+)$',  # 三级分类：####
-        'level4': r'^#####\s+(.+)$',  # 功能点名称：#####
-        'level5': r'^######\s*(.+?)(?:（注.*?）)?$',  # 功能点计数项：######
-    }
+    # 定义正则表达式模式（使用预编译的）
+    # patterns = PATTERNS  # 已预编译
     
     lines = md_content.split('\n')
     current_point = {
@@ -154,13 +179,14 @@ def parse_requirement_document(md_content: str) -> list:
             i += 1
             continue
         
-        # 匹配各级标题
-        for level_name, pattern in patterns.items():
-            match = re.match(pattern, line)
+        # 匹配各级标题（只匹配 level1-level5）
+        for level_name in ['level1', 'level2', 'level3', 'level4', 'level5']:
+            pattern = PATTERNS[level_name]
+            match = pattern.match(line)
             if match:
                 title = match.group(1).strip()
                 # 去除标题中的加粗符号
-                title = re.sub(r'\*\*', '', title)
+                title = PATTERNS['bold'].sub('', title)
                 
                 if level_name == 'level5' and title:
                     # 保存上一个功能点
@@ -168,17 +194,17 @@ def parse_requirement_document(md_content: str) -> list:
                         function_points.append(current_point.copy())
                                     
                     # 清洗标题中的注释和零宽字符
-                    title_clean = re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', title).strip()
-                    title_clean = title_clean.replace('\u200D', '').strip()
+                    title_clean = PATTERNS['note_end'].sub('', title).strip()
+                    title_clean = PATTERNS['zero_width'].sub('', title_clean).strip()
                     # 使用清理函数处理特殊符号
                     title_clean = clean_function_point_name(title_clean)
                                     
                     # 开始新的功能点 (同时清洗之前积累的 level1-4)
                     current_point = {
-                        'level1': re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', current_point['level1'].replace('\u200D', '')).strip(),
-                        'level2': re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', current_point['level2'].replace('\u200D', '')).strip(),
-                        'level3': re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', current_point['level3'].replace('\u200D', '')).strip(),
-                        'level4': re.sub(r'\s*[（ (]注.*?[)）]\s*$', '', current_point['level4'].replace('\u200D', '')).strip(),
+                        'level1': PATTERNS['category_note'].sub('', current_point['level1'].replace('\u200D', '')).strip(),
+                        'level2': PATTERNS['category_note'].sub('', current_point['level2'].replace('\u200D', '')).strip(),
+                        'level3': PATTERNS['category_note'].sub('', current_point['level3'].replace('\u200D', '')).strip(),
+                        'level4': PATTERNS['category_note'].sub('', current_point['level4'].replace('\u200D', '')).strip(),
                         'level5': title_clean,
                         '功能点计数项': title_clean,  # 添加这个字段用于类别判断
                         '功能描述': '',
@@ -201,13 +227,13 @@ def parse_requirement_document(md_content: str) -> list:
                         '备注': ''
                     }
                 elif level_name == 'level4' and title:
-                    current_point['level4'] = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', title.replace('\u200D', '')).strip()
+                    current_point['level4'] = PATTERNS['category_note'].sub('', title.replace('\u200D', '')).strip()
                 elif level_name == 'level3' and title:
-                    current_point['level3'] = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', title.replace('\u200D', '')).strip()
+                    current_point['level3'] = PATTERNS['category_note'].sub('', title.replace('\u200D', '')).strip()
                 elif level_name == 'level2' and title:
-                    current_point['level2'] = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', title.replace('\u200D', '')).strip()
+                    current_point['level2'] = PATTERNS['category_note'].sub('', title.replace('\u200D', '')).strip()
                 elif level_name == 'level1' and title:
-                    current_point['level1'] = re.sub(r'\s*[（(]注.*?[)）]\s*$', '', title.replace('\u200D', '')).strip()
+                    current_point['level1'] = PATTERNS['category_note'].sub('', title.replace('\u200D', '')).strip()
                 
                 break
         
@@ -215,50 +241,49 @@ def parse_requirement_document(md_content: str) -> list:
         if current_point['level5']:
             # 功能描述
             if line.startswith('**功能描述**') or line.startswith('**功能描述:**'):
-                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                desc_match = PATTERNS['func_desc'].search(line)
                 if desc_match:
                     current_point['功能描述'] = desc_match.group(1).strip()
             
             # 系统界面
             elif line.startswith('**系统界面**') or line.startswith('**系统界面:**'):
-                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                desc_match = PATTERNS['func_desc'].search(line)
                 if desc_match:
                     current_point['系统界面'] = desc_match.group(1).strip()
             
             # 输入
             elif line.startswith('**输入**') or line.startswith('**输入:**'):
-                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                desc_match = PATTERNS['func_desc'].search(line)
                 if desc_match:
                     current_point['输入'] = desc_match.group(1).strip()
             
             # 输出
             elif line.startswith('**输出**') or line.startswith('**输出:**'):
-                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                desc_match = PATTERNS['func_desc'].search(line)
                 if desc_match:
                     current_point['输出'] = desc_match.group(1).strip()
             
             # 处理过程
             elif line.startswith('**处理过程**') or line.startswith('**处理过程:**'):
-                desc_match = re.search(r'[：**]\s*(.+?)(?:[：**]|$)', line)
+                desc_match = PATTERNS['func_desc'].search(line)
                 if desc_match:
                     current_point['处理过程'] = desc_match.group(1).strip()
             
             # 内部逻辑文件数量
             elif '本事务功能预计涉及到' in line and '个内部逻辑文件' in line:
-                num_match = re.search(r'涉及到 (\d+) 个内部逻辑文件', line)
+                num_match = PATTERNS['ilf_count'].search(line)
                 if num_match:
                     current_point['内部逻辑文件数'] = int(num_match.group(1))
                 
-                num_match = re.search(r'，(\d+) 个外部逻辑文件', line)
+                num_match = PATTERNS['elf_count'].search(line)
                 if num_match:
                     current_point['外部逻辑文件数'] = int(num_match.group(1))
             
             # 新增/变更的内部逻辑文件
             elif '本期新增/变更的内部逻辑文件' in line:
-                # 使用更灵活的正则表达式，兼容全角/半角冒号和空格
-                match = re.search(r'本期新增/变更的内部逻辑文件\s*[:：]\s*(.+)', line)
+                match = PATTERNS['ilf_files'].search(line)
                 if match:
-                    files= match.group(1).strip()
+                    files = match.group(1).strip()
                     if files and files != '无':
                         current_point['新增/变更内部逻辑文件'] = files
             
@@ -302,7 +327,7 @@ def parse_requirement_document(md_content: str) -> list:
         if ilf_files and ilf_files != '无':
             # 可能有多个表，支持多种分隔符：逗号、顿号、分号等
             # 使用正则表达式分割各种中英文分隔符
-            tables = [t.strip() for t in re.split(r'[,\uff0c,\u3001]', ilf_files)]
+            tables = [t.strip() for t in PATTERNS['table_split'].split(ilf_files)]
             for table in tables:
                 if table and table.endswith('表'):
                     # 记录这个表首次出现的位置
@@ -313,7 +338,7 @@ def parse_requirement_document(md_content: str) -> list:
         existing_files = point.get('原有未修改内部逻辑文件', '')
         if existing_files and existing_files != '无':
             # 同样支持多种分隔符
-            tables = [t.strip() for t in re.split(r'[,\uff0c,\u3001]', existing_files)]
+            tables = [t.strip() for t in PATTERNS['table_split'].split(existing_files)]
             for table in tables:
                 if table and table.endswith('表'):
                     if table not in ilf_tables_mentioned:
@@ -399,29 +424,21 @@ def parse_requirement_document(md_content: str) -> list:
         except Exception as e:
             logger.error(f"应用类别规则失败：{e}，使用默认规则")
             # 降级到硬编码规则（如果数据库不可用）
-            if item_text.endswith('表') or any(kw in item_text for kw in ['数据表', '配置表', '结果表', '详单表']):
+            # 使用预编译的关键词模式加速匹配
+            if KEYWORD_PATTERNS['ilf_suffix'].match(item_text) or KEYWORD_PATTERNS['ilf_keywords'].search(item_text):
                 point['类别'] = 'ILF'
                 point['UFP'] = 7
-            elif any(keyword in item_text for keyword in [
-                '录入', '修改', '删除', '增', '删', '改', '同步', '导入', '添加', '设置', '保存', '提交', '移交', '回单', '赋值'
-            ]):
+            elif KEYWORD_PATTERNS['ei_keywords'].search(item_text):
                 point['类别'] = 'EI'
                 point['UFP'] = 4
-            elif any(kw in item_text for kw in [
-                '判定', '分析', '计算', '处理', '识别', '匹配', '切换', '导出', '上报', '调度', '推送',
-                '验证', '检测', '剔除', '运算', '渲染', '生成', '跳转', '控制', '监听', '播报', '触发',
-                '过滤', '建议输出', '排查', '关联', '复盘', '审核', '流转', '总结', '报告',
-                '标签输出', '执行情况', '存在问题', '简要说明', '照片上传', '自动流转',
-                '消息通知', '确认', '驳回', '归档', '选择', '执行', '映射', '采集',
-                '自动派发', '人工派发', '配置化', '下钻'
-            ]):
+            elif KEYWORD_PATTERNS['eo_keywords'].search(item_text):
                 point['类别'] = 'EO'
                 point['UFP'] = 5
-            elif any(kw in item_text for kw in ['列表', '快速查询', '查询', '搜索', '查看', '浏览', '筛选', '详情', '展示', '显示', '获取', '读取']):
+            elif KEYWORD_PATTERNS['eq_keywords'].search(item_text):
                 point['类别'] = 'EQ'
                 point['UFP'] = 4
-            elif '呈现' in item_text:
-                if any(kw in item_text for kw in ['关联', '隐患', '规则', '列表']):
+            elif KEYWORD_PATTERNS['present_keywords'].search(item_text):
+                if KEYWORD_PATTERNS['present_eq_keywords'].search(item_text):
                     point['类别'] = 'EO'
                     point['UFP'] = 5
                 else:
@@ -1754,5 +1771,4 @@ def save_evaluation_result():
         }), 500
 
 
-# 导入异步任务路由
-from .fpa_async_routes import generate_fpa_async, get_task_status
+

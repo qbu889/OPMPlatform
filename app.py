@@ -42,6 +42,8 @@ from routes.kafka.kafka_generator_routes import kafka_generator_bp
 from routes.fpa.sql_routes import sql_bp
 from routes.fpa.event_routes import event_bp
 from routes.fpa.fpa_generator_routes import fpa_generator_bp
+# 导入异步路由模块（只注册路由，不导入函数，避免循环依赖）
+from routes.fpa import fpa_async_routes
 from routes.fpa.adjustment_routes import adjustment_bp
 from routes.fpa.adjustment_calc_routes import adjustment_calc_bp
 from routes.fpa.fpa_category_rules_routes import fpa_rules_bp
