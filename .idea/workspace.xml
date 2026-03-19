@@ -5,10 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：解析AI返回的json格式异常时兜底">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CATEGORY_USAGE_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/CATEGORY_USAGE_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHATBOT_README.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/CHATBOT_README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/ollama_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/ADJUSTMENT_CALCULATOR_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/ADJUSTMENT_CALCULATOR_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/ADJUSTMENT_CALC_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/ADJUSTMENT_CALC_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AI客服.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AI客服.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AI客服开发总结.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AI客服开发总结.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AI客服快速入门.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AI客服快速入门.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AI客服系统总览.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AI客服系统总览.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AUTH_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AUTH_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/AUTH_README.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/AUTH_README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/DATABASE_CONFIG_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/DATABASE_CONFIG_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_DELIVERY_CHECKLIST.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_DELIVERY_CHECKLIST.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_DEMO_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_DEMO_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_GENERATOR_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_GENERATOR_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_IMPLEMENTATION_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_IMPLEMENTATION_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_QUICK_START.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_QUICK_START.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/FPA_README_INDEX.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_README_INDEX.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/KAFKA_FIELD_MAPPING_ANALYSIS.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/KAFKA_FIELD_MAPPING_ANALYSIS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/MYSQL_MIGRATION_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/MYSQL_MIGRATION_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/OPMPlatform 项目文件结构分布.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/OPMPlatform 项目文件结构分布.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/PaiBan.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/PaiBan.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/修复404错误.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/修复404错误.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme/排班 CSV 导入功能说明.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/排班 CSV 导入功能说明.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/excel2word_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/excel2word_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +75,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -104,51 +130,54 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
-    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-cosyBalloonNotifications&quot;: &quot;Lingma Notification Balloon Group&quot;,
-    &quot;Notification.DoNotAsk-cosyBalloonNotifications&quot;: &quot;true&quot;,
-    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
-    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
-    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
-    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;f/oldmaster&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/test/fpa&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.Flask (app.py).executor": "Run",
+    "Flask 服务器.Flask (app2.py).executor": "Run",
+    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
+    "JavaScript 调试.schedule.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-cosyBalloonNotifications": "Lingma Notification Balloon Group",
+    "Notification.DoNotAsk-cosyBalloonNotifications": "true",
+    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app2.executor": "Run",
+    "Python.holidaySys.executor": "Run",
+    "Python.kafka_routes.executor": "Debug",
+    "Python.paiBan.executor": "Run",
+    "Python.paiBanNew.executor": "Run",
+    "Python.wordToWord.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/test/fpa",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "configurable.group.tools",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mysql_aurora&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql_aurora"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "MySQL"
+    ],
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "MySQL"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/test/fpa" />
@@ -158,11 +187,11 @@
       <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
       <recent name="$PROJECT_DIR$/sql" />
       <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/uploads/other" />
-      <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
     </key>
   </component>
   <component name="RunManager" selected="Flask 服务器.Flask (app.py)">
@@ -233,17 +262,28 @@
       <method v="2" />
     </configuration>
     <configuration name="Flask (app.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+      <option name="flaskDebug" value="true" />
       <module name="wordToWord" />
       <option name="target" value="$PROJECT_DIR$/app.py" />
       <option name="targetType" value="PATH" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <EXTENSION ID="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </EXTENSION>
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
@@ -329,6 +369,7 @@
       <workItem from="1773212337202" duration="5338000" />
       <workItem from="1773219703378" duration="59825000" />
       <workItem from="1773404558340" duration="33635000" />
+      <workItem from="1773826277372" duration="6609000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -602,7 +643,31 @@
       <option name="project" value="LOCAL" />
       <updated>1773508380883</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="fix：统计请求数量动态落库">
+      <option name="closed" value="true" />
+      <created>1773826886157</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1773826886157</updated>
+    </task>
+    <task id="LOCAL-00036" summary="fix：文件结构调整">
+      <option name="closed" value="true" />
+      <created>1773829108418</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1773829108418</updated>
+    </task>
+    <task id="LOCAL-00037" summary="new：说明文档">
+      <option name="closed" value="true" />
+      <created>1773885919398</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1773885919398</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -630,7 +695,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/f/oldmaster" />
+                        <option value="origin/master" />
                       </list>
                     </value>
                   </entry>
@@ -643,9 +708,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：1. 优化排班逻辑和导出；" />
-    <MESSAGE value="new：新增派单CSV文件导入功能" />
-    <MESSAGE value="new：桌面整理程序" />
     <MESSAGE value="fix：csv导入remark没有填充数据问题" />
     <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
     <MESSAGE value="fix：完善整理文件" />
@@ -668,13 +730,16 @@
     <MESSAGE value="fix：使用远程并且尝试减少请求量" />
     <MESSAGE value="fix：查询接口时机、下划线去除、特殊符号去除" />
     <MESSAGE value="fix：【难修复】生成FPA文档顺序BUG" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：【难修复】生成FPA文档顺序BUG" />
+    <MESSAGE value="fix：统计请求数量动态落库" />
+    <MESSAGE value="fix：文件结构调整" />
+    <MESSAGE value="new：说明文档" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：说明文档" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/FPA/fpa_generator_routes.py</url>
+          <url>file://$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py</url>
           <line>1372</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
@@ -716,7 +781,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1773819894484" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1773828279327" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME=" 覆盖结果" MODIFIED="1773550040419" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />

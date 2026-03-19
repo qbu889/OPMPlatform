@@ -33,7 +33,7 @@ def save_excel_file(uploaded_file):
 @excel2word_bp.route('/')
 def excel2word_page():
     """Excel转Word主页面"""
-    return render_template('excel2word.html',
+    return render_template('document_convert/excel2word.html',
                            excel_uploaded='excel_path' in session,
                            converted=session.get('converted', False),
                            verify_result=session.get('verify_result'),
@@ -45,12 +45,12 @@ def upload_excel():
     """处理Excel文件上传"""
     if 'excel_file' not in request.files:
         flash("未选择上传文件！", "error")
-        return render_template('excel2word.html', excel_uploaded=False)
+        return render_template('document_convert/excel2word.html', excel_uploaded=False)
 
     file = request.files['excel_file']
     if file.filename == '' or not file.filename.endswith(('.xlsx', '.xls')):
         flash("请上传有效的Excel文件（.xlsx/.xls）！", "error")
-        return render_template('excel2word.html', excel_uploaded=False)
+        return render_template('document_convert/excel2word.html', excel_uploaded=False)
 
     # 保存文件并记录路径到session
     excel_path, word_path = save_excel_file(file)
@@ -59,7 +59,7 @@ def upload_excel():
     session['converted'] = False
     session['verify_result'] = None
     flash("Excel文件上传成功！", "success")
-    return render_template('excel2word.html', excel_uploaded=True)
+    return render_template('document_convert/excel2word.html', excel_uploaded=True)
 
 
 @excel2word_bp.route('/convert')
@@ -67,7 +67,7 @@ def convert_excel_to_word():
     """执行Excel转Word转换"""
     if 'excel_path' not in session:
         flash("请先上传Excel文件！", "error")
-        return render_template('excel2word.html', excel_uploaded=False)
+        return render_template('document_convert/excel2word.html', excel_uploaded=False)
 
     try:
         excel_path = session['excel_path']
@@ -78,7 +78,7 @@ def convert_excel_to_word():
         flash("Word文档生成成功！", "success")
     except Exception as e:
         flash(f"转换失败：{str(e)}", "error")
-    return render_template('excel2word.html', excel_uploaded=True, converted=session.get('converted'))
+    return render_template('document_convert/excel2word.html', excel_uploaded=True, converted=session.get('converted'))
 
 
 @excel2word_bp.route('/verify')
@@ -86,7 +86,7 @@ def verify_word_content():
     """校验Excel与Word内容一致性"""
     if 'word_path' not in session or not session['converted']:
         flash("请先完成Excel转Word转换！", "error")
-        return render_template('excel2word.html', excel_uploaded=True, converted=session.get('converted'))
+        return render_template('document_convert/excel2word.html', excel_uploaded=True, converted=session.get('converted'))
 
     try:
         excel_path = session['excel_path']
@@ -100,7 +100,7 @@ def verify_word_content():
             flash("内容校验失败！Excel与Word内容不一致", "warning")
     except Exception as e:
         flash(f"校验失败：{str(e)}", "error")
-    return render_template('excel2word.html',
+    return render_template('document_convert/excel2word.html',
                            excel_uploaded=True,
                            converted=True,
                            verify_result=session.get('verify_result'),
@@ -112,7 +112,7 @@ def download_word():
     """下载生成的Word文档"""
     if 'word_path' not in session and os.path.exists(session['word_path']):
         flash("无可用的Word文件！", "error")
-        return render_template('excel2word.html', excel_uploaded=True, converted=session.get('converted'))
+        return render_template('document_convert/excel2word.html', excel_uploaded=True, converted=session.get('converted'))
 
     return send_file(
         session['word_path'],
@@ -126,7 +126,7 @@ def download_stats():
     """下载模块统计Excel"""
     if 'module_stats' not in session or not session['module_stats']:
         flash("无可用的统计数据！", "error")
-        return render_template('excel2word.html', excel_uploaded=True, converted=True)
+        return render_template('document_convert/excel2word.html', excel_uploaded=True, converted=True)
 
     import pandas as pd
     stats_path = Path(current_app.config['UPLOAD_FOLDER']) / f"统计数据_{time.strftime('%Y%m%d%H%M%S')}.xlsx"
