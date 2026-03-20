@@ -66,42 +66,70 @@ from models.visit_log import VisitLog
 # 日志配置
 # ============================================================================
 def setup_logging():
-    """配置日志系统（同时输出到控制台和文件）"""
+    """
+    配置日志系统（支持按等级输出）
+    
+    日志级别控制（通过 LOG_LEVEL 环境变量或 .env 文件配置）：
+    - ERROR: 只输出 ERROR 级别日志
+    - WARNING: 输出 ERROR 和 WARNING 级别日志
+    - INFO: 输出 ERROR、WARNING 和 INFO 级别日志
+    - DEBUG: 输出所有级别日志（包括 DEBUG）
+    
+    可选配置：
+    - LOG_TO_CONSOLE: 是否输出到控制台（默认：True）
+    - LOG_TO_FILE: 是否输出到文件（默认：True）
+    - LOG_FORMAT: 日志格式（默认：详细格式）
+    """
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     os.makedirs(log_dir, exist_ok=True)
     
     # 创建 logger
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
     
     # 清除已有的 handler（避免重复）
     if logger.handlers:
         logger.handlers.clear()
     
-    # 控制台处理器
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+    # 从环境变量获取日志级别（默认 INFO）
+    log_level_str = os.getenv('LOG_LEVEL', 'INFO').upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+    logger.setLevel(log_level)
+    
+    # 是否输出到控制台
+    log_to_console = os.getenv('LOG_TO_CONSOLE', 'True').lower() in ('true', '1', 'yes')
+    
+    # 是否输出到文件
+    log_to_file = os.getenv('LOG_TO_FILE', 'True').lower() in ('true', '1', 'yes')
+    
+    # 日志格式
+    log_format = os.getenv(
+        'LOG_FORMAT',
+        '%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s'
     )
-    console_handler.setFormatter(console_formatter)
+    date_format = os.getenv('LOG_DATE_FORMAT', '%Y-%m-%d %H:%M:%S')
+    
+    formatter = logging.Formatter(log_format, datefmt=date_format)
+    
+    # 控制台处理器
+    if log_to_console:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(log_level)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+        app_logger_temp = logging.getLogger(__name__)
+        app_logger_temp.info(f"日志已配置：输出到控制台，级别={log_level_str}")
     
     # 文件处理器
-    file_handler = logging.FileHandler(
-        os.path.join(log_dir, f'app_{datetime.now().strftime("%Y%m%d")}.log'),
-        encoding='utf-8'
-    )
-    file_handler.setLevel(logging.INFO)
-    file_formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)-8s | %(name)-40s | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    file_handler.setFormatter(file_formatter)
-    
-    # 添加处理器
-    logger.addHandler(console_handler)
-    logger.addHandler(file_handler)
+    if log_to_file:
+        file_handler = logging.FileHandler(
+            os.path.join(log_dir, f'app_{datetime.now().strftime("%Y%m%d")}.log'),
+            encoding='utf-8'
+        )
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        app_logger_temp = logging.getLogger(__name__)
+        app_logger_temp.info(f"日志已配置：输出到文件，级别={log_level_str}")
     
     return logging.getLogger(__name__)
 # 确保项目根目录在 Python 路径中

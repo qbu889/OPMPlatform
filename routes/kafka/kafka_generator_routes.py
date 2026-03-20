@@ -466,7 +466,7 @@ def generate_es_to_kafka_mapping(es_data):
         "GCSS_CLIENT_NUM": "",  # 默认空值
         "GCSS_CLIENT_LEVEL": "",  # 默认空值
         "GCSS_SERVICE": "",  # 默认空值
-        "GCSS_SERVICE_NUM": "",  # 默认空值
+        "GCSS_SERVICE_NUM": "",  # 默认空값
         "GCSS_SERVICE_LEVEL": "",  # 默认空值
         "GCSS_SERVICE_TYPE": "",  # 默认空值
         "BUSINESS_SYSTEM": "_source.BUSINESS_TAG.BUSINESS_SYSTEM",
@@ -482,7 +482,7 @@ def generate_es_to_kafka_mapping(es_data):
         "BOARD_TYPE": "",  # 默认空值
         "OBJECT_CLASS": "_source.OBJECT_CLASS_ID",
         "LOGIC_ALARM_TYPE": "",  # 默认空值
-        "LOGIC_SUB_ALARM_TYPE": "",  # 默认空值
+        "LOGIC_SUB_ALARM_TYPE": "",  # 默认空값
         "EFFECT_NE": "_source.EFFECT_NE_NUM",
         "EFFECT_SERVICE": "_source.SATOTAL",
         "SPECIAL_FIELD14": "_source.NE_TAG.ROOM_ID",
@@ -549,7 +549,7 @@ def generate_es_to_kafka_mapping(es_data):
                 # 如果不在映射中，设置默认空值
                 kafka_message[kafka_field] = ""
         except Exception as e:
-            print(f"处理字段 {kafka_field} 时出错: {e}")
+            logger.debug(f"处理字段 {kafka_field} 时出错：{e}")
             kafka_message[kafka_field] = ""
 
     # 重新生成ORG_TEXT字段（使用已按顺序排列的所有字段）
@@ -708,11 +708,11 @@ def kafka_field_options():
     if not table:
         return jsonify({"success": False, "message": f"字段 {kafka_field} 未配置维表"}), 400
 
-    print(f"[DEBUG] 查询维表：{table}, 字段：{kafka_field}")
+    logger.debug(f"[DEBUG] 查询维表：{table}, 字段：{kafka_field}")
 
     conn = get_mysql_conn_dict_cursor()
     if not conn:
-        print(f"[ERROR] MySQL 连接失败")
+        logger.error(f"[ERROR] MySQL 连接失败")
         return jsonify({"success": False, "message": "MySQL 未配置或不可用"}), 500
 
     try:
@@ -720,13 +720,13 @@ def kafka_field_options():
         with conn.cursor() as cur:
             # 简单限制一下返回行数，避免维表过大
             query = f"SELECT * FROM `{table_escaped}` LIMIT 500"
-            print(f"[DEBUG] 执行 SQL: {query}")
+            logger.debug(f"[DEBUG] 执行 SQL: {query}")
             cur.execute(query)
             rows = cur.fetchall() or []
-            print(f"[DEBUG] 查询成功，返回 {len(rows)} 行数据")
+            logger.debug(f"[DEBUG] 查询成功，返回 {len(rows)} 行数据")
     except Exception as e:
-        print(f"[ERROR] 查询失败：{e}")
-        print(f"[ERROR] 详细错误：{traceback.format_exc()}")
+        logger.error(f"[ERROR] 查询失败：{e}")
+        logger.error(f"[ERROR] 详细错误：{traceback.format_exc()}")
         return jsonify({
             "success": False,
             "message": f"数据库查询失败：{str(e)}",
@@ -770,10 +770,10 @@ def fix_json_keys(raw_data):
     matches_after = re.findall(pattern, fixed_data)
 
     if len(matches_before) > 0:
-        print(f"检测到 {len(matches_before)} 个未加引号的键名:")
-        for _, key in matches_before:
-            print(f"  - {key}")
-        print(f"已修复 {len(matches_before)} 个键名")
+        logger.debug(f"检测到 {len(matches_before)} 个未加引号的键名:")
+        for key in matches_before:
+            logger.debug(f"  - {key}")
+        logger.debug(f"已修复 {len(matches_before)} 个键名")
 
     return fixed_data
 
@@ -781,27 +781,27 @@ def fix_json_keys(raw_data):
 def preprocess_json_data(raw_data):
     """预处理JSON数据，修复常见格式问题
     专门针对包含三重引号、控制字符、多余括号等问题的JSON数据"""
-    print("开始预处理JSON数据...")
+    logger.debug("开始预处理 JSON 数据...")
 
     # 1. 移除BOM标记
     if raw_data.startswith('\ufeff'):
         raw_data = raw_data[1:]
-        print("移除BOM标记")
+        logger.debug("移除 BOM 标记")
 
     # 2. 处理三重引号 - 分两步处理
     triple_quote_count = raw_data.count('\"\"\"')
     if triple_quote_count > 0:
-        print(f"检测到 {triple_quote_count} 个三重引号")
+        logger.debug(f"检测到 {triple_quote_count} 个三重引号")
 
         # 【关键】在处理三重引号之前，先全局移除所有单个反斜杠
         # 因为三重引号内的 \中、\触等也需要被处理
         def remove_backslash(match):
             char = match.group(1)
-            print(f"  移除：\\{char} -> {char}")
+            logger.debug(f"  移除：\\{char} -> {char}")
             return char
                 
         raw_data = re.sub(r'\\([^nrtbf\\"/u])', remove_backslash, raw_data)
-        print("已全局移除所有非法单斜杠\n")
+        logger.debug("已全局移除所有非法单斜杠\n")
 
         # 第一步：将三重引号替换为临时标记
         raw_data = raw_data.replace('\"\"\"', '__TEMP_TRIPLE_QUOTE__')
@@ -820,7 +820,7 @@ def preprocess_json_data(raw_data):
         raw_data = re.sub(r'__TEMP_TRIPLE_QUOTE__(.*?)__TEMP_TRIPLE_QUOTE__', escape_nested_quotes, raw_data,
                           flags=re.DOTALL)
 
-        print(f"已完成三重引号处理和嵌套引号转义")
+        logger.debug(f"已完成三重引号处理和嵌套引号转义")
 
     # 3. 修复非法转义字符 - 新增关键步骤
     def fix_invalid_escapes(text):
@@ -830,20 +830,20 @@ def preprocess_json_data(raw_data):
 
         注意：此函数处理全局范围内的非法转义，包括字符串内外
         """
-        print(f"\n【fix_invalid_escapes】开始处理，文本长度：{len(text)}")
+        logger.debug(f"\n【fix_invalid_escapes】开始处理，文本长度：{len(text)}")
 
         # 【关键修改】先处理字符串值内部的过度转义 (四重->双重)
         # 这样在后续保护合法转义时就不会丢失这些反斜杠信息
         def reduce_quadruple_backslashes(match):
             content = match.group(1)
-            print(f"  处理前：{repr(content[:50])}...")
+            logger.debug(f"  处理前：{repr(content[:50])}...")
             # 将四个反斜杠减少为两个
             content = content.replace('\\\\\\\\', '\\\\')
-            print(f"  处理后：{repr(content[:50])}...")
+            logger.debug(f"  处理后：{repr(content[:50])}...")
             return f'"{content}"'
 
         text = re.sub(r'"((?:[^"\\]|\\.)*)"', reduce_quadruple_backslashes, text)
-        print("已处理字符串内的四重反斜杠")
+        logger.debug("已处理字符串内的四重反斜杠")
 
         # 策略：先保护合法的转义，然后修复非法的
 
@@ -872,11 +872,11 @@ def preprocess_json_data(raw_data):
         # 关键：直接移除单个反斜杠，而不是转换为双反斜杠
         def remove_backslash(match):
             char = match.group(1)
-            print(f"  移除反斜杠：\\{char} -> {char}")
+            logger.debug(f"  移除反斜杠：\\{char} -> {char}")
             return char
                 
         text = re.sub(r'\\([^nrtbf\\"/u])', remove_backslash, text)
-        print("已移除非法转义的单个反斜杠")
+        logger.debug("已移除非法转义的单个反斜杠")
 
         # 第五步：恢复合法的转义序列
         for placeholder, escape_seq in placeholders.items():
@@ -889,14 +889,14 @@ def preprocess_json_data(raw_data):
 
     # 应用转义修复
     raw_data = fix_invalid_escapes(raw_data)
-    print("已修复非法转义字符")
+    logger.debug("已修复非法转义字符")
 
-    # 【调试】输出第 92 行附近的内容
-    lines = raw_data.split('\n')
-    if len(lines) >= 92:
-        print(f"\n===【调试】第 92 行内容 ===")
-        print(lines[91][400:500])
-        print(f"========================\n")
+    # 【调试】输出第 92 行附近的内容（仅用于开发调试）
+    # lines = raw_data.split('\n')
+    # if len(lines) >= 92:
+    #     logger.debug(f"\n===【调试】第 92 行内容 ===")
+    #     logger.debug(lines[91][400:500])
+    #     logger.debug(f"========================\n")
 
     # 4. 处理普通的 JSON 字符串值
     def process_json_strings(text):
@@ -929,16 +929,16 @@ def preprocess_json_data(raw_data):
             content = re.sub(r'\\([^nrtbf\\"/])', fix_single_backslash, content)
 
             if original != content:
-                print(f"  修复字符串：{repr(original[:50])}... -> {repr(content[:50])}...")
+                logger.debug(f"  修复字符串：{repr(original[:50])}... -> {repr(content[:50])}...")
             return f'"{content}"'
 
         result = re.sub(pattern, replace_string_content, text)
-        print(f"process_json_strings 完成")
+        logger.debug("process_json_strings 完成")
         return result
 
     # 应用字符串处理
     raw_data = process_json_strings(raw_data)
-    print("已处理双重转义字符")
+    logger.debug("已处理双重转义字符")
 
     # 5. 处理 HTML 实体
     html_entities = {
@@ -954,7 +954,7 @@ def preprocess_json_data(raw_data):
         count = raw_data.count(entity)
         if count > 0:
             raw_data = raw_data.replace(entity, replacement)
-            print(f"处理了 {count} 个 '{entity}' HTML实体")
+            logger.debug(f"处理了 {count} 个 '{entity}' HTML 实体")
 
     # 6. 处理控制字符
     control_chars_removed = 0
@@ -963,7 +963,7 @@ def preprocess_json_data(raw_data):
 
     for i, char in enumerate(raw_data):
         char_code = ord(char)
-        # 允许: 制表符(9), 换行符(10), 回车符(13), 空格及以上(32+)
+        # 允许：制表符 (9), 换行符 (10), 回车符 (13), 空格及以上 (32+)
         if char_code == 9 or char_code == 10 or char_code == 13 or char_code >= 32:
             cleaned_data += char
         else:
@@ -972,18 +972,18 @@ def preprocess_json_data(raw_data):
                 problematic_positions.append((i, char_code, repr(char)))
 
     if control_chars_removed > 0:
-        print(f"总共移除了 {control_chars_removed} 个控制字符")
+        logger.debug(f"总共移除了 {control_chars_removed} 个控制字符")
         if problematic_positions:
-            print("前20个控制字符位置:")
+            logger.debug("前 20 个控制字符位置:")
             for pos, code, char_repr in problematic_positions:
-                print(f"  位置{pos}: ASCII码{code}, 字符{char_repr}")
+                logger.debug(f"  位置{pos}: ASCII 码{code}, 字符{char_repr}")
         raw_data = cleaned_data
 
     # 7. 处理尾随逗号
     trailing_commas = len(re.findall(r',\s*([\}\]])', raw_data))
     if trailing_commas > 0:
         raw_data = re.sub(r',\s*([\}\]])', r'\1', raw_data)
-        print(f"处理了 {trailing_commas} 个尾随逗号")
+        logger.debug(f"处理了 {trailing_commas} 个尾随逗号")
 
     # 8. 标准化换行符
     raw_data = raw_data.replace('\r\n', '\n').replace('\r', '\n')
@@ -1050,10 +1050,10 @@ def preprocess_json_data(raw_data):
     if first_complete_end != -1 and first_complete_end < len(raw_data) - 1:
         extra_content = raw_data[first_complete_end + 1:].strip()
         if extra_content:
-            print(f"清理末尾多余内容 ({len(extra_content)} 字符): {repr(extra_content[:30])}")
+            logger.debug(f"清理末尾多余内容 ({len(extra_content)} 字符): {repr(extra_content[:30])}")
             raw_data = raw_data[:first_complete_end + 1]
 
-    print("预处理完成")
+    logger.debug("预处理完成")
     return raw_data
 
 
@@ -1072,39 +1072,39 @@ def generate_kafka_message():
                 "message": "缺少必要的 es_source_raw 参数"
             }), 400
 
-        print(f"\n==========【接收调试】==========")
-        print(f"接收到原始数据，长度：{len(es_source_raw)} 字符")
-        print(f"前 200 字符：{repr(es_source_raw[:200])}")
+        logger.debug(f"\n==========【接收调试】==========")
+        logger.debug(f"接收到原始数据，长度：{len(es_source_raw)} 字符")
+        logger.debug(f"前 200 字符：{repr(es_source_raw[:200])}")
 
         # 直接尝试解析，看看到底是什么问题
         try:
             test_parse = json.loads(es_source_raw)
-            print("✅ 直接解析成功!")
+            logger.debug("✅ 直接解析成功!")
         except Exception as e:
-            print(f"❌ 直接解析失败：{e}")
-            print(f"错误类型：{type(e).__name__}")
+            logger.error(f"❌ 直接解析失败：{e}")
+            logger.error(f"错误类型：{type(e).__name__}")
 
         # 查找包含反斜杠的位置
         if '\\' in es_source_raw:
             pos = es_source_raw.find('\\中兴')
             if pos > 0:
-                print(f"\n找到'\\中兴'在位置 {pos}")
-                print(f"上下文：{repr(es_source_raw[max(0,pos-50):pos+50])}")
-        print(f"==============================\n")
+                logger.debug(f"\n找到'\\中兴'在位置 {pos}")
+                logger.debug(f"上下文：{repr(es_source_raw[max(0,pos-50):pos+50])}")
+        logger.debug(f"==============================\n")
 
         # 预处理数据
         processed_data = preprocess_json_data(es_source_raw)
+        
+        logger.debug(f"预处理后数据长度：{len(processed_data)} 字符")
 
-        print(f"预处理后数据长度: {len(processed_data)} 字符")
-
-        # 尝试解析JSON数据
+        # 尝试解析 JSON 数据
         try:
             es_source_data = json.loads(processed_data)
-            print("✅ JSON解析成功")
+            logger.debug("✅ JSON 解析成功")
         except Exception as parse_error:
             # 如果还是失败，返回详细的错误信息
             error_msg = str(parse_error)
-            print(f"❌ JSON解析失败: {error_msg}")
+            logger.error(f"❌ JSON 解析失败：{error_msg}")
 
             # 尝试定位错误位置
             error_pos_match = re.search(r'line (\d+) column (\d+)', error_msg)
@@ -1119,12 +1119,10 @@ def generate_kafka_message():
                     context = error_line[context_start:context_end]
                     error_msg += f" (第{line_num}行附近: '{context}')"
 
-            # 返回原始数据和处理后数据用于调试
+            # 记录错误日志（生产环境可以改为 logger.error）
             import sys
-            print(f"\n❌【JSON_ERROR】JSON 解析失败！", file=sys.stderr)
-            print(f"错误位置：第{line_num}行第{col_num}列", file=sys.stderr)
-            print(f"附近内容：'{context}'", file=sys.stderr)
-            print(f"完整错误：{error_msg}\n", file=sys.stderr)
+            logger.error(f"\n❌【JSON_ERROR】JSON 解析失败！")
+            logger.error(f"完整错误：{error_msg}\n", file=sys.stderr)
 
             return jsonify({
                 "success": False,
@@ -1172,12 +1170,12 @@ def generate_kafka_message():
         return Response(json_response, mimetype='application/json')
 
     except Exception as e:
-        print(f"处理过程中发生错误: {str(e)}")
+        logger.error(f"处理过程中发生错误：{str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
             "success": False,
-            "message": f"生成Kafka消息失败: {str(e)}"
+            "message": f"生成 Kafka 消息失败：{str(e)}"
         }), 500
 
 

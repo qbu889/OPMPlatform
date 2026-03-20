@@ -4,11 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：解析AI返回的json格式异常时兜底">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：注释非必要文件">
+      <change afterPath="$PROJECT_DIR$/test/kafka/test_log_levels.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/es_to_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/es_to_kafka.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/generate_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/generate_kafka.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_bp_new.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_bp_new.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260320.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/kafka/test_simple_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_simple_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_check_escape.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_check_escape.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_debug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_final.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_final.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_fix_escape.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_fix_escape.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_fix_json_keys.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_fix_json_keys.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_frontend.html" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_frontend.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_kafka_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_kafka_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_real_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_real_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_regex_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_regex_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_simple.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_simple_fix.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_simple_parse.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_simple_parse.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -163,14 +180,14 @@
       <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/docs" />
       <recent name="$PROJECT_DIR$/sql" />
-      <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/uploads/other" />
     </key>
   </component>
-  <component name="RunManager" selected="Python 测试.Python 测试 (test_simple_fix.py 内)">
+  <component name="RunManager" selected="Shell Script.start.sh">
     <configuration name="wordToWord" type="PythonConfigurationType" factoryName="Python">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -289,8 +306,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python 测试.Python 测试 (test_simple_fix.py 内)" />
         <item itemvalue="Shell Script.start.sh" />
+        <item itemvalue="Python 测试.Python 测试 (test_simple_fix.py 内)" />
         <item itemvalue="Python 测试.Python 测试 (TestKafkaRoutes.py 内)" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test/fpa/test_omlx_simple.py 内)" />
@@ -351,7 +368,8 @@
       <workItem from="1773826277372" duration="6609000" />
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
-      <workItem from="1773987218417" duration="1004000" />
+      <workItem from="1773987218417" duration="2753000" />
+      <workItem from="1773991536512" duration="3623000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -657,7 +675,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773987465195</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="fix：注释非必要文件">
+      <option name="closed" value="true" />
+      <created>1773988311596</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1773988311596</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -698,7 +724,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
     <MESSAGE value="fix：完善整理文件" />
     <MESSAGE value="fix：复制成功提示错误的提示语" />
     <MESSAGE value="new：缓存版本" />
@@ -723,7 +748,8 @@
     <MESSAGE value="fix：文件结构调整" />
     <MESSAGE value="new：说明文档" />
     <MESSAGE value="fix：ES生成kafka报错json格式解析修复" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：ES生成kafka报错json格式解析修复" />
+    <MESSAGE value="fix：注释非必要文件" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：注释非必要文件" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
