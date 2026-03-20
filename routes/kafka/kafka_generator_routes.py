@@ -709,7 +709,7 @@ def kafka_field_options():
         return jsonify({"success": False, "message": f"字段 {kafka_field} 未配置维表"}), 400
 
     print(f"[DEBUG] 查询维表：{table}, 字段：{kafka_field}")
-    
+
     conn = get_mysql_conn_dict_cursor()
     if not conn:
         print(f"[ERROR] MySQL 连接失败")
@@ -728,7 +728,7 @@ def kafka_field_options():
         print(f"[ERROR] 查询失败：{e}")
         print(f"[ERROR] 详细错误：{traceback.format_exc()}")
         return jsonify({
-            "success": False, 
+            "success": False,
             "message": f"数据库查询失败：{str(e)}",
             "table": table,
             "field": kafka_field
@@ -789,12 +789,22 @@ def preprocess_json_data(raw_data):
         print("移除BOM标记")
 
     # 2. 处理三重引号 - 分两步处理
-    triple_quote_count = raw_data.count('"""')
+    triple_quote_count = raw_data.count('\"\"\"')
     if triple_quote_count > 0:
         print(f"检测到 {triple_quote_count} 个三重引号")
 
+        # 【关键】在处理三重引号之前，先全局移除所有单个反斜杠
+        # 因为三重引号内的 \中、\触等也需要被处理
+        def remove_backslash(match):
+            char = match.group(1)
+            print(f"  移除：\\{char} -> {char}")
+            return char
+                
+        raw_data = re.sub(r'\\([^nrtbf\\"/u])', remove_backslash, raw_data)
+        print("已全局移除所有非法单斜杠\n")
+
         # 第一步：将三重引号替换为临时标记
-        raw_data = raw_data.replace('"""', '__TEMP_TRIPLE_QUOTE__')
+        raw_data = raw_data.replace('\"\"\"', '__TEMP_TRIPLE_QUOTE__')
 
         # 第二步：处理嵌套 JSON 字符串内的双引号转义
         def escape_nested_quotes(match):
@@ -811,63 +821,124 @@ def preprocess_json_data(raw_data):
                           flags=re.DOTALL)
 
         print(f"已完成三重引号处理和嵌套引号转义")
-    
+
     # 3. 修复非法转义字符 - 新增关键步骤
     def fix_invalid_escapes(text):
         r"""修复非法的转义序列
         JSON 只允许：\\, \", \/, \b, \f, \n, \r, \t, \uXXXX
-        其他如 \:, \(, \) 等都是非法的
+        其他如 \:, \(，\) 等都是非法的
+
+        注意：此函数处理全局范围内的非法转义，包括字符串内外
         """
+        print(f"\n【fix_invalid_escapes】开始处理，文本长度：{len(text)}")
+
+        # 【关键修改】先处理字符串值内部的过度转义 (四重->双重)
+        # 这样在后续保护合法转义时就不会丢失这些反斜杠信息
+        def reduce_quadruple_backslashes(match):
+            content = match.group(1)
+            print(f"  处理前：{repr(content[:50])}...")
+            # 将四个反斜杠减少为两个
+            content = content.replace('\\\\\\\\', '\\\\')
+            print(f"  处理后：{repr(content[:50])}...")
+            return f'"{content}"'
+
+        text = re.sub(r'"((?:[^"\\]|\\.)*)"', reduce_quadruple_backslashes, text)
+        print("已处理字符串内的四重反斜杠")
+
         # 策略：先保护合法的转义，然后修复非法的
-        
+
         # 第一步：临时替换合法的转义序列
         placeholders = {}
         valid_escapes = ['\\\\', '\\"', '\\/', '\\b', '\\f', '\\n', '\\r', '\\t']
-        
+
         for i, escape_seq in enumerate(valid_escapes):
             placeholder = f'__VALID_ESCAPE_{i}__'
             placeholders[placeholder] = escape_seq
             text = text.replace(escape_seq, placeholder)
-        
+
         # 第二步：处理 \uXXXX 格式
         def protect_unicode(match):
             return f'__UNICODE_{match.group(0)[1:]}__'
-        
+
         text = re.sub(r'\\u[0-9a-fA-F]{4}', protect_unicode, text)
-        
-        # 第三步：现在剩下的 \ 后跟字符都是非法的，直接双写反斜杠
-        text = re.sub(r'\\(.)', r'\\\\\1', text)
-        
-        # 第四步：恢复合法的转义序列
+
+        # 第三步：【关键】处理多个连续反斜杠后跟 Unicode 的情况
+        # 将 \\\uXXXX（三个反斜杠）转换为 \uXXXX（两个反斜杠 + Unicode）
+        # 这样 \中 就会保持为 \中（合法的字面反斜杠）
+        text = re.sub(r'\\{2,}(?=u[0-9a-fA-F]{4})', r'\\', text)
+
+        # 第四步：【新增】修复所有剩余的单个反斜杠 + 非法字符
+        # 这包括字符串内和字符串外的所有非法转义
+        # 关键：直接移除单个反斜杠，而不是转换为双反斜杠
+        def remove_backslash(match):
+            char = match.group(1)
+            print(f"  移除反斜杠：\\{char} -> {char}")
+            return char
+                
+        text = re.sub(r'\\([^nrtbf\\"/u])', remove_backslash, text)
+        print("已移除非法转义的单个反斜杠")
+
+        # 第五步：恢复合法的转义序列
         for placeholder, escape_seq in placeholders.items():
             text = text.replace(placeholder, escape_seq)
-        
+
         # 恢复 Unicode 转义
         text = re.sub(r'__UNICODE_([0-9a-fA-F]{4})__', r'\\u\1', text)
-        
+
         return text
-        
+
     # 应用转义修复
     raw_data = fix_invalid_escapes(raw_data)
     print("已修复非法转义字符")
-    
+
+    # 【调试】输出第 92 行附近的内容
+    lines = raw_data.split('\n')
+    if len(lines) >= 92:
+        print(f"\n===【调试】第 92 行内容 ===")
+        print(lines[91][400:500])
+        print(f"========================\n")
+
     # 4. 处理普通的 JSON 字符串值
     def process_json_strings(text):
-        """处理 JSON 字符串值，确保正确转义"""
+        """处理 JSON 字符串值，确保正确转义
+
+        注意：从 curl 命令传来的数据可能包含过度转义
+        例如：\\t 应该是 \t (两个字面反斜杠 + t,不是制表符)
+        """
         # 匹配双引号包围的内容（非贪婪匹配）
         pattern = r'"((?:[^"\\]|\\.)*)"'
-    
+
         def replace_string_content(match):
             content = match.group(1)
-            # 不再处理转义，因为 fix_invalid_escapes 已经处理过了
-            # 只修复双重转义的双引号
-            content = content.replace('\\\\"', '\\"')
+            original = content
+            # 修复过度转义 - 按正确顺序：先处理四重反斜杠
+            content = content.replace('\\\\\\\\', '\\\\')  # 四重 -> 双重
+            # 然后处理其他过度转义 (这些是在字符串值内部的)
+            content = content.replace('\\\\\\n', '\\n')  # \\n -> \n
+            content = content.replace('\\\\\\r', '\\r')  # \\r -> \r
+            content = content.replace('\\\\\\t', '\\t')  # \\t -> \t
+            content = content.replace('\\\\\\"', '\\"')  # \\" -> \"
+
+            # 关键修复：处理剩余的单个反斜杠 + 中文的情况
+            # 例如：\中、\触等，这些在 JSON 中是非法的
+            # 策略：将 \+ 非标准转义字符替换为 \\+ 该字符 (字面反斜杠)
+            def fix_single_backslash(match):
+                char = match.group(1)
+                return '\\\\' + char  # 返回两个字面反斜杠 + 字符
+
+            content = re.sub(r'\\([^nrtbf\\"/])', fix_single_backslash, content)
+
+            if original != content:
+                print(f"  修复字符串：{repr(original[:50])}... -> {repr(content[:50])}...")
             return f'"{content}"'
-    
-        return re.sub(pattern, replace_string_content, text)
+
+        result = re.sub(pattern, replace_string_content, text)
+        print(f"process_json_strings 完成")
+        return result
 
     # 应用字符串处理
     raw_data = process_json_strings(raw_data)
+    print("已处理双重转义字符")
 
     # 5. 处理 HTML 实体
     html_entities = {
@@ -923,14 +994,41 @@ def preprocess_json_data(raw_data):
 
     # 10. 修复 JSON 键名未加引号的问题
     def fix_json_keys(data):
-        pattern = r'([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:'
+        """修复未加引号的 JSON 键名，只处理结构层面的键，不处理字符串内的内容"""
+        # 策略：先保护所有字符串，然后处理键名，最后恢复
+
+        string_placeholders = {}
+        counter = [0]
+
+        def save_string(match):
+            key = f'__STR{counter[0]}__'
+            string_placeholders[key] = match.group(0)
+            counter[0] += 1
+            return key
+
+        # 保护所有字符串
+        data = re.sub(r'"(?:[^"\\]|\\.)*"', save_string, data)
+
+        # 现在安全地处理键名（此时所有字符串都被保护了）
+        # 关键：键名只能是字母、数字、下划线，不能是占位符
+        # 使用负向前瞻排除占位符
+        pattern = r'([{,]\s*)(?![a-zA-Z_$]*__[A-Z]+\d+__)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)'
 
         def add_quotes(match):
             prefix = match.group(1)
             key = match.group(2)
-            return f'{prefix}"{key}":'
+            after = match.group(3)
+            return f'{prefix}"{key}"{after}'
 
-        return re.sub(pattern, add_quotes, data)
+        data = re.sub(pattern, add_quotes, data)
+
+        # 恢复字符串（按逆序）
+        for i in range(len(string_placeholders) - 1, -1, -1):
+            key = f'__STR{i}__'
+            if key in string_placeholders:
+                data = data.replace(key, string_placeholders[key])
+
+        return data
 
     raw_data = fix_json_keys(raw_data)
 
@@ -961,7 +1059,7 @@ def preprocess_json_data(raw_data):
 
 @kafka_generator_bp.route('/generate', methods=['POST'])
 def generate_kafka_message():
-    """生成Kafka消息API"""
+    """生成 Kafka 消息 API"""
     try:
         # 获取前端传入的参数
         es_source_raw = request.json.get('es_source_raw')
@@ -971,10 +1069,28 @@ def generate_kafka_message():
         if not es_source_raw:
             return jsonify({
                 "success": False,
-                "message": "缺少必要的es_source_raw参数"
+                "message": "缺少必要的 es_source_raw 参数"
             }), 400
 
-        print(f"接收到原始数据，长度: {len(es_source_raw)} 字符")
+        print(f"\n==========【接收调试】==========")
+        print(f"接收到原始数据，长度：{len(es_source_raw)} 字符")
+        print(f"前 200 字符：{repr(es_source_raw[:200])}")
+
+        # 直接尝试解析，看看到底是什么问题
+        try:
+            test_parse = json.loads(es_source_raw)
+            print("✅ 直接解析成功!")
+        except Exception as e:
+            print(f"❌ 直接解析失败：{e}")
+            print(f"错误类型：{type(e).__name__}")
+
+        # 查找包含反斜杠的位置
+        if '\\' in es_source_raw:
+            pos = es_source_raw.find('\\中兴')
+            if pos > 0:
+                print(f"\n找到'\\中兴'在位置 {pos}")
+                print(f"上下文：{repr(es_source_raw[max(0,pos-50):pos+50])}")
+        print(f"==============================\n")
 
         # 预处理数据
         processed_data = preprocess_json_data(es_source_raw)
@@ -1004,9 +1120,15 @@ def generate_kafka_message():
                     error_msg += f" (第{line_num}行附近: '{context}')"
 
             # 返回原始数据和处理后数据用于调试
+            import sys
+            print(f"\n❌【JSON_ERROR】JSON 解析失败！", file=sys.stderr)
+            print(f"错误位置：第{line_num}行第{col_num}列", file=sys.stderr)
+            print(f"附近内容：'{context}'", file=sys.stderr)
+            print(f"完整错误：{error_msg}\n", file=sys.stderr)
+
             return jsonify({
                 "success": False,
-                "message": f"JSON数据格式错误: {error_msg}",
+                "message": f"JSON 数据格式错误：{error_msg}",
                 "debug_info": {
                     "original_length": len(es_source_raw),
                     "processed_length": len(processed_data),

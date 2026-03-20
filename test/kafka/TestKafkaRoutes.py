@@ -1,6 +1,10 @@
 import unittest
 from flask import Flask
-from routes.kafka_routes import kafka_bp, generate_unique_fp, get_formatted_time, get_time_minus_minutes, load_es_data, generate_kafka_from_es
+
+from routes.kafka.kafka_generator_routes import generate_unique_fp
+from routes.kafka.kafka_routes import kafka_bp, get_formatted_time, get_time_minus_minutes, load_es_data, \
+    generate_kafka_from_es
+
 
 class TestKafkaRoutes(unittest.TestCase):
 

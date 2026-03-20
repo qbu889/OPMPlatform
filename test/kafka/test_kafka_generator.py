@@ -8,7 +8,6 @@ import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from routes.kafka_generator_routes import generate_es_to_kafka_mapping
 import json
 
 def test_kafka_generation():
