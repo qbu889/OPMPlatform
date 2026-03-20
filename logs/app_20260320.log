@@ -2601,3 +2601,48 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 2026-03-20 14:15:40 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:15:40] "GET /kafka-generator/field-meta HTTP/1.1" 200 -
 2026-03-20 14:15:42 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:15:42] "POST /kafka-generator/generate HTTP/1.1" 200 -
 2026-03-20 14:15:44 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:15:44] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 14:24:31 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:24:31] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 14:28:36 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:28:36] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 14:30:53 | INFO     | app                                      | 正在初始化 FPA 规则数据库表...
+2026-03-20 14:30:53 | INFO     | app                                      | FPA 规则数据库表初始化完成
+2026-03-20 14:30:53 | INFO     | app                                      | ================================================================================
+2026-03-20 14:30:53 | INFO     | app                                      | 📡 OMLX 服务初始化线程已启动（后台运行，不阻塞应用）
+2026-03-20 14:30:53 | INFO     | app                                      | 🚀 正在异步初始化 AI 服务...
+2026-03-20 14:30:53 | INFO     | app                                      | ================================================================================
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] 从环境变量读取 USE_OMLX_FOR_CHATBOT=True
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 使用 OMLX 配置 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] OMLX 模式 - 使用 OpenAI 兼容接口：http://localhost:8000/v1/chat/completions
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 初始化 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit, OMLX: True
+2026-03-20 14:30:53 | INFO     | werkzeug                                 | [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2026-03-20 14:30:53 | INFO     | werkzeug                                 | [33mPress CTRL+C to quit[0m
+2026-03-20 14:30:53 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] OMLX 服务初始化完成
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      |    - Base URL: http://localhost:8000/v1
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      |    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      |    - Endpoint: http://localhost:8000/v1/chat/completions
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] URL: http://localhost:8000/v1/chat/completions
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Prompt length: 21 chars
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Attempt: 1/4
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OMLX_REQUEST] 🌐 正在请求 OMLX 在线模型...
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Base URL: http://localhost:8000/v1
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Endpoint: /v1/chat/completions (OpenAI compatible)
+2026-03-20 14:30:53 | INFO     | utils.ollama_client                      | [OLLAMA_CURL]
+curl -X POST "http://localhost:8000/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 666666" \
+  -d '{"model": "Qwen3.5-4B-OptiQ-4bit", "messages": [{"role": "user", "content": "你只需要直接回复我：are you ok?"}], "stream": false, "timeout": 10}'
+2026-03-20 14:31:01 | INFO     | utils.ollama_client                      | [AI_CONNECTIVITY] ✅ OMLX 服务连通性验证成功
+2026-03-20 14:31:01 | INFO     | app                                      | ✅ AI 服务验证成功！可以正常使用 AI 功能
+2026-03-20 14:31:01 | INFO     | app                                      | ================================================================================
+2026-03-20 14:31:03 | INFO     | app                                      | 访问系统首页
+2026-03-20 14:31:03 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 14:31:03 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:03] "GET / HTTP/1.1" 200 -
+2026-03-20 14:31:12 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:12] "GET /kafka-generator/ HTTP/1.1" 200 -
+2026-03-20 14:31:13 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:13] "GET /kafka-generator/field-meta HTTP/1.1" 200 -
+2026-03-20 14:31:21 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:21] "GET /clean-event-page HTTP/1.1" 200 -
+2026-03-20 14:31:24 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:24] "GET /sql-formatter HTTP/1.1" 200 -
+2026-03-20 14:31:26 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:26] "GET /kafka-generator/ HTTP/1.1" 200 -
+2026-03-20 14:31:28 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:28] "GET /kafka-generator/field-meta HTTP/1.1" 200 -

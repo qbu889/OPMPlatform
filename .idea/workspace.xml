@@ -5,14 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：解析AI返回的json格式异常时兜底">
-      <change afterPath="$PROJECT_DIR$/test/kafka/kafka生成请求CURL.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/kafka/输入json.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/kafka/预计输出.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/TestKafkaRoutes.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/TestKafkaRoutes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/es数据.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_kafka_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_kafka_generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/es_to_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/es_to_kafka.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/generate_kafka.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/generate_kafka.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_bp_new.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_bp_new.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -355,6 +351,7 @@
       <workItem from="1773826277372" duration="6609000" />
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
+      <workItem from="1773987218417" duration="1004000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -652,7 +649,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773885919398</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="fix：ES生成kafka报错json格式解析修复">
+      <option name="closed" value="true" />
+      <created>1773987465195</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1773987465195</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -684,13 +689,6 @@
                       </list>
                     </value>
                   </entry>
-                  <entry key="text">
-                    <value>
-                      <list>
-                        <option value="kafka" />
-                      </list>
-                    </value>
-                  </entry>
                 </map>
               </option>
             </State>
@@ -700,7 +698,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：csv导入remark没有填充数据问题" />
     <MESSAGE value="new：kafka新增ES字段和对应字典数据查询" />
     <MESSAGE value="fix：完善整理文件" />
     <MESSAGE value="fix：复制成功提示错误的提示语" />
@@ -725,7 +722,8 @@
     <MESSAGE value="fix：统计请求数量动态落库" />
     <MESSAGE value="fix：文件结构调整" />
     <MESSAGE value="new：说明文档" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：说明文档" />
+    <MESSAGE value="fix：ES生成kafka报错json格式解析修复" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：ES生成kafka报错json格式解析修复" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
