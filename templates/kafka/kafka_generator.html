@@ -350,9 +350,9 @@
                     <button class="btn btn-primary btn-lg" onclick="generateMessage()">
                         <i class="fas fa-cogs me-2"></i>生成 Kafka 消息
                     </button>
-                    <button class="btn btn-secondary btn-lg" onclick="preprocessData()">
-                        <i class="fas fa-wrench me-2"></i>预处理数据
-                    </button>
+{#                    <button class="btn btn-secondary btn-lg" onclick="preprocessData()">#}
+{#                        <i class="fas fa-wrench me-2"></i>预处理数据#}
+{#                    </button>#}
                     <button class="btn btn-info btn-lg" onclick="loadSampleData()">
                         <i class="fas fa-file-import me-2"></i>加载示例数据
                     </button>
@@ -575,7 +575,7 @@
             const creationEventTimeInput = document.getElementById('creationEventTimeInput');
             
             if (!esSourceText) {
-                creationEventTimeInput.value = '15'; // 默认 15
+                creationEventTimeInput.value = '15'; // 默认 15 分钟（15 分钟）
                 return;
             }
             
@@ -620,8 +620,8 @@
                     console.log(`从 ES 数据中提取 DELAY_TIME: ${delayTime} 分钟`);
                     console.log(`计算 CREATION_EVENT_TIME: 当前时间 - ${delayTime/60} 小时`);
                 } else {
-                    creationEventTimeInput.value = '15'; // 默认 15
-                    console.log('未在 ES 数据中找到 DELAY_TIME，使用默认值 15');
+                    creationEventTimeInput.value = '15'; // 默认 15 分钟
+                    console.log('未在 ES 数据中找到 DELAY_TIME，使用默认值 15 分钟');
                 }
             } catch (error) {
                 // JSON 解析失败，不清空输入框，允许用户手动输入
@@ -922,7 +922,7 @@
                 
                 // 获取 CREATION_EVENT_TIME 输入框的值（如果有手动输入）
                 const creationEventTimeInput = document.getElementById('creationEventTimeInput').value.trim();
-                const delayTimeValue = creationEventTimeInput && creationEventTimeInput !== '15' ? parseInt(creationEventTimeInput) : null;
+                const delayTimeValue = creationEventTimeInput ? parseInt(creationEventTimeInput) : null;
                 
                 const response = await fetch(backendUrl, {
                     method: 'POST',
