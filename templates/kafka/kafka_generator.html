@@ -82,6 +82,10 @@
         .btn-success {
             background: linear-gradient(135deg, #28a745 0%, #218838 100%);
         }
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #000;
+        }
         .field-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -317,6 +321,14 @@
                     </label>
                     <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
                 </div>
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="addTestPrefixInput" checked>
+                        <label class="form-check-label" for="addTestPrefixInput">
+                            <strong>为 EQP_LABEL 和 NE_LABEL 添加【测试】前缀</strong>
+                        </label>
+                    </div>
+                </div>
                 <div class="d-flex gap-3">
                     <button class="btn btn-primary btn-lg" onclick="generateMessage()">
                         <i class="fas fa-cogs me-2"></i>生成 Kafka 消息
@@ -351,13 +363,46 @@
         <div class="card" id="resultCard" style="display: none;">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-file-code me-2"></i>生成结果</h5>
-                <button class="btn btn-success" onclick="copyResult()">
-                    <i class="fas fa-copy me-2"></i>复制结果
-                </button>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="addTestPrefixResult" checked>
+                        <label class="form-check-label" for="addTestPrefixResult">
+                            <small>添加【测试】前缀</small>
+                        </label>
+                    </div>
+                    <button class="btn btn-info" onclick="regenerateMessage()" title="重新生成">
+                        <i class="fas fa-redo me-2"></i>重新生成
+                    </button>
+                    <button class="btn btn-warning" onclick="copyFPValue()" title="复制 FP 值">
+                        <i class="fas fa-copy me-2"></i>复制 FP
+                    </button>
+                    <button class="btn btn-success" onclick="copyResult()">
+                        <i class="fas fa-copy me-2"></i>复制结果
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="result-section">
                     <pre id="resultOutput" class="mb-0" style="background: white; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0;"></pre>
+                </div>
+                
+                <!-- ES 查询按钮 -->
+                <div class="mt-3" id="esQuerySection" style="display: none;">
+                    <h6 class="mb-3"><i class="fas fa-database me-2"></i>ES 查询语句</h6>
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-outline-primary" onclick="generateESQuery('EVENT_FP')">
+                            <i class="fas fa-search me-2"></i>EVENT_FP 查询
+                        </button>
+                    </div>
+                    <div id="esQueryOutput" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0; display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong style="color: #495057;"><i class="fas fa-code me-2"></i>生成的 ES 查询：</strong>
+                            <button class="btn btn-sm btn-outline-success" onclick="copyESQuery()">
+                                <i class="fas fa-copy me-1"></i>复制查询
+                            </button>
+                        </div>
+                        <pre id="esQueryText" style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #dee2e6; margin: 0; font-size: 12px;"></pre>
+                    </div>
                 </div>
             </div>
         </div>
@@ -478,7 +523,80 @@
         document.addEventListener('DOMContentLoaded', async function() {
             await loadFieldMeta();
             renderCustomFields();
+            initTestPrefixToggle();
         });
+
+        // 初始化测试前缀开关的联动
+        function initTestPrefixToggle() {
+            const inputToggle = document.getElementById('addTestPrefixInput');
+            
+            // 监听输入区域的开关
+            if (inputToggle) {
+                inputToggle.addEventListener('change', function() {
+                    const resultToggle = document.getElementById('addTestPrefixResult');
+                    // 同步到结果区域的开关
+                    if (resultToggle) {
+                        resultToggle.checked = this.checked;
+                    }
+                });
+            }
+        }
+
+        // 绑定结果区域开关的事件（在显示结果后调用）
+        function bindResultToggleEvent() {
+            const resultToggle = document.getElementById('addTestPrefixResult');
+            const inputToggle = document.getElementById('addTestPrefixInput');
+            
+            if (resultToggle && inputToggle) {
+                // 清除旧的事件监听器（避免重复绑定）
+                resultToggle.replaceWith(resultToggle.cloneNode(true));
+                
+                // 重新获取元素并绑定事件
+                const newResultToggle = document.getElementById('addTestPrefixResult');
+                newResultToggle.checked = inputToggle.checked; // 同步初始状态
+                
+                newResultToggle.addEventListener('change', function() {
+                    // 同步到输入区域的开关
+                    inputToggle.checked = this.checked;
+                    // 实时更新显示的结果
+                    updateResultWithPrefix();
+                });
+            }
+        }
+
+        // 实时更新结果中的 EQP_LABEL 和 NE_LABEL
+        function updateResultWithPrefix() {
+            const resultOutput = document.getElementById('resultOutput');
+            if (!resultOutput.textContent) return;
+            
+            try {
+                const resultData = JSON.parse(resultOutput.textContent);
+                const addPrefix = document.getElementById('addTestPrefixResult').checked;
+                
+                // 如果是添加前缀模式，且当前值没有前缀，则添加
+                if (addPrefix) {
+                    if (resultData.EQP_LABEL && !resultData.EQP_LABEL.startsWith('[测试]')) {
+                        resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
+                    }
+                    if (resultData.NE_LABEL && !resultData.NE_LABEL.startsWith('[测试]')) {
+                        resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
+                    }
+                } else {
+                    // 如果是移除前缀模式，且当前值有前缀，则移除
+                    if (resultData.EQP_LABEL && resultData.EQP_LABEL.startsWith('[测试]')) {
+                        resultData.EQP_LABEL = resultData.EQP_LABEL.replace(/^\[ 测试\]/, '');
+                    }
+                    if (resultData.NE_LABEL && resultData.NE_LABEL.startsWith('[测试]')) {
+                        resultData.NE_LABEL = resultData.NE_LABEL.replace(/^\[ 测试\]/, '');
+                    }
+                }
+                
+                // 更新显示
+                resultOutput.textContent = JSON.stringify(resultData, null, 2);
+            } catch (error) {
+                console.error('更新前缀失败:', error);
+            }
+        }
 
         async function loadFieldMeta() {
             try {
@@ -728,17 +846,36 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    let resultData = result.data;
+                    
+                    // 处理 EQP_LABEL 和 NE_LABEL 字段，添加【测试】前缀
+                    const addPrefix = document.getElementById('addTestPrefixInput').checked;
+                    if (addPrefix) {
+                        if (resultData.EQP_LABEL) {
+                            resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
+                        }
+                        if (resultData.NE_LABEL) {
+                            resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
+                        }
+                    }
+                    
                     // 显示结果
                     document.getElementById('resultOutput').textContent = 
-                        JSON.stringify(result.data, null, 2);
+                        JSON.stringify(resultData, null, 2);
                     document.getElementById('resultCard').style.display = 'block';
+                                    
+                    // 显示 ES 查询区域
+                    document.getElementById('esQuerySection').style.display = 'block';
                     
+                    // 绑定结果区域开关的事件
+                    bindResultToggleEvent();
+                                    
                     // 滚动到结果区域
                     document.getElementById('resultCard').scrollIntoView({ 
                         behavior: 'smooth' 
                     });
                 } else {
-                    alert('生成失败: ' + result.message);
+                    alert('生成失败：' + result.message);
                 }
             } catch (error) {
                 console.error('请求失败:', error);
@@ -749,13 +886,13 @@
         // 复制结果
         function copyResult() {
             const resultText = document.getElementById('resultOutput').textContent;
-            
+                    
             if (!resultText) {
                 alert('没有可复制的内容');
                 return;
             }
-
-            // 使用现代Clipboard API
+        
+            // 使用现代 Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(resultText)
                     .then(() => {
@@ -769,6 +906,237 @@
                 // 降级方案
                 fallbackCopyText(resultText);
             }
+        }
+        
+        // 重新生成消息
+        function regenerateMessage() {
+            console.log('重新生成 Kafka 消息...');
+            generateMessage();
+        }
+        
+        // 复制 FP 值
+        function copyFPValue() {
+            const resultOutput = document.getElementById('resultOutput').textContent;
+                    
+            if (!resultOutput) {
+                alert('没有生成结果，请先生成 Kafka 消息');
+                return;
+            }
+        
+            try {
+                const resultData = JSON.parse(resultOutput);
+                const fpValue = resultData.FP0_FP1_FP2_FP3;
+                        
+                if (!fpValue) {
+                    alert('结果中没有找到 FP0_FP1_FP2_FP3 字段');
+                    return;
+                }
+        
+                // 使用现代 Clipboard API
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(fpValue)
+                        .then(() => {
+                            showFPCopySuccess();
+                        })
+                        .catch(err => {
+                            console.error('复制 FP 失败:', err);
+                            fallbackCopyFP(fpValue);
+                        });
+                } else {
+                    // 降级方案
+                    fallbackCopyFP(fpValue);
+                }
+            } catch (error) {
+                console.error('解析结果失败:', error);
+                alert('结果格式错误，无法提取 FP 值');
+            }
+        }
+        
+        // 降级复制 FP 方法
+        function fallbackCopyFP(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+                    
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showFPCopySuccess();
+                } else {
+                    alert('复制失败，请手动选择文本进行复制');
+                }
+            } catch (err) {
+                alert('复制功能不可用，请手动选择文本进行复制');
+            }
+                    
+            document.body.removeChild(textArea);
+        }
+        
+        // 显示复制 FP 成功提示
+        function showFPCopySuccess() {
+            const fpBtn = document.querySelector('#resultCard .btn-warning');
+            if (!fpBtn) {
+                console.warn('未找到复制 FP 按钮元素');
+                return;
+            }
+                    
+            const originalText = fpBtn.innerHTML;
+            const originalClass = fpBtn.className;
+                    
+            fpBtn.innerHTML = '<i class="fas fa-check me-2"></i>复制成功';
+            fpBtn.className = 'btn btn-success';
+            fpBtn.disabled = true;
+                    
+            setTimeout(() => {
+                fpBtn.innerHTML = originalText;
+                fpBtn.className = originalClass;
+                fpBtn.disabled = false;
+            }, 2000);
+        }
+
+        // 存储当前生成的 ES 查询
+        let currentESQuery = '';
+
+        // 生成 ES 查询语句
+        function generateESQuery(fieldType) {
+            const resultOutput = document.getElementById('resultOutput').textContent;
+            
+            if (!resultOutput) {
+                alert('没有生成结果，请先生成 Kafka 消息');
+                return;
+            }
+
+            try {
+                const resultData = JSON.parse(resultOutput);
+                
+                // 根据字段类型获取对应的值
+                let fieldValue = '';
+                let fieldName = '';
+                
+                switch(fieldType) {
+                    case 'EVENT_FP':
+                        fieldValue = resultData.FP0_FP1_FP2_FP3 || resultData.EVENT_FP || '';
+                        fieldName = 'EVENT_FP.keyword';
+                        break;
+                    default:
+                        alert('不支持的字段类型');
+                        return;
+                }
+                
+                if (!fieldValue) {
+                    alert(`结果中没有找到 ${fieldType} 字段`);
+                    return;
+                }
+
+                // 生成 ES 查询语句
+                const esQuery = `GET mw_em_master/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "${fieldName}": [
+              "${fieldValue}"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}`;
+
+                currentESQuery = esQuery;
+                
+                // 显示查询语句
+                document.getElementById('esQueryText').textContent = esQuery;
+                document.getElementById('esQueryOutput').style.display = 'block';
+                document.getElementById('esQuerySection').style.display = 'block';
+                
+                // 滚动到查询区域
+                document.getElementById('esQuerySection').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+                
+            } catch (error) {
+                console.error('解析结果失败:', error);
+                alert('结果格式错误，无法生成 ES 查询');
+            }
+        }
+
+        // 复制 ES 查询
+        function copyESQuery() {
+            if (!currentESQuery) {
+                alert('没有可复制的 ES 查询语句');
+                return;
+            }
+
+            // 使用现代 Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(currentESQuery)
+                    .then(() => {
+                        showESCopySuccess();
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        fallbackCopyES(currentESQuery);
+                    });
+            } else {
+                // 降级方案
+                fallbackCopyES(currentESQuery);
+            }
+        }
+
+        // 降级复制 ES 查询方法
+        function fallbackCopyES(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showESCopySuccess();
+                } else {
+                    alert('复制失败，请手动选择文本进行复制');
+                }
+            } catch (err) {
+                alert('复制功能不可用，请手动选择文本进行复制');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // 显示复制 ES 查询成功提示
+        function showESCopySuccess() {
+            const copyBtn = document.querySelector('#esQueryOutput .btn-outline-success');
+            if (!copyBtn) {
+                console.warn('未找到复制 ES 查询按钮元素');
+                return;
+            }
+            
+            const originalText = copyBtn.innerHTML;
+            const originalClass = copyBtn.className;
+            
+            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>复制成功';
+            copyBtn.className = 'btn btn-sm btn-success';
+            copyBtn.disabled = true;
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.className = originalClass;
+                copyBtn.disabled = false;
+            }, 2000);
         }
 
         // 降级复制方法

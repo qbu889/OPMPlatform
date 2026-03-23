@@ -1,0 +1,62 @@
+[run]
+# 要测量覆盖率的源文件
+source = .
+omit =
+    # 忽略虚拟环境
+    .venv/*
+    venv/*
+    # 忽略测试文件本身
+    test/*
+    */test/*
+    # 忽略构建和分发目录
+    build/*
+    dist/*
+    *.egg-info/*
+    # 忽略第三方库
+    omlx/*
+    # 忽略配置文件
+    setup.py
+    app.spec
+    # 忽略迁移脚本
+    scripts/*
+    # 忽略工具脚本
+    utils/cleanup_thread.py
+    utils/demo_generator.py
+    utils/demo_validator.py
+
+[report]
+# 排除某些模式
+exclude_lines =
+    # 必须有 pragma: no cover 注释才会被排除
+    pragma: no cover
+    
+    # 抽象方法
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    
+    # 调试代码
+    if __name__ == .__main__.:
+    
+    # 类型检查
+    if TYPE_CHECKING:
+    
+    # Python 版本检查
+    if sys.version_info
+    if platform.system
+
+# 显示覆盖率阈值
+fail_under = 30
+
+# 按文件排序显示
+sort = Cover
+
+# 显示缺失的行号
+show_missing = True
+
+[html]
+# HTML 报告输出目录
+directory = htmlcov
+
+# HTML 报告标题
+title = Coverage Report
