@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：注释非必要文件">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260320.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -358,7 +356,7 @@
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
       <workItem from="1773987218417" duration="2753000" />
-      <workItem from="1773991536512" duration="25095000" />
+      <workItem from="1773991536512" duration="25805000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -704,7 +702,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774257673992</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="fix：调整按钮排班">
+      <option name="closed" value="true" />
+      <created>1774259635057</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1774259635057</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -745,7 +751,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：FPA生成文档对接AI" />
     <MESSAGE value="new：FPA生成文档生成文件时间戳转换格式、异步生成和查询" />
     <MESSAGE value="fix：FPA生成文档生成重用程度和修改类型为空的问题" />
     <MESSAGE value="fix：FPA生成文档生成功能点顺序修复，页面展示重构" />
@@ -770,7 +775,8 @@
     <MESSAGE value="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮" />
     <MESSAGE value="new：增加延迟时间的适配" />
     <MESSAGE value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
+    <MESSAGE value="fix：调整按钮排班" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：调整按钮排班" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
