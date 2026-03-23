@@ -193,6 +193,25 @@
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
+        /* Tooltip 样式优化 */
+        .tooltip {
+            max-width: 800px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .tooltip-inner {
+            background-color: #fff;
+            color: #333;
+            border: 2px solid #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            text-align: left;
+            padding: 15px 20px;
+            border-radius: 8px;
+            min-width: 400px;
+        }
+        .tooltip .arrow::before {
+            border-top-color: #667eea;
+        }
         h1 {
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
@@ -322,29 +341,30 @@
                     <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
                 </div>
                 <div class="mb-3">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="addTestPrefixInput" checked>
-                        <label class="form-check-label" for="addTestPrefixInput">
-                            <strong>为 EQP_LABEL 和 NE_LABEL 添加【测试】前缀</strong>
-                        </label>
+                    <div class="d-flex align-items-center">
+                        <!-- 左侧：【测试】前缀开关 -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="addTestPrefixInput" checked>
+                            <label class="form-check-label" for="addTestPrefixInput">
+                                <strong>【测试】前缀</strong>
+                            </label>
+                        </div>
+                        <!-- 右侧：延迟时间输入 -->
+                        <div class="ms-3 d-flex align-items-center">
+                            <label for="creationEventTimeInput" class="form-label mb-0 me-2">
+                                <strong><i class="fas fa-clock me-1"></i>延迟时间：</strong>
+                                <i class="fas fa-question-circle text-muted ms-1" style="cursor: help;" 
+                                   data-bs-toggle="tooltip" 
+                                   title="<strong>说明：</strong>系统会自动从 JSON 数据中提取 DELAY_TIME 值（分钟），转换为小时后计算 CREATION_EVENT_TIME<br><strong>计算公式：</strong>CREATION_EVENT_TIME = 当前时间 - (DELAY_TIME ÷ 60) 小时<br><strong>示例：</strong>输入 720 → 720÷60=12 小时 → CREATION_EVENT_TIME = 当前时间 - 12 小时<br><strong>默认值：</strong>15 分钟"
+                                   data-bs-html="true"></i>
+                            </label>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control" id="creationEventTimeInput" 
+                                       value="15" placeholder="从 JSON 中自动提取" min="0" step="60">
+                                <span class="input-group-text">分钟</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="creationEventTimeInput" class="form-label">
-                        <strong><i class="fas fa-clock me-2"></i>CREATION_EVENT_TIME 延迟时间（分钟）：</strong>
-                    </label>
-                    <div class="input-group" style="max-width: 400px;">
-                        <input type="number" class="form-control" id="creationEventTimeInput" 
-                               value="15" placeholder="从 JSON 中自动提取" min="0" step="60">
-                        <span class="input-group-text">分钟</span>
-                    </div>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        说明：系统会自动从 JSON 数据中提取 DELAY_TIME 值（分钟），转换为小时后计算 CREATION_EVENT_TIME
-                        <br>计算公式：CREATION_EVENT_TIME = 当前时间 - (DELAY_TIME ÷ 60) 小时
-                        <br>示例：输入 720 → 720÷60=12 小时 → CREATION_EVENT_TIME = 当前时间 - 12 小时
-                        <br>默认值：15 分钟
-                    </small>
                 </div>
                 <div class="d-flex gap-3">
                     <button class="btn btn-primary btn-lg" onclick="generateMessage()">
@@ -433,14 +453,6 @@
                 <li>可通过自定义字段面板覆盖特定字段的值</li>
                 <li>FP 相关字段会自动生成唯一值</li>
                 <li>时间字段会自动设置为当前时间减 15 分钟</li>
-                <li><strong><code>DELAY_TIME</code> 字段说明：</strong>
-                    <ul style="margin-top: 5px;">
-                        <li>系统会自动从 ES 数据中提取 <code>DELAY_TIME</code> 字段值</li>
-                        <li>直接读取 JSON 中的 <code>DELAY_TIME</code> 值，不做转换</li>
-                        <li>示例：JSON 中 <code>"DELAY_TIME": 720</code> → 输出 <code>"DELAY_TIME": 720</code></li>
-                        <li>如果没有该字段，输出空值</li>
-                    </ul>
-                </li>
             </ul>
             <div class="mt-3" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px;">
                 <small style="color: #1976d2;">
@@ -549,6 +561,11 @@
             await loadFieldMeta();
             renderCustomFields();
             initTestPrefixToggle();
+            // 初始化 Bootstrap tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, { allowHTML: true });
+            });
             // 监听 ES 数据输入框，自动提取 DELAY_TIME 并填充到 CREATION_EVENT_TIME 输入框
             document.getElementById('esSource').addEventListener('input', extractDelayTimeToInput);
         });

@@ -358,7 +358,7 @@
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
       <workItem from="1773987218417" duration="2753000" />
-      <workItem from="1773991536512" duration="23083000" />
+      <workItem from="1773991536512" duration="25095000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -696,7 +696,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774252614535</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算">
+      <option name="closed" value="true" />
+      <created>1774257673992</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1774257673992</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -737,7 +745,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：解析失败的问题" />
     <MESSAGE value="new：FPA生成文档对接AI" />
     <MESSAGE value="new：FPA生成文档生成文件时间戳转换格式、异步生成和查询" />
     <MESSAGE value="fix：FPA生成文档生成重用程度和修改类型为空的问题" />
@@ -762,7 +769,8 @@
     <MESSAGE value="new：增加日志等级配置" />
     <MESSAGE value="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮" />
     <MESSAGE value="new：增加延迟时间的适配" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加延迟时间的适配" />
+    <MESSAGE value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
