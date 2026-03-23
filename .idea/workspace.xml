@@ -5,22 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：注释非必要文件">
-      <change afterPath="$PROJECT_DIR$/.coveragerc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/QUICK_START_TESTS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/GIT_CICD_SETUP_GUIDE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run_tests.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/setup_cicd.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260320.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements-linux.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements-linux.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fpa/test_adjustment_calc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fpa/test_adjustment_feature.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fpa/test_adjustment_page_fix.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fpa/实际表格顺序.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fpa/期望表格的顺序.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/kafka/输入json.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/输入json.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,7 +173,7 @@
       <recent name="$PROJECT_DIR$/uploads/other" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run_tests">
+  <component name="RunManager" selected="Shell Script.start.sh">
     <configuration name="run_tests" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -308,8 +299,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.run_tests" />
         <item itemvalue="Shell Script.start.sh" />
+        <item itemvalue="Python.run_tests" />
         <item itemvalue="Python 测试.Python 测试 (test_simple_fix.py 内)" />
         <item itemvalue="Python 测试.Python 测试 (TestKafkaRoutes.py 内)" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
@@ -371,7 +362,7 @@
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
       <workItem from="1773987218417" duration="2753000" />
-      <workItem from="1773991536512" duration="10941000" />
+      <workItem from="1773991536512" duration="18034000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -693,7 +684,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773998320162</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮">
+      <option name="closed" value="true" />
+      <created>1774237863484</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1774237863484</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -734,7 +733,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：复制成功提示错误的提示语" />
     <MESSAGE value="new：缓存版本" />
     <MESSAGE value="fix：解析失败的问题" />
     <MESSAGE value="new：FPA生成文档对接AI" />
@@ -759,7 +757,8 @@
     <MESSAGE value="fix：ES生成kafka报错json格式解析修复" />
     <MESSAGE value="fix：注释非必要文件" />
     <MESSAGE value="new：增加日志等级配置" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加日志等级配置" />
+    <MESSAGE value="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -841,7 +840,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) Coverage Results" MODIFIED="1772423061601" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$paiBanNew__1_.coverage" NAME="paiBanNew (1) Coverage Results" MODIFIED="1772523454743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_adjustment_sheet.coverage" NAME="test_adjustment_sheet Coverage Results" MODIFIED="1773132794020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$run_tests.coverage" NAME="run_tests 覆盖结果" MODIFIED="1773999308977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$run_tests.coverage" NAME="run_tests 覆盖结果" MODIFIED="1774248904870" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$simple_field_analysis.coverage" NAME="simple_field_analysis Coverage Results" MODIFIED="1772268490419" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_admin_fix.coverage" NAME="verify_admin_fix Coverage Results" MODIFIED="1772085370033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$fpa_generator_routes.coverage" NAME="fpa_generator_routes 覆盖结果" MODIFIED="1773396615377" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes" />

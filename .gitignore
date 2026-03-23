@@ -5141,20 +5141,3 @@
 /dist/诺基亚 OPM 综合业务系统.app/Contents/Frameworks/Python.framework/Resources/
 /dist/诺基亚 OPM 综合业务系统.app/Contents/Resources/lib/python3.13/docx/templates/default-docx-template/[Content_Types].xml
 /omlx/
-
-# CI/CD 和测试配置
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-coverage.xml
-pytest.ini
-
-# GitHub Actions
-.github/
-
-# 测试环境和临时文件
-*.log
-test_results/
-.cache/

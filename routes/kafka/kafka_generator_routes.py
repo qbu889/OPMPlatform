@@ -393,8 +393,13 @@ STANDARD_FIELD_ORDER = [
 ]
 
 
-def generate_es_to_kafka_mapping(es_data):
-    """将ES数据映射为Kafka消息，保持字段顺序与理想输出一致"""
+def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
+    """将 ES 数据映射为 Kafka 消息，保持字段顺序与理想输出一致
+    
+    Args:
+        es_data: ES 源数据
+        user_delay_time: 用户手动输入的 DELAY_TIME 值（可选），如果提供则优先使用
+    """
     # 使用有序字典保持字段顺序
     from collections import OrderedDict
     kafka_message = OrderedDict()
@@ -466,7 +471,7 @@ def generate_es_to_kafka_mapping(es_data):
         "GCSS_CLIENT_NUM": "",  # 默认空值
         "GCSS_CLIENT_LEVEL": "",  # 默认空值
         "GCSS_SERVICE": "",  # 默认空值
-        "GCSS_SERVICE_NUM": "",  # 默认空값
+        "GCSS_SERVICE_NUM": "",  # 默认空值
         "GCSS_SERVICE_LEVEL": "",  # 默认空值
         "GCSS_SERVICE_TYPE": "",  # 默认空值
         "BUSINESS_SYSTEM": "_source.BUSINESS_TAG.BUSINESS_SYSTEM",
@@ -526,7 +531,7 @@ def generate_es_to_kafka_mapping(es_data):
         "ORIG_ALARM_CLEAR_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "ORIG_ALARM_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "EVENT_ARRIVAL_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
-        "CREATION_EVENT_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+        "CREATION_EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time)
     }
 
     # 按照标准字段顺序处理每个字段
@@ -616,7 +621,7 @@ def map_professional_type(main_net_sort):
 
 
 def generate_org_text(kafka_data):
-    """生成ORG_TEXT字段 - 按照标准Kafka消息字段顺序"""
+    """生成 ORG_TEXT 字段 - 按照标准 Kafka 消息字段顺序"""
     org_parts = []
 
     # 按照标准格式组装字段顺序
@@ -659,7 +664,7 @@ def generate_org_text(kafka_data):
         else:
             value = str(raw_value)
 
-        # 处理特殊字符 - 确保value是字符串后再操作
+        # 处理特殊字符 - 确保 value 是字符串后再操作
         if isinstance(value, str) and value:
             value = value.replace("_", "\\_")
         else:
@@ -668,6 +673,65 @@ def generate_org_text(kafka_data):
         org_parts.append(value)
 
     return "_;".join(org_parts) + "_"
+
+
+def generate_creation_event_time(es_data, user_delay_time=None):
+    """根据 DELAY_TIME 计算 CREATION_EVENT_TIME
+    
+    Args:
+        es_data: ES 源数据
+        user_delay_time: 用户手动输入的 DELAY_TIME 值（分钟），如果提供则优先使用
+        
+    Returns:
+        str: 计算后的时间，格式：YYYY-MM-DD HH:MM:SS
+    
+    说明:
+        - 从 ES 数据中提取 DELAY_TIME 字段（单位：分钟）
+        - 将 DELAY_TIME 转换为小时数（DELAY_TIME / 60）
+        - 使用当前时间减去小时数得到 CREATION_EVENT_TIME
+        - 如果没有 DELAY_TIME，默认使用 15 小时
+        
+    示例:
+        DELAY_TIME = 720 -> 720/60 = 12 小时 -> 当前时间 - 12 小时
+    """
+    # 默认延迟 15 小时
+    delay_hours = 15
+    
+    # 优先使用用户输入的值
+    if user_delay_time is not None:
+        try:
+            delay_hours = int(user_delay_time) / 60
+            logger.info(f"使用用户输入的 DELAY_TIME: {user_delay_time} 分钟，转换为 {delay_hours} 小时")
+        except (ValueError, TypeError) as e:
+            logger.warning(f"用户输入的 DELAY_TIME 无效，使用默认值 15 小时：{e}")
+    else:
+        # 尝试从 ES 数据中提取 DELAY_TIME
+        if isinstance(es_data, dict):
+            source_data = es_data.get('_source', {})
+            delay_time = None
+            
+            # 尝试从不同位置获取 DELAY_TIME
+            if 'DELAY_TIME' in source_data:
+                delay_time = source_data['DELAY_TIME']
+            elif isinstance(source_data.get('BUSINESS_TAG'), dict) and 'DELAY_TIME' in source_data['BUSINESS_TAG']:
+                delay_time = source_data['BUSINESS_TAG']['DELAY_TIME']
+            elif isinstance(source_data.get('DISPATCH_INFO'), dict) and 'DELAY_TIME' in source_data['DISPATCH_INFO']:
+                delay_time = source_data['DISPATCH_INFO']['DELAY_TIME']
+            
+            # 如果找到了 DELAY_TIME，转换为小时数
+            if delay_time is not None:
+                try:
+                    # DELAY_TIME 的单位是分钟，需要转换为小时
+                    # 例如：720 分钟 = 12 小时
+                    delay_hours = int(delay_time) / 60
+                    logger.info(f"从 ES 数据中提取 DELAY_TIME: {delay_time} 分钟，转换为 {delay_hours} 小时")
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"DELAY_TIME 转换失败，使用默认值 15 小时：{e}")
+    
+    # 计算时间：当前时间 - DELAY_TIME 小时
+    creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
+    logger.info(f"使用 DELAY_TIME: {delay_hours} 小时计算 CREATION_EVENT_TIME: {creation_time}")
+    return creation_time
 
 
 @kafka_generator_bp.route('/')
@@ -1064,6 +1128,7 @@ def generate_kafka_message():
         # 获取前端传入的参数
         es_source_raw = request.json.get('es_source_raw')
         custom_fields = request.json.get('custom_fields', {})
+        delay_time = request.json.get('delay_time')  # 获取用户手动输入的 DELAY_TIME 值
 
         # 必须提供原始数据
         if not es_source_raw:
@@ -1071,6 +1136,16 @@ def generate_kafka_message():
                 "success": False,
                 "message": "缺少必要的 es_source_raw 参数"
             }), 400
+        
+        # 如果 delay_time 是字符串，转换为整数
+        if delay_time is not None and isinstance(delay_time, str):
+            try:
+                delay_time = int(delay_time)
+            except (ValueError, TypeError):
+                delay_time = None
+        
+        if delay_time is not None:
+            logger.info(f"用户手动输入 DELAY_TIME: {delay_time} 分钟")
 
         logger.debug(f"\n==========【接收调试】==========")
         logger.debug(f"接收到原始数据，长度：{len(es_source_raw)} 字符")
@@ -1135,8 +1210,8 @@ def generate_kafka_message():
                 }
             }), 400
 
-        # 生成基础Kafka消息
-        kafka_message = generate_es_to_kafka_mapping(es_source_data)
+        # 生成基础 Kafka 消息
+        kafka_message = generate_es_to_kafka_mapping(es_source_data, delay_time)
 
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
