@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：注释非必要文件">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260320.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -359,7 +357,8 @@
       <workItem from="1773978365876" duration="3775000" />
       <workItem from="1773987218417" duration="2753000" />
       <workItem from="1773991536512" duration="26239000" />
-      <workItem from="1774315803092" duration="608000" />
+      <workItem from="1774315803092" duration="637000" />
+      <workItem from="1774316454829" duration="2488000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -721,7 +720,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774260464750</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="fix：前端多展示多余字符">
+      <option name="closed" value="true" />
+      <created>1774316427705</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1774316427705</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -762,7 +769,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：FPA生成文档生成重用程度和修改类型为空的问题" />
     <MESSAGE value="fix：FPA生成文档生成功能点顺序修复，页面展示重构" />
     <MESSAGE value="fix：FPA生成文档生成FPA计算不正确问题、功能拆分不正确问题" />
     <MESSAGE value="fix：FPA生成文档生成兼顾速度和质量，以及遗漏多线程线程的文件" />
@@ -787,7 +793,8 @@
     <MESSAGE value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
     <MESSAGE value="fix：调整按钮排班" />
     <MESSAGE value="new：事件清除增加插入当前时间的功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：事件清除增加插入当前时间的功能" />
+    <MESSAGE value="fix：前端多展示多余字符" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：前端多展示多余字符" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
