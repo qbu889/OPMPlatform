@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：注释非必要文件">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260320.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -356,7 +358,8 @@
       <workItem from="1773909458028" duration="10678000" />
       <workItem from="1773978365876" duration="3775000" />
       <workItem from="1773987218417" duration="2753000" />
-      <workItem from="1773991536512" duration="25805000" />
+      <workItem from="1773991536512" duration="26239000" />
+      <workItem from="1774315803092" duration="608000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -710,7 +713,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774259635057</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="new：事件清除增加插入当前时间的功能">
+      <option name="closed" value="true" />
+      <created>1774260464750</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1774260464750</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -751,7 +762,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：FPA生成文档生成文件时间戳转换格式、异步生成和查询" />
     <MESSAGE value="fix：FPA生成文档生成重用程度和修改类型为空的问题" />
     <MESSAGE value="fix：FPA生成文档生成功能点顺序修复，页面展示重构" />
     <MESSAGE value="fix：FPA生成文档生成FPA计算不正确问题、功能拆分不正确问题" />
@@ -776,7 +786,8 @@
     <MESSAGE value="new：增加延迟时间的适配" />
     <MESSAGE value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
     <MESSAGE value="fix：调整按钮排班" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：调整按钮排班" />
+    <MESSAGE value="new：事件清除增加插入当前时间的功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：事件清除增加插入当前时间的功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -2646,3 +2646,179 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 2026-03-20 14:31:24 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:24] "GET /sql-formatter HTTP/1.1" 200 -
 2026-03-20 14:31:26 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:26] "GET /kafka-generator/ HTTP/1.1" 200 -
 2026-03-20 14:31:28 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:31:28] "GET /kafka-generator/field-meta HTTP/1.1" 200 -
+2026-03-20 14:35:24 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:35:24] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 14:40:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:40:46] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 14:40:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 14:40:46] "POST /kafka-generator/generate HTTP/1.1" 200 -
+2026-03-20 15:13:16 | ERROR    | root                                     | ERROR 测试
+2026-03-20 15:16:23 | WARNING  | root                                     | WARNING 测试
+2026-03-20 15:16:23 | ERROR    | root                                     | ERROR 测试
+2026-03-20 15:16:23 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 15:19:32 | WARNING  | root                                     | WARNING 测试
+2026-03-20 15:19:32 | ERROR    | root                                     | ERROR 测试
+2026-03-20 15:19:32 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 15:36:30 | INFO     | app                                      | 日志已配置：输出到文件，级别=INFO
+2026-03-20 15:36:30 | INFO     | app                                      | 正在初始化 FPA 规则数据库表...
+2026-03-20 15:36:30 | INFO     | app                                      | FPA 规则数据库表初始化完成
+2026-03-20 15:36:30 | INFO     | app                                      | ================================================================================
+2026-03-20 15:36:30 | INFO     | app                                      | 📡 OMLX 服务初始化线程已启动（后台运行，不阻塞应用）
+2026-03-20 15:36:30 | INFO     | app                                      | 🚀 正在异步初始化 AI 服务...
+2026-03-20 15:36:30 | INFO     | app                                      | ================================================================================
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] 从环境变量读取 USE_OMLX_FOR_CHATBOT=True
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 使用 OMLX 配置 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] OMLX 模式 - 使用 OpenAI 兼容接口：http://localhost:8000/v1/chat/completions
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 初始化 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit, OMLX: True
+2026-03-20 15:36:30 | INFO     | werkzeug                                 | [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2026-03-20 15:36:30 | INFO     | werkzeug                                 | [33mPress CTRL+C to quit[0m
+2026-03-20 15:36:30 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] OMLX 服务初始化完成
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      |    - Base URL: http://localhost:8000/v1
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      |    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      |    - Endpoint: http://localhost:8000/v1/chat/completions
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] URL: http://localhost:8000/v1/chat/completions
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Prompt length: 21 chars
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Attempt: 1/4
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OMLX_REQUEST] 🌐 正在请求 OMLX 在线模型...
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Base URL: http://localhost:8000/v1
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Endpoint: /v1/chat/completions (OpenAI compatible)
+2026-03-20 15:36:30 | INFO     | utils.ollama_client                      | [OLLAMA_CURL]
+curl -X POST "http://localhost:8000/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 666666" \
+  -d '{"model": "Qwen3.5-4B-OptiQ-4bit", "messages": [{"role": "user", "content": "你只需要直接回复我：are you ok?"}], "stream": false, "timeout": 10}'
+2026-03-20 15:36:34 | INFO     | app                                      | 访问系统首页
+2026-03-20 15:36:34 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 15:36:34 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:34] "GET / HTTP/1.1" 200 -
+2026-03-20 15:36:34 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:34] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2026-03-20 15:36:34 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:34] "[36mGET /static/js/utils.js HTTP/1.1[0m" 304 -
+2026-03-20 15:36:36 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:36] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2026-03-20 15:36:36 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:36] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2026-03-20 15:36:36 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:36] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-03-20 15:36:42 | INFO     | utils.ollama_client                      | [AI_CONNECTIVITY] ✅ OMLX 服务连通性验证成功
+2026-03-20 15:36:42 | INFO     | app                                      | ✅ AI 服务验证成功！可以正常使用 AI 功能
+2026-03-20 15:36:42 | INFO     | app                                      | ================================================================================
+2026-03-20 15:36:46 | INFO     | app                                      | 访问系统首页
+2026-03-20 15:36:46 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 15:36:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:46] "GET / HTTP/1.1" 200 -
+2026-03-20 15:36:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:46] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2026-03-20 15:36:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:46] "[36mGET /static/js/utils.js HTTP/1.1[0m" 304 -
+2026-03-20 15:36:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:46] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2026-03-20 15:36:46 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:46] "[36mGET /static/js/utils.js HTTP/1.1[0m" 304 -
+2026-03-20 15:36:53 | INFO     | app                                      | 访问系统首页
+2026-03-20 15:36:53 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 15:36:53 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:53] "GET / HTTP/1.1" 200 -
+2026-03-20 15:36:53 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:53] "GET /static/css/styles.css HTTP/1.1" 200 -
+2026-03-20 15:36:53 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:36:53] "GET /static/js/utils.js HTTP/1.1" 200 -
+2026-03-20 15:37:04 | INFO     | app                                      | 访问系统首页
+2026-03-20 15:37:04 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 15:37:04 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:04] "GET / HTTP/1.1" 200 -
+2026-03-20 15:37:05 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:05] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2026-03-20 15:37:05 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:05] "[36mGET /static/js/utils.js HTTP/1.1[0m" 304 -
+2026-03-20 15:37:06 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:06] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+2026-03-20 15:37:06 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-03-20 15:37:07 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:07] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+2026-03-20 15:37:15 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:15] "[32mGET /kafka-generator HTTP/1.1[0m" 308 -
+2026-03-20 15:37:15 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:15] "GET /kafka-generator/ HTTP/1.1" 200 -
+2026-03-20 15:37:16 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:16] "GET /static/vendor/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 -
+2026-03-20 15:37:16 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:16] "[36mGET /static/vendor/bootstrap/bootstrap.min.css HTTP/1.1[0m" 304 -
+2026-03-20 15:37:16 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:16] "[36mGET /static/vendor/bootstrap/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2026-03-20 15:37:16 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:16] "[36mGET /static/vendor/fontawesome/all.min.css HTTP/1.1[0m" 304 -
+2026-03-20 15:37:16 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:16] "GET /static/vendor/webfonts/fa-regular-400.woff2 HTTP/1.1" 200 -
+2026-03-20 15:37:17 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:17] "GET /kafka-generator/field-meta HTTP/1.1" 200 -
+2026-03-20 15:37:19 | INFO     | app                                      | 访问系统首页
+2026-03-20 15:37:19 | INFO     | app                                      | Demo 模板存在状态：False
+2026-03-20 15:37:19 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:19] "GET / HTTP/1.1" 200 -
+2026-03-20 15:37:19 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:19] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2026-03-20 15:37:19 | INFO     | werkzeug                                 | 127.0.0.1 - - [20/Mar/2026 15:37:19] "[36mGET /static/js/utils.js HTTP/1.1[0m" 304 -
+2026-03-20 16:24:09 | INFO     | app                                      | 日志已配置：输出到文件，级别=INFO
+2026-03-20 16:24:09 | INFO     | app                                      | 正在初始化 FPA 规则数据库表...
+2026-03-20 16:24:09 | INFO     | app                                      | FPA 规则数据库表初始化完成
+2026-03-20 16:24:09 | INFO     | app                                      | ================================================================================
+2026-03-20 16:24:09 | INFO     | app                                      | 📡 OMLX 服务初始化线程已启动（后台运行，不阻塞应用）
+2026-03-20 16:24:09 | INFO     | app                                      | 🚀 正在异步初始化 AI 服务...
+2026-03-20 16:24:09 | INFO     | app                                      | ================================================================================
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] 从环境变量读取 USE_OMLX_FOR_CHATBOT=True
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 使用 OMLX 配置 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] OMLX 模式 - 使用 OpenAI 兼容接口：http://localhost:8000/v1/chat/completions
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 初始化 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit, OMLX: True
+2026-03-20 16:24:09 | INFO     | werkzeug                                 | [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2026-03-20 16:24:09 | INFO     | werkzeug                                 | [33mPress CTRL+C to quit[0m
+2026-03-20 16:24:09 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] OMLX 服务初始化完成
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      |    - Base URL: http://localhost:8000/v1
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      |    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      |    - Endpoint: http://localhost:8000/v1/chat/completions
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] URL: http://localhost:8000/v1/chat/completions
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Prompt length: 21 chars
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Attempt: 1/4
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OMLX_REQUEST] 🌐 正在请求 OMLX 在线模型...
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Base URL: http://localhost:8000/v1
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Endpoint: /v1/chat/completions (OpenAI compatible)
+2026-03-20 16:24:09 | INFO     | utils.ollama_client                      | [OLLAMA_CURL]
+curl -X POST "http://localhost:8000/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 666666" \
+  -d '{"model": "Qwen3.5-4B-OptiQ-4bit", "messages": [{"role": "user", "content": "你只需要直接回复我：are you ok?"}], "stream": false, "timeout": 10}'
+2026-03-20 16:24:12 | INFO     | utils.ollama_client                      | [AI_CONNECTIVITY] ✅ OMLX 服务连通性验证成功
+2026-03-20 16:24:12 | INFO     | app                                      | ✅ AI 服务验证成功！可以正常使用 AI 功能
+2026-03-20 16:24:12 | INFO     | app                                      | ================================================================================
+2026-03-20 17:03:01 | INFO     | app                                      | 日志已配置：输出到文件，级别=DEBUG
+2026-03-20 17:03:01 | INFO     | app                                      | 正在初始化 FPA 规则数据库表...
+2026-03-20 17:03:01 | INFO     | app                                      | FPA 规则数据库表初始化完成
+2026-03-20 17:03:01 | INFO     | app                                      | ================================================================================
+2026-03-20 17:03:01 | INFO     | app                                      | 📡 OMLX 服务初始化线程已启动（后台运行，不阻塞应用）
+2026-03-20 17:03:01 | INFO     | app                                      | 🚀 正在异步初始化 AI 服务...
+2026-03-20 17:03:01 | INFO     | app                                      | ================================================================================
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] 从环境变量读取 USE_OMLX_FOR_CHATBOT=True
+2026-03-20 17:03:01 | DEBUG    | utils.ollama_client                      | [OLLAMA_ENV] 已加载 .env 文件：/Users/linziwang/PycharmProjects/wordToWord/.env
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 使用 OMLX 配置 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] OMLX 模式 - 使用 OpenAI 兼容接口：http://localhost:8000/v1/chat/completions
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_INIT] 初始化 - URL: http://localhost:8000/v1, Model: Qwen3.5-4B-OptiQ-4bit, OMLX: True
+2026-03-20 17:03:01 | INFO     | werkzeug                                 | [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5001
+2026-03-20 17:03:01 | INFO     | werkzeug                                 | [33mPress CTRL+C to quit[0m
+2026-03-20 17:03:01 | DEBUG    | urllib3.connectionpool                   | Starting new HTTP connection (1): localhost:8000
+2026-03-20 17:03:01 | DEBUG    | urllib3.connectionpool                   | http://localhost:8000 "GET /v1/api/tags HTTP/1.1" 404 22
+2026-03-20 17:03:01 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_INIT_SERVICE] OMLX 服务初始化完成
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      |    - Base URL: http://localhost:8000/v1
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      |    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      |    - Endpoint: http://localhost:8000/v1/chat/completions
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] URL: http://localhost:8000/v1/chat/completions
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Prompt length: 21 chars
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_REQUEST] Attempt: 1/4
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OMLX_REQUEST] 🌐 正在请求 OMLX 在线模型...
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Base URL: http://localhost:8000/v1
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Model: Qwen3.5-4B-OptiQ-4bit
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OMLX_REQUEST]    - Endpoint: /v1/chat/completions (OpenAI compatible)
+2026-03-20 17:03:01 | INFO     | utils.ollama_client                      | [OLLAMA_CURL]
+curl -X POST "http://localhost:8000/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 666666" \
+  -d '{"model": "Qwen3.5-4B-OptiQ-4bit", "messages": [{"role": "user", "content": "你只需要直接回复我：are you ok?"}], "stream": false, "timeout": 10}'
+2026-03-20 17:03:01 | DEBUG    | urllib3.connectionpool                   | Starting new HTTP connection (1): localhost:8000
+2026-03-20 17:03:07 | DEBUG    | urllib3.connectionpool                   | http://localhost:8000 "POST /v1/chat/completions HTTP/1.1" 200 1741
+2026-03-20 17:03:07 | INFO     | utils.ollama_client                      | [AI_CONNECTIVITY] ✅ OMLX 服务连通性验证成功
+2026-03-20 17:03:07 | INFO     | app                                      | ✅ AI 服务验证成功！可以正常使用 AI 功能
+2026-03-20 17:03:07 | INFO     | app                                      | ================================================================================
+2026-03-20 17:15:20 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:35:14 | ERROR    | routes.kafka.kafka_generator_routes      | ❌ 直接解析失败：Expecting ',' delimiter: line 89 column 30 (char 3451)
+2026-03-20 17:35:14 | ERROR    | routes.kafka.kafka_generator_routes      | 错误类型：JSONDecodeError
+2026-03-20 17:40:45 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:42:02 | ERROR    | routes.kafka.kafka_generator_routes      | ❌ 直接解析失败：Expecting ',' delimiter: line 85 column 30 (char 3183)
+2026-03-20 17:42:02 | ERROR    | routes.kafka.kafka_generator_routes      | 错误类型：JSONDecodeError
+2026-03-20 17:42:03 | ERROR    | routes.kafka.kafka_generator_routes      | ❌ 直接解析失败：Expecting ',' delimiter: line 85 column 30 (char 3183)
+2026-03-20 17:42:03 | ERROR    | routes.kafka.kafka_generator_routes      | 错误类型：JSONDecodeError
+2026-03-20 17:43:59 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:47:26 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:51:05 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:54:15 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
+2026-03-20 17:56:21 | WARNING  | routes.fpa.fpa_generator_routes          | 未找到'功能需求'章节，将解析全文
+2026-03-20 17:56:21 | WARNING  | routes.fpa.fpa_generator_routes          | 未找到'功能需求'章节，将解析全文
+2026-03-20 17:56:21 | WARNING  | utils.ollama_client                      | [OLLAMA_INIT] 服务可能不可用，将在首次请求时报错
