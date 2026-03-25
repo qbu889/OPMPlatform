@@ -1,187 +1,114 @@
 <!-- templates/clean_event.html -->
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>事件数据清洗工具</title>
-    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/vendor/fontawesome/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
-            min-height: 100vh;
-            padding: 2rem 0;
-        }
-        
-        .clean-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        .card {
-            border-radius: 16px;
-            border: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            color: white;
-            border-radius: 16px 16px 0 0 !important;
-            border: none;
-            padding: 1.5rem;
-        }
-        
-        .form-control, .form-select {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-            outline: none;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
-        }
-        
-        .btn-secondary {
-            background: #10b981;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            background: #059669;
-            transform: translateY(-2px);
-        }
-        
-        .result-card {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            display: none;
-        }
-        
-        pre {
-            background: #0f172a;
-            color: #f1f5f9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .error {
-            color: #ef4444;
-            background: #fee2e2;
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 4px solid #ef4444;
-            margin-top: 1rem;
-        }
-        
-        .success-badge {
-            background: #10b981;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem 0;
-            }
-            
-            .clean-container {
-                padding: 0 0.5rem;
-            }
-            
-            .card-header {
-                padding: 1rem;
-            }
-            
-            .card-body {
-                padding: 1rem;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
-            
-            .btn-primary, .btn-secondary {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-            
-            pre {
-                font-size: 12px;
-                padding: 1rem;
-            }
-        }
-        
-        /* 暗色主题支持 */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-                color: #f1f5f9;
-            }
-            
-            .card {
-                background: #1e293b;
-            }
-            
-            .form-control, .form-select {
-                background: #334155;
-                border-color: #475569;
-                color: #f1f5f9;
-            }
-            
-            .form-control:focus, .form-select:focus {
-                background: #334155;
-            }
-            
-            .result-card {
-                background: #334155;
-                border-color: #475569;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="clean-container animate-fade-in-up">
+{% extends "base.html" %}
+
+{% block title %}事件数据清洗工具 - OPM 系统{% endblock %}
+
+{% block content %}
+<style>
+    .clean-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .card {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border-radius: 16px 16px 0 0 !important;
+        border: none;
+        padding: 1.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        outline: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #10b981;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+    
+    .result-card {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        display: none;
+    }
+    
+    pre {
+        background: #0f172a;
+        color: #f1f5f9;
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .error {
+        color: #ef4444;
+        background: #fee2e2;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #ef4444;
+        margin-top: 1rem;
+    }
+    
+    .success-badge {
+        background: #10b981;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+</style>
+
+<div class="clean-container animate-fade-in-up">
         <div class="card">
             <div class="card-header text-center">
                 <h2 class="mb-0">
@@ -408,5 +335,4 @@
             }, 100);
         });
     </script>
-</body>
-</html>
+{% endblock %}

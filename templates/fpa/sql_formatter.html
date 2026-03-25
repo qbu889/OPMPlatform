@@ -1,14 +1,163 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL ID格式化工具</title>
-    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/vendor/fontawesome/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <style>
+{% extends "base.html" %}
+
+{% block title %}SQL ID格式化工具{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">SQL ID格式化工具</h3>
+        </div>
+        <div class="card-body">
+
+    <div class="sql-container animate-fade-in-up">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1 class="mb-0">
+                    <i class="fas fa-database me-3"></i>
+                    SQL ID格式化工具
+                </h1>
+                <p class="mb-0 mt-2 opacity-75">快速格式化ID列表用于SQL查询</p>
+            </div>
+            
+            <div class="card-body">
+                <div class="mb-4">
+                    <label for="ids" class="form-label fw-bold mb-2">
+                        <i class="fas fa-list me-2"></i>请输入ID（每行一个）:
+                    </label>
+                    <textarea 
+                        id="ids" 
+                        class="form-control" 
+                        placeholder="例如：
+FJ-076-20251202-0322
+FJ-076-20251202-0323"
+                    ></textarea>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg" onclick="formatIds()">
+                        <i class="fas fa-magic me-2"></i>格式化ID
+                    </button>
+                </div>
+                
+                <div id="resultContainer" class="mt-4" style="display: none;">
+                    <div class="result-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            格式化结果:
+                        </h5>
+                        <button class="copy-btn" onclick="copyResult()">
+                            <i class="fas fa-copy me-1"></i>复制结果
+                        </button>
+                        <span class="success-message" id="copySuccess">
+                            <i class="fas fa-check me-1"></i>已复制到剪贴板
+                        </span>
+                    </div>
+                    <div id="result" class="bg-light p-3 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        function formatIds() {
+            const idsText = document.getElementById('ids').value;
+            const resultContainer = document.getElementById('resultContainer');
+            const resultDiv = document.getElementById('result');
+
+            // 按行分割并清理空白字符
+            const idsList = idsText.split('\n').filter(id => id.trim());
+
+            if (idsList.length === 0) {
+                alert('请输入至少一个ID');
+                return;
+            }
+
+            // 格式化为SQL格式
+            const formattedIds = idsList.map(id => `'${id.trim()}'`);
+
+            let result;
+            if (idsList.length === 1) {
+                result = formattedIds[0];
+            } else {
+                result = formattedIds.join(',\n');
+            }
+
+            resultDiv.textContent = result;
+            resultContainer.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function copyResult() {
+            const resultText = document.getElementById('result').textContent;
+            const copySuccess = document.getElementById('copySuccess');
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(resultText)
+                    .then(() => {
+                        showCopySuccess(copySuccess);
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        fallbackCopyText(resultText, copySuccess);
+                    });
+            } else {
+                fallbackCopyText(resultText, copySuccess);
+            }
+        }
+
+        function fallbackCopyText(text, successElement) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopySuccess(successElement);
+                } else {
+                    console.error('降级复制方法也失败了');
+                }
+            } catch (err) {
+                console.error('降级复制方法出错:', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showCopySuccess(element) {
+            element.classList.add('show');
+            setTimeout(() => {
+                element.classList.remove('show');
+            }, 2000);
+        }
+
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
@@ -186,60 +335,12 @@
                 color: #f1f5f9;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="sql-container animate-fade-in-up">
-        <div class="card">
-            <div class="card-header text-center">
-                <h1 class="mb-0">
-                    <i class="fas fa-database me-3"></i>
-                    SQL ID格式化工具
-                </h1>
-                <p class="mb-0 mt-2 opacity-75">快速格式化ID列表用于SQL查询</p>
-            </div>
-            
-            <div class="card-body">
-                <div class="mb-4">
-                    <label for="ids" class="form-label fw-bold mb-2">
-                        <i class="fas fa-list me-2"></i>请输入ID（每行一个）:
-                    </label>
-                    <textarea 
-                        id="ids" 
-                        class="form-control" 
-                        placeholder="例如：
-FJ-076-20251202-0322
-FJ-076-20251202-0323"
-                    ></textarea>
-                </div>
-                
-                <div class="d-grid">
-                    <button class="btn btn-primary btn-lg" onclick="formatIds()">
-                        <i class="fas fa-magic me-2"></i>格式化ID
-                    </button>
-                </div>
-                
-                <div id="resultContainer" class="mt-4" style="display: none;">
-                    <div class="result-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            格式化结果:
-                        </h5>
-                        <button class="copy-btn" onclick="copyResult()">
-                            <i class="fas fa-copy me-1"></i>复制结果
-                        </button>
-                        <span class="success-message" id="copySuccess">
-                            <i class="fas fa-check me-1"></i>已复制到剪贴板
-                        </span>
-                    </div>
-                    <div id="result" class="bg-light p-3 rounded"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+</style>
 
-    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-    <script>
+{% block extra_scripts %}
+<script>
+
         function formatIds() {
             const idsText = document.getElementById('ids').value;
             const resultContainer = document.getElementById('resultContainer');
@@ -328,6 +429,6 @@ FJ-076-20251202-0323"
                 document.body.style.opacity = '1';
             }, 100);
         });
-    </script>
-</body>
-</html>
+    
+</script>
+{% endblock %}

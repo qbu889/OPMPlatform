@@ -1,29 +1,46 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <title>Word转Markdown</title>
-  <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body class="p-3">
-  <h3>Word转Markdown文件</h3>
+{% extends "base.html" %}
 
-  {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
+{% block title %}Word 转 Markdown{% endblock %}
 
-  <form method="post" enctype="multipart/form-data">
-    <div class="mb-3">
-      <label for="word_file" class="form-label">选择Word文件 (.docx)</label>
-      <input class="form-control" type="file" id="word_file" name="word_file" accept=".docx" required>
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-file-word me-2"></i>Word 转 Markdown 文件</h3>
+        </div>
+        <div class="card-body">
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="word_file" class="form-label">选择 Word 文件 (.docx)</label>
+                    <input class="form-control" type="file" id="word_file" name="word_file" accept=".docx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload me-1"></i>上传并转换
+                </button>
+            </form>
+
+            {% if markdown %}
+                <hr class="my-4" />
+                <h4 class="mb-3">转换结果（Markdown 格式）:</h4>
+                <textarea class="form-control" rows="20" readonly>{{ markdown }}</textarea>
+                <button class="btn btn-success mt-2" onclick="copyMarkdown()">
+                    <i class="fas fa-copy me-1"></i>复制结果
+                </button>
+            {% endif %}
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">上传并转换</button>
-  </form>
+</div>
 
-  {% if markdown %}
-    <hr />
-    <h4>转换结果（Markdown格式）：</h4>
-    <textarea class="form-control" rows="20" readonly>{{ markdown }}</textarea>
-  {% endif %}
-</body>
-</html>
+<script>
+function copyMarkdown() {
+    const textarea = document.querySelector('textarea');
+    textarea.select();
+    document.execCommand('copy');
+    alert('已复制到剪贴板!');
+}
+</script>
+{% endblock %}

@@ -1,9 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Kafka 消息生成器{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kafka消息生成器</title>
+    <title>Kafka 消息生成器</title>
     <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/vendor/fontawesome/all.min.css" rel="stylesheet">
     <style>
@@ -679,18 +684,18 @@
                 
                 // 如果是添加前缀模式，且当前值没有前缀，则添加
                 if (addPrefix) {
-                    if (resultData.EQP_LABEL && !resultData.EQP_LABEL.startsWith('[测试]')) {
-                        resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
+                    if (resultData.EQP_LABEL && !resultData.EQP_LABEL.startsWith('【测试】')) {
+                        resultData.EQP_LABEL = '【测试】' + resultData.EQP_LABEL;
                     }
-                    if (resultData.NE_LABEL && !resultData.NE_LABEL.startsWith('[测试]')) {
-                        resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
+                    if (resultData.NE_LABEL && !resultData.NE_LABEL.startsWith('【测试】')) {
+                        resultData.NE_LABEL = '【测试】' + resultData.NE_LABEL;
                     }
                 } else {
                     // 如果是移除前缀模式，且当前值有前缀，则移除
-                    if (resultData.EQP_LABEL && resultData.EQP_LABEL.startsWith('[测试]')) {
+                    if (resultData.EQP_LABEL && resultData.EQP_LABEL.startsWith('【测试】')) {
                         resultData.EQP_LABEL = resultData.EQP_LABEL.replace(/^\[ 测试\]/, '');
                     }
-                    if (resultData.NE_LABEL && resultData.NE_LABEL.startsWith('[测试]')) {
+                    if (resultData.NE_LABEL && resultData.NE_LABEL.startsWith('【测试】')) {
                         resultData.NE_LABEL = resultData.NE_LABEL.replace(/^\[ 测试\]/, '');
                     }
                 }
@@ -962,10 +967,10 @@
                     const addPrefix = document.getElementById('addTestPrefixInput').checked;
                     if (addPrefix) {
                         if (resultData.EQP_LABEL) {
-                            resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
+                            resultData.EQP_LABEL = '【测试】' + resultData.EQP_LABEL;
                         }
                         if (resultData.NE_LABEL) {
-                            resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
+                            resultData.NE_LABEL = '【测试】' + resultData.NE_LABEL;
                         }
                     }
                     
@@ -1613,5 +1618,4 @@
             setTimeout(extractDelayTimeToInput, 100);
         }
     </script>
-</body>
-</html>
+{% endblock %}

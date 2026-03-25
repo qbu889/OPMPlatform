@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}文档转换系统{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='nokia-06.png') }}">
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -305,39 +306,208 @@
         body .modal-backdrop {
             z-index: 1040;
         }
+        
+        /* 导航栏增强样式 */
+        .navbar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .navbar-brand {
+            transition: transform var(--transition-normal);
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.02);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all var(--transition-normal);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: all var(--transition-normal);
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 80%;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--border-radius);
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.6rem 1.5rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, var(--bg-accent), #e0f2fe);
+            padding-left: 2rem;
+        }
+        
+        .dropdown-divider {
+            margin: 0.5rem 0;
+            border-top: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <header class="animate-fade-in-up">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-cogs me-3"></i>诺基亚OPM系统</h1>
-                <div class="d-flex gap-2">
-                    <span class="badge bg-primary rounded-pill px-3 py-2">
-                        <i class="fas fa-circle me-1"></i>在线
-                    </span>
-                </div>
-            </div>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                <img src="{{ url_for('static', filename='nokia-06.png') }}" alt="NOKIA" style="height: 32px; margin-right: 12px;">
+                <span>诺基亚 OPM 系统</span>
+            </a>
             
-            <nav class="nav nav-tabs">
-                <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="/">
-                    <i class="fas fa-home me-2"></i>首页
-                </a>
-                <!-- <a class="nav-link {% if request.endpoint == 'upload_demo_page' %}active{% endif %}" href="/upload-demo-page">上传Demo模板</a> -->
-                <!-- <a class="nav-link {% if request.endpoint == 'convert_page' %}active{% endif %}" href="/convert-page">转换文档</a> -->
-            </nav>
-        </header>
-
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="/">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    
+                    <!-- 文档下拉菜单 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint in ['document_bp', 'word_to_md_bp', 'markdown_upload_bp', 'fpa_generator_bp'] %}active{% endif %}" 
+                           href="#" role="button" data-toggle="dropdown">
+                            <i class="fas fa-file-alt me-1"></i>文档
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/word-to-md">
+                                <i class="fab fa-markdown me-2"></i>Word 转 Markdown
+                            </a></li>
+                            <li><a class="dropdown-item" href="/markdown-upload">
+                                <i class="fas fa-file-word me-2"></i>Markdown 转 Word
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/fpa-generator/">
+                                <i class="fas fa-file-excel me-2"></i>FPA 预估表生成
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- 智能系统下拉菜单 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint in ['spreadsheet_bp', 'chatbot_bp', 'schedule_config_bp'] %}active{% endif %}" 
+                           href="#" role="button" data-toggle="dropdown">
+                            <i class="fas fa-brain me-1"></i>智能系统
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/spreadsheet/">
+                                <i class="fas fa-table me-2"></i>在线表格
+                            </a></li>
+                            <li><a class="dropdown-item" href="/chatbot/">
+                                <i class="fas fa-robot me-2"></i>智能客服
+                            </a></li>
+                            <li><a class="dropdown-item" href="/schedule-config">
+                                <i class="fas fa-calendar-alt me-2"></i>排班配置管理
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- 高效工具下拉菜单 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint in ['event_bp', 'sql_bp', 'kafka_generator_bp'] %}active{% endif %}" 
+                           href="#" role="button" data-toggle="dropdown">
+                            <i class="fas fa-tools me-1"></i>高效工具
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/clean-event-page">
+                                <i class="fas fa-broom me-2"></i>事件数据清洗
+                            </a></li>
+                            <li><a class="dropdown-item" href="/sql-formatter">
+                                <i class="fas fa-database me-2"></i>SQL ID 格式化
+                            </a></li>
+                            <li><a class="dropdown-item" href="/kafka-generator">
+                                <i class="fas fa-stream me-2"></i>Kafka 消息生成
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- 右侧用户菜单 -->
+                <ul class="navbar-nav">
+                    {% if user.logged_in %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                                {% if user.role == 'admin' %}
+                                    <span class="badge bg-danger ms-1">管理员</span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" id="changePasswordBtn">
+                                    <i class="fas fa-key me-2"></i>修改密码
+                                </a></li>
+                                {% if user.role == 'admin' %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#">
+                                        <i class="fas fa-users-cog me-2"></i>用户管理
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#">
+                                        <i class="fas fa-cog me-2"></i>系统设置
+                                    </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn">
+                                    <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt me-1"></i>登录
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">
+                                <i class="fas fa-user-plus me-1"></i>注册
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="main-container">
+        <!-- 返回首页按钮 -->
+        <div class="mb-3">
+            <a href="/" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>返回首页
+            </a>
+        </div>
+        
         <main class="animate-fade-in-up" style="animation-delay: 0.2s;">
             {% block content %}{% endblock %}
         </main>
 
         <footer class="mt-5 text-center text-muted animate-fade-in-up" style="animation-delay: 0.4s;">
             <div class="py-4 border-top">
-                <p class="mb-1">&copy; 2025 诺基亚OPM系统</p>
-{#                <small class="text-secondary">#}
-{#                    <i class="fas fa-code me-1">用心打造每一个细节</i>#}
-{#                </small>#}
+                <p class="mb-1">&copy; 2025 诺基亚 OPM 系统</p>
             </div>
         </footer>
     </div>
@@ -390,7 +560,142 @@
             if (headerActions) {
                 headerActions.appendChild(themeToggle);
             }
+            
+            // 用户认证相关功能
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    
+                    if (confirm('确定要退出登录吗？')) {
+                        try {
+                            const response = await fetch('/api/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                window.location.reload();
+                            } else {
+                                alert(result.message || '退出登录失败');
+                            }
+                        } catch (error) {
+                            console.error('退出登录错误:', error);
+                            alert('网络错误，请稍后重试');
+                        }
+                    }
+                });
+            }
+            
+            // 修改密码
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+            const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            const savePasswordBtn = document.getElementById('savePasswordBtn');
+            
+            if (changePasswordBtn) {
+                changePasswordBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    changePasswordModal.show();
+                });
+            }
+            
+            if (savePasswordBtn) {
+                savePasswordBtn.addEventListener('click', async function() {
+                    const oldPassword = document.getElementById('oldPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+                    
+                    if (!oldPassword || !newPassword || !confirmNewPassword) {
+                        alert('请填写所有字段');
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmNewPassword) {
+                        alert('两次输入的新密码不一致');
+                        return;
+                    }
+                    
+                    if (newPassword.length < 8) {
+                        alert('新密码至少 8 位');
+                        return;
+                    }
+                    
+                    savePasswordBtn.disabled = true;
+                    savePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>保存中...';
+                    
+                    try {
+                        const response = await fetch('/api/change-password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                old_password: oldPassword,
+                                new_password: newPassword,
+                                confirm_password: confirmNewPassword
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert('密码修改成功');
+                            changePasswordModal.hide();
+                            document.getElementById('changePasswordForm').reset();
+                        } else {
+                            alert(result.message || '密码修改失败');
+                        }
+                    } catch (error) {
+                        console.error('修改密码错误:', error);
+                        alert('网络错误，请稍后重试');
+                    } finally {
+                        savePasswordBtn.disabled = false;
+                        savePasswordBtn.innerHTML = '<i class="fas fa-save me-1"></i>保存更改';
+                    }
+                });
+            }
         });
     </script>
+    
+    <!-- 修改密码模态框 -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-key me-2"></i>修改密码
+                    </h5>
+                    <button type="button" class="btn-close" data-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="oldPassword" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="oldPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="newPassword" required minlength="8">
+                            <div class="form-text">至少 8 位，包含字母和数字</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="savePasswordBtn">
+                        <i class="fas fa-save me-1"></i>保存更改
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,13 +1,47 @@
-<!-- templates/chatbot.html -->
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能客服系统</title>
-    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/vendor/fontawesome/all.min.css">
-    <style>
+{% extends "base.html" %}
+
+{% block title %}智能客服系统{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="chat-panel">
+        <div class="chat-header">
+            <h3 class="mb-0"><i class="fas fa-robot me-2"></i>智能客服系统</h3>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- 消息会动态添加到这里 -->
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span class="typing-dots">
+                <span></span><span></span><span></span>
+            </span>
+        </div>
+        <div class="chat-input">
+            <input type="text" class="message-input" id="messageInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+            <button class="send-button" id="sendButton" onclick="sendMessage()">
+                <i class="fas fa-paper-plane me-1"></i>发送
+            </button>
+            <button class="clear-button" onclick="clearChat()">
+                <i class="fas fa-trash-alt me-1"></i>清空
+            </button>
+        </div>
+    </div>
+    
+    <div class="sidebar-panel">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>会话历史</h5>
+        </div>
+        <div class="card-body p-0" style="flex: 1; overflow-y: auto;">
+            <div id="historyList">
+                <!-- 历史记录会动态加载到这里 -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+
         :root {
             --primary-color: #4361ee;
             --secondary-color: #3f37c9;
@@ -349,137 +383,12 @@
                 height: 50vh;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="main-container">
-            <!-- 聊天面板 -->
-            <div class="chat-panel">
-                <div class="chat-header">
-                    <h4><i class="fas fa-robot me-2"></i>智能客服助手</h4>
-                    <small>Powered by Ollama AI</small>
-                </div>
+    
+</style>
 
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message assistant-message">
-                        <div class="message-header">
-                            <i class="fas fa-robot me-1"></i>AI 助手
-                        </div>
-                        <div class="message-content">您好！我是您的智能客服助手，可以回答您的问题或帮助您查找信息。请问有什么我可以帮您的吗？</div>
-                        <div class="timestamp" id="welcomeTime"></div>
-                    </div>
-                </div>
+{% block extra_scripts %}
+<script>
 
-                <div class="typing-indicator" id="typingIndicator">
-                    <div class="message-header">
-                        <i class="fas fa-robot me-1"></i>AI 助手 正在输入
-                    </div>
-                    <div class="typing-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-
-                <div class="chat-input">
-                    <input type="text" class="message-input" id="userInput" placeholder="输入您的问题..." autocomplete="off">
-                    <button class="send-button" id="sendButton">
-                        <i class="fas fa-paper-plane me-1"></i>发送
-                    </button>
-                    <button class="clear-button" id="clearButton">
-                        <i class="fas fa-trash-alt me-1"></i>清空
-                    </button>
-                </div>
-            </div>
-
-            <!-- 侧边栏面板 -->
-            <div class="sidebar-panel">
-                <div class="sidebar-header">
-                    <ul class="nav nav-tabs" id="sidebarTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button">
-                                <i class="fas fa-file-alt me-1"></i>文档库
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="faqs-tab" data-bs-toggle="tab" data-bs-target="#faqs" type="button">
-                                <i class="fas fa-question-circle me-1"></i>FAQ
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#status" type="button">
-                                <i class="fas fa-chart-line me-1"></i>状态
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="sidebar-content">
-                    <div class="tab-content" id="sidebarTabContent">
-                        <!-- 文档库标签页 -->
-                        <div class="tab-pane fade show active" id="documents" role="tabpanel">
-                            <!-- 领域选择 -->
-                            <div class="row mb-3 align-items-end">
-                                <div class="col">
-                                    <label for="domainSelect" class="form-label">
-                                        <i class="fas fa-tags me-1"></i>选择专业领域 <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-select" id="domainSelect" required>
-                                        <option value="">-- 请选择领域 --</option>
-                                        <!-- 领域列表将动态加载 -->
-                                    </select>
-                                    <div class="form-text">选择文档所属的专业领域，便于后续精准匹配 FAQ</div>
-                                </div>
-                                <div class="col-auto">
-                                    <a href="/api/category/page" target="_blank" class="btn btn-outline-primary">
-                                        <i class="fas fa-cog me-1"></i>领域管理
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <div class="upload-area" id="uploadArea">
-                                <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
-                                <p>点击或拖拽文件到此处上传</p>
-                                <small class="text-muted">支持格式：TXT, MD, PY, DOC, DOCX, PDF, JPG, PNG</small>
-                                <input type="file" id="fileInput" accept=".txt,.md,.py,.doc,.docx,.pdf,.jpg,.jpeg,.png" style="display: none;">
-                            </div>
-                            <div id="documentsList">
-                                <!-- 文档列表将动态加载 -->
-                            </div>
-                        </div>
-
-                        <!-- FAQ 标签页 -->
-                        <div class="tab-pane fade" id="faqs" role="tabpanel">
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" id="faqSearch" placeholder="搜索 FAQ...">
-                                <button class="btn btn-outline-primary" type="button" id="searchBtn">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                            <div id="faqsList">
-                                <!-- FAQ 列表将动态加载 -->
-                            </div>
-                        </div>
-
-                        <!-- 状态标签页 -->
-                        <div class="tab-pane fade" id="status" role="tabpanel">
-                            <h6><i class="fas fa-server me-2"></i>系统状态</h6>
-                            <div id="ollamaStatus" class="mb-3">
-                                <!-- Ollama 状态将动态加载 -->
-                            </div>
-                            <div id="systemStats">
-                                <!-- 系统统计将动态加载 -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-    <script>
         // ========== 全局变量 ==========
         let sessionId = null;
         let conversationHistory = [];
@@ -1180,6 +1089,6 @@
         });
         
         clearButton.addEventListener('click', clearChat);
-    </script>
-</body>
-</html>
+    
+</script>
+{% endblock %}

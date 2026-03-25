@@ -1,129 +1,35 @@
-<!-- templates/index3.html -->
+
+<!-- templates/index.html -->
 {% extends "base.html" %}
 
-{% block title %}首页 - OPM系统{% endblock %}
+{% block title %}首页 - OPM 系统{% endblock %}
 
 {% block content %}
     <div class="container-fluid px-0">
-        <!-- 顶部导航栏 -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-            <div class="container">
-                <a class="navbar-brand fw-bold" href="/">
-                    <i class="fas fa-rocket me-2"></i>OPM系统
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#"><i class="fas fa-home me-1"></i>首页</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                <i class="fas fa-tools me-1"></i>工具
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/clean-event-page">事件数据清洗</a></li>
-                                <li><a class="dropdown-item" href="/sql-formatter">SQL格式化</a></li>
-                                <li><a class="dropdown-item" href="/word-to-md">Word转Markdown</a></li>
-                                <li><a class="dropdown-item" href="/markdown-upload">Markdown转Word</a></li>
-                                <li><a class="dropdown-item" href="/kafka-generator">Kafka消息生成</a></li>
-                                <li><a class="dropdown-item" href="/schedule-config">排班配置</a></li>
-                                <li><a class="dropdown-item" href="/fpa-generator/">FPA预估表生成</a></li>
-{#                                <li><a class="dropdown-item" href="/adjustment-calc/page">调整因子计算器</a></li>#}
-{#                                <li><a class="dropdown-item" href="/adjustment/page">调整因子管理</a></li>#}
-                            </ul>
-                        </li>
-                    </ul>
-                    
-                    <ul class="navbar-nav">
-                        {% if user.logged_in %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                                    <i class="fas fa-user-circle me-1"></i>{{ user.username }}
-                                    {% if user.role == 'admin' %}
-                                        <span class="badge bg-danger ms-1">管理员</span>
-                                    {% endif %}
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#" id="changePasswordBtn">
-                                        <i class="fas fa-key me-2"></i>修改密码
-                                    </a></li>
-                                    {% if user.role == 'admin' %}
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-users-cog me-2"></i>用户管理
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-cog me-2"></i>系统设置
-                                        </a></li>
-                                    {% endif %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#" id="logoutBtn">
-                                        <i class="fas fa-sign-out-alt me-2"></i>退出登录
-                                    </a></li>
-                                </ul>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="/login">
-                                    <i class="fas fa-sign-in-alt me-1"></i>登录
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/register">
-                                    <i class="fas fa-user-plus me-1"></i>注册
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        
-        <!-- 系统概览横幅 -->
-        <div class="hero-banner bg-gradient text-white text-center py-5 mb-5 animate-fade-in-up">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="mb-4">
-                            <i class="fas fa-rocket" style="font-size: 4rem; opacity: 0.9;"></i>
-                        </div>
-                        <h1 class="display-4 fw-bold mb-3">诺基亚OPM系统</h1>
-                        <p class="lead mb-4">一站式文档处理与管理系统</p>
-                        <div class="d-flex justify-content-center gap-3 flex-wrap">
-                        <span class="badge badge-modern badge-primary">
-                            <i class="fas fa-check-circle me-1"></i>高效便捷
-                        </span>
-                            <span class="badge badge-modern badge-success">
-                            <i class="fas fa-lock me-1"></i>安全可靠
-                        </span>
-                            <span class="badge badge-modern badge-warning">
-                            <i class="fas fa-bolt me-1"></i>极速处理
-                        </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- 系统标题 -->
+        <div class="text-center py-4 mb-4">
+            <h1 class="display-5 fw-bold mb-2" style="color: var(--primary-color);">诺基亚 OPM 系统</h1>
+            <p class="text-muted">一站式文档处理与管理系统</p>
         </div>
 
         <div class="container">
             <div class="row g-4">
-                <!-- 主要功能区域 -->
-                <div class="col-lg-8">
-                    <div class="row g-4">
+                <!-- 主要功能区域 - 全宽显示 -->
+                <div class="col-12">
+                    <!-- 高效工具模块 -->
+                    <h3 class="mb-3" style="color: var(--primary-color);">
+                        <i class="fas fa-tools me-2"></i>高效工具
+                    </h3>
+                    <div class="row g-4 mb-5">
                         <!-- 事件数据清洗 -->
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
                                         <i class="fas fa-broom text-info" style="font-size: 2.5rem;"></i>
                                     </div>
                                     <h5 class="card-title">事件数据清洗</h5>
-                                    <p class="card-text text-muted small">清洗和格式化事件数据，生成标准JSON格式</p>
+                                    <p class="card-text text-muted small">清洗和格式化事件数据，生成标准 JSON 格式</p>
                                     <button class="btn btn-outline-info btn-sm"
                                             onclick="window.location.href='/clean-event-page'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
@@ -132,60 +38,25 @@
                             </div>
                         </div>
 
-                        <!-- SQL工具 -->
-                        <div class="col-md-6">
+                        <!-- SQL 工具 -->
+                        <div class="col-md-6 col-lg-4">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
                                         <i class="fas fa-database text-success" style="font-size: 2.5rem;"></i>
                                     </div>
-                                    <h5 class="card-title">SQL ID格式化</h5>
-                                    <p class="card-text text-muted small">快速格式化ID列表用于SQL查询</p>
+                                    <h5 class="card-title">SQL ID 格式化</h5>
+                                    <p class="card-text text-muted small">快速格式化 ID 列表用于 SQL 查询</p>
                                     <button class="btn btn-outline-success btn-sm"
                                             onclick="window.location.href='/sql-formatter'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
                                     </button>
-
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Word转Markdown -->
-                        <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm card-hover">
-                                <div class="card-body text-center">
-                                    <div class="feature-icon mb-3">
-                                        <i class="fab fa-markdown text-warning" style="font-size: 2.5rem;"></i>
-                                    </div>
-                                    <h5 class="card-title">Word转Markdown</h5>
-                                    <p class="card-text text-muted small">将Word文档转换为Markdown格式</p>
-                                    <button class="btn btn-outline-warning btn-sm"
-                                            onclick="window.location.href='/word-to-md'">
-                                        <i class="fas fa-arrow-right me-1"></i>立即使用
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Markdown转Word -->
-                        <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm card-hover">
-                                <div class="card-body text-center">
-                                    <div class="feature-icon mb-3">
-                                        <i class="fas fa-file-word text-primary" style="font-size: 2.5rem;"></i>
-                                    </div>
-                                    <h5 class="card-title">Markdown转Word</h5>
-                                    <p class="card-text text-muted small">将Markdown文件转换为Word文档</p>
-                                    <button class="btn btn-outline-primary btn-sm"
-                                            onclick="window.location.href='/markdown-upload'">
-                                        <i class="fas fa-arrow-right me-1"></i>立即使用
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Kafka 消息生成器 -->
-                        <div class="col-md-6">
+                        <!-- Kafka 消息生成 -->
+                        <div class="col-md-6 col-lg-4">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
@@ -200,9 +71,89 @@
                                 </div>
                             </div>
                         </div>
-                        
+                    </div>
+
+                    <!-- 文档模块 -->
+                    <h3 class="mb-3" style="color: var(--primary-color);">
+                        <i class="fas fa-file-alt me-2"></i>文档
+                    </h3>
+                    <div class="row g-4 mb-5">
+                        <!-- Word 转 Markdown -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fab fa-markdown text-warning" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">Word 转 Markdown</h5>
+                                    <p class="card-text text-muted small">将 Word 文档转换为 Markdown 格式</p>
+                                    <button class="btn btn-outline-warning btn-sm"
+                                            onclick="window.location.href='/word-to-md'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Markdown 转 Word -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-file-word text-primary" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">Markdown 转 Word</h5>
+                                    <p class="card-text text-muted small">将 Markdown 文件转换为 Word 文档</p>
+                                    <button class="btn btn-outline-primary btn-sm"
+                                            onclick="window.location.href='/markdown-upload'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FPA 预估表生成 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-file-excel text-success" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">FPA 预估表生成</h5>
+                                    <p class="card-text text-muted small">从需求文档自动生成 FPA 功能点估算表</p>
+                                    <button class="btn btn-outline-success btn-sm"
+                                            onclick="window.location.href='/fpa-generator/'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 智能系统模块 -->
+                    <h3 class="mb-3" style="color: var(--primary-color);">
+                        <i class="fas fa-brain me-2"></i>智能系统
+                    </h3>
+                    <div class="row g-4 mb-5">
+                        <!-- 在线表格 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm card-hover">
+                                <div class="card-body text-center">
+                                    <div class="feature-icon mb-3">
+                                        <i class="fas fa-table text-success" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="card-title">在线表格</h5>
+                                    <p class="card-text text-muted small">类似飞书表格的在线协作系统</p>
+                                    <button class="btn btn-outline-success btn-sm"
+                                            onclick="window.location.href='/spreadsheet/'">
+                                        <i class="fas fa-arrow-right me-1"></i>立即使用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 智能客服 -->
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
@@ -219,7 +170,7 @@
                         </div>
 
                         <!-- 排班配置 -->
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-4">
                             <div class="card h-100 border-0 shadow-sm card-hover">
                                 <div class="card-body text-center">
                                     <div class="feature-icon mb-3">
@@ -231,147 +182,6 @@
                                             onclick="window.location.href='/schedule-config'">
                                         <i class="fas fa-arrow-right me-1"></i>立即使用
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- FPA预估表生成 -->
-                        <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm card-hover">
-                                <div class="card-body text-center">
-                                    <div class="feature-icon mb-3">
-                                        <i class="fas fa-file-excel text-success" style="font-size: 2.5rem;"></i>
-                                    </div>
-                                    <h5 class="card-title">FPA预估表生成</h5>
-                                    <p class="card-text text-muted small">从需求文档自动生成 FPA 功能点估算表</p>
-                                    <button class="btn btn-outline-success btn-sm"
-                                            onclick="window.location.href='/fpa-generator/'">
-                                        <i class="fas fa-arrow-right me-1"></i>立即使用
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                                                
-                        <!-- 调整因子计算器 -->
-{#                        <div class="col-md-6">#}
-{#                            <div class="card h-100 border-0 shadow-sm card-hover">#}
-{#                                <div class="card-body text-center">#}
-{#                                    <div class="feature-icon mb-3">#}
-{#                                        <i class="fas fa-calculator text-warning" style="font-size: 2.5rem;"></i>#}
-{#                                    </div>#}
-{#                                    <h5 class="card-title">调整因子计算器</h5>#}
-{#                                    <p class="card-text text-muted small">根据项目条件动态计算 FPA 调整因子</p>#}
-{#                                    <button class="btn btn-outline-warning btn-sm"#}
-{#                                            onclick="window.location.href='/adjustment-calc/page'">#}
-{#                                        <i class="fas fa-arrow-right me-1"></i>立即使用#}
-{#                                    </button>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-                                                
-                        <!-- 调整因子管理 -->
-{#                        <div class="col-md-6">#}
-{#                            <div class="card h-100 border-0 shadow-sm card-hover">#}
-{#                                <div class="card-body text-center">#}
-{#                                    <div class="feature-icon mb-3">#}
-{#                                        <i class="fas fa-sliders-h text-primary" style="font-size: 2.5rem;"></i>#}
-{#                                    </div>#}
-{#                                    <h5 class="card-title">调整因子管理</h5>#}
-{#                                    <p class="card-text text-muted small">管理和维护调整因子数据</p>#}
-{#                                    <button class="btn btn-outline-primary btn-sm"#}
-{#                                            onclick="window.location.href='/adjustment/page'">#}
-{#                                        <i class="fas fa-arrow-right me-1"></i>立即使用#}
-{#                                    </button>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-                    </div>
-                </div>
-
-                <!-- 侧边栏 -->
-                <div class="col-lg-4">
-                    <div class="sticky-top" style="top: 2rem;">
-                        <!-- 快捷操作 -->
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-gradient text-white"
-                                 style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-                                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>快捷操作</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-primary btn-animated" onclick="quickAction('clean-event')">
-                                        <i class="fas fa-broom me-2"></i>数据清洗
-                                    </button>
-                                    <button class="btn btn-success btn-animated" onclick="quickAction('sql-format')">
-                                        <i class="fas fa-database me-2"></i>SQL格式化
-                                    </button>
-                                    <button class="btn btn-info btn-animated" onclick="quickAction('word-to-md')">
-                                        <i class="fab fa-markdown me-2"></i>Word转MD
-                                    </button>
-                                    <button class="btn btn-warning btn-animated" onclick="quickAction('md-to-word')">
-                                        <i class="fas fa-file-word me-2"></i>MD 转 Word
-                                    </button>
-                                    <button class="btn btn-success btn-animated" onclick="quickAction('fpa-generator')">
-                                        <i class="fas fa-file-excel me-2"></i>FPA 转 Excel
-                                    </button>
-{#                                    <button class="btn btn-warning btn-animated" onclick="quickAction('adjustment-calc')">#}
-{#                                        <i class="fas fa-calculator me-2"></i>调整因子计算#}
-{#                                    </button>#}
-                                </div>
-
-                                <hr class="my-4">
-
-                                <!-- 系统状态 -->
-                                <div class="stats-container">
-                                    <h6 class="text-muted mb-3"><i class="fas fa-chart-line me-2"></i>系统状态</h6>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>服务状态</span>
-                                        <span class="badge bg-success rounded-pill">正常运行</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>版本号</span>
-                                        <span class="badge bg-info rounded-pill">v2.1.0</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span>最后更新</span>
-                                        <span class="text-muted small">2026-02-24</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 使用统计 -->
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>使用统计</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="stat-item mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>今日处理量</span>
-                                        <strong id="todayCount">加载中...</strong>
-                                    </div>
-                                    <div class="progress mt-1" style="height: 6px;">
-                                        <div class="progress-bar bg-primary" style="width: 75%"></div>
-                                    </div>
-                                </div>
-                                <div class="stat-item mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>本周活跃用户</span>
-                                        <strong id="weekUsers">加载中...</strong>
-                                    </div>
-                                    <div class="progress mt-1" style="height: 6px;">
-                                        <div class="progress-bar bg-success" style="width: 60%"></div>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="d-flex justify-content-between">
-                                        <span>系统响应时间</span>
-                                        <strong id="avgResponseTime">加载中...</strong>
-                                    </div>
-                                    <div class="progress mt-1" style="height: 6px;">
-                                        <div class="progress-bar bg-info" style="width: 90%"></div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -445,6 +255,9 @@
                     break;
                 case 'fpa-generator':
                     window.location.href = '/fpa-generator/';
+                    break;
+                case 'spreadsheet':
+                    window.location.href = '/spreadsheet/';
                     break;
                 case 'adjustment-calc':
                     window.location.href = '/adjustment-calc/page';

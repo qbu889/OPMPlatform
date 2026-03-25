@@ -55,6 +55,9 @@ from routes.auth.auth_routes import auth_bp
 # 智能客服模块
 from routes.chat.chatbot_routes import chatbot_bp
 
+# 在线表格模块
+from routes.spreadsheet.spreadsheet_routes import spreadsheet_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -210,6 +213,9 @@ def create_app(config_name='development'):
             
         # 智能客服模块（蓝图已定义前缀）
         chatbot_bp,
+        
+        # 在线表格模块（蓝图已定义前缀）
+        spreadsheet_bp,
     ]
         
     for blueprint in blueprints:
@@ -223,6 +229,22 @@ def create_app(config_name='development'):
         """记录请求开始时间"""
         import time
         request.start_time = time.time()
+    
+    # ==========================================================================
+    # 模板上下文处理器 - 注入全局变量
+    # ==========================================================================
+    @app.context_processor
+    def inject_user():
+        """向所有模板注入 user 对象，用于导航栏显示用户信息"""
+        from flask import session
+        return {
+            'user': {
+                'logged_in': 'user_id' in session,
+                'username': session.get('username', ''),
+                'role': session.get('role', 'user'),
+                'email': session.get('email', '')
+            }
+        }
     
     # ==========================================================================
     # 异步初始化 AI 服务
@@ -294,14 +316,66 @@ def index():
 
 
 # ============================================================================
+# 静态文件路由 - 上传的文件
+# ============================================================================
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    """提供上传文件的访问"""
+    from flask import send_from_directory
+    upload_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+    return send_from_directory(upload_dir, filename)
+
+
+# ============================================================================
 # 应用主入口
 # ============================================================================
 if __name__ == '__main__':
     import webbrowser
     import threading
+    import subprocess
     
     port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5001
     app_logger.info(f"启动 Flask 应用，端口：{port}")
+    
+    # 启动 cloudflared tunnel
+    def start_cloudflared_tunnel():
+        """在后台线程中启动 cloudflared tunnel"""
+        try:
+            app_logger.info("=" * 80)
+            app_logger.info(" 正在启动 Cloudflare Tunnel...")
+            app_logger.info("=" * 80)
+            
+            # cloudflared tunnel 命令
+            tunnel_command = [
+                'cloudflared',
+                'tunnel',
+                'run',
+                '--token',
+                'eyJhIjoiYWM0NmFmMGQzZTViYjIyMGM4YWMyZWYxNzdlMjQxNmMiLCJ0IjoiNDRhMGJiZDQtYjhiZC00YzM4LTk2OTQtOTY4NTNmMzExZjMwIiwicyI6Ik9HUm1PRGswTmpVdFpERTVNaTAwTnpFM0xUZ3dOV0V0TmpSaFkySmlaVFExTmpoaiJ9'
+            ]
+            
+            # 启动子进程
+            process = subprocess.Popen(
+                tunnel_command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # 读取输出
+            for line in process.stderr:
+                app_logger.info(f"cloudflared: {line.strip()}")
+            
+        except FileNotFoundError:
+            app_logger.error("❌ 未找到 cloudflared 命令，请先安装 cloudflared")
+            app_logger.error("   安装方法：brew install cloudflared (macOS)")
+        except Exception as e:
+            app_logger.error(f"❌ Cloudflare Tunnel 启动失败：{e}")
+    
+    # 在后台线程中启动 cloudflared tunnel
+    tunnel_thread = threading.Thread(target=start_cloudflared_tunnel, daemon=True)
+    tunnel_thread.start()
+    app_logger.info("🔗 Cloudflare Tunnel 启动线程已启动（后台运行）")
     
     # 延迟打开浏览器（等待服务器启动）
     def open_browser():
