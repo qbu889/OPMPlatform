@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -358,7 +356,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="22889000" />
+      <workItem from="1774320367349" duration="24368000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -744,7 +742,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774413718139</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="new：修复FPA前端显示不全、动画一直加载的问题">
+      <option name="closed" value="true" />
+      <created>1774414435132</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1774414435132</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -785,7 +791,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：FPA生成文档生成兼顾速度和质量，以及遗漏多线程线程的文件" />
     <MESSAGE value="fix：FPA生成文档生成FPA遗漏提交文件" />
     <MESSAGE value="fix：遗漏提交文件" />
     <MESSAGE value="fix：FPA版本稳定版1.0.0" />
@@ -810,7 +815,8 @@
     <MESSAGE value="fix：前端多展示多余字符" />
     <MESSAGE value="fix：剔除omlx" />
     <MESSAGE value="new：重构前端" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：重构前端" />
+    <MESSAGE value="new：修复FPA前端显示不全、动画一直加载的问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：修复FPA前端显示不全、动画一直加载的问题" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
