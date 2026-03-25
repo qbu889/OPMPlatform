@@ -5,38 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/static/nokia-06.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/nokia-logo-png-1484.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/kafka/testJsonToDelay_time.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app_20260320.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/alarm_resource_status.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/alarm_resource_status.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/business_layer.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/business_layer.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/circuit_level.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/circuit_level.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/effect_ne.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/effect_ne.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/effect_service.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/effect_service.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/eqp_object_class.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/eqp_object_class.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/extra_id2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/extra_id2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/logic_alarm_type.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/logic_alarm_type.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/ne_admin_status.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/ne_admin_status.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/network_type.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/network_type.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/network_type_top.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/network_type_top.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/org_severity.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/org_severity.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/org_type.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/org_type.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/port_num.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/port_num.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/sub_alarm_type.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/sub_alarm_type.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/事件关联-分级调度接口协议.csv" beforeDir="false" afterPath="$PROJECT_DIR$/sql/事件关联-分级调度接口协议.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/clean_event.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/clean_event.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/排班/schedule.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/排班/schedule.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -320,9 +292,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Flask 服务器.Flask (app.py) (1)" />
         <item itemvalue="Python.testJsonToDelay_time" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
-        <item itemvalue="Flask 服务器.Flask (app.py) (1)" />
         <item itemvalue="Shell Script.start.sh" />
         <item itemvalue="Python.run_tests" />
       </list>
@@ -386,7 +358,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="22184000" />
+      <workItem from="1774320367349" duration="22889000" />
     </task>
     <task id="LOCAL-00001" summary="推送">
       <option name="closed" value="true" />
@@ -764,7 +736,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774320425758</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="new：重构前端">
+      <option name="closed" value="true" />
+      <created>1774413718138</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1774413718139</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -805,7 +785,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：FPA生成文档生成FPA计算不正确问题、功能拆分不正确问题" />
     <MESSAGE value="fix：FPA生成文档生成兼顾速度和质量，以及遗漏多线程线程的文件" />
     <MESSAGE value="fix：FPA生成文档生成FPA遗漏提交文件" />
     <MESSAGE value="fix：遗漏提交文件" />
@@ -830,7 +809,8 @@
     <MESSAGE value="new：事件清除增加插入当前时间的功能" />
     <MESSAGE value="fix：前端多展示多余字符" />
     <MESSAGE value="fix：剔除omlx" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：剔除omlx" />
+    <MESSAGE value="new：重构前端" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：重构前端" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -860,7 +840,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$app.coverage" NAME="app Coverage Results" MODIFIED="1772085107343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$word.coverage" NAME="生成word 覆盖结果" MODIFIED="1773225617538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/生成word" />
     <SUITE FILE_PATH="coverage/wordToWord$testc.coverage" NAME="testc 覆盖结果" MODIFIED="1773135916888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) (1) 覆盖结果" MODIFIED="1774341656100" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) (1) 覆盖结果" MODIFIED="1774414057066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_leave_remark.coverage" NAME="test_leave_remark Coverage Results" MODIFIED="1772522443916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$test_fpa_performance.coverage" NAME="test_fpa_performance 覆盖结果" MODIFIED="1773453219446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_field_order.coverage" NAME="verify_field_order Coverage Results" MODIFIED="1772162249831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
