@@ -1,0 +1,1158 @@
+{% extends "base.html" %}
+
+{% block title %}表格详情{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">表格详情</h3>
+        </div>
+        <div class="card-body">
+
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <button class="back-btn" onclick="window.location.href='/spreadsheet/'">← 返回列表</button>
+            <div class="table-name" id="tableName">加载中...</div>
+        </div>
+        <div class="toolbar-actions">
+            <button class="action-btn secondary" onclick="addColumn()">+ 添加列</button>
+            <button class="action-btn" onclick="addRow()">+ 添加行</button>
+            <button class="action-btn secondary" onclick="exportData()">导出</button>
+        </div>
+    </div>
+    
+    <div class="spreadsheet-container">
+        <div class="spreadsheet-wrapper">
+            <table id="spreadsheetTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <button class="add-row-btn" onclick="addRow()">+ 添加新行</button>
+    
+    <script>
+        const spreadsheetId = {{ spreadsheet_id }};
+        let columns = [];
+        let rows = [];
+        
+        // 加载表格数据
+        async function loadSpreadsheet() {
+            try {
+                // 加载表格信息
+                const tableResponse = await fetch(`/spreadsheet/api/${spreadsheetId}`);
+                const tableResult = await tableResponse.json();
+                
+                if (tableResult.success) {
+                    document.getElementById('tableName').textContent = tableResult.data.name;
+                }
+                
+                // 加载列定义
+                const columnsResponse = await fetch(`/spreadsheet/api/${spreadsheetId}/columns`);
+                const columnsResult = await columnsResponse.json();
+                
+                if (columnsResult.success) {
+                    columns = columnsResult.data;
+                    renderHeader();
+                }
+                
+                // 加载行数据
+                const rowsResponse = await fetch(`/spreadsheet/api/${spreadsheetId}/rows`);
+                const rowsResult = await rowsResponse.json();
+                
+                if (rowsResult.success) {
+                    rows = rowsResult.data;
+                    renderBody();
+                }
+            } catch (error) {
+                console.error('加载失败:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    '<tr><td class="loading">加载失败，请刷新页面重试</td></tr>';
+            }
+        }
+        
+        // 渲染表头
+        function renderHeader() {
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = ''; // 清空现有表头
+            
+            const headerRow = document.createElement('tr');
+            
+            // 序号列
+            const thNumber = document.createElement('th');
+            thNumber.textContent = '#';
+            thNumber.style.width = '50px';
+            headerRow.appendChild(thNumber);
+            
+            // 数据列
+            columns.forEach((col, index) => {
+                const th = document.createElement('th');
+                th.style.width = (col.width || 100) + 'px';
+                
+                if (col.background_color) {
+                    th.style.background = col.background_color;
+                }
+                if (col.text_color) {
+                    th.style.color = col.text_color;
+                }
+                if (col.font_weight) {
+                    th.style.font_weight = col.font_weight;
+                }
+                
+                th.innerHTML = `
+                    <div class="column-header">
+                        <span>${col.column_name}</span>
+                        <button class="delete-col-btn" onclick="deleteColumn(${col.id})">×</button>
+                    </div>
+                `;
+                
+                headerRow.appendChild(th);
+            });
+            
+            // 操作列
+            const thAction = document.createElement('th');
+            thAction.textContent = '操作';
+            thAction.style.width = '80px';
+            headerRow.appendChild(thAction);
+            
+            thead.appendChild(headerRow);
+        }
+        
+        // 渲染表体
+        function renderBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="' + (columns.length + 2) + '" class="empty-state">暂无数据，点击"添加行"按钮添加数据</td></tr>';
+                return;
+            }
+            
+            rows.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                
+                // 行号
+                const tdNumber = document.createElement('td');
+                tdNumber.className = 'row-number';
+                tdNumber.textContent = rowIndex + 1;
+                tr.appendChild(tdNumber);
+                
+                // 单元格
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    const cells = row.cells || []; // 防止 undefined
+                    const cell = cells.find(c => c.column_id === col.id);
+                    const value = cell ? cell.value : '';
+                    
+                    if (col.column_type === 'select') {
+                        const select = document.createElement('select');
+                        select.className = 'cell-select';
+                        select.dataset.rowId = row.id;
+                        select.dataset.columnId = col.id;
+                        select.dataset.cellId = cell ? cell.id : '';
+                        
+                        const options = col.options || [];
+                        options.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            if (value === opt) option.selected = true;
+                            select.appendChild(option);
+                        });
+                        
+                        select.addEventListener('change', (e) => {
+                            updateCell(e.target.dataset.cellId, e.target.value);
+                        });
+                        
+                        td.appendChild(select);
+                    } else if (col.column_type === 'image') {
+                        // 图片列
+                        const cellDiv = document.createElement('div');
+                        cellDiv.style.padding = '5px';
+                        cellDiv.style.textAlign = 'center';
+                        
+                        // 如果已有图片，显示预览
+                        if (value && value.startsWith('/uploads/')) {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.marginBottom = '5px';
+                            
+                            const img = document.createElement('img');
+                            img.src = value;
+                            img.style.maxWidth = '100%';
+                            img.style.maxHeight = '80px';
+                            img.style.borderRadius = '4px';
+                            img.style.cursor = 'pointer';
+                            img.onclick = () => window.open(value, '_blank');
+                            
+                            imgContainer.appendChild(img);
+                            cellDiv.appendChild(imgContainer);
+                        }
+                        
+                        // 上传按钮
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.textContent = value ? '更换图片' : '上传图片';
+                        uploadBtn.className = 'action-btn secondary';
+                        uploadBtn.style.fontSize = '11px';
+                        uploadBtn.style.padding = '4px 8px';
+                        uploadBtn.style.width = '100%';
+                        
+                        uploadBtn.onclick = () => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = async (e) => {
+                                await uploadImage(e.target.files[0], cell ? cell.id : '', row.id, col.id);
+                            };
+                            input.click();
+                        };
+                        
+                        cellDiv.appendChild(uploadBtn);
+                        td.appendChild(cellDiv);
+                    } else {
+                        const input = document.createElement('textarea');
+                        input.className = 'cell-input';
+                        input.value = value || '';
+                        input.dataset.rowId = row.id;
+                        input.dataset.columnId = col.id;
+                        input.dataset.cellId = cell ? cell.id : '';
+                        
+                        if (col.column_type === 'number') {
+                            input.type = 'number';
+                        } else if (col.column_type === 'date') {
+                            input.type = 'date';
+                        }
+                        
+                        input.addEventListener('blur', (e) => {
+                            updateCell(e.target.dataset.cellId, e.target.value);
+                        });
+                        
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Tab') {
+                                e.preventDefault();
+                                // 处理 Tab 键导航
+                                const inputs = Array.from(document.querySelectorAll('.cell-input, .cell-select'));
+                                const currentIndex = inputs.indexOf(e.target);
+                                const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
+                                if (nextIndex >= 0 && nextIndex < inputs.length) {
+                                    inputs[nextIndex].focus();
+                                }
+                            }
+                        });
+                        
+                        td.appendChild(input);
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                // 删除行按钮
+                const tdAction = document.createElement('td');
+                tdAction.className = 'row-actions';
+                tdAction.innerHTML = `<button class="delete-row-btn" onclick="deleteRow(${row.id})">删除</button>`;
+                tr.appendChild(tdAction);
+                
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // 添加行
+        async function addRow() {
+            try {
+                const response = await fetch(`/spreadsheet/api/${spreadsheetId}/rows`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    rows.push(result.data);
+                    renderBody();
+                } else {
+                    alert('添加失败：' + result.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+        
+        // 添加列
+        async function addColumn() {
+            const name = prompt('请输入列名:');
+            if (!name) return;
+            
+            const type = prompt('列类型 (text/number/date/select/image):', 'text');
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/${spreadsheetId}/columns`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        type: type || 'text',
+                        width: 120
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    columns.push(result.data);
+                    renderHeader();
+                    renderBody();
+                } else {
+                    alert('添加失败：' + result.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+        
+        // 上传图片
+        async function uploadImage(file, cellId, rowId, columnId) {
+            if (!file) return;
+            
+            // 检查文件大小（最大 5MB）
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过 5MB');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 更新单元格值为图片 URL
+                    if (cellId) {
+                        await updateCell(cellId, result.data.url);
+                    } else {
+                        // 如果单元格不存在，先创建
+                        await createCell(rowId, columnId, result.data.url);
+                    }
+                    
+                    // 重新渲染
+                    renderBody();
+                } else {
+                    alert('上传失败：' + result.message);
+                }
+            } catch (error) {
+                alert('上传失败：' + error.message);
+            }
+        }
+        
+        // 创建单元格（用于图片上传）
+        async function createCell(rowId, columnId, value) {
+            try {
+                const response = await fetch(`/spreadsheet/api/rows/${rowId}/cells`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        columnId: columnId,
+                        value: value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    console.error('创建单元格失败:', result.message);
+                }
+            } catch (error) {
+                console.error('创建单元格失败:', error);
+            }
+        }
+        
+        // 更新单元格
+        async function updateCell(cellId, value) {
+            if (!cellId) return;
+            
+            try {
+                await fetch(`/spreadsheet/api/cells/${cellId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        value: value
+                    })
+                });
+            } catch (error) {
+                console.error('更新失败:', error);
+            }
+        }
+        
+        // 删除行
+        async function deleteRow(rowId) {
+            if (!confirm('确定要删除这行吗？')) return;
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/rows/${rowId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    rows = rows.filter(r => r.id !== rowId);
+                    renderBody();
+                } else {
+                    alert('删除失败：' + result.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+        
+        // 删除列
+        async function deleteColumn(columnId) {
+            if (!confirm('确定要删除这列吗？此操作不可恢复。')) return;
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/columns/${columnId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    columns = columns.filter(c => c.id !== columnId);
+                    renderHeader();
+                    renderBody();
+                } else {
+                    alert('删除失败：' + result.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+        
+        // 导出数据
+        function exportData() {
+            const exportData = {
+                columns: columns.map(col => col.column_name),
+                rows: rows.map(row => {
+                    const rowData = {};
+                    columns.forEach(col => {
+                        const cell = row.cells.find(c => c.column_id === col.id);
+                        rowData[col.column_name] = cell ? cell.value : '';
+                    });
+                    return rowData;
+                })
+            };
+            
+            const csv = [
+                exportData.columns.join(','),
+                ...exportData.rows.map(row => 
+                    exportData.columns.map(col => 
+                        `"${row[col] || ''}"`
+                    ).join(',')
+                )
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${document.getElementById('tableName').textContent}_${new Date().getTime()}.csv`;
+            link.click();
+        }
+        
+        // 页面加载时初始化
+        loadSpreadsheet();
+    </script>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .toolbar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .table-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .action-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .spreadsheet-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .spreadsheet-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 800px;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f8f9fa;
+        }
+        
+        th {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        th:hover {
+            background: #e8e8e8;
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .delete-col-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        th:hover .delete-col-btn {
+            opacity: 1;
+        }
+        
+        td {
+            border: 1px solid #e0e0e0;
+            padding: 0;
+            min-width: 100px;
+        }
+        
+        .cell-input {
+            width: 100%;
+            min-height: 40px;
+            border: none;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+        
+        .cell-input:focus {
+            background: #fff9e6;
+        }
+        
+        .cell-select {
+            width: 100%;
+            min-height: 40px;
+            border: none;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+        
+        .row-number {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            user-select: none;
+        }
+        
+        .row-actions {
+            background: #f8f9fa;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .delete-row-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .add-row-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state p {
+            color: #999;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    
+</style>
+
+{% block extra_scripts %}
+<script>
+
+        const spreadsheetId = {{ spreadsheet_id }};
+        let columns = [];
+        let rows = [];
+        
+        // 加载表格数据
+        async function loadSpreadsheet() {
+            try {
+                // 加载表格信息
+                const tableResponse = await fetch(`/spreadsheet/api/${spreadsheetId}`);
+                const tableResult = await tableResponse.json();
+                
+                if (tableResult.success) {
+                    document.getElementById('tableName').textContent = tableResult.data.name;
+                }
+                
+                // 加载列定义
+                const columnsResponse = await fetch(`/spreadsheet/api/${spreadsheetId}/columns`);
+                const columnsResult = await columnsResponse.json();
+                
+                if (columnsResult.success) {
+                    columns = columnsResult.data;
+                    renderHeader();
+                }
+                
+                // 加载行数据
+                const rowsResponse = await fetch(`/spreadsheet/api/${spreadsheetId}/rows`);
+                const rowsResult = await rowsResponse.json();
+                
+                if (rowsResult.success) {
+                    rows = rowsResult.data;
+                    renderBody();
+                }
+            } catch (error) {
+                console.error('加载失败:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    '<tr><td class="loading">加载失败，请刷新页面重试</td></tr>';
+            }
+        }
+        
+        // 渲染表头
+        function renderHeader() {
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = ''; // 清空现有表头
+            
+            const headerRow = document.createElement('tr');
+            
+            // 序号列
+            const thNumber = document.createElement('th');
+            thNumber.textContent = '#';
+            thNumber.style.width = '50px';
+            headerRow.appendChild(thNumber);
+            
+            // 数据列
+            columns.forEach((col, index) => {
+                const th = document.createElement('th');
+                th.style.width = (col.width || 100) + 'px';
+                
+                if (col.background_color) {
+                    th.style.background = col.background_color;
+                }
+                if (col.text_color) {
+                    th.style.color = col.text_color;
+                }
+                if (col.font_weight) {
+                    th.style.font_weight = col.font_weight;
+                }
+                
+                th.innerHTML = `
+                    <div class="column-header">
+                        <span>${col.column_name}</span>
+                        <button class="delete-col-btn" onclick="deleteColumn(${col.id})">×</button>
+                    </div>
+                `;
+                
+                headerRow.appendChild(th);
+            });
+            
+            // 操作列
+            const thAction = document.createElement('th');
+            thAction.textContent = '操作';
+            thAction.style.width = '80px';
+            headerRow.appendChild(thAction);
+            
+            thead.appendChild(headerRow);
+        }
+        
+        // 渲染表体
+        function renderBody() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="' + (columns.length + 2) + '" class="empty-state">暂无数据，点击"添加行"按钮添加数据</td></tr>';
+                return;
+            }
+            
+            rows.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                
+                // 行号
+                const tdNumber = document.createElement('td');
+                tdNumber.className = 'row-number';
+                tdNumber.textContent = rowIndex + 1;
+                tr.appendChild(tdNumber);
+                
+                // 单元格
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    const cells = row.cells || []; // 防止 undefined
+                    const cell = cells.find(c => c.column_id === col.id);
+                    const value = cell ? cell.value : '';
+                    
+                    if (col.column_type === 'select') {
+                        const select = document.createElement('select');
+                        select.className = 'cell-select';
+                        select.dataset.rowId = row.id;
+                        select.dataset.columnId = col.id;
+                        select.dataset.cellId = cell ? cell.id : '';
+                        
+                        const options = col.options || [];
+                        options.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            if (value === opt) option.selected = true;
+                            select.appendChild(option);
+                        });
+                        
+                        select.addEventListener('change', (e) => {
+                            updateCell(e.target.dataset.cellId, e.target.value);
+                        });
+                        
+                        td.appendChild(select);
+                    } else if (col.column_type === 'image') {
+                        // 图片列
+                        const cellDiv = document.createElement('div');
+                        cellDiv.style.padding = '5px';
+                        cellDiv.style.textAlign = 'center';
+                        
+                        // 如果已有图片，显示预览
+                        if (value && value.startsWith('/uploads/')) {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.marginBottom = '5px';
+                            
+                            const img = document.createElement('img');
+                            img.src = value;
+                            img.style.maxWidth = '100%';
+                            img.style.maxHeight = '80px';
+                            img.style.borderRadius = '4px';
+                            img.style.cursor = 'pointer';
+                            img.onclick = () => window.open(value, '_blank');
+                            
+                            imgContainer.appendChild(img);
+                            cellDiv.appendChild(imgContainer);
+                        }
+                        
+                        // 上传按钮
+                        const uploadBtn = document.createElement('button');
+                        uploadBtn.textContent = value ? '更换图片' : '上传图片';
+                        uploadBtn.className = 'action-btn secondary';
+                        uploadBtn.style.fontSize = '11px';
+                        uploadBtn.style.padding = '4px 8px';
+                        uploadBtn.style.width = '100%';
+                        
+                        uploadBtn.onclick = () => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = async (e) => {
+                                await uploadImage(e.target.files[0], cell ? cell.id : '', row.id, col.id);
+                            };
+                            input.click();
+                        };
+                        
+                        cellDiv.appendChild(uploadBtn);
+                        td.appendChild(cellDiv);
+                    } else {
+                        const input = document.createElement('textarea');
+                        input.className = 'cell-input';
+                        input.value = value || '';
+                        input.dataset.rowId = row.id;
+                        input.dataset.columnId = col.id;
+                        input.dataset.cellId = cell ? cell.id : '';
+                        
+                        if (col.column_type === 'number') {
+                            input.type = 'number';
+                        } else if (col.column_type === 'date') {
+                            input.type = 'date';
+                        }
+                        
+                        input.addEventListener('blur', (e) => {
+                            updateCell(e.target.dataset.cellId, e.target.value);
+                        });
+                        
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Tab') {
+                                e.preventDefault();
+                                // 处理 Tab 键导航
+                                const inputs = Array.from(document.querySelectorAll('.cell-input, .cell-select'));
+                                const currentIndex = inputs.indexOf(e.target);
+                                const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
+                                if (nextIndex >= 0 && nextIndex < inputs.length) {
+                                    inputs[nextIndex].focus();
+                                }
+                            }
+                        });
+                        
+                        td.appendChild(input);
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                // 删除行按钮
+                const tdAction = document.createElement('td');
+                tdAction.className = 'row-actions';
+                tdAction.innerHTML = `<button class="delete-row-btn" onclick="deleteRow(${row.id})">删除</button>`;
+                tr.appendChild(tdAction);
+                
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // 添加行
+        async function addRow() {
+            try {
+                const response = await fetch(`/spreadsheet/api/${spreadsheetId}/rows`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    rows.push(result.data);
+                    renderBody();
+                } else {
+                    alert('添加失败：' + result.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+        
+        // 添加列
+        async function addColumn() {
+            const name = prompt('请输入列名:');
+            if (!name) return;
+            
+            const type = prompt('列类型 (text/number/date/select/image):', 'text');
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/${spreadsheetId}/columns`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        type: type || 'text',
+                        width: 120
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    columns.push(result.data);
+                    renderHeader();
+                    renderBody();
+                } else {
+                    alert('添加失败：' + result.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+        
+        // 上传图片
+        async function uploadImage(file, cellId, rowId, columnId) {
+            if (!file) return;
+            
+            // 检查文件大小（最大 5MB）
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过 5MB');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 更新单元格值为图片 URL
+                    if (cellId) {
+                        await updateCell(cellId, result.data.url);
+                    } else {
+                        // 如果单元格不存在，先创建
+                        await createCell(rowId, columnId, result.data.url);
+                    }
+                    
+                    // 重新渲染
+                    renderBody();
+                } else {
+                    alert('上传失败：' + result.message);
+                }
+            } catch (error) {
+                alert('上传失败：' + error.message);
+            }
+        }
+        
+        // 创建单元格（用于图片上传）
+        async function createCell(rowId, columnId, value) {
+            try {
+                const response = await fetch(`/spreadsheet/api/rows/${rowId}/cells`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        columnId: columnId,
+                        value: value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    console.error('创建单元格失败:', result.message);
+                }
+            } catch (error) {
+                console.error('创建单元格失败:', error);
+            }
+        }
+        
+        // 更新单元格
+        async function updateCell(cellId, value) {
+            if (!cellId) return;
+            
+            try {
+                await fetch(`/spreadsheet/api/cells/${cellId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        value: value
+                    })
+                });
+            } catch (error) {
+                console.error('更新失败:', error);
+            }
+        }
+        
+        // 删除行
+        async function deleteRow(rowId) {
+            if (!confirm('确定要删除这行吗？')) return;
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/rows/${rowId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    rows = rows.filter(r => r.id !== rowId);
+                    renderBody();
+                } else {
+                    alert('删除失败：' + result.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+        
+        // 删除列
+        async function deleteColumn(columnId) {
+            if (!confirm('确定要删除这列吗？此操作不可恢复。')) return;
+            
+            try {
+                const response = await fetch(`/spreadsheet/api/columns/${columnId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    columns = columns.filter(c => c.id !== columnId);
+                    renderHeader();
+                    renderBody();
+                } else {
+                    alert('删除失败：' + result.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+        
+        // 导出数据
+        function exportData() {
+            const exportData = {
+                columns: columns.map(col => col.column_name),
+                rows: rows.map(row => {
+                    const rowData = {};
+                    columns.forEach(col => {
+                        const cell = row.cells.find(c => c.column_id === col.id);
+                        rowData[col.column_name] = cell ? cell.value : '';
+                    });
+                    return rowData;
+                })
+            };
+            
+            const csv = [
+                exportData.columns.join(','),
+                ...exportData.rows.map(row => 
+                    exportData.columns.map(col => 
+                        `"${row[col] || ''}"`
+                    ).join(',')
+                )
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${document.getElementById('tableName').textContent}_${new Date().getTime()}.csv`;
+            link.click();
+        }
+        
+        // 页面加载时初始化
+        loadSpreadsheet();
+    
+</script>
+{% endblock %}

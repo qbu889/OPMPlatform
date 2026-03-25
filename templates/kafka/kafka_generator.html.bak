@@ -1,14 +1,9 @@
-{% extends "base.html" %}
-
-{% block title %}Kafka 消息生成器{% endblock %}
-
-{% block content %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kafka 消息生成器</title>
+    <title>Kafka消息生成器</title>
     <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/vendor/fontawesome/all.min.css" rel="stylesheet">
     <style>
@@ -198,25 +193,6 @@
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
-        /* Tooltip 样式优化 */
-        .tooltip {
-            max-width: 800px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .tooltip-inner {
-            background-color: #fff;
-            color: #333;
-            border: 2px solid #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-            text-align: left;
-            padding: 15px 20px;
-            border-radius: 8px;
-            min-width: 400px;
-        }
-        .tooltip .arrow::before {
-            border-top-color: #667eea;
-        }
         h1 {
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
@@ -346,38 +322,35 @@
                     <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
                 </div>
                 <div class="mb-3">
-                    <div class="d-flex align-items-center">
-                        <!-- 左侧：【测试】前缀开关 -->
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="addTestPrefixInput" checked>
-                            <label class="form-check-label" for="addTestPrefixInput">
-                                <strong>【测试】前缀</strong>
-                            </label>
-                        </div>
-                        <!-- 右侧：延迟时间输入 -->
-                        <div class="ms-3 d-flex align-items-center">
-                            <label for="creationEventTimeInput" class="form-label mb-0 me-2">
-                                <strong><i class="fas fa-clock me-1"></i>延迟时间：</strong>
-                                <i class="fas fa-question-circle text-muted ms-1" style="cursor: help;" 
-                                   data-bs-toggle="tooltip" 
-                                   title="<strong>说明：</strong>系统会自动从 JSON 数据中提取 DELAY_TIME 值（分钟），转换为小时后计算 CREATION_EVENT_TIME<br><strong>计算公式：</strong>CREATION_EVENT_TIME = 当前时间 - (DELAY_TIME ÷ 60) 小时<br><strong>示例：</strong>输入 720 → 720÷60=12 小时 → CREATION_EVENT_TIME = 当前时间 - 12 小时<br><strong>默认值：</strong>15 分钟"
-                                   data-bs-html="true"></i>
-                            </label>
-                            <div class="input-group input-group-sm" style="width: 120px;">
-                                <input type="number" class="form-control" id="creationEventTimeInput" 
-                                       value="15" placeholder="从 JSON 中自动提取" min="0" step="60">
-                                <span class="input-group-text">分钟</span>
-                            </div>
-                        </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="addTestPrefixInput" checked>
+                        <label class="form-check-label" for="addTestPrefixInput">
+                            <strong>为 EQP_LABEL 和 NE_LABEL 添加【测试】前缀</strong>
+                        </label>
                     </div>
+                </div>
+                <div class="mb-3">
+                    <label for="delayTime" class="form-label">
+                        <strong><i class="fas fa-clock me-2"></i>DELAY_TIME 延迟时间（分钟）：</strong>
+                    </label>
+                    <div class="input-group" style="max-width: 400px;">
+                        <input type="number" class="form-control" id="delayTime" value="720" 
+                               placeholder="请输入分钟数" min="0" step="60">
+                        <span class="input-group-text">分钟</span>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        说明：系统会将分钟数转换为小时数（分钟÷60），然后用当前时间减去该小时数得到 CREATION_EVENT_TIME
+                        <br>示例：输入 720 → 720÷60=12 小时 → 当前时间 -12 小时
+                    </small>
                 </div>
                 <div class="d-flex gap-3">
                     <button class="btn btn-primary btn-lg" onclick="generateMessage()">
                         <i class="fas fa-cogs me-2"></i>生成 Kafka 消息
                     </button>
-{#                    <button class="btn btn-secondary btn-lg" onclick="preprocessData()">#}
-{#                        <i class="fas fa-wrench me-2"></i>预处理数据#}
-{#                    </button>#}
+                    <button class="btn btn-secondary btn-lg" onclick="preprocessData()">
+                        <i class="fas fa-wrench me-2"></i>预处理数据
+                    </button>
                     <button class="btn btn-info btn-lg" onclick="loadSampleData()">
                         <i class="fas fa-file-import me-2"></i>加载示例数据
                     </button>
@@ -386,18 +359,18 @@
         </div>
 
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
-                    <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
-                </div>
-                <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
-                    <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
-                </button>
+            <div class="card-header">
+                <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
+                <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
             </div>
             <div class="card-body">
                 <div class="field-grid" id="customFields">
                     <!-- 自定义字段将在这里动态生成 -->
+                </div>
+                <div class="text-center mt-4">
+                    <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
+                        <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
+                    </button>
                 </div>
             </div>
         </div>
@@ -429,7 +402,7 @@
                 </div>
                 
                 <!-- ES 查询按钮 -->
-                <div class="mt-3" id="esQuerySection">
+                <div class="mt-3" id="esQuerySection" style="display: none;">
                     <h6 class="mb-3"><i class="fas fa-database me-2"></i>ES 查询语句</h6>
                     <div class="d-flex gap-2 mb-3">
                         <button class="btn btn-outline-primary" onclick="generateESQuery('EVENT_FP')">
@@ -458,6 +431,14 @@
                 <li>可通过自定义字段面板覆盖特定字段的值</li>
                 <li>FP 相关字段会自动生成唯一值</li>
                 <li>时间字段会自动设置为当前时间减 15 分钟</li>
+                <li><strong><code>DELAY_TIME</code> 字段说明：</strong>
+                    <ul style="margin-top: 5px;">
+                        <li>系统会自动从 ES 数据中提取 <code>DELAY_TIME</code> 字段值</li>
+                        <li>直接读取 JSON 中的 <code>DELAY_TIME</code> 值，不做转换</li>
+                        <li>示例：JSON 中 <code>"DELAY_TIME": 720</code> → 输出 <code>"DELAY_TIME": 720</code></li>
+                        <li>如果没有该字段，输出空值</li>
+                    </ul>
+                </li>
             </ul>
             <div class="mt-3" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px;">
                 <small style="color: #1976d2;">
@@ -523,7 +504,7 @@
         const commonFields = [
             'ID', 'NETWORK_TYPE_TOP', 'ORG_SEVERITY', 'REGION_NAME', 'CITY_NAME',
             'EQP_LABEL', 'NE_LABEL', 'VENDOR_NAME', 'TITLE_TEXT', 'STANDARD_ALARM_NAME',
-            'STANDARD_ALARM_ID', 'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
+            'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
         ];
 
         // 所有字段列表
@@ -556,24 +537,16 @@
             'ALARM_EQP_STATUS', 'INTERFERENCE_FLAG', 'SPECIAL_FIELD2', 'custGroupFeature',
             'industryCustType', 'strategicCustTypeFL', 'strategicCustTypeSL', 'FAULT_LOCATION',
             'SPECIAL_FIELD0', 'EVENT_SOURCE', 'ORIG_ALARM_CLEAR_FP', 'ORIG_ALARM_FP',
-            'EVENT_ARRIVAL_TIME', 'CREATION_EVENT_TIME'
+            'EVENT_ARRIVAL_TIME', 'DELAY_TIME'
         ];
 
         let showAllFields = false;
-        let pinnedFields = new Set(); // 存储被置顶的字段
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', async function() {
             await loadFieldMeta();
             renderCustomFields();
             initTestPrefixToggle();
-            // 初始化 Bootstrap tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl, { allowHTML: true });
-            });
-            // 监听 ES 数据输入框，自动提取 DELAY_TIME 并填充到 CREATION_EVENT_TIME 输入框
-            document.getElementById('esSource').addEventListener('input', extractDelayTimeToInput);
         });
 
         // 初始化测试前缀开关的联动
@@ -589,66 +562,6 @@
                         resultToggle.checked = this.checked;
                     }
                 });
-            }
-        }
-
-        // 从 ES 数据中提取 DELAY_TIME 并填充到 CREATION_EVENT_TIME 输入框
-        function extractDelayTimeToInput() {
-            const esSourceText = document.getElementById('esSource').value.trim();
-            const creationEventTimeInput = document.getElementById('creationEventTimeInput');
-            
-            if (!esSourceText) {
-                creationEventTimeInput.value = '15'; // 默认 15 分钟（15 分钟）
-                return;
-            }
-            
-            try {
-                // 尝试解析 JSON
-                const esData = JSON.parse(esSourceText);
-                
-                // 尝试从不同位置获取 DELAY_TIME
-                let delayTime = null;
-                
-                // 1. 如果数据包含 _source，从 _source 中查找
-                if (esData._source) {
-                    // 直接在 _source 中
-                    if (typeof esData._source.DELAY_TIME !== 'undefined') {
-                        delayTime = esData._source.DELAY_TIME;
-                    }
-                    // 在 _source.BUSINESS_TAG 中
-                    else if (esData._source.BUSINESS_TAG && typeof esData._source.BUSINESS_TAG.DELAY_TIME !== 'undefined') {
-                        delayTime = esData._source.BUSINESS_TAG.DELAY_TIME;
-                    }
-                    // 在 _source.DISPATCH_INFO 中（新增）
-                    else if (esData._source.DISPATCH_INFO && typeof esData._source.DISPATCH_INFO.DELAY_TIME !== 'undefined') {
-                        delayTime = esData._source.DISPATCH_INFO.DELAY_TIME;
-                    }
-                }
-                // 2. 直接在根对象中
-                else if (typeof esData.DELAY_TIME !== 'undefined') {
-                    delayTime = esData.DELAY_TIME;
-                }
-                // 3. 在 BUSINESS_TAG 中
-                else if (esData.BUSINESS_TAG && typeof esData.BUSINESS_TAG.DELAY_TIME !== 'undefined') {
-                    delayTime = esData.BUSINESS_TAG.DELAY_TIME;
-                }
-                // 4. 在 DISPATCH_INFO 中（新增）
-                else if (esData.DISPATCH_INFO && typeof esData.DISPATCH_INFO.DELAY_TIME !== 'undefined') {
-                    delayTime = esData.DISPATCH_INFO.DELAY_TIME;
-                }
-                
-                // 如果找到了 DELAY_TIME，填充到输入框
-                if (delayTime !== null) {
-                    creationEventTimeInput.value = delayTime;
-                    console.log(`从 ES 数据中提取 DELAY_TIME: ${delayTime} 分钟`);
-                    console.log(`计算 CREATION_EVENT_TIME: 当前时间 - ${delayTime/60} 小时`);
-                } else {
-                    creationEventTimeInput.value = '15'; // 默认 15 分钟
-                    console.log('未在 ES 数据中找到 DELAY_TIME，使用默认值 15 分钟');
-                }
-            } catch (error) {
-                // JSON 解析失败，不清空输入框，允许用户手动输入
-                console.log('JSON 解析失败，等待用户手动输入 DELAY_TIME');
             }
         }
 
@@ -685,18 +598,18 @@
                 
                 // 如果是添加前缀模式，且当前值没有前缀，则添加
                 if (addPrefix) {
-                    if (resultData.EQP_LABEL && !resultData.EQP_LABEL.startsWith('【测试】')) {
-                        resultData.EQP_LABEL = '【测试】' + resultData.EQP_LABEL;
+                    if (resultData.EQP_LABEL && !resultData.EQP_LABEL.startsWith('[测试]')) {
+                        resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
                     }
-                    if (resultData.NE_LABEL && !resultData.NE_LABEL.startsWith('【测试】')) {
-                        resultData.NE_LABEL = '【测试】' + resultData.NE_LABEL;
+                    if (resultData.NE_LABEL && !resultData.NE_LABEL.startsWith('[测试]')) {
+                        resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
                     }
                 } else {
                     // 如果是移除前缀模式，且当前值有前缀，则移除
-                    if (resultData.EQP_LABEL && resultData.EQP_LABEL.startsWith('【测试】')) {
+                    if (resultData.EQP_LABEL && resultData.EQP_LABEL.startsWith('[测试]')) {
                         resultData.EQP_LABEL = resultData.EQP_LABEL.replace(/^\[ 测试\]/, '');
                     }
-                    if (resultData.NE_LABEL && resultData.NE_LABEL.startsWith('【测试】')) {
+                    if (resultData.NE_LABEL && resultData.NE_LABEL.startsWith('[测试]')) {
                         resultData.NE_LABEL = resultData.NE_LABEL.replace(/^\[ 测试\]/, '');
                     }
                 }
@@ -724,34 +637,19 @@
         // 渲染自定义字段面板
         function renderCustomFields() {
             const container = document.getElementById('customFields');
-            let fieldsToShow = showAllFields ? allFields : [...commonFields];
-                    
-            // 将被置顶的字段添加到显示列表前面
-            pinnedFields.forEach(field => {
-                if (!fieldsToShow.includes(field)) {
-                    fieldsToShow.unshift(field);
-                }
-            });
-                    
+            const fieldsToShow = showAllFields ? allFields : commonFields;
+            
             container.innerHTML = '';
-                    
+            
             fieldsToShow.forEach(field => {
                 const meta = fieldMetaMap[field] || {};
-                const labelCn = meta.db_cn || meta.label_cn || '';
+                const labelCn = meta.db_cn || meta.label_cn || '';  // 优先匹配数据库中文，其次字段中文解释
                 const esField = meta.es_field || '';
                 const hasDict = !!fieldDictTables[field];
-                const isPinned = pinnedFields.has(field);
-        
+
                 const fieldItem = document.createElement('div');
                 fieldItem.className = 'field-item';
-                fieldItem.style.position = 'relative';
                 fieldItem.innerHTML = `
-                    <button class="btn btn-sm ${isPinned ? 'btn-danger' : 'btn-outline-secondary'}" 
-                            style="position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; z-index: 10;"
-                            onclick="toggleFieldPin('${field}')" 
-                            title="${isPinned ? '取消置顶' : '置顶该字段'}">
-                        <i class="fas fa-${isPinned ? 'thumbtack' : 'thumbtack-slash'}"></i>
-                    </button>
                     <label for="field_${field}" class="form-label">
                         ${field}${labelCn ? `（${labelCn}）` : ''}:
                     </label>
@@ -767,7 +665,7 @@
                     </div>
                     ${esField ? `
                         <div class="field-meta">
-                            <span class="es-field" title="对应 ES 字段：${esField}">ES: ${esField}</span>
+                            <span class="es-field" title="对应ES字段：${esField}">ES: ${esField}</span>
                         </div>
                     ` : ''}
                 `;
@@ -778,16 +676,6 @@
         // 切换字段显示
         function toggleAllFields() {
             showAllFields = !showAllFields;
-            renderCustomFields();
-        }
-
-        // 切换单个字段的置顶状态
-        function toggleFieldPin(field) {
-            if (pinnedFields.has(field)) {
-                pinnedFields.delete(field);
-            } else {
-                pinnedFields.add(field);
-            }
             renderCustomFields();
         }
 
@@ -967,11 +855,6 @@
 
                 // 直接传递原始数据给后端
                 const backendUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/kafka-generator/generate`;
-                
-                // 获取 CREATION_EVENT_TIME 输入框的值（如果有手动输入）
-                const creationEventTimeInput = document.getElementById('creationEventTimeInput').value.trim();
-                const delayTimeValue = creationEventTimeInput ? parseInt(creationEventTimeInput) : null;
-                
                 const response = await fetch(backendUrl, {
                     method: 'POST',
                     headers: {
@@ -979,8 +862,7 @@
                     },
                     body: JSON.stringify({
                         es_source_raw: esSourceText,  // 传递原始字符串
-                        custom_fields: customFields,
-                        delay_time: delayTimeValue  // 传递手动输入的 DELAY_TIME 值
+                        custom_fields: customFields
                     })
                 });
 
@@ -993,10 +875,10 @@
                     const addPrefix = document.getElementById('addTestPrefixInput').checked;
                     if (addPrefix) {
                         if (resultData.EQP_LABEL) {
-                            resultData.EQP_LABEL = '【测试】' + resultData.EQP_LABEL;
+                            resultData.EQP_LABEL = '[测试]' + resultData.EQP_LABEL;
                         }
                         if (resultData.NE_LABEL) {
-                            resultData.NE_LABEL = '【测试】' + resultData.NE_LABEL;
+                            resultData.NE_LABEL = '[测试]' + resultData.NE_LABEL;
                         }
                     }
                     
@@ -1640,8 +1522,7 @@
 };
             
             document.getElementById('esSource').value = JSON.stringify(sampleData, null, 2);
-            // 自动提取 DELAY_TIME
-            setTimeout(extractDelayTimeToInput, 100);
         }
     </script>
-{% endblock %}
+</body>
+</html>

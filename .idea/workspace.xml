@@ -152,6 +152,11 @@
     ]
   }
 }]]></component>
+  <component name="Push.Settings">
+    <force-push-targets>
+      <force-push-target remote-path="origin" branch="onlineExcel" />
+    </force-push-targets>
+  </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/static" />
@@ -356,15 +361,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="26108000" />
-    </task>
-    <task id="LOCAL-00002" summary="kafka消息生成">
-      <option name="closed" value="true" />
-      <created>1770196597884</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1770196597884</updated>
+      <workItem from="1774320367349" duration="27903000" />
     </task>
     <task id="LOCAL-00003" summary="排班系统1.0">
       <option name="closed" value="true" />
@@ -750,7 +747,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774418380266</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="new：增加kafka生成的置顶按钮功能">
+      <option name="closed" value="true" />
+      <created>1774423180489</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1774423180489</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -791,7 +796,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：遗漏提交文件" />
     <MESSAGE value="fix：FPA版本稳定版1.0.0" />
     <MESSAGE value="new: 1.增加导出历史记录；2.增加删除功能；3.增加历史记录列表停止进程功能；4.增加进度显示；" />
     <MESSAGE value="fix：优化前后端交互" />
@@ -816,7 +820,8 @@
     <MESSAGE value="new：重构前端" />
     <MESSAGE value="new：修复FPA前端显示不全、动画一直加载的问题" />
     <MESSAGE value="new：修复前端重构页面样式错乱问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：修复前端重构页面样式错乱问题" />
+    <MESSAGE value="new：增加kafka生成的置顶按钮功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加kafka生成的置顶按钮功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
