@@ -386,18 +386,18 @@
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
-                <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5><i class="fas fa-edit me-2"></i>自定义字段覆盖</h5>
+                    <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
+                </div>
+                <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
+                    <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
+                </button>
             </div>
             <div class="card-body">
                 <div class="field-grid" id="customFields">
                     <!-- 自定义字段将在这里动态生成 -->
-                </div>
-                <div class="text-center mt-4">
-                    <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
-                        <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
-                    </button>
                 </div>
             </div>
         </div>
@@ -523,7 +523,7 @@
         const commonFields = [
             'ID', 'NETWORK_TYPE_TOP', 'ORG_SEVERITY', 'REGION_NAME', 'CITY_NAME',
             'EQP_LABEL', 'NE_LABEL', 'VENDOR_NAME', 'TITLE_TEXT', 'STANDARD_ALARM_NAME',
-            'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
+            'STANDARD_ALARM_ID', 'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
         ];
 
         // 所有字段列表
@@ -560,6 +560,7 @@
         ];
 
         let showAllFields = false;
+        let pinnedFields = new Set(); // 存储被置顶的字段
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', async function() {
@@ -723,19 +724,34 @@
         // 渲染自定义字段面板
         function renderCustomFields() {
             const container = document.getElementById('customFields');
-            const fieldsToShow = showAllFields ? allFields : commonFields;
-            
+            let fieldsToShow = showAllFields ? allFields : [...commonFields];
+                    
+            // 将被置顶的字段添加到显示列表前面
+            pinnedFields.forEach(field => {
+                if (!fieldsToShow.includes(field)) {
+                    fieldsToShow.unshift(field);
+                }
+            });
+                    
             container.innerHTML = '';
-            
+                    
             fieldsToShow.forEach(field => {
                 const meta = fieldMetaMap[field] || {};
-                const labelCn = meta.db_cn || meta.label_cn || '';  // 优先匹配数据库中文，其次字段中文解释
+                const labelCn = meta.db_cn || meta.label_cn || '';
                 const esField = meta.es_field || '';
                 const hasDict = !!fieldDictTables[field];
-
+                const isPinned = pinnedFields.has(field);
+        
                 const fieldItem = document.createElement('div');
                 fieldItem.className = 'field-item';
+                fieldItem.style.position = 'relative';
                 fieldItem.innerHTML = `
+                    <button class="btn btn-sm ${isPinned ? 'btn-danger' : 'btn-outline-secondary'}" 
+                            style="position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; z-index: 10;"
+                            onclick="toggleFieldPin('${field}')" 
+                            title="${isPinned ? '取消置顶' : '置顶该字段'}">
+                        <i class="fas fa-${isPinned ? 'thumbtack' : 'thumbtack-slash'}"></i>
+                    </button>
                     <label for="field_${field}" class="form-label">
                         ${field}${labelCn ? `（${labelCn}）` : ''}:
                     </label>
@@ -751,7 +767,7 @@
                     </div>
                     ${esField ? `
                         <div class="field-meta">
-                            <span class="es-field" title="对应ES字段：${esField}">ES: ${esField}</span>
+                            <span class="es-field" title="对应 ES 字段：${esField}">ES: ${esField}</span>
                         </div>
                     ` : ''}
                 `;
@@ -762,6 +778,16 @@
         // 切换字段显示
         function toggleAllFields() {
             showAllFields = !showAllFields;
+            renderCustomFields();
+        }
+
+        // 切换单个字段的置顶状态
+        function toggleFieldPin(field) {
+            if (pinnedFields.has(field)) {
+                pinnedFields.delete(field);
+            } else {
+                pinnedFields.add(field);
+            }
             renderCustomFields();
         }
 
