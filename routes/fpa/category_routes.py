@@ -5,7 +5,9 @@
 提供专业领域的增删改查功能
 """
 from flask import Blueprint, request, jsonify, render_template
-from models.knowledge_base import knowledge_base_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 category_bp = Blueprint('category', __name__, url_prefix='/api/category')
 
@@ -14,14 +16,32 @@ category_bp = Blueprint('category', __name__, url_prefix='/api/category')
 def list_categories():
     """获取所有专业领域列表"""
     try:
+        logger.info(f"[CATEGORY_LIST] ====== 开始处理领域列表请求 ======")
+        logger.info(f"[CATEGORY_LIST] 请求参数：active_only={request.args.get('active_only', 'true')}")
+        
         active_only = request.args.get('active_only', 'true').lower() == 'true'
+        
+        from models.knowledge_base import knowledge_base_manager
+        logger.info(f"[CATEGORY_LIST] 调用 knowledge_base_manager.list_categories(active_only={active_only})")
+        
         categories = knowledge_base_manager.list_categories(active_only=active_only)
         
-        return jsonify({
+        logger.info(f"[CATEGORY_LIST] 查询到领域数量：{len(categories)}")
+        if categories:
+            logger.info(f"[CATEGORY_LIST] 领域列表：{[cat['name'] for cat in categories]}")
+        
+        result = {
             'success': True,
             'categories': categories
-        })
+        }
+        
+        logger.info(f"[CATEGORY_LIST] 返回结果：success=True, count={len(categories)}")
+        logger.info(f"[CATEGORY_LIST] ====== 领域列表请求处理完成 ======")
+        
+        return jsonify(result)
     except Exception as e:
+        logger.error(f"[CATEGORY_LIST] 获取领域列表失败：{e}")
+        logger.error(f"[CATEGORY_LIST] 错误堆栈：{__import__('traceback').format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)

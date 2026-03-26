@@ -397,19 +397,29 @@ def upload_document_confirm():
 def list_documents():
     """获取文档列表"""
     try:
-        logger.info(f"[CHATBOT_DOCUMENTS] 收到文档列表请求")
+        logger.info(f"[CHATBOT_DOCUMENTS] ====== 开始处理文档列表请求 ======")
+        logger.info(f"[CHATBOT_DOCUMENTS] 请求参数：{request.args.to_dict()}")
+        
         from models.knowledge_base import knowledge_base_manager
         
+        logger.info(f"[CHATBOT_DOCUMENTS] 调用 knowledge_base_manager.list_documents(status='active')")
         documents = knowledge_base_manager.list_documents(status='active')
         
-        logger.info(f"[CHATBOT_DOCUMENTS] 返回文档数量：{len(documents)}")
+        logger.info(f"[CHATBOT_DOCUMENTS] 查询到文档数量：{len(documents)}")
+        if documents:
+            logger.info(f"[CHATBOT_DOCUMENTS] 第一个文档：{documents[0] if len(documents) > 0 else 'N/A'}")
         
-        return jsonify({
+        result = {
             'success': True,
             'documents': documents
-        })
+        }
+        logger.info(f"[CHATBOT_DOCUMENTS] 返回结果：success=True, count={len(documents)}")
+        logger.info(f"[CHATBOT_DOCUMENTS] ====== 文档列表请求处理完成 ======")
+        
+        return jsonify(result)
     except Exception as e:
         logger.error(f"[CHATBOT_DOCUMENTS] 获取文档列表失败：{e}")
+        logger.error(f"[CHATBOT_DOCUMENTS] 错误堆栈：{__import__('traceback').format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -420,19 +430,29 @@ def list_documents():
 def list_faqs():
     """获取 FAQ 列表"""
     try:
-        logger.info(f"[CHATBOT_FAQS] 收到 FAQ 列表请求")
+        logger.info(f"[CHATBOT_FAQS] ====== 开始处理 FAQ 列表请求 ======")
+        logger.info(f"[CHATBOT_FAQS] 请求参数：{request.args.to_dict()}")
+        
         from models.knowledge_base import knowledge_base_manager
         
+        logger.info(f"[CHATBOT_FAQS] 调用 knowledge_base_manager.list_all_faqs()")
         faqs = knowledge_base_manager.list_all_faqs()
         
-        logger.info(f"[CHATBOT_FAQS] 返回 FAQ 数量：{len(faqs)}")
+        logger.info(f"[CHATBOT_FAQS] 查询到 FAQ 数量：{len(faqs)}")
+        if faqs:
+            logger.info(f"[CHATBOT_FAQS] 第一个 FAQ 问题：{faqs[0].get('question', 'N/A')[:50]}...")
         
-        return jsonify({
+        result = {
             'success': True,
             'faqs': faqs
-        })
+        }
+        logger.info(f"[CHATBOT_FAQS] 返回结果：success=True, count={len(faqs)}")
+        logger.info(f"[CHATBOT_FAQS] ====== FAQ 列表请求处理完成 ======")
+        
+        return jsonify(result)
     except Exception as e:
         logger.error(f"[CHATBOT_FAQS] 获取 FAQ 列表失败：{e}")
+        logger.error(f"[CHATBOT_FAQS] 错误堆栈：{__import__('traceback').format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -507,26 +527,42 @@ def clear_conversation():
 def check_ollama_status():
     """检查 Ollama 服务状态"""
     try:
-        logger.info(f"[CHATBOT_OLLAMA] 收到 Ollama 状态检查请求")
+        logger.info(f"[CHATBOT_OLLAMA] ====== 开始检查 Ollama 服务状态 ======")
+        
         from utils.ollama_client import get_ollama_client
         
+        logger.info(f"[CHATBOT_OLLAMA] 获取 Ollama 客户端实例")
         client = get_ollama_client()
+        
+        logger.info(f"[CHATBOT_OLLAMA] Ollama base_url: {client.base_url}")
+        logger.info(f"[CHATBOT_OLLAMA] 调用 client.is_available()")
         is_available = client.is_available()
+        
+        logger.info(f"[CHATBOT_OLLAMA] Ollama 可用性检查结果：{is_available}")
         
         models = []
         if is_available:
+            logger.info(f"[CHATBOT_OLLAMA] 调用 client.list_models()")
             models = client.list_models()
+            logger.info(f"[CHATBOT_OLLAMA] 获取到模型数量：{len(models)}")
+            logger.info(f"[CHATBOT_OLLAMA] 模型列表：{models}")
+        else:
+            logger.warning(f"[CHATBOT_OLLAMA] Ollama 服务不可用，跳过模型列表获取")
         
-        logger.info(f"[CHATBOT_OLLAMA] Ollama 可用：{is_available}, 模型数量：{len(models)}")
-        
-        return jsonify({
+        result = {
             'success': True,
             'available': is_available,
             'models': models,
             'endpoint': client.base_url
-        })
+        }
+        
+        logger.info(f"[CHATBOT_OLLAMA] 返回结果：available={is_available}, models_count={len(models)}")
+        logger.info(f"[CHATBOT_OLLAMA] ====== Ollama 状态检查完成 ======")
+        
+        return jsonify(result)
     except Exception as e:
         logger.error(f"[CHATBOT_OLLAMA] 检查 Ollama 状态失败：{e}")
+        logger.error(f"[CHATBOT_OLLAMA] 错误堆栈：{__import__('traceback').format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e),

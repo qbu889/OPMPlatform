@@ -6,9 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/chat/chatai_routes.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/fpa/category_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/category_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -363,15 +362,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="34777000" />
-    </task>
-    <task id="LOCAL-00004" summary="端口保持5001；增加pymysql的依赖包">
-      <option name="closed" value="true" />
-      <created>1771897736239</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1771897736239</updated>
+      <workItem from="1774320367349" duration="35891000" />
     </task>
     <task id="LOCAL-00005" summary="端口保持5001；增加pymysql的依赖包">
       <option name="closed" value="true" />
@@ -757,7 +748,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774425618155</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="fix：页面重构后AI客服页面功能异常调整">
+      <option name="closed" value="true" />
+      <created>1774490320942</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1774490320942</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -798,7 +797,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new: 1.增加导出历史记录；2.增加删除功能；3.增加历史记录列表停止进程功能；4.增加进度显示；" />
     <MESSAGE value="fix：优化前后端交互" />
     <MESSAGE value="fix：生成FPA文档&#10;任务 ID 完全隔离 - UUID 随机，无法猜测&#10;文件命名已优化 - 加入 task_id，绝对唯一&#10;数据库精确查询 - WHERE task_id = ?&#10;线程安全保障 - threading.Lock 保护共享数据&#10;无全局状态污染 - 每个任务独立运行" />
     <MESSAGE value="new：导入历史任务新增刷新按钮" />
@@ -823,7 +821,8 @@
     <MESSAGE value="new：修复前端重构页面样式错乱问题" />
     <MESSAGE value="new：增加kafka生成的置顶按钮功能" />
     <MESSAGE value="new：增加kafka的ES语句生成" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加kafka的ES语句生成" />
+    <MESSAGE value="fix：页面重构后AI客服页面功能异常调整" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：页面重构后AI客服页面功能异常调整" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
