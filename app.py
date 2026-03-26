@@ -55,6 +55,9 @@ from routes.auth.auth_routes import auth_bp
 # 智能客服模块
 from routes.chat.chatbot_routes import chatbot_bp
 
+# Word 转 Excel 模块
+from routes.word_to_excel.word_to_excel_routes import word_to_excel_bp
+
 # 在线表格模块
 from routes.spreadsheet.spreadsheet_routes import spreadsheet_bp
 
@@ -213,6 +216,9 @@ def create_app(config_name='development'):
             
         # 智能客服模块（蓝图已定义前缀）
         chatbot_bp,
+        
+        # Word 转 Excel 模块（蓝图已定义前缀）
+        word_to_excel_bp,
         
         # 在线表格模块（蓝图已定义前缀）
         spreadsheet_bp,

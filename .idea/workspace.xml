@@ -5,12 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/docs/need_doc/技需核对.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-软件资产解析清单.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/document_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/document_processor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/chatbot_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/chatbot_core.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/ollama_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -171,11 +177,11 @@
       <recent name="$PROJECT_DIR$/test" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/uploads/fpa_input" />
+      <recent name="$PROJECT_DIR$/docs/need_doc" />
       <recent name="$PROJECT_DIR$/models" />
       <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/docs" />
-      <recent name="$PROJECT_DIR$/sql" />
-      <recent name="$PROJECT_DIR$/test/fpa" />
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
@@ -245,14 +251,14 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Flask (app.py) (1)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+    <configuration name="Flask (app.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="target" value="$PROJECT_DIR$/app.py" />
       <option name="targetType" value="PATH" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -366,15 +372,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="43156000" />
-    </task>
-    <task id="LOCAL-00007" summary="fix：排班逻辑全面优化">
-      <option name="closed" value="true" />
-      <created>1772516916195</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1772516916195</updated>
+      <workItem from="1774320367349" duration="49150000" />
     </task>
     <task id="LOCAL-00008" summary="fix：前端备注信息数据展示">
       <option name="closed" value="true" />
@@ -760,7 +758,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774493320929</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="fix：sql初始化调整、ai客户端调整、客户端调整">
+      <option name="closed" value="true" />
+      <created>1774507332867</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1774507332867</updated>
+    </task>
+    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -801,7 +807,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：导入历史任务新增刷新按钮" />
     <MESSAGE value="fix：使用远程并且尝试减少请求量" />
     <MESSAGE value="fix：查询接口时机、下划线去除、特殊符号去除" />
     <MESSAGE value="fix：【难修复】生成FPA文档顺序BUG" />
@@ -826,7 +831,8 @@
     <MESSAGE value="fix：页面重构后AI客服页面功能异常调整" />
     <MESSAGE value="fix：增加日志输出" />
     <MESSAGE value="fix：复制结果按钮调整、复制成功提示语调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：复制结果按钮调整、复制成功提示语调整" />
+    <MESSAGE value="fix：sql初始化调整、ai客户端调整、客户端调整" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：sql初始化调整、ai客户端调整、客户端调整" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

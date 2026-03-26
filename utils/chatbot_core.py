@@ -49,22 +49,31 @@ class ChatbotCore:
             回复结果字典
         """
         try:
+            logger.info(f"[CHATBOT_CORE] 开始处理查询：{query[:100]}..." if len(query) > 100 else f"[CHATBOT_CORE] 开始处理查询：{query}")
+            
             # 1. 问题解析与意图识别
+            logger.info(f"[CHATBOT_CORE] Step 1: 问题解析与意图识别")
             parsed_query = self._parse_query(query)
+            logger.info(f"[CHATBOT_CORE] 解析结果：topic={parsed_query.get('topic', 'unknown')}, keywords={parsed_query.get('keywords', [])}")
             
             # 2. 检索知识库（支持领域过滤）
+            logger.info(f"[CHATBOT_CORE] Step 2: 检索知识库")
             retrieved_faqs = self._retrieve_knowledge(query, top_k=5, domain_id=domain_id)
+            logger.info(f"[CHATBOT_CORE] 检索到 {len(retrieved_faqs)} 条 FAQ，最高相似度：{retrieved_faqs[0].get('similarity_score', 0) if retrieved_faqs else 0:.2f}")
             
             # 3. 如果有高相似度匹配，直接使用
             if retrieved_faqs and retrieved_faqs[0].get('similarity_score', 0) > 0.8:
+                logger.info(f"[CHATBOT_CORE] ✅ 命中知识库（相似度 > 0.8）")
                 best_faq = retrieved_faqs[0]
                 answer = best_faq['answer']
                 source = 'knowledge_base'
                 
                 # 更新浏览次数
                 self.knowledge_base.increment_faq_view(best_faq['id'])
+                logger.info(f"[CHATBOT_CORE] 已更新 FAQ 浏览次数：{best_faq['id']}")
             else:
                 # 4. 使用 AI 生成答案
+                logger.info(f"[CHATBOT_CORE] 🤖 知识库无高相似度匹配，使用 AI 生成答案")
                 answer, used_context = self._generate_answer(
                     query=query,
                     retrieved_faqs=retrieved_faqs,
@@ -74,6 +83,7 @@ class ChatbotCore:
             
             # 5. 保存对话历史
             if session_id:
+                logger.info(f"[CHATBOT_CORE] Step 5: 保存对话历史")
                 self._save_conversation(
                     session_id=session_id,
                     query=query,
@@ -81,6 +91,9 @@ class ChatbotCore:
                     retrieved_faqs=retrieved_faqs,
                     source=source
                 )
+                logger.info(f"[CHATBOT_CORE] 对话历史已保存")
+            
+            logger.info(f"[CHATBOT_CORE] ✅ 查询处理完成，source={source}")
             
             return {
                 'success': True,
@@ -92,7 +105,7 @@ class ChatbotCore:
             }
             
         except Exception as e:
-            logger.error(f"处理查询失败：{e}")
+            logger.error(f"[CHATBOT_CORE] ❌ 处理查询失败：{e}", exc_info=True)
             return {
                 'success': False,
                 'error': str(e),
@@ -111,7 +124,7 @@ class ChatbotCore:
         """
         # 使用 AI 进行问题解析
         prompt = f"""
-请分析以下用户问题，提取关键信息：
+请分析以下的用户问题，提取关键信息：
 1. 问题的主题/领域
 2. 关键词
 3. 问题类型（是什么、为什么、怎么做等）
@@ -129,18 +142,24 @@ class ChatbotCore:
 """
         
         try:
+            logger.info(f"[CHATBOT_PARSE] 正在解析问题...")
             response = self.ollama_client.generate(prompt)
+            logger.info(f"[CHATBOT_PARSE] AI 响应：{response[:200]}..." if len(response) > 200 else f"[CHATBOT_PARSE] AI 响应：{response}")
+            
             # 尝试解析 JSON
             start_idx = response.find('{')
             end_idx = response.rfind('}') + 1
             if start_idx >= 0 and end_idx > start_idx:
                 json_str = response[start_idx:end_idx]
+                logger.info(f"[CHATBOT_PARSE] 提取的 JSON: {json_str[:150]}..." if len(json_str) > 150 else f"[CHATBOT_PARSE] 提取的 JSON: {json_str}")
                 parsed = json.loads(json_str)
+                logger.info(f"[CHATBOT_PARSE] ✅ 解析成功：topic={parsed.get('topic', 'unknown')}")
                 return parsed
             else:
+                logger.warning(f"[CHATBOT_PARSE] ⚠️ 未找到 JSON 格式")
                 return {'topic': 'unknown', 'keywords': [], 'question_type': 'general'}
         except Exception as e:
-            logger.warning(f"问题解析失败：{e}")
+            logger.warning(f"[CHATBOT_PARSE] ❌ 问题解析失败：{e}")
             return {'topic': 'unknown', 'keywords': [], 'question_type': 'general'}
     
     def _retrieve_knowledge(self, query: str, top_k: int = 5, domain_id: int = None) -> List[Dict]:
@@ -202,6 +221,7 @@ class ChatbotCore:
         # 添加对话上下文（最近 5 轮）
         if context:
             messages.extend(context[-10:])  # 保留最近 5 轮（10 条消息）
+            logger.info(f"[CHATBOT_GEN] 添加上下文：{len(context[-10:])} 条消息")
         
         # 构建知识库参考
         kb_context = ""
@@ -209,17 +229,25 @@ class ChatbotCore:
             kb_context = "\n\n参考知识库内容：\n"
             for i, faq in enumerate(retrieved_faqs, 1):
                 kb_context += f"{i}. 问题：{faq['question']}\n   答案：{faq['answer']}\n\n"
+            logger.info(f"[CHATBOT_GEN] 参考知识库：{len(retrieved_faqs)} 条")
+        else:
+            logger.info(f"[CHATBOT_GEN] 无知识库参考内容")
         
         # 添加用户问题
         user_message = f"用户问题：{query}{kb_context}"
         messages.append({"role": "user", "content": user_message})
         
+        logger.info(f"[CHATBOT_GEN] 正在调用 AI 生成答案...")
+        logger.info(f"[CHATBOT_GEN] 消息总数：{len(messages)}")
+        
         try:
             # 调用 AI 生成答案
             answer = self.ollama_client.chat(messages)
+            logger.info(f"[CHATBOT_GEN] ✅ AI 响应长度：{len(answer)} 字符")
+            logger.info(f"[CHATBOT_GEN] AI 回答预览：{answer.strip()[:200]}..." if len(answer) > 200 else f"[CHATBOT_GEN] AI 回答：{answer.strip()}")
             return answer.strip(), retrieved_faqs[:2]  # 返回使用的参考
         except Exception as e:
-            logger.error(f"AI 生成答案失败：{e}")
+            logger.error(f"[CHATBOT_GEN] ❌ AI 生成答案失败：{e}", exc_info=True)
             return "抱歉，我暂时无法回答这个问题。", []
     
     def _save_conversation(self, session_id: str, query: str, answer: str,

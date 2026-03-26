@@ -715,7 +715,9 @@ async function sendMessage() {
     addMessageToChat(message, 'user');
     userInput.value = '';
     sendButton.disabled = true;
-    typingIndicator.style.display = 'none';
+    
+    // ✅ 显示加载动画
+    typingIndicator.style.display = 'flex';
     scrollToBottom();
     
     try {
@@ -730,6 +732,7 @@ async function sendMessage() {
             })
         });
         
+        // 隐藏加载动画
         typingIndicator.style.display = 'none';
         
         if (response.ok) {

@@ -247,12 +247,30 @@ class OllamaClient:
                     logger.error(f"[OLLAMA_GENERATE] 连接失败，已达最大重试次数：{e}")
                     raise Exception(f"AI 服务连接失败：{str(e)}")
             except requests.exceptions.HTTPError as e:
-                # 处理 HTTP 错误（包括 502、503、504 等服务器错误）
+                # 处理 HTTP 错误（包括 502、503、504、400 等服务器错误）
                 last_error = e
                 attempt += 1
+                
+                # 详细记录错误响应，帮助诊断问题
+                logger.error(f"[OLLAMA_HTTP_ERROR] ❌ HTTP 错误 {response.status_code}")
+                logger.error(f"[OLLAMA_HTTP_ERROR]    URL: {self.api_endpoint}")
+                logger.error(f"[OLLAMA_HTTP_ERROR]    Method: POST")
+                logger.error(f"[OLLAMA_HTTP_ERROR]    Status: {response.status_code} {response.reason}")
+                
+                # 尝试读取响应内容
+                try:
+                    error_response = response.json()
+                    logger.error(f"[OLLAMA_HTTP_ERROR]    Error Response: {json.dumps(error_response, ensure_ascii=False, indent=2)}")
+                except:
+                    error_text = response.text[:500]
+                    logger.error(f"[OLLAMA_HTTP_ERROR]    Error Text: {error_text}")
+                
+                # 记录请求的 payload（前 1000 字符）
+                logger.error(f"[OLLAMA_HTTP_ERROR]    Request Payload (preview): {str(payload)[:1000]}...")
+                
                 if attempt <= retry:
                     wait_time = 2 ** attempt * 3  # 指数退避：6, 12, 24, 48, 96 秒
-                    logger.warning(f"[OLLAMA_HTTP_ERROR] HTTP 错误 {response.status_code}，{wait_time}秒后重试 (Attempt {attempt}/{retry + 1}): {e}")
+                    logger.warning(f"[OLLAMA_HTTP_ERROR] {wait_time}秒后重试 (Attempt {attempt}/{retry + 1})")
                     import time
                     time.sleep(wait_time)
                 else:

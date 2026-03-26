@@ -116,33 +116,48 @@ def chat():
         }
     """
     try:
+        # 记录请求信息
+        logger.info(f"[CHATBOT_CHAT] ====== 收到聊天请求 ======")
+        logger.info(f"[CHATBOT_CHAT] Request headers: {dict(request.headers)}")
+        logger.info(f"[CHATBOT_CHAT] Request JSON: {request.get_json()}")
+        
         data = request.get_json()
         if not data or 'message' not in data:
+            logger.warning(f"[CHATBOT_CHAT] ❌ 缺少消息内容")
             return jsonify({
                 'success': False,
                 'error': '缺少消息内容'
             }), 400
         
         user_message = data['message']
+        logger.info(f"[CHATBOT_CHAT] 👤 用户问题：{user_message}")
         
         # 获取或创建会话 ID
         session_id = data.get('session_id') or session.get('chat_session_id')
         if not session_id:
             session_id = str(uuid.uuid4())
             session['chat_session_id'] = session_id
+        logger.info(f"[CHATBOT_CHAT] Session ID: {session_id}")
         
         # 获取对话上下文
         from utils.chatbot_core import get_chatbot_core
         chatbot = get_chatbot_core()
         
         context = chatbot.get_session_context(session_id)
+        logger.info(f"[CHATBOT_CHAT] 上下文消息数：{len(context) if context else 0}")
         
         # 处理查询
+        logger.info(f"[CHATBOT_CHAT] 正在处理查询...")
         result = chatbot.process_query(
             query=user_message,
             session_id=session_id,
             context=context
         )
+        
+        logger.info(f"[CHATBOT_CHAT] 处理结果：success={result['success']}, source={result.get('source', 'unknown')}")
+        logger.info(f"[CHATBOT_CHAT] 🤖 AI 回复：{result.get('answer', '')[:200]}..." if len(result.get('answer', '')) > 200 else f"[CHATBOT_CHAT] 🤖 AI 回复：{result.get('answer', '')}")
+        logger.info(f"[CHATBOT_CHAT] 检索到的 FAQ 数：{len(result.get('retrieved_faqs', []))}")
+        logger.info(f"[CHATBOT_CHAT] ====== 聊天处理完成 ======")
         
         return jsonify({
             'success': result['success'],
@@ -154,7 +169,7 @@ def chat():
         })
         
     except Exception as e:
-        logger.error(f"[CHATBOT_CHAT] Chat interface error: {e}")
+        logger.error(f"[CHATBOT_CHAT] Chat interface error: {e}", exc_info=True)
         return jsonify({
             'success': False,
             'error': str(e)
