@@ -3,65 +3,56 @@
 {% block title %}SQL ID格式化工具{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">SQL ID格式化工具</h3>
+<div class="sql-formatter-container">
+    <div class="sql-card">
+        <div class="sql-header">
+            <h1 class="sql-title">
+                <i class="fas fa-database me-3"></i>
+                SQL ID 格式化工具
+            </h1>
+            <p class="sql-subtitle">快速格式化 ID 列表用于 SQL 查询</p>
         </div>
-        <div class="card-body">
-
-    <div class="sql-container animate-fade-in-up">
-        <div class="card">
-            <div class="card-header text-center">
-                <h1 class="mb-0">
-                    <i class="fas fa-database me-3"></i>
-                    SQL ID格式化工具
-                </h1>
-                <p class="mb-0 mt-2 opacity-75">快速格式化ID列表用于SQL查询</p>
-            </div>
-            
-            <div class="card-body">
-                <div class="mb-4">
-                    <label for="ids" class="form-label fw-bold mb-2">
-                        <i class="fas fa-list me-2"></i>请输入ID（每行一个）:
-                    </label>
-                    <textarea 
-                        id="ids" 
-                        class="form-control" 
-                        placeholder="例如：
+        
+        <div class="sql-body">
+            <div class="form-group">
+                <label for="ids" class="form-label">
+                    <i class="fas fa-list me-2"></i>请输入 ID（每行一个）:
+                </label>
+                <textarea 
+                    id="ids" 
+                    class="form-control" 
+                    placeholder="例如：
 FJ-076-20251202-0322
 FJ-076-20251202-0323"
-                    ></textarea>
-                </div>
-                
-                <div class="d-grid">
-                    <button class="btn btn-primary btn-lg" onclick="formatIds()">
-                        <i class="fas fa-magic me-2"></i>格式化ID
+                ></textarea>
+            </div>
+            
+            <button class="btn-format" onclick="formatIds()">
+                <i class="fas fa-magic me-2"></i>格式化 ID
+            </button>
+            
+            <div id="resultContainer" class="result-container" style="display: none;">
+                <div class="result-header">
+                    <h5 class="result-title">
+                        <i class="fas fa-check-circle me-2"></i>
+                        格式化结果:
+                    </h5>
+                    <button class="btn-copy" onclick="copyResult()">
+                        <i class="fas fa-copy me-1"></i>复制结果
                     </button>
+                    <span class="success-message" id="copySuccess">
+                        <i class="fas fa-check me-1"></i>已复制到剪贴板
+                    </span>
                 </div>
-                
-                <div id="resultContainer" class="mt-4" style="display: none;">
-                    <div class="result-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            格式化结果:
-                        </h5>
-                        <button class="btn btn-primary copy-btn" onclick="copyResult()">
-                            <i class="fas fa-copy me-1"></i>复制结果
-                        </button>
-                        <span class="success-message" id="copySuccess" style="display: none;">
-                            <i class="fas fa-check me-1"></i>已复制到剪贴板
-                        </span>
-                    </div>
-                    <div id="result" class="bg-light p-3 rounded"></div>
-                </div>
+                <div id="result" class="result-content"></div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-    <script>
-        function formatIds() {
+{% block extra_scripts %}
+<script>
             const idsText = document.getElementById('ids').value;
             const resultContainer = document.getElementById('resultContainer');
             const resultDiv = document.getElementById('result');
@@ -90,7 +81,7 @@ FJ-076-20251202-0323"
             // 滚动到结果区域
             resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-    
+
         function copyResult() {
             const resultText = document.getElementById('result').textContent;
             const copySuccess = document.getElementById('copySuccess');
@@ -113,7 +104,7 @@ FJ-076-20251202-0323"
                 fallbackCopyText(resultText, copySuccess);
             }
         }
-    
+
         function fallbackCopyText(text, successElement) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
@@ -141,7 +132,7 @@ FJ-076-20251202-0323"
     
             document.body.removeChild(textArea);
         }
-    
+
         function showCopySuccess(element) {
             console.log('[DEBUG] 显示成功提示');
             element.style.display = 'inline';
@@ -164,56 +155,78 @@ FJ-076-20251202-0323"
             }, 100);
         });
     </script>
-
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 <style>
-
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 2rem 1rem;
         }
         
-        .sql-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        .sql-formatter-container {
+            max-width: 900px;
+            margin: 0 auto;
         }
         
-        .card {
-            border-radius: 16px;
-            border: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+        .sql-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
         }
         
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
+        .sql-header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
             color: white;
-            border-radius: 16px 16px 0 0 !important;
-            border: none;
-            padding: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
         }
         
-        .card-header h1,
-        .card-header h3,
-        .card-header p {
-            color: white !important;
+        .sql-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
         }
         
-        textarea {
+        .sql-title i {
+            color: #63b3ed;
+        }
+        
+        .sql-subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+        
+        .sql-body {
+            padding: 2.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-control {
             width: 100%;
             min-height: 200px;
-            padding: 1rem;
+            padding: 1rem 1.25rem;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-family: 'Consolas', 'Monaco', monospace;
@@ -222,151 +235,184 @@ FJ-076-20251202-0323"
             resize: vertical;
         }
         
-        textarea:focus {
+        .form-control:focus {
             outline: none;
-            border-color: #4361ee;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
+        .btn-format {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
-            padding: 0.75rem 2rem;
+            padding: 1rem 2.5rem;
             border-radius: 12px;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .btn-primary:hover {
+        .btn-format:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
         
-        #result {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1rem 0;
-            white-space: pre-wrap;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            border: 1px solid #e2e8f0;
-            word-break: break-all;
+        .btn-format:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            margin-top: 2rem;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .result-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 1rem;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
         
-        .copy-btn {
-            background: linear-gradient(135deg, #4361ee, #3f37c9) !important;
-            color: white !important;
-            border: none !important;
-            padding: 0.75rem 2rem !important;
-            border-radius: 12px !important;
-            font-size: 1rem !important;
-            font-weight: 500 !important;
-            transition: all 0.3s ease !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 0.5rem !important;
+        .result-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            display: flex;
+            align-items: center;
         }
         
-        .copy-btn:hover {
-            background: linear-gradient(135deg, #3f37c9, #3a2cb5) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3) !important;
+        .result-title i {
+            color: #48bb78;
+        }
+        
+        .btn-copy {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.625rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         .success-message {
-            color: #10b981;
+            color: #48bb78;
             font-size: 0.875rem;
-            margin-left: 0.5rem;
-            display: none;  /* 默认隐藏 */
+            font-weight: 500;
+            display: none;
             align-items: center;
             gap: 0.25rem;
         }
         
-        .success-message.show {
-            display: inline;
-            opacity: 1;
+        .result-content {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            color: #2d3748;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.6;
         }
         
         /* 响应式设计 */
         @media (max-width: 768px) {
-            .sql-container {
-                margin: 1rem auto;
-                padding: 0 0.5rem;
+            body {
+                padding: 1rem 0.5rem;
             }
             
-            .card-header {
-                padding: 1rem;
+            .sql-header {
+                padding: 2rem 1.5rem;
             }
             
-            .card-body {
-                padding: 1rem;
+            .sql-title {
+                font-size: 1.5rem;
             }
             
-            h1 {
-                font-size: 1.75rem;
+            .sql-body {
+                padding: 1.5rem;
             }
             
-            textarea {
+            .form-control {
                 min-height: 150px;
                 font-size: 13px;
             }
             
-            #result {
-                font-size: 13px;
-                padding: 1rem;
-            }
-            
             .result-header {
                 flex-direction: column;
-                gap: 1rem;
                 align-items: stretch;
             }
             
-            .copy-btn {
+            .btn-format,
+            .btn-copy {
                 width: 100%;
                 justify-content: center;
-            }
-            
-            .btn-primary {
-                width: 100%;
-                padding: 1rem;
             }
         }
         
         /* 暗色主题支持 */
         @media (prefers-color-scheme: dark) {
             body {
-                background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-                color: #f1f5f9;
+                background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
             }
             
-            .card {
-                background: #1e293b;
+            .sql-card {
+                background: #1a202c;
             }
             
-            textarea {
-                background: #334155;
-                border-color: #475569;
-                color: #f1f5f9;
+            .sql-header {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
             }
             
-            textarea:focus {
-                background: #334155;
+            .form-label,
+            .result-title {
+                color: #e2e8f0;
             }
             
-            #result {
-                background: #334155;
-                border-color: #475569;
-                color: #f1f5f9;
+            .form-control {
+                background: #2d3748;
+                border-color: #4a5568;
+                color: #e2e8f0;
+            }
+            
+            .form-control:focus {
+                background: #2d3748;
+                border-color: #667eea;
+            }
+            
+            .result-content {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+                border-color: #4a5568;
+                color: #e2e8f0;
             }
         }
-    
 </style>

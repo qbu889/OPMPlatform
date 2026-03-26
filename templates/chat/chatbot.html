@@ -891,6 +891,8 @@ function clearChat() {
 }
 
 // ========== 文档上传功能 ==========
+let currentUploadXhr = null;  // 保存当前上传请求，用于中断
+
 if (uploadArea && fileInput) {
     uploadArea.addEventListener('click', () => {
         fileInput.click();
@@ -932,60 +934,223 @@ async function uploadDocument(file) {
     const domainId = domainSelect.value;
     
     if (!domainId) {
-        alert('请先选择专业领域！\n\n如果没有可用的领域，请点击"领域管理"按钮添加专业领域。');
-        return;
+        console.warn('[UPLOAD] 未选择领域，将使用默认值或跳过领域关联');
+        // 不阻断上传，继续执行
     }
+    
+    // 保存原始内容
+    const originalContent = uploadArea.innerHTML;
+    
+    // 显示进度条和取消按钮
+    uploadArea.innerHTML = `
+        <div class="upload-progress-container" style="padding: 20px;">
+            <div class="progress mb-3" style="height: 25px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     id="uploadProgressBar" 
+                     role="progressbar" 
+                     style="width: 0%;" 
+                     aria-valuenow="0" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    <span id="uploadProgressText">0%</span>
+                </div>
+            </div>
+            <div class="text-center">
+                <p class="mb-2" id="uploadStatusText">
+                    <i class="fas fa-cloud-upload-alt fa-spin"></i>
+                    正在上传并处理文档...
+                </p>
+                <button class="btn btn-danger btn-sm" id="cancelUploadBtn" onclick="cancelUpload()">
+                    <i class="fas fa-stop-circle me-1"></i>取消上传
+                </button>
+            </div>
+        </div>
+    `;
     
     const formData = new FormData();
     formData.append('file', file);
     formData.append('domain_id', domainId);
     
-    const originalContent = uploadArea.innerHTML;
-    uploadArea.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i><p>正在提取 FAQ，请稍候...</p>';
-    
-    try {
-        // 第一步：调用预览接口
-        const response = await fetch('/chatbot/upload_document/preview', {
-            method: 'POST',
-            body: formData
+    // 使用 XMLHttpRequest 实现可中断的上传
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        currentUploadXhr = xhr;  // 保存引用以便中断
+        
+        let uploadComplete = false;  // 标记上传是否完成
+        let progressPolling = null;  // 进度轮询定时器
+        
+        // 监听上传进度
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                const progressBar = document.getElementById('uploadProgressBar');
+                const progressText = document.getElementById('uploadProgressText');
+                const statusText = document.getElementById('uploadStatusText');
+                
+                if (progressBar && progressText) {
+                    progressBar.style.width = percentComplete + '%';
+                    progressBar.setAttribute('aria-valuenow', percentComplete);
+                    progressText.textContent = percentComplete + '%';
+                    
+                    // 根据进度更新状态文本
+                    if (percentComplete < 50) {
+                        statusText.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> 正在上传文件...';
+                    } else if (percentComplete < 100) {
+                        statusText.innerHTML = '<i class="fas fa-cog fa-spin"></i> 正在处理文档...';
+                    }
+                }
+            }
         });
         
-        if (response.ok) {
-            const data = await response.json();
+        // 上传完成
+        xhr.addEventListener('load', () => {
+            currentUploadXhr = null;  // 清除引用
+            uploadComplete = true;
             
-            console.log('[DEBUG] 上传成功，返回数据:', data);
-            console.log('[DEBUG] FAQ 数量:', data.faqs_preview ? data.faqs_preview.length : 0);
-            
-            // 将预览数据存储到 localStorage（持久化，刷新后还在）
-            const previewId = data.preview_id;
-            
-            // 检查 faqs_preview 是否存在且有数据
-            if (data.faqs_preview && data.faqs_preview.length > 0) {
-                localStorage.setItem('faqPreviewData', JSON.stringify(data.faqs_preview));
-                localStorage.setItem('faqPreviewId', previewId);
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
                 
-                // 同时兼容旧版本（sessionStorage）
-                sessionStorage.setItem('faqPreview_' + previewId, JSON.stringify(data.faqs_preview));
+                console.log('[DEBUG] 上传成功，返回数据:', data);
+                console.log('[DEBUG] FAQ 数量:', data.faqs_preview ? data.faqs_preview.length : 0);
+                console.log('[DEBUG] Preview ID:', data.preview_id);
                 
-                console.log('[DEBUG] 预览数据已存储到 localStorage:', previewId);
-                console.log('[DEBUG] 存储的 FAQ 数量:', data.faqs_preview.length);
+                // 开始轮询查询进度
+                const previewId = data.preview_id;
+                const progressBar = document.getElementById('uploadProgressBar');
+                const progressText = document.getElementById('uploadProgressText');
+                const statusText = document.getElementById('uploadStatusText');
                 
-                // 跳转到预览页面
-                window.location.href = `/chatbot/faq_preview?preview_id=${previewId}`;
+                if (progressBar && progressText && statusText && previewId) {
+                    // 更新状态文本
+                    statusText.innerHTML = '<i class="fas fa-brain fa-spin"></i> 正在提取 FAQ，请稍候...';
+                    statusText.style.color = '#667eea';
+                    
+                    // 每 2 秒查询一次进度
+                    progressPolling = setInterval(async () => {
+                        try {
+                            const response = await fetch(`/chatbot/upload_progress/${previewId}`);
+                            if (response.ok) {
+                                const progressData = await response.json();
+                                console.log('[DEBUG] 进度查询:', progressData);
+                                
+                                if (progressData.success) {
+                                    const { total_sections, processed_sections, faqs_extracted, progress_percent, status } = progressData;
+                                    
+                                    // 更新进度条
+                                    progressBar.style.width = progress_percent + '%';
+                                    progressBar.setAttribute('aria-valuenow', progress_percent);
+                                    progressText.textContent = `${progress_percent}% (${processed_sections}/${total_sections} 功能点，${faqs_extracted} 条 FAQ)`;
+                                    
+                                    // 根据状态更新文本
+                                    if (status === 'processing') {
+                                        statusText.innerHTML = `<i class="fas fa-brain fa-spin"></i> 正在提取 FAQ，已处理 ${processed_sections}/${total_sections} 个功能点，提取 ${faqs_extracted} 条 FAQ...`;
+                                    } else if (status === 'completed') {
+                                        statusText.innerHTML = '<i class="fas fa-check-circle"></i> 处理完成！正在跳转到预览页面...';
+                                        statusText.style.color = '#28a745';
+                                        
+                                        // 清除轮询
+                                        if (progressPolling) {
+                                            clearInterval(progressPolling);
+                                            progressPolling = null;
+                                        }
+                                        
+                                        // 延迟 500ms 后跳转
+                                        setTimeout(() => {
+                                            window.location.href = `/chatbot/faq_preview?preview_id=${previewId}`;
+                                        }, 500);
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('[DEBUG] 查询进度失败:', error);
+                        }
+                    }, 2000);  // 每 2 秒查询一次
+                    
+                    // 将预览数据存储到 localStorage（持久化，刷新后还在）
+                    localStorage.setItem('faqPreviewData', JSON.stringify(data.faqs_preview));
+                    localStorage.setItem('faqPreviewId', previewId);
+                    
+                    // 同时兼容旧版本（sessionStorage）
+                    sessionStorage.setItem('faqPreview_' + previewId, JSON.stringify(data.faqs_preview));
+                    
+                    console.log('[DEBUG] 预览数据已存储到 localStorage:', previewId);
+                    console.log('[DEBUG] 存储的 FAQ 数量:', data.faqs_preview.length);
+                    
+                    // 注意：不再立即跳转，而是等待处理完成后跳转
+                    resolve(data);
+                } else {
+                    console.error('[DEBUG] 进度条元素或 preview_id 不存在!');
+                    // 如果无法查询进度，直接跳转
+                    window.location.href = `/chatbot/faq_preview?preview_id=${previewId}`;
+                    resolve(data);
+                }
             } else {
-                console.error('[DEBUG] faqs_preview 为空或不存在!');
-                throw new Error('未提取到 FAQ 数据');
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    reject(new Error(errorData.error || '上传失败'));
+                } catch (e) {
+                    reject(new Error('上传失败：' + xhr.statusText));
+                }
             }
-        } else {
-            const errorData = await response.json();
-            throw new Error(errorData.error || '上传失败');
+        });
+        
+        // 上传失败
+        xhr.addEventListener('error', () => {
+            currentUploadXhr = null;
+            reject(new Error('网络错误，请检查连接后重试'));
+        });
+        
+        // 上传中断
+        xhr.addEventListener('abort', () => {
+            currentUploadXhr = null;
+            reject(new Error('上传已取消'));
+        });
+        
+        // 发送请求
+        xhr.open('POST', '/chatbot/upload_document/preview');
+        xhr.send(formData);
+    })
+    .catch((error) => {
+        if (error.message !== '上传已取消') {
+            alert(`上传失败：${error.message}`);
+            console.error('Upload error:', error);
         }
-    } catch (error) {
-        alert(`上传失败：${error.message}`);
-        console.error('Upload error:', error);
-    } finally {
+    })
+    .finally(() => {
+        // 恢复原始内容
         uploadArea.innerHTML = originalContent;
         fileInput.value = '';
+        currentUploadXhr = null;  // 确保清除引用
+    });
+}
+
+// 取消上传函数
+function cancelUpload() {
+    if (currentUploadXhr) {
+        const shouldCancel = confirm('确定要取消上传吗？');
+        if (shouldCancel) {
+            currentUploadXhr.abort();
+            currentUploadXhr = null;
+            
+            // 恢复上传区域
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                uploadArea.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                    <p class="mb-2" style="font-size: 15px;">点击或拖拽上传文档</p>
+                    <small class="text-muted">支持 .docx, .pdf, .md 格式</small>
+                    <input type="file" id="fileInput" accept=".docx,.pdf,.md" style="display: none;">
+                `;
+                
+                // 重新绑定事件
+                const newFileInput = document.getElementById('fileInput');
+                if (newFileInput) {
+                    newFileInput.addEventListener('change', handleFileSelect);
+                }
+            }
+            
+            console.log('[DEBUG] 上传已取消');
+        }
     }
 }
 

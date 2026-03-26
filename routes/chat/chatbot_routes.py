@@ -29,6 +29,72 @@ def faq_preview_page():
     return render_template('chat/faq_preview.html')
 
 
+@chatbot_bp.route('/upload_progress/<preview_id>')
+def upload_progress(preview_id):
+    """
+    查询上传处理进度
+    
+    Response JSON:
+        {
+            "success": true,
+            "preview_id": "xxx",
+            "total_sections": 10,
+            "processed_sections": 5,
+            "faqs_extracted": 25,
+            "progress_percent": 50,
+            "status": "processing"  # processing, completed, failed
+        }
+    """
+    try:
+        from models.knowledge_base import knowledge_base_manager
+        conn = knowledge_base_manager.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT total_sections, processed_sections, faqs_extracted
+            FROM faq_preview_cache
+            WHERE preview_id = %s
+        ''', (preview_id,))
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
+            return jsonify({
+                'success': False,
+                'error': '预览不存在'
+            }), 404
+        
+        total_sections, processed_sections, faqs_extracted = row
+        
+        # 计算进度百分比
+        progress_percent = 0
+        status = 'processing'
+        
+        if total_sections > 0:
+            progress_percent = int((processed_sections / total_sections) * 100)
+            
+            if processed_sections >= total_sections:
+                status = 'completed'
+        
+        return jsonify({
+            'success': True,
+            'preview_id': preview_id,
+            'total_sections': total_sections,
+            'processed_sections': processed_sections,
+            'faqs_extracted': faqs_extracted,
+            'progress_percent': progress_percent,
+            'status': status
+        })
+        
+    except Exception as e:
+        logger.error(f"查询进度失败：{e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @chatbot_bp.route('/chat', methods=['POST'])
 def chat():
     """
@@ -98,11 +164,11 @@ def chat():
 @chatbot_bp.route('/upload_document/preview', methods=['POST'])
 def upload_document_preview():
     """
-    上传文档并预览 FAQ（不入库）
+    上传文档并预览 FAQ(不入库)
     
     Form Data:
         file: 文件对象
-        domain_id: 专业领域 ID（可选）
+        domain_id: 专业领域 ID(可选)
     
     Response JSON:
         {
@@ -118,14 +184,25 @@ def upload_document_preview():
         }
     """
     try:
+        # 记录请求信息
+        logger.info(f"[UPLOAD_PREVIEW] ====== 收到文档上传预览请求 ======")
+        logger.info(f"[UPLOAD_PREVIEW] Content-Type: {request.content_type}")
+        logger.info(f"[UPLOAD_PREVIEW] Files: {list(request.files.keys())}")
+        logger.info(f"[UPLOAD_PREVIEW] Form data: {dict(request.form)}")
+        
         if 'file' not in request.files:
+            logger.warning(f"[UPLOAD_PREVIEW] ❌ 未找到上传文件")
             return jsonify({
                 'success': False,
                 'error': '未找到上传文件'
             }), 400
         
         file = request.files['file']
+        logger.info(f"[UPLOAD_PREVIEW] 文件名：{file.filename}")
+        logger.info(f"[UPLOAD_PREVIEW] 文件类型：{file.content_type}")
+        
         if file.filename == '':
+            logger.warning(f"[UPLOAD_PREVIEW] ❌ 文件名为空")
             return jsonify({
                 'success': False,
                 'error': '文件名为空'
@@ -135,61 +212,24 @@ def upload_document_preview():
         domain_id = request.form.get('domain_id')
         if domain_id:
             domain_id = int(domain_id)
+        logger.info(f"[UPLOAD_PREVIEW] Domain ID: {domain_id}")
         
         # 保存文件
         from utils.document_processor import DocumentProcessor
         processor = DocumentProcessor()
         filepath = processor.save_file(file, file.filename)
+        logger.info(f"[UPLOAD_PREVIEW] 文件已保存到：{filepath}")
         
         # 处理文档
         doc_result = processor.process_document(filepath)
+        logger.info(f"[UPLOAD_PREVIEW] 文档处理结果：success={doc_result['success']}, filetype={doc_result['filetype']}, content_length={len(doc_result['content'])}")
         
         if not doc_result['success']:
+            logger.error(f"[UPLOAD_PREVIEW] ❌ 文档处理失败：{doc_result.get('error', '未知错误')}")
             return jsonify({
                 'success': False,
                 'error': doc_result.get('error', '文档处理失败')
             }), 400
-        
-        # 提取 FAQ（暂不入库）
-        from utils.ollama_client import get_ollama_client
-        ollama_client = get_ollama_client()
-        
-        content_length = len(doc_result['content'])
-        
-        if content_length > 10000:
-            from utils.document_processor import extract_faq_parallel
-            faqs = extract_faq_parallel(
-                doc_result['content'], 
-                ollama_client,
-                chunk_size=2000,
-                max_workers=2,
-                domain_id=domain_id
-            )
-        else:
-            from utils.document_processor import extract_faq_from_content
-            faqs = extract_faq_from_content(doc_result['content'], ollama_client, domain_id=domain_id)
-        
-        # 检测重复问题
-        seen_questions = {}
-        faqs_with_dup = []
-        duplicate_count = 0
-        
-        for idx, faq in enumerate(faqs):
-            question = faq.get('question', '').strip()
-            # 简单去重判断（完全相同）
-            is_duplicate = question in seen_questions
-            if is_duplicate:
-                duplicate_count += 1
-            else:
-                seen_questions[question] = idx
-            
-            faqs_with_dup.append({
-                'index': idx + 1,
-                'question': question,
-                'answer': faq.get('answer', ''),
-                'is_duplicate': is_duplicate,
-                'domain_id': domain_id
-            })
         
         # 生成预览 ID 并存储到数据库临时表
         import uuid
@@ -211,7 +251,10 @@ def upload_document_preview():
                 domain_id INT,
                 faqs_data LONGTEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP NULL
+                expires_at TIMESTAMP NULL,
+                total_sections INT DEFAULT 0,
+                processed_sections INT DEFAULT 0,
+                faqs_extracted INT DEFAULT 0
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ''')
         
@@ -219,18 +262,18 @@ def upload_document_preview():
         from datetime import timedelta
         expires_at = datetime.now() + timedelta(hours=24)
         
-        # 插入数据
+        # 插入初始数据（进度为 0）
         cursor.execute('''
             INSERT INTO faq_preview_cache 
-            (preview_id, filename, filepath, filetype, domain_id, faqs_data, created_at, expires_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            (preview_id, filename, filepath, filetype, domain_id, faqs_data, created_at, expires_at, total_sections, processed_sections, faqs_extracted)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 0, 0, 0)
         ''', (
             preview_id,
             file.filename,
             filepath,
             doc_result['filetype'],
             domain_id,
-            json.dumps(faqs_with_dup, ensure_ascii=False),
+            json.dumps([], ensure_ascii=False),
             datetime.now(),
             expires_at
         ))
@@ -238,7 +281,100 @@ def upload_document_preview():
         conn.commit()
         conn.close()
         
+        # 提取 FAQ(暂不入库)
+        from utils.ollama_client import get_ollama_client
+        logger.info(f"[UPLOAD_PREVIEW] 正在获取 Ollama 客户端...")
+        ollama_client = get_ollama_client()
+        logger.info(f"[UPLOAD_PREVIEW] Ollama 客户端已就绪，base_url={ollama_client.base_url}, use_omlx={ollama_client.use_omlx}")
+        
+        content_length = len(doc_result['content'])
+        logger.info(f"[UPLOAD_PREVIEW] 文档内容长度：{content_length} 字符")
+        
+        # 先统计有多少个章节（功能点）
+        from utils.document_processor import count_sections
+        total_sections = count_sections(doc_result['content'])
+        logger.info(f"[PREVIEW] Document has {total_sections} sections to process")
+        
+        # 更新总章节数
+        conn = knowledge_base_manager.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE faq_preview_cache 
+            SET total_sections = %s 
+            WHERE preview_id = %s
+        ''', (total_sections, preview_id))
+        conn.commit()
+        conn.close()
+        
+        if content_length > 10000:
+            logger.info(f"[UPLOAD_PREVIEW] 文档较长 ({content_length} > 10000)，使用并行模式提取 FAQ")
+            from utils.document_processor import extract_faq_parallel_with_progress
+            faqs = extract_faq_parallel_with_progress(
+                doc_result['content'], 
+                ollama_client,
+                chunk_size=2000,
+                max_workers=2,
+                domain_id=domain_id,
+                preview_id=preview_id  # 传递 preview_id 用于更新进度
+            )
+            logger.info(f"[UPLOAD_PREVIEW] 并行模式提取完成，共 {len(faqs)} 条 FAQ")
+        else:
+            logger.info(f"[UPLOAD_PREVIEW] 文档较短 ({content_length} <= 10000)，使用顺序模式提取 FAQ")
+            from utils.document_processor import extract_faq_from_content_with_progress
+            faqs = extract_faq_from_content_with_progress(
+                doc_result['content'], 
+                ollama_client, 
+                domain_id=domain_id,
+                preview_id=preview_id  # 传递 preview_id 用于更新进度
+            )
+            logger.info(f"[UPLOAD_PREVIEW] 顺序模式提取完成，共 {len(faqs)} 条 FAQ")
+        
+        # 检测重复问题
+        seen_questions = {}
+        faqs_with_dup = []
+        duplicate_count = 0
+        
+        for idx, faq in enumerate(faqs):
+            question = faq.get('question', '').strip()
+            # 简单去重判断 (完全相同)
+            is_duplicate = question in seen_questions
+            if is_duplicate:
+                duplicate_count += 1
+            else:
+                seen_questions[question] = idx
+            
+            faqs_with_dup.append({
+                'index': idx + 1,
+                'question': question,
+                'answer': faq.get('answer', ''),
+                'is_duplicate': is_duplicate,
+                'domain_id': domain_id
+            })
+        
+        # 更新最终数据到数据库
+        conn = knowledge_base_manager.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE faq_preview_cache 
+            SET faqs_data = %s,
+                processed_sections = %s,
+                faqs_extracted = %s
+            WHERE preview_id = %s
+        ''', (
+            json.dumps(faqs_with_dup, ensure_ascii=False),
+            total_sections,  # 已处理完成
+            len(faqs),
+            preview_id
+        ))
+        
+        conn.commit()
+        conn.close()
+        
         logger.info(f"[PREVIEW] Generated preview {preview_id} with {len(faqs)} FAQs (saved to DB)")
+        
+        logger.info(f"[UPLOAD_PREVIEW] ✅ 文档上传预览成功，返回 {len(faqs_with_dup)} 条 FAQ，重复 {duplicate_count} 条")
+        logger.info(f"[UPLOAD_PREVIEW] ====== 文档上传预览处理完成 ======")
         
         return jsonify({
             'success': True,

@@ -83,9 +83,16 @@ class OllamaClient:
     def _quick_check(self) -> bool:
         """快速检查服务是否可用（超时 2 秒）"""
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=2)
-            return response.status_code == 200
-        except:
+            if self.use_omlx:
+                # OMLX 使用 OpenAI 兼容接口，检查 /v1/models
+                response = requests.get(f"{self.base_url}/models", timeout=2, headers={"Authorization": "Bearer 666666"})
+                return response.status_code == 200
+            else:
+                # 本地 Ollama 使用原生接口，检查 /api/tags
+                response = requests.get(f"{self.base_url}/api/tags", timeout=2)
+                return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"[OLLAMA_CHECK] 服务检查失败：{e}")
             return False
     
     def _validate_model(self):
@@ -205,7 +212,7 @@ class OllamaClient:
                     json=payload,
                     headers=headers,
                     stream=stream,
-                    timeout=600  # 10 分钟超时
+                    timeout=1200  # 增加到 20 分钟超时，避免大文档处理超时
                 )
                 
                 # 如果是 404，记录详细信息
@@ -388,10 +395,24 @@ class OllamaClient:
     def list_models(self) -> List[str]:
         """获取可用的模型列表"""
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            return [model.get("name") for model in data.get("models", [])]
+            if self.use_omlx:
+                # OMLX 使用 OpenAI 兼容接口，获取 /v1/models
+                response = requests.get(f"{self.base_url}/models", timeout=10, headers={"Authorization": "Bearer 666666"})
+                response.raise_for_status()
+                data = response.json()
+                # OpenAI 格式：{"data": [{"id": "model1"}, ...]}
+                models = [model.get("id") for model in data.get("data", [])]
+                logger.info(f"[OLLAMA_MODELS] OMLX 模型列表：{models}")
+                return models
+            else:
+                # 本地 Ollama 使用原生接口，获取 /api/tags
+                response = requests.get(f"{self.base_url}/api/tags", timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                # Ollama 格式：{"models": [{"name": "model1"}, ...]}
+                models = [model.get("name") for model in data.get("models", [])]
+                logger.info(f"[OLLAMA_MODELS] Ollama 模型列表：{models}")
+                return models
         except Exception as e:
             logger.error(f"[OLLAMA_MODELS] Failed to get model list: {e}")
             return []
@@ -399,9 +420,16 @@ class OllamaClient:
     def is_available(self) -> bool:
         """检查 Ollama 服务是否可用"""
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=5)
-            return response.status_code == 200
-        except:
+            if self.use_omlx:
+                # OMLX 使用 OpenAI 兼容接口，检查 /v1/models
+                response = requests.get(f"{self.base_url}/models", timeout=5, headers={"Authorization": "Bearer 666666"})
+                return response.status_code == 200
+            else:
+                # 本地 Ollama 使用原生接口，检查 /api/tags
+                response = requests.get(f"{self.base_url}/api/tags", timeout=5)
+                return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"[OLLAMA_AVAILABLE] 服务可用性检查失败：{e}")
             return False
 
 
@@ -415,7 +443,7 @@ def init_ollama_service(use_omlx: bool = None) -> OllamaClient:
     初始化 OMLX/Ollama 服务（在应用启动时调用）
     
     Args:
-        use_omlx: 是否使用OMLX 模型（如果为 None，则从环境变量 USE_OMLX_FOR_CHATBOT 读取）
+        use_omlx: 是否使用 OMLX 模型（如果为 None，则从环境变量 USE_OMLX_FOR_CHATBOT 读取）
         
     Returns:
         OllamaClient 实例
@@ -430,19 +458,35 @@ def init_ollama_service(use_omlx: bool = None) -> OllamaClient:
     try:
         if use_omlx:
             # 初始化 OMLX 客户端
+            logger.info(f"[OLLAMA_INIT_SERVICE] 正在初始化 OMLX 客户端...")
+            logger.info(f"   - 配置来源：环境变量")
+            logger.info(f"   - OMLX_BASE_URL: {os.getenv('OMLX_BASE_URL', 'http://localhost:8000/v1')}")
+            logger.info(f"   - OMLX_MODEL: {os.getenv('OMLX_MODEL', 'Qwen3.5-4B-OptiQ-4bit')}")
+            
             _omlx_client = OllamaClient(use_omlx=True)
-            logger.info(f"[OLLAMA_INIT_SERVICE] OMLX 服务初始化完成")
+            
+            logger.info(f"[OLLAMA_INIT_SERVICE] ✅ OMLX 服务初始化成功")
             logger.info(f"   - Base URL: {_omlx_client.base_url}")
             logger.info(f"   - Model: {_omlx_client.model}")
             logger.info(f"   - Endpoint: {_omlx_client.api_endpoint}")
+            logger.info(f"   - Use OMLX: {_omlx_client.use_omlx}")
             return _omlx_client
         else:
             # 初始化本地 Ollama 客户端
+            logger.info(f"[OLLAMA_INIT_SERVICE] 正在初始化本地 Ollama 客户端...")
+            logger.info(f"   - 配置来源：环境变量")
+            logger.info(f"   - OLLAMA_BASE_URL: {os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')}")
+            logger.info(f"   - OLLAMA_MODEL: {os.getenv('OLLAMA_MODEL', 'qwen3:4b')}")
+            
             _ollama_client = OllamaClient(use_omlx=False)
-            logger.info(f"[OLLAMA_INIT_SERVICE] 本地 Ollama 服务初始化完成")
+            
+            logger.info(f"[OLLAMA_INIT_SERVICE] ✅ 本地 Ollama 服务初始化成功")
+            logger.info(f"   - Base URL: {_ollama_client.base_url}")
+            logger.info(f"   - Model: {_ollama_client.model}")
+            logger.info(f"   - Endpoint: {_ollama_client.api_endpoint}")
             return _ollama_client
     except Exception as e:
-        logger.error(f"[OLLAMA_INIT_SERVICE] 初始化失败：{e}")
+        logger.error(f"[OLLAMA_INIT_SERVICE] ❌ 初始化失败：{e}")
         raise
 
 
@@ -566,6 +610,7 @@ def get_ollama_client(base_url: str = None, model: str = None, use_omlx: bool = 
                 
                 _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
                 logger.info(f"[OLLAMA_INIT] ✅ 使用 OMLX 服务 - URL: {omlx_url} | Model: {omlx_model}")
+                logger.info(f"[OLLAMA_INIT]    OMLX 是本地部署的模型服务，不是远程 API")
             
             return _omlx_client
         else:

@@ -192,6 +192,187 @@ class DocumentProcessor:
         return list(self.supported_extensions.keys())
 
 
+def count_sections(content: str) -> int:
+    """
+    统计文档中有多少个章节（基于 Markdown 标题）
+    
+    Args:
+        content: 文档内容
+        
+    Returns:
+        章节数量
+    """
+    sections = []
+    current_section = []
+    
+    for line in content.split('\n'):
+        # 检测标题（# 开头的为标题）
+        if line.strip().startswith('#') and len(line.strip()) > 2:
+            # 保存上一个章节
+            if current_section:
+                sections.append('\n'.join(current_section))
+            # 开始新章节
+            current_section = [line]
+        else:
+            current_section.append(line)
+    
+    # 添加最后一个章节
+    if current_section:
+        sections.append('\n'.join(current_section))
+    
+    return len(sections)
+
+
+def extract_faq_from_content_with_progress(content: str, ollama_client=None, domain_id: int = None, preview_id: str = None) -> List[Dict]:
+    """
+    从文档内容中抽取 FAQ 对（带进度更新）
+    
+    Args:
+        content: 文档内容
+        ollama_client: Ollama 客户端实例
+        domain_id: 专业领域 ID（可选）
+        preview_id: 预览 ID（用于更新数据库进度）
+        
+    Returns:
+        FAQ 列表，每个元素为 {'question': str, 'answer': str}
+    """
+    import json
+    import re
+    from models.knowledge_base import knowledge_base_manager
+
+    if not ollama_client:
+        from utils.ollama_client import get_ollama_client
+        ollama_client = get_ollama_client()
+
+    # 按章节分割内容（基于 Markdown 标题）
+    sections = []
+    current_section = []
+    
+    for line in content.split('\n'):
+        # 检测标题（# 开头的为标题）
+        if line.strip().startswith('#') and len(line.strip()) > 2:
+            # 保存上一个章节
+            if current_section:
+                sections.append('\n'.join(current_section))
+            # 开始新章节
+            current_section = [line]
+        else:
+            current_section.append(line)
+    
+    # 添加最后一个章节
+    if current_section:
+        sections.append('\n'.join(current_section))
+    
+    total_sections = len(sections)
+    logger.info(f"[FAQ_EXTRACT] Document split into {total_sections} sections")
+    
+    all_faqs = []
+    
+    # 逐个处理章节
+    for idx, section in enumerate(sections):
+        if not section.strip():
+            continue
+            
+        section_prompt = f"""你是一个专业的 FAQ 提取助手。请从以下文档片段中提取所有问答对。
+
+【输出格式要求】
+❌ 不要任何解释、说明、前言、后语
+❌ 不要 Markdown 格式（如 ```json）
+❌ 不要换行符、转义字符
+✅ 只返回纯 JSON 数组字符串
+
+【JSON 格式示例】
+[
+  {{"question": "如何排查事件？", "answer": "步骤 1: 确认工单号。步骤 2: 查询数据库。"}},
+  {{"question": "数据库表是什么？", "answer": "alarm_event 表"}}
+]
+
+【提取规则】
+1. 识别所有问题和答案
+2. 没有明确问题时，根据内容总结问题
+3. 答案必须完整（包含所有步骤、注意事项）
+4. 保留图片链接：![描述](URL)
+5. 保留代码、SQL、命令
+6. 保留原文格式（换行、列表、缩进）
+
+【文档片段】
+{section[:3500]}
+
+【开始提取】返回纯 JSON 数组：
+"""
+        
+        try:
+            # 使用增强的提示词，并尝试强制 JSON 输出
+            response = ollama_client.generate(
+                section_prompt,
+                options={
+                    'temperature': 0.1,  # 降低温度，使输出更确定
+                    'format': 'json' if not ollama_client.use_omlx else None  # Ollama 原生支持 JSON 格式
+                }
+            )
+            logger.info(f"[FAQ_EXTRACT] Section {idx + 1}/{total_sections} AI response length: {len(response)}")
+            
+            # 记录响应的前 500 个字符，帮助诊断问题
+            logger.debug(f"[FAQ_EXTRACT] Section {idx + 1} response preview: {response[:500]}...")
+            
+            # 使用增强的多方法解析 JSON
+            faqs = parse_json_with_multiple_methods(response, chunk_index=idx + 1)
+            
+            if faqs:
+                # 添加 domain_id 到每个 FAQ
+                for faq in faqs:
+                    if domain_id:
+                        faq['domain_id'] = domain_id
+                all_faqs.extend(faqs)
+                logger.info(f"[FAQ_EXTRACT] Section {idx + 1}: extracted {len(faqs)} FAQs")
+                
+                # 更新数据库进度
+                if preview_id:
+                    update_progress(preview_id, idx + 1, len(all_faqs))
+            else:
+                logger.warning(f"[FAQ_EXTRACT] Section {idx + 1}: no FAQs extracted")
+                
+        except Exception as e:
+            logger.error(f"[FAQ_EXTRACT] Section {idx + 1} processing failed: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # 即使失败也要更新进度
+            if preview_id:
+                update_progress(preview_id, idx + 1, len(all_faqs))
+    
+    logger.info(f"[FAQ_EXTRACT] Total FAQs extracted: {len(all_faqs)}")
+    return all_faqs
+
+
+def update_progress(preview_id: str, processed_sections: int, faqs_extracted: int):
+    """
+    更新数据库中的处理进度
+    
+    Args:
+        preview_id: 预览 ID
+        processed_sections: 已处理的章节数
+        faqs_extracted: 已提取的 FAQ 数量
+    """
+    try:
+        from models.knowledge_base import knowledge_base_manager
+        conn = knowledge_base_manager.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE faq_preview_cache 
+            SET processed_sections = %s,
+                faqs_extracted = %s
+            WHERE preview_id = %s
+        ''', (processed_sections, faqs_extracted, preview_id))
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"[PROGRESS] Updated preview {preview_id}: {processed_sections} sections, {faqs_extracted} FAQs")
+    except Exception as e:
+        logger.error(f"更新进度失败：{e}")
+
+
 def extract_faq_from_content(content: str, ollama_client=None, domain_id: int = None) -> List[Dict]:
     """
     从文档内容中抽取 FAQ 对（单线程版本）
@@ -239,30 +420,43 @@ def extract_faq_from_content(content: str, ollama_client=None, domain_id: int = 
         if not section.strip():
             continue
             
-        section_prompt = f"""请从以下文档片段中提取所有可能的问答对（FAQ）。
-要求：
-1. 识别文档中的所有问题和对应的答案
-2. 如果没有明确的问题，根据内容总结可能的问题
-3. 【重要】答案必须完整，包含所有步骤、子步骤、注意事项等详细信息
-4. 【重要】保留原文中的图片链接（Markdown 格式：![描述](URL)）
-5. 【重要】保留原文中的代码块、SQL 语句、命令等
-6. 【重要】保留原文的格式，包括换行、列表、缩进等
-7. 【重要】必须返回纯 JSON 数组，不要包含任何 Markdown 格式（如 ```json）
-8. 【重要】不要有任何解释、说明或其他文字
-9. JSON 格式示例：
+        section_prompt = f"""你是一个专业的 FAQ 提取助手。请从以下文档片段中提取所有问答对。
+
+【输出格式要求】
+❌ 不要任何解释、说明、前言、后语
+❌ 不要 Markdown 格式（如 ```json）
+❌ 不要换行符、转义字符
+✅ 只返回纯 JSON 数组字符串
+
+【JSON 格式示例】
 [
-    {{"question": "问题 1", "answer": "完整的答案（包含步骤、图片、代码等）"}},
-    {{"question": "问题 2", "answer": "完整的答案"}}
+  {{"question": "如何排查事件？", "answer": "步骤 1: 确认工单号。步骤 2: 查询数据库。"}},
+  {{"question": "数据库表是什么？", "answer": "alarm_event 表"}}
 ]
 
-文档片段：
-{section[:4000]}  # 每个章节限制 4000 字符
+【提取规则】
+1. 识别所有问题和答案
+2. 没有明确问题时，根据内容总结问题
+3. 答案必须完整（包含所有步骤、注意事项）
+4. 保留图片链接：![描述](URL)
+5. 保留代码、SQL、命令
+6. 保留原文格式（换行、列表、缩进）
 
-请提取 FAQ（只返回纯 JSON 数组，不要任何其他内容，保留所有细节）：
+【文档片段】
+{section[:3500]}
+
+【开始提取】返回纯 JSON 数组：
 """
         
         try:
-            response = ollama_client.generate(section_prompt)
+            # 使用增强的提示词，并尝试强制 JSON 输出
+            response = ollama_client.generate(
+                section_prompt,
+                options={
+                    'temperature': 0.1,  # 降低温度，使输出更确定
+                    'format': 'json' if not ollama_client.use_omlx else None  # Ollama 原生支持 JSON 格式
+                }
+            )
             logger.info(f"[FAQ_EXTRACT] Section {idx + 1}/{len(sections)} AI response length: {len(response)}")
             
             # 使用增强的多方法解析 JSON
@@ -448,8 +642,129 @@ def parse_json_with_multiple_methods(response: str, chunk_index: int = 0):
     except Exception as e:
         logger.debug(f"[Chunk {chunk_index}] 方法 7 失败：{e}")
     
+    # 方法 8：从自然语言描述中提取 FAQ（针对非 JSON 格式）
+    try:
+        logger.info(f"[Chunk {chunk_index}] 方法 8：尝试从自然语言描述中提取 FAQ")
+        
+        # 查找 FAQ 模式：问题 + 答案
+        # 模式 1: "问题：xxx\n答案：xxx" 或 "问：xxx\n答：xxx"
+        faq_pattern = r'(?:问题 | 问)[：:]\s*([\u4e00-\u9fa5a-zA-Z0-9_\s\.\(\)\(\)]+?)(?:\n|\r\n|\r)(?:答案 | 答)[：:]\s*([\s\S]*?)(?=\n\n|\n#|\n##|\n###|\n问 |\n问题|$)'
+        matches = re.findall(faq_pattern, response)
+        
+        if matches:
+            logger.info(f"[Chunk {chunk_index}] 方法 8：从自然语言描述中提取到 {len(matches)} 个 FAQ")
+            faqs = []
+            for q, a in matches:
+                faqs.append({
+                    'question': q.strip(),
+                    'answer': a.strip()
+                })
+            return faqs
+    except Exception as e:
+        logger.debug(f"[Chunk {chunk_index}] 方法 8 失败：{e}")
+    
+    # 方法 9：强制提取任何包含"问题"和"答案"的段落
+    try:
+        logger.info(f"[Chunk {chunk_index}] 方法 9：强制提取包含关键词的段落")
+        
+        # 分割段落
+        paragraphs = re.split(r'\n\n+', response)
+        faqs = []
+        
+        current_question = None
+        current_answer = []
+        
+        for para in paragraphs:
+            para_lower = para.lower()
+            
+            # 检测是否包含问题关键词
+            if any(kw in para for kw in ['问题', '问', 'Question', 'Q:']):
+                # 如果已有问题，保存
+                if current_question and current_answer:
+                    faqs.append({
+                        'question': current_question,
+                        'answer': '\n'.join(current_answer).strip()
+                    })
+                
+                # 提取新问题
+                match = re.search(r'(?:问题 | 问)[：:]?\s*(.+?)(?:\n|$)', para)
+                if match:
+                    current_question = match.group(1).strip()
+                    current_answer = []
+            elif any(kw in para for kw in ['答案', '答', 'Answer', 'A:']):
+                # 检测是否包含答案关键词
+                match = re.search(r'(?:答案 | 答)[：:]?\s*(.+?)(?:\n|$)', para)
+                if match:
+                    current_answer.append(match.group(1).strip())
+            elif current_question:
+                # 如果已有问题，当前段落作为答案的一部分
+                if para.strip():
+                    current_answer.append(para.strip())
+        
+        # 添加最后一个 FAQ
+        if current_question and current_answer:
+            faqs.append({
+                'question': current_question,
+                'answer': '\n'.join(current_answer).strip()
+            })
+        
+        if faqs:
+            logger.info(f"[Chunk {chunk_index}] 方法 9：强制提取成功，{len(faqs)} 条")
+            return faqs
+    except Exception as e:
+        logger.debug(f"[Chunk {chunk_index}] 方法 9 失败：{e}")
+    
+    # 方法 10：尝试逐行解析，提取 JSON 数组元素（针对部分格式错误的 JSON）
+    try:
+        logger.info(f"[Chunk {chunk_index}] 方法 10：尝试逐行提取 JSON 对象")
+        
+        # 查找所有 { 开头的位置
+        faqs = []
+        brace_count = 0
+        start_pos = -1
+        
+        for i, char in enumerate(response):
+            if char == '{':
+                if brace_count == 0:
+                    start_pos = i
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+                if brace_count == 0 and start_pos >= 0:
+                    # 提取一个完整的 JSON 对象
+                    json_obj = response[start_pos:i+1]
+                    try:
+                        # 尝试修复并解析
+                        fixed = fix_common_json_errors(json_obj)
+                        if fixed:
+                            parsed = json.loads(fixed)
+                            if isinstance(parsed, dict) and 'question' in parsed and 'answer' in parsed:
+                                faqs.append(parsed)
+                    except:
+                        pass
+                    start_pos = -1
+        
+        if faqs:
+            logger.info(f"[Chunk {chunk_index}] 方法 10：逐行提取成功，{len(faqs)} 条")
+            return faqs
+    except Exception as e:
+        logger.debug(f"[Chunk {chunk_index}] 方法 10 失败：{e}")
+    
     # 所有方法都失败
     logger.warning(f"[Chunk {chunk_index}] 所有方法都失败，响应预览：{response[:300]}...")
+    logger.warning(f"[Chunk {chunk_index}] 响应长度：{len(response)} 字符")
+    
+    # 记录错误位置附近的上下文
+    try:
+        # 尝试找到第 71 行附近的错误
+        lines = response.split('\n')
+        if len(lines) > 70:
+            logger.warning(f"[Chunk {chunk_index}] 第 70-72 行内容:")
+            for i in range(69, min(72, len(lines))):
+                logger.warning(f"  Line {i+1}: {lines[i][:100]}")
+    except:
+        pass
+    
     return []
 
 
@@ -521,6 +836,210 @@ def fix_common_json_errors(text: str) -> str:
     json_str += ']' * open_brackets + '}' * open_braces
     
     return json_str
+
+
+def extract_faq_parallel_with_progress(content: str, ollama_client=None, chunk_size: int = 2000, max_workers: int = 3, domain_id: int = None, preview_id: str = None) -> List[Dict]:
+    """
+    从文档内容中抽取 FAQ 对（并行处理版本，带进度更新）
+    
+    Args:
+        content: 文档内容
+        ollama_client: Ollama 客户端实例
+        chunk_size: 每段文本的长度（默认 2000 字符）
+        max_workers: 最大并发线程数（默认 3 个）
+        domain_id: 专业领域 ID（可选）
+        preview_id: 预览 ID（用于更新数据库进度）
+        
+    Returns:
+        FAQ 列表
+    """
+    import json
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from models.knowledge_base import knowledge_base_manager
+
+    if not ollama_client:
+        from utils.ollama_client import get_ollama_client
+        ollama_client = get_ollama_client()
+
+    # 分割文本
+    chunks = []
+    total_length = len(content)
+
+    for i in range(0, total_length, chunk_size):
+        chunk = content[i:i + chunk_size]
+        if chunk.strip():  # 跳过空段落
+            chunks.append({
+                'index': i // chunk_size,
+                'content': chunk,
+                'start': i,
+                'end': min(i + chunk_size, total_length)
+            })
+
+    total_chunks = len(chunks)
+    logger.info(f"[FAQ_PARALLEL] Document total length: {total_length}, split into {total_chunks} chunks")
+
+    def process_chunk(chunk_info, retry_count: int = 3):
+        """处理单个文本段（带重试机制）"""
+        chunk_index = chunk_info['index']
+        chunk_content = chunk_info['content']
+
+        prompt = f"""请从以下文档片段中提取所有可能的问答对（FAQ）。
+要求：
+1. 识别文档中的所有问题和对应的答案
+2. 如果没有明确的问题，根据内容总结可能的问题
+3. 每个问答对应该完整、准确
+4. 【重要】答案必须完整，包含所有步骤、子步骤、注意事项等详细信息
+5. 【重要】保留原文中的图片链接（Markdown 格式：![描述](URL)）
+6. 【重要】保留原文中的代码块、SQL 语句、命令等
+7. 【重要】保留原文的格式，包括换行、列表、缩进等
+8. 【重要】必须返回纯 JSON 数组，不要包含任何 Markdown 格式（如 ```json）
+9. 【重要】不要有任何解释、说明或其他文字
+10. JSON 格式示例：
+[
+    {{"question": "问题 1", "answer": "完整的答案（包含步骤、图片、代码等）"}},
+    {{"question": "问题 2", "answer": "完整的答案"}}
+]
+
+文档片段：
+{chunk_content}
+
+请提取 FAQ（只返回纯 JSON 数组，不要任何其他内容，保留所有细节）：
+"""
+
+        for attempt in range(retry_count + 1):
+            try:
+                response = ollama_client.generate(prompt)
+
+                logger.debug(f"第 {chunk_index} 段 AI 响应预览：{response[:200]}...")
+
+                # 解析 JSON
+                try:
+                    faqs = json.loads(response.strip())
+                except json.JSONDecodeError:
+                    # 方法 1: 提取 JSON 部分（查找第一个 [ 和最后一个 ]）
+                    start_idx = response.find('[')
+                    end_idx = response.rfind(']') + 1
+
+                    if start_idx >= 0 and end_idx > start_idx:
+                        json_str = response[start_idx:end_idx]
+                        logger.debug(f"第 {chunk_index} 段提取 JSON: {start_idx} 到 {end_idx}")
+                        # 清理特殊字符
+                        json_str = json_str.replace('\n', '\\n').replace('\r', '\\r')
+                        try:
+                            faqs = json.loads(json_str)
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"第 {chunk_index} 段 JSON 解析失败：{e}")
+                            logger.debug(f"JSON 字符串：{json_str[:300]}...")
+                            if attempt < retry_count:
+                                logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                                import time
+                                time.sleep(1)
+                                continue
+                            return []
+                    else:
+                        # 方法 2: 尝试移除 Markdown 代码块标记
+                        cleaned = response.strip()
+                        if cleaned.startswith('```'):
+                            # 移除 ```json 或 ``` 标记
+                            lines = cleaned.split('\n')
+                            if lines[0].startswith('```'):
+                                lines = lines[1:]
+                            if lines and lines[-1].startswith('```'):
+                                lines = lines[:-1]
+                            cleaned = '\n'.join(lines)
+                            logger.debug(f"第 {chunk_index} 段移除 Markdown 标记")
+
+                            # 再次尝试提取 JSON
+                            start_idx = cleaned.find('[')
+                            end_idx = cleaned.rfind(']') + 1
+                            if start_idx >= 0 and end_idx > start_idx:
+                                json_str = cleaned[start_idx:end_idx]
+                                json_str = json_str.replace('\n', '\\n').replace('\r', '\\r')
+                                try:
+                                    faqs = json.loads(json_str)
+                                except json.JSONDecodeError as e:
+                                    logger.warning(f"第 {chunk_index} 段 JSON 解析失败 (清理后): {e}")
+                                    if attempt < retry_count:
+                                        logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                                        import time
+                                        time.sleep(1)
+                                        continue
+                                    return []
+                            else:
+                                logger.warning(f"第 {chunk_index} 段无法解析 JSON")
+                                if attempt < retry_count:
+                                    logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                                    import time
+                                    time.sleep(1)
+                                    continue
+                                return []
+                        else:
+                            logger.warning(f"第 {chunk_index} 段无法解析 JSON")
+                            if attempt < retry_count:
+                                logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                                import time
+                                time.sleep(1)
+                                continue
+                            return []
+
+                if isinstance(faqs, list):
+                    # 添加 domain_id 到每个 FAQ
+                    for faq in faqs:
+                        if domain_id:
+                            faq['domain_id'] = domain_id
+                    # 验证格式
+                    valid_faqs = [faq for faq in faqs if
+                                  isinstance(faq, dict) and 'question' in faq and 'answer' in faq]
+                    logger.info(f"第 {chunk_index} 段提取 {len(valid_faqs)} 条 FAQ")
+                    return valid_faqs
+                else:
+                    logger.warning(f"第 {chunk_index} 段 AI 返回的不是列表")
+                    if attempt < retry_count:
+                        logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                        import time
+                        time.sleep(1)
+                        continue
+                    return []
+
+            except Exception as e:
+                logger.error(f"第 {chunk_index} 段处理失败：{e}")
+                if attempt < retry_count:
+                    logger.info(f"第 {chunk_index} 段重试 ({attempt + 1}/{retry_count})")
+                    import time
+                    time.sleep(1)
+                    continue
+                return []
+
+        logger.error(f"第 {chunk_index} 段已放弃（重试 {retry_count} 次后仍失败）")
+        return []
+
+    # 使用线程池并行处理
+    all_faqs = []
+    processed_count = 0
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # 提交所有任务
+        future_to_chunk = {
+            executor.submit(process_chunk, chunk): chunk
+            for chunk in chunks
+        }
+
+        # 收集结果
+        for future in as_completed(future_to_chunk):
+            try:
+                faqs = future.result()
+                all_faqs.extend(faqs)
+                processed_count += 1
+                
+                # 更新进度
+                if preview_id:
+                    update_progress(preview_id, processed_count, len(all_faqs))
+                    logger.info(f"[PROGRESS] Chunk {processed_count}/{total_chunks} processed")
+            except Exception as e:
+                logger.error(f"线程执行错误：{e}")
+
+    logger.info(f"并行处理完成，总共提取 {len(all_faqs)} 条 FAQ")
+    return all_faqs
 
 
 def extract_faq_parallel(content: str, ollama_client=None, chunk_size: int = 2000, max_workers: int = 3, domain_id: int = None) -> List[Dict]:
