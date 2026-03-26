@@ -8,49 +8,54 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 30px;
     }
 
     .chatbot-page-body .chatbot-main-container {
         display: flex;
-        height: 95vh;
-        gap: 20px;
-        padding: 20px;
+        height: 90vh;
+        gap: 25px;
+        padding: 0;
     }
 
     .chatbot-page-body .chat-panel {
         flex: 2;
         background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        min-height: 700px;
     }
 
     .chatbot-page-body .sidebar-panel {
         flex: 1;
+        min-width: 420px;
         background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        padding: 0;
     }
 
     .chatbot-page-body .chat-header {
         background: linear-gradient(to right, #4361ee, #3f37c9);
         color: white;
-        padding: 20px;
+        padding: 30px;
         text-align: center;
     }
 
     .chatbot-page-body .chat-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 20px;
+        padding: 30px;
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
+        min-height: 600px;
     }
 
     .chatbot-page-body .message {
@@ -324,6 +329,45 @@
         background: #fff3cd;
         color: #856404;
     }
+    
+    /* 上传区域样式 */
+    .chatbot-page-body .upload-area {
+        transition: all 0.3s ease;
+    }
+    
+    .chatbot-page-body .upload-area:hover {
+        border-color: #1890ff;
+        background: rgba(24, 144, 255, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .chatbot-page-body .upload-area.dragover {
+        border-color: #52c41a;
+        background: rgba(82, 196, 26, 0.1);
+    }
+    
+    /* 文档和 FAQ 项样式 */
+    .chatbot-page-body .document-item,
+    .chatbot-page-body .faq-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: white;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .chatbot-page-body .document-item:hover,
+    .chatbot-page-body .faq-item:hover {
+        background: #f8f9fa;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateX(2px);
+    }
+    
+    .chatbot-page-body .faq-item {
+        border-left: 4px solid #1890ff;
+    }
 
     /* 响应式设计 */
     @media (max-width: 992px) {
@@ -334,6 +378,69 @@
         .chatbot-page-body .chat-panel, .chatbot-page-body .sidebar-panel {
             flex: none;
             height: 50vh;
+        }
+    }
+    
+    /* TAB 样式优化 */
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+        background: #f8f9fa;
+        padding: 10px 15px 0 15px;
+        gap: 5px;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        padding: 10px 20px;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(to bottom, #4361ee, #3f37c9);
+        color: white;
+        border: none;
+    }
+    
+    .tab-content {
+        background: white;
+        height: 100%;
+        overflow-y: auto;
+    }
+    
+    .chatbot-page-body .tab-pane {
+        display: none;
+        height: 100%;
+        animation: fadeInTab 0.3s ease-in-out;
+    }
+    
+    .chatbot-page-body .tab-pane.active {
+        display: block;
+    }
+    
+    .chatbot-page-body .tab-pane.fade {
+        opacity: 0;
+    }
+    
+    .chatbot-page-body .tab-pane.fade.show {
+        opacity: 1;
+    }
+    
+    @keyframes fadeInTab {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 </style>
@@ -364,12 +471,79 @@
         </div>
         
         <div class="sidebar-panel">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-history me-2"></i>会话历史</h5>
-            </div>
-            <div class="card-body p-0" style="flex: 1; overflow-y: auto;">
-                <div id="historyList">
-                    <!-- 历史记录会动态加载到这里 -->
+            <!-- TAB 导航 -->
+            <ul class="nav nav-tabs" id="sidebarTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="upload-tab" data-toggle="tab" data-target="#upload-panel" type="button" role="tab">
+                        <i class="fas fa-upload me-1"></i>文档上传
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documents-tab" data-toggle="tab" data-target="#documents-panel" type="button" role="tab">
+                        <i class="fas fa-file-alt me-1"></i>文档列表
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="faqs-tab" data-toggle="tab" data-target="#faqs-panel" type="button" role="tab">
+                        <i class="fas fa-question-circle me-1"></i>FAQ
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="status-tab" data-toggle="tab" data-target="#status-panel" type="button" role="tab">
+                        <i class="fas fa-server me-1"></i>状态
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- TAB 内容 -->
+            <div class="tab-content" id="sidebarTabContent">
+                <!-- 文档上传面板 -->
+                <div class="tab-pane fade show active" id="upload-panel" role="tabpanel">
+                    <div class="p-3">
+                        <div class="mb-3">
+                            <label for="domainSelect" class="form-label"><i class="fas fa-tags me-1"></i>专业领域 *</label>
+                            <select class="form-select" id="domainSelect" required>
+                                <option value="">-- 请选择领域 --</option>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                <a href="/api/category/page" target="_blank"><i class="fas fa-plus-circle me-1"></i>管理领域</a>
+                            </small>
+                        </div>
+                        
+                        <div class="upload-area" id="uploadArea" style="border: 2px dashed #ddd; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                            <p class="mb-2" style="font-size: 15px;">点击或拖拽上传文档</p>
+                            <small class="text-muted">支持 .docx, .pdf, .md 格式</small>
+                            <input type="file" id="fileInput" accept=".docx,.pdf,.md" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文档列表面板 -->
+                <div class="tab-pane fade" id="documents-panel" role="tabpanel">
+                    <div id="documentsList" class="p-3" style="max-height: 500px; overflow-y: auto;">
+                        <!-- 文档列表会动态加载到这里 -->
+                    </div>
+                </div>
+                
+                <!-- FAQ 列表面板 -->
+                <div class="tab-pane fade" id="faqs-panel" role="tabpanel">
+                    <div class="p-3">
+                        <input type="text" class="form-control form-control-sm mb-2" id="faqSearch" placeholder="搜索 FAQ...">
+                        <button class="btn btn-sm btn-primary w-100 mb-2" id="searchBtn">
+                            <i class="fas fa-search me-1"></i>搜索
+                        </button>
+                        <div id="faqsList" style="max-height: 450px; overflow-y: auto;">
+                            <!-- FAQ 列表会动态加载到这里 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI 服务状态面板 -->
+                <div class="tab-pane fade" id="status-panel" role="tabpanel">
+                    <div id="ollamaStatus" class="p-3">
+                        <!-- Ollama 状态会动态显示 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -385,9 +559,9 @@ let conversationHistory = [];
 
 // ========== DOM 元素 ==========
 const chatMessages = document.getElementById('chatMessages');
-const userInput = document.getElementById('userInput');
+const userInput = document.getElementById('messageInput');  // 注意：实际 ID 是 messageInput
 const sendButton = document.getElementById('sendButton');
-const clearButton = document.getElementById('clearButton');
+const clearButton = document.querySelector('.clear-button');  // 使用类选择器
 const typingIndicator = document.getElementById('typingIndicator');
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
@@ -397,17 +571,64 @@ const faqSearch = document.getElementById('faqSearch');
 const searchBtn = document.getElementById('searchBtn');
 const ollamaStatus = document.getElementById('ollamaStatus');
 
+// 安全获取元素，避免报错
+const elements = {
+    chatMessages,
+    userInput,
+    sendButton,
+    clearButton,
+    typingIndicator,
+    uploadArea,
+    fileInput,
+    documentsList,
+    faqsList,
+    faqSearch,
+    searchBtn,
+    ollamaStatus
+};
+
+// 检查关键元素是否存在
+if (!userInput || !sendButton || !chatMessages) {
+    console.error('[ERROR] 关键聊天元素未找到，页面可能未完全加载');
+}
+
 // ========== 初始化 ==========
 window.addEventListener('load', () => {
-    setWelcomeTime();
-    loadDomainCategories();  // 加载领域列表
-    loadDocuments();
-    loadFaqs();
-    checkOllamaStatus();
-    userInput.focus();
+    console.log('[DEBUG] 页面加载完成，开始初始化...');
     
-    // 显示初始欢迎消息
+    // 显示欢迎消息
     showWelcomeMessage();
+    
+    // 异步加载数据，并添加详细日志
+    console.log('[DEBUG] 准备加载领域列表...');
+    loadDomainCategories().catch(err => {
+        console.error('[ERROR] 加载领域失败:', err);
+    });
+    
+    console.log('[DEBUG] 准备加载文档列表...');
+    loadDocuments().catch(err => {
+        console.error('[ERROR] 加载文档失败:', err);
+    });
+    
+    console.log('[DEBUG] 准备加载 FAQ 列表...');
+    loadFaqs().catch(err => {
+        console.error('[ERROR] 加载 FAQ 失败:', err);
+    });
+    
+    console.log('[DEBUG] 准备检查 Ollama 状态...');
+    checkOllamaStatus().catch(err => {
+        console.error('[ERROR] 检查 Ollama 状态失败:', err);
+    });
+    
+    // 聚焦输入框
+    if (userInput) {
+        console.log('[DEBUG] 聚焦输入框');
+        userInput.focus();
+    } else {
+        console.error('[ERROR] userInput 元素不存在，无法聚焦');
+    }
+    
+    console.log('[DEBUG] 初始化完成');
 });
 
 function showWelcomeMessage() {
@@ -427,21 +648,31 @@ function showWelcomeMessage() {
 function setWelcomeTime() {
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    document.getElementById('welcomeTime').textContent = timeStr;
+    const welcomeTimeElement = document.getElementById('welcomeTime');
+    if (welcomeTimeElement) {
+        welcomeTimeElement.textContent = timeStr;
+    } else {
+        console.log('[DEBUG] welcomeTime 元素不存在，跳过设置欢迎时间');
+    }
 }
 
 // 加载专业领域列表
 async function loadDomainCategories() {
+    console.log('[DEBUG] 开始加载领域列表...');
     try {
-        console.log('[DEBUG] 开始加载领域列表...');
         const response = await fetch('/api/category/list');
-        console.log('[DEBUG] 响应状态:', response.status);
+        console.log('[DEBUG] 领域列表响应状态:', response.status);
         
         if (response.ok) {
             const data = await response.json();
-            console.log('[DEBUG] API 返回数据:', data);
+            console.log('[DEBUG] 领域列表 API 返回数据:', data);
             
             const domainSelect = document.getElementById('domainSelect');
+            
+            if (!domainSelect) {
+                console.warn('[DEBUG] domainSelect 元素不存在，跳过领域列表显示');
+                return;
+            }
             
             if (data.success) {
                 console.log('[DEBUG] 领域数量:', data.categories.length);
@@ -660,29 +891,33 @@ function clearChat() {
 }
 
 // ========== 文档上传功能 ==========
-uploadArea.addEventListener('click', () => {
-    fileInput.click();
-});
+if (uploadArea && fileInput) {
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
 
-fileInput.addEventListener('change', handleFileSelect);
+    fileInput.addEventListener('change', handleFileSelect);
 
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
 
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
 
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        uploadDocument(files[0]);
-    }
-});
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            uploadDocument(files[0]);
+        }
+    });
+} else {
+    console.error('[ERROR] uploadArea 或 fileInput 元素不存在');
+}
 
 function handleFileSelect(e) {
     const file = e.target.files[0];
@@ -755,18 +990,30 @@ async function uploadDocument(file) {
 }
 
 async function loadDocuments() {
+    console.log('[DEBUG] 开始加载文档列表...');
     try {
         const response = await fetch('/chatbot/documents');
+        console.log('[DEBUG] 文档列表响应状态:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('[DEBUG] 文档数据:', data);
             displayDocuments(data.documents);
+        } else {
+            console.error('[DEBUG] 文档列表 HTTP 错误:', response.status);
         }
     } catch (error) {
-        console.error('加载文档失败:', error);
+        console.error('[DEBUG] 加载文档异常:', error);
     }
 }
 
 function displayDocuments(documents) {
+    const documentsList = document.getElementById('documentsList');
+    if (!documentsList) {
+        console.warn('[DEBUG] documentsList 元素不存在，跳过文档列表显示');
+        return;
+    }
+    
     if (!documents || documents.length === 0) {
         documentsList.innerHTML = '<p class="text-muted">暂无文档</p>';
         return;
@@ -804,18 +1051,30 @@ function displayDocuments(documents) {
 
 // ========== FAQ 功能 ==========
 async function loadFaqs() {
+    console.log('[DEBUG] 开始加载 FAQ 列表...');
     try {
         const response = await fetch('/chatbot/faqs');
+        console.log('[DEBUG] FAQ 列表响应状态:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('[DEBUG] FAQ 数据:', data);
             displayFaqs(data.faqs);
+        } else {
+            console.error('[DEBUG] FAQ 列表 HTTP 错误:', response.status);
         }
     } catch (error) {
-        console.error('加载 FAQ 失败:', error);
+        console.error('[DEBUG] 加载 FAQ 异常:', error);
     }
 }
 
 function displayFaqs(faqs) {
+    const faqsList = document.getElementById('faqsList');
+    if (!faqsList) {
+        console.warn('[DEBUG] faqsList 元素不存在，跳过 FAQ 列表显示');
+        return;
+    }
+    
     if (!faqs || faqs.length === 0) {
         faqsList.innerHTML = '<p class="text-muted">暂无 FAQ</p>';
         return;
@@ -1033,38 +1292,68 @@ function showFaqDetail(faq) {
     scrollToBottom();
 }
 
-searchBtn.addEventListener('click', async () => {
-    const keyword = faqSearch.value.trim();
-    if (!keyword) {
-        loadFaqs();
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/chatbot/search?keyword=${encodeURIComponent(keyword)}`);
-        if (response.ok) {
-            const data = await response.json();
-            displayFaqs(data.faqs);
+if (searchBtn && faqSearch) {
+    searchBtn.addEventListener('click', async () => {
+        const keyword = faqSearch.value.trim();
+        if (!keyword) {
+            loadFaqs();
+            return;
         }
-    } catch (error) {
-        console.error('搜索失败:', error);
-    }
-});
+        
+        try {
+            const response = await fetch(`/chatbot/search?keyword=${encodeURIComponent(keyword)}`);
+            if (response.ok) {
+                const data = await response.json();
+                displayFaqs(data.faqs);
+            }
+        } catch (error) {
+            console.error('搜索失败:', error);
+        }
+    });
+} else {
+    console.error('[ERROR] searchBtn 或 faqSearch 元素不存在');
+}
 
-// ========== 系统状态 ==========
+function useFaq(question) {
+    console.log('[DEBUG] 使用 FAQ:', question);
+    if (userInput) {
+        userInput.value = question;
+        userInput.focus();
+    }
+}
+
+// ========== 系统状态 ==============
 async function checkOllamaStatus() {
+    console.log('[DEBUG] 开始检查 Ollama 状态...');
     try {
         const response = await fetch('/chatbot/ollama/status');
+        console.log('[DEBUG] Ollama 状态响应:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('[DEBUG] Ollama 数据:', data);
             displayOllamaStatus(data);
+        } else {
+            console.error('[DEBUG] Ollama 状态 HTTP 错误:', response.status);
+            if (ollamaStatus) {
+                ollamaStatus.innerHTML = '<div class="status-badge status-error">无法连接</div>';
+            }
         }
     } catch (error) {
-        ollamaStatus.innerHTML = '<div class="status-badge status-error">无法连接</div>';
+        console.error('[DEBUG] 检查 Ollama 状态异常:', error);
+        if (ollamaStatus) {
+            ollamaStatus.innerHTML = '<div class="status-badge status-error">无法连接</div>';
+        }
     }
 }
 
 function displayOllamaStatus(status) {
+    const ollamaStatus = document.getElementById('ollamaStatus');
+    if (!ollamaStatus) {
+        console.warn('[DEBUG] ollamaStatus 元素不存在，跳过 Ollama 状态显示');
+        return;
+    }
+    
     if (status.available) {
         ollamaStatus.innerHTML = `
             <div class="status-badge status-success">
@@ -1086,16 +1375,106 @@ function displayOllamaStatus(status) {
 }
 
 // ========== 事件监听器 ==========
-sendButton.addEventListener('click', sendMessage);
+if (sendButton) {
+    sendButton.addEventListener('click', sendMessage);
+} else {
+    console.error('[ERROR] sendButton 元素不存在');
+}
 
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+if (userInput) {
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    // 处理输入框的回车键 (兼容 HTML 中的 onkeypress)
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
     }
-});
+} else {
+    console.error('[ERROR] userInput 元素不存在');
+}
 
-clearButton.addEventListener('click', clearChat);
+if (clearButton) {
+    clearButton.addEventListener('click', clearChat);
+} else {
+    console.error('[ERROR] clearButton 元素不存在');
+}
+
+// TAB 切换时重新加载数据
+if (typeof $ !== 'undefined') {
+    // 文档列表 TAB 点击时加载数据
+    $('#documents-tab').on('click', function (e) {
+        e.preventDefault();
+        console.log('[DEBUG] 点击文档列表 TAB');
+        
+        // 手动激活 TAB
+        $('#sidebarTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+        
+        // 显示对应的面板
+        $('.tab-pane').removeClass('active show');
+        $('#documents-panel').addClass('active show');
+        
+        // 加载数据
+        loadDocuments();
+    });
+    
+    // FAQ TAB 点击时加载数据
+    $('#faqs-tab').on('click', function (e) {
+        e.preventDefault();
+        console.log('[DEBUG] 点击 FAQ TAB');
+        
+        // 手动激活 TAB
+        $('#sidebarTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+        
+        // 显示对应的面板
+        $('.tab-pane').removeClass('active show');
+        $('#faqs-panel').addClass('active show');
+        
+        // 加载数据
+        loadFaqs();
+    });
+    
+    // 状态 TAB 点击时检查状态
+    $('#status-tab').on('click', function (e) {
+        e.preventDefault();
+        console.log('[DEBUG] 点击状态 TAB');
+        
+        // 手动激活 TAB
+        $('#sidebarTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+        
+        // 显示对应的面板
+        $('.tab-pane').removeClass('active show');
+        $('#status-panel').addClass('active show');
+        
+        // 检查状态
+        checkOllamaStatus();
+    });
+    
+    // 文档上传 TAB 点击时
+    $('#upload-tab').on('click', function (e) {
+        e.preventDefault();
+        console.log('[DEBUG] 点击文档上传 TAB');
+        
+        // 手动激活 TAB
+        $('#sidebarTabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+        
+        // 显示对应的面板
+        $('.tab-pane').removeClass('active show');
+        $('#upload-panel').addClass('active show');
+    });
+} else {
+    console.warn('[DEBUG] jQuery 未加载，无法绑定 TAB 切换事件');
+}
 
 </script>
 {% endblock %}

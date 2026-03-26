@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/chat/chatai_routes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +175,7 @@
       <recent name="$PROJECT_DIR$/test/fpa" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.testJsonToDelay_time">
+  <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
     <configuration name="run_tests" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -296,8 +298,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Flask 服务器.Flask (app.py) (1)" />
-        <item itemvalue="Python.testJsonToDelay_time" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
+        <item itemvalue="Python.testJsonToDelay_time" />
         <item itemvalue="Shell Script.start.sh" />
         <item itemvalue="Python.run_tests" />
       </list>
@@ -361,15 +363,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="27903000" />
-    </task>
-    <task id="LOCAL-00003" summary="排班系统1.0">
-      <option name="closed" value="true" />
-      <created>1770371106436</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1770371106436</updated>
+      <workItem from="1774320367349" duration="34777000" />
     </task>
     <task id="LOCAL-00004" summary="端口保持5001；增加pymysql的依赖包">
       <option name="closed" value="true" />
@@ -755,7 +749,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774423180489</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="new：增加kafka的ES语句生成">
+      <option name="closed" value="true" />
+      <created>1774425618155</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1774425618155</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -796,7 +798,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：FPA版本稳定版1.0.0" />
     <MESSAGE value="new: 1.增加导出历史记录；2.增加删除功能；3.增加历史记录列表停止进程功能；4.增加进度显示；" />
     <MESSAGE value="fix：优化前后端交互" />
     <MESSAGE value="fix：生成FPA文档&#10;任务 ID 完全隔离 - UUID 随机，无法猜测&#10;文件命名已优化 - 加入 task_id，绝对唯一&#10;数据库精确查询 - WHERE task_id = ?&#10;线程安全保障 - threading.Lock 保护共享数据&#10;无全局状态污染 - 每个任务独立运行" />
@@ -821,7 +822,8 @@
     <MESSAGE value="new：修复FPA前端显示不全、动画一直加载的问题" />
     <MESSAGE value="new：修复前端重构页面样式错乱问题" />
     <MESSAGE value="new：增加kafka生成的置顶按钮功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加kafka生成的置顶按钮功能" />
+    <MESSAGE value="new：增加kafka的ES语句生成" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加kafka的ES语句生成" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -851,7 +853,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$app.coverage" NAME="app Coverage Results" MODIFIED="1772085107343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$word.coverage" NAME="生成word 覆盖结果" MODIFIED="1773225617538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/生成word" />
     <SUITE FILE_PATH="coverage/wordToWord$testc.coverage" NAME="testc 覆盖结果" MODIFIED="1773135916888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) (1) 覆盖结果" MODIFIED="1774414057066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) (1) 覆盖结果" MODIFIED="1774489941148" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_leave_remark.coverage" NAME="test_leave_remark Coverage Results" MODIFIED="1772522443916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$test_fpa_performance.coverage" NAME="test_fpa_performance 覆盖结果" MODIFIED="1773453219446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_field_order.coverage" NAME="verify_field_order Coverage Results" MODIFIED="1772162249831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

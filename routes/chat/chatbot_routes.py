@@ -397,16 +397,19 @@ def upload_document_confirm():
 def list_documents():
     """获取文档列表"""
     try:
+        logger.info(f"[CHATBOT_DOCUMENTS] 收到文档列表请求")
         from models.knowledge_base import knowledge_base_manager
         
         documents = knowledge_base_manager.list_documents(status='active')
+        
+        logger.info(f"[CHATBOT_DOCUMENTS] 返回文档数量：{len(documents)}")
         
         return jsonify({
             'success': True,
             'documents': documents
         })
     except Exception as e:
-        logger.error(f"获取文档列表失败：{e}")
+        logger.error(f"[CHATBOT_DOCUMENTS] 获取文档列表失败：{e}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -417,16 +420,19 @@ def list_documents():
 def list_faqs():
     """获取 FAQ 列表"""
     try:
+        logger.info(f"[CHATBOT_FAQS] 收到 FAQ 列表请求")
         from models.knowledge_base import knowledge_base_manager
         
         faqs = knowledge_base_manager.list_all_faqs()
+        
+        logger.info(f"[CHATBOT_FAQS] 返回 FAQ 数量：{len(faqs)}")
         
         return jsonify({
             'success': True,
             'faqs': faqs
         })
     except Exception as e:
-        logger.error(f"获取 FAQ 列表失败：{e}")
+        logger.error(f"[CHATBOT_FAQS] 获取 FAQ 列表失败：{e}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -501,6 +507,7 @@ def clear_conversation():
 def check_ollama_status():
     """检查 Ollama 服务状态"""
     try:
+        logger.info(f"[CHATBOT_OLLAMA] 收到 Ollama 状态检查请求")
         from utils.ollama_client import get_ollama_client
         
         client = get_ollama_client()
@@ -510,6 +517,8 @@ def check_ollama_status():
         if is_available:
             models = client.list_models()
         
+        logger.info(f"[CHATBOT_OLLAMA] Ollama 可用：{is_available}, 模型数量：{len(models)}")
+        
         return jsonify({
             'success': True,
             'available': is_available,
@@ -517,7 +526,7 @@ def check_ollama_status():
             'endpoint': client.base_url
         })
     except Exception as e:
-        logger.error(f"检查 Ollama 状态失败：{e}")
+        logger.error(f"[CHATBOT_OLLAMA] 检查 Ollama 状态失败：{e}")
         return jsonify({
             'success': False,
             'error': str(e),
