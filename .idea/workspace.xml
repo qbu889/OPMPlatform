@@ -4,20 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/docs/need_doc/技需核对.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-软件资产解析清单.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/wordToWord.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wordToWord.iml" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：技术需求文档word转excel对比">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/chat/chatbot_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/chat/chatbot.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/chat/chatbot.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" beforeDir="false" afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/chatbot_core.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/chatbot_core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/ollama_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -372,15 +363,7 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="49150000" />
-    </task>
-    <task id="LOCAL-00008" summary="fix：前端备注信息数据展示">
-      <option name="closed" value="true" />
-      <created>1772517578052</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1772517578052</updated>
+      <workItem from="1774320367349" duration="51161000" />
     </task>
     <task id="LOCAL-00009" summary="fix：1. 优化排班逻辑；">
       <option name="closed" value="true" />
@@ -766,7 +749,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774507332867</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="new：技术需求文档word转excel对比">
+      <option name="closed" value="true" />
+      <created>1774513525008</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1774513525008</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -807,7 +798,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：使用远程并且尝试减少请求量" />
     <MESSAGE value="fix：查询接口时机、下划线去除、特殊符号去除" />
     <MESSAGE value="fix：【难修复】生成FPA文档顺序BUG" />
     <MESSAGE value="fix：统计请求数量动态落库" />
@@ -832,7 +822,8 @@
     <MESSAGE value="fix：增加日志输出" />
     <MESSAGE value="fix：复制结果按钮调整、复制成功提示语调整" />
     <MESSAGE value="fix：sql初始化调整、ai客户端调整、客户端调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：sql初始化调整、ai客户端调整、客户端调整" />
+    <MESSAGE value="new：技术需求文档word转excel对比" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：技术需求文档word转excel对比" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -862,7 +853,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$app.coverage" NAME="app Coverage Results" MODIFIED="1772085107343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$word.coverage" NAME="生成word 覆盖结果" MODIFIED="1773225617538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/生成word" />
     <SUITE FILE_PATH="coverage/wordToWord$testc.coverage" NAME="testc 覆盖结果" MODIFIED="1773135916888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) (1) 覆盖结果" MODIFIED="1774493783296" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py___1_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1774514937997" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_leave_remark.coverage" NAME="test_leave_remark Coverage Results" MODIFIED="1772522443916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$test_fpa_performance.coverage" NAME="test_fpa_performance 覆盖结果" MODIFIED="1773453219446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_field_order.coverage" NAME="verify_field_order Coverage Results" MODIFIED="1772162249831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
