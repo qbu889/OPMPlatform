@@ -72,6 +72,31 @@
         box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     }
     
+    /* 修复文件选择框显示问题 */
+    input[type="file"].form-control {
+        padding: 0.5rem 0.75rem;
+        height: calc(2.5rem + 2px);
+        line-height: 1.5;
+        font-family: inherit;
+    }
+    
+    input[type="file"].form-control::file-selector-button {
+        padding: 0.5rem 1rem;
+        margin-right: 1rem;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    input[type="file"].form-control::file-selector-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
     .btn-convert {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
