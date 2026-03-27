@@ -9,7 +9,8 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
     <style>
         :root {
             --primary-color: #4361ee;
@@ -400,6 +401,9 @@
                             </a></li>
                             <li><a class="dropdown-item" href="/markdown-upload">
                                 <i class="fas fa-file-word me-2"></i>Markdown 转 Word
+                            </a></li>
+                            <li><a class="dropdown-item" href="/word-to-excel/">
+                                <i class="fas fa-file-excel me-2"></i>Word 转 Excel
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="/fpa-generator/">

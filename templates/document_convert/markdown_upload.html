@@ -3,128 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown转换工具</title>
-    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <title>Markdown 转换工具</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
-        .keyword-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #dee2e6;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            background-color: #f8f9fa;
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #cffafe 100%);
+            min-height: 100vh;
         }
-
-        .keyword-item:hover {
-            background-color: #e9ecef;
-            border-color: #adb5bd;
+        
+        .converter-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
         }
-
-        .btn-custom {
+        
+        .converter-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .converter-header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        
+        .converter-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        
+        .converter-title i {
+            color: #63b3ed;
+        }
+        
+        .converter-subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+        
+        .converter-body {
+            padding: 2.5rem;
+        }
+        
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-keyword {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-keyword:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(72, 187, 120, 0.4);
+        }
+        
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            padding: 1rem 1.25rem;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* 关键词列表优化 */
+        .keyword-table {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .keyword-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .keyword-table thead th {
+            padding: 1rem;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .keyword-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .keyword-table tbody tr:hover {
+            background-color: #f7fafc;
+            transform: translateX(4px);
+        }
+        
+        .keyword-table tbody td {
+            padding: 0.875rem 1rem;
+            vertical-align: middle;
+        }
+        
+        .keyword-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
             font-size: 0.875rem;
-        }
-
-        .btn-edit {
-            background-color: #17a2b8;
-            color: white;
-            border: 1px solid #17a2b8;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-            border: 1px solid #dc3545;
-        }
-
-        .btn-add {
-            background-color: #28a745;
-            color: white;
-            border: 1px solid #28a745;
-        }
-
-        .modal-title {
             font-weight: 600;
         }
-
-        .form-control {
-            border-radius: 6px;
+        
+        .badge-person {
+            background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+            color: white;
         }
-
-        .keyword-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        
+        .badge-system {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            color: white;
         }
-
-        @media (max-width: 768px) {
-            .keyword-list {
-                grid-template-columns: 1fr;
-            }
+        
+        .btn-action {
+            padding: 0.375rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin: 0 0.25rem;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-edit-action {
+            background: linear-gradient(135deg, #4fd1c5 0%, #38b2ac 100%);
+            color: white;
+            border: none;
+        }
+        
+        .btn-delete-action {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+            color: white;
+            border: none;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            border: none;
+        }
+        
+        .modal-header .close {
+            color: white;
+            opacity: 1;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #a0aec0;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container-fluid p-4">
-        <div class="row mb-4">
-            <div class="col">
-                <h1 class="text-primary">Markdown上传转换</h1>
+<body>
+    <div class="converter-container">
+        <!-- 上传转换卡片 -->
+        <div class="converter-card">
+            <div class="converter-header">
+                <h1 class="converter-title">
+                    <i class="fas fa-file-markdown me-3"></i>
+                    Markdown 上传转换
+                </h1>
+                <p class="converter-subtitle">将 Markdown 文件转换为 Word 文档</p>
+            </div>
+            
+            <div class="converter-body">
                 {% if error %}
-                    <div class="alert alert-danger mt-3">{{ error }}</div>
+                    <div class="alert alert-danger">{{ error }}</div>
                 {% endif %}
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <form method="post" enctype="multipart/form-data" class="mb-3">
-                    <div class="input-group">
-                        <input type="file" name="markdown_file" accept=".md" class="form-control">
-                        <button type="submit" class="btn btn-primary">上传并转换</button>
+                
+                <form method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="markdown_file" class="form-label">
+                            <i class="fas fa-folder-open me-2"></i>选择 Markdown 文件 (.md)
+                        </label>
+                        <input type="file" name="markdown_file" accept=".md" class="form-control" id="markdown_file" required>
                     </div>
+                    <button type="submit" class="btn-upload">
+                        <i class="fas fa-upload me-2"></i>上传并转换
+                    </button>
                 </form>
+                
+                <div class="mt-4">
+                    <button onclick="openKeywordModal()" class="btn-keyword">
+                        <i class="fas fa-key me-2"></i>关键词管理
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- 关键词管理区域 -->
-        <div class="row">
-            <div class="col">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">关键词管理</h3>
-                        <div>
-                            <button onclick="loadKeywords()" class="btn btn-sm btn-outline-light me-2">刷新</button>
-                            <button onclick="openAddModal('person')" class="btn btn-sm btn-success">添加人工关键词</button>
-                            <button onclick="openAddModal('system')" class="btn btn-sm btn-warning">添加系统关键词</button>
+    <!-- 关键词管理模态框 -->
+    <div id="keywordModal" class="modal fade" tabindex="-1" aria-labelledby="keywordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-key me-2"></i>关键词管理
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- 统计信息 -->
+                    <div class="stats-card">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted mb-1">人工操作关键词</div>
+                                        <div class="stats-number" id="personCount">0</div>
+                                    </div>
+                                    <i class="fas fa-user-edit fa-3x" style="opacity: 0.1;"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted mb-1">系统操作关键词</div>
+                                        <div class="stats-number" id="systemCount">0</div>
+                                    </div>
+                                    <i class="fas fa-robot fa-3x" style="opacity: 0.1;"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="keyword-list">
-                            <div class="col">
-                                <h4 class="mb-3 text-muted">人工操作关键词</h4>
-                                <div id="person-keywords"></div>
-                            </div>
-                            <div class="col">
-                                <h4 class="mb-3 text-muted">系统操作关键词</h4>
-                                <div id="system-keywords"></div>
-                            </div>
-                        </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="mb-3">
+                        <button onclick="openAddModal('person')" class="btn btn-edit-action btn-action">
+                            <i class="fas fa-plus me-1"></i>添加人工关键词
+                        </button>
+                        <button onclick="openAddModal('system')" class="btn btn-edit-action btn-action">
+                            <i class="fas fa-plus me-1"></i>添加系统关键词
+                        </button>
+                        <button onclick="loadKeywords()" class="btn btn-secondary btn-action">
+                            <i class="fas fa-sync-alt me-1"></i>刷新
+                        </button>
                     </div>
+                    
+                    <!-- 关键词表格 -->
+                    <div class="table-responsive">
+                        <table class="keyword-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">类型</th>
+                                    <th style="width: 60%;">关键词</th>
+                                    <th style="width: 30%;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keywordTableBody">
+                                <tr>
+                                    <td colspan="3" class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>暂无关键词数据</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 添加/编辑关键词模态框 -->
-    <div id="keyword-modal" class="modal fade" tabindex="-1" aria-labelledby="keywordModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <div id="keywordEditModal" class="modal fade" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal-title">添加关键词</h5>
+                    <h5 class="modal-title" id="editModalTitle">
+                        <i class="fas fa-edit me-2"></i>添加关键词
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -143,76 +372,57 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveKeyword()">保存</button>
+                    <button type="button" class="btn btn-primary" onclick="saveKeyword()">
+                        <i class="fas fa-save me-1"></i>保存
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 页面加载时获取关键词
-        window.onload = function() {
+        let keywordModal, editModal;
+        
+        // 初始化模态框
+        $(document).ready(function() {
+            keywordModal = new bootstrap.Modal(document.getElementById('keywordModal'));
+            editModal = new bootstrap.Modal(document.getElementById('keywordEditModal'));
+        });
+        
+        // 打开关键词管理弹窗
+        function openKeywordModal() {
             loadKeywords();
-        };
-
-        // 获取关键词列表
-        function loadKeywords() {
-            fetch('/api/keywords')
-                .then(response => response.json())
-                .then(data => {
-                    renderKeywords('person', data.person_keywords);
-                    renderKeywords('system', data.system_keywords);
-                })
-                .catch(error => console.error('Error loading keywords:', error));
+            keywordModal.show();
         }
-
-        // 渲染关键词列表
-        function renderKeywords(type, keywords) {
-            const container = document.getElementById(type + '-keywords');
-            container.innerHTML = '';
-
-            keywords.forEach(keyword => {
-                const div = document.createElement('div');
-                div.className = 'keyword-item';
-                div.innerHTML = `
-                    <span>${keyword}</span>
-                    <div>
-                        <button onclick="editKeyword('${type}', '${keyword}')" class="btn btn-edit btn-sm me-2">编辑</button>
-                        <button onclick="deleteKeyword('${type}', '${keyword}')" class="btn btn-delete btn-sm">删除</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // 修改前端代码中的类型字段
+        
+        // 打开添加模态框
         function openAddModal(type) {
-            document.getElementById('modal-title').textContent = '添加关键词';
-            document.getElementById('keyword-type').value = type + '_keywords'; // 添加_keywords后缀
+            document.getElementById('editModalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>添加关键词';
+            document.getElementById('keyword-type').value = type + '_keywords';
             document.getElementById('original-keyword').value = '';
             document.getElementById('keyword-input').value = '';
             document.getElementById('keyword-comment').value = '';
-            const modal = new bootstrap.Modal(document.getElementById('keyword-modal'));
-            modal.show();
+            editModal.show();
         }
-
-        // 修改编辑函数
+        
+        // 编辑关键词
         function editKeyword(type, keyword) {
-            document.getElementById('modal-title').textContent = '编辑关键词';
-            document.getElementById('keyword-type').value = type + '_keywords'; // 添加_keywords后缀
+            document.getElementById('editModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>编辑关键词';
+            document.getElementById('keyword-type').value = type + '_keywords';
             document.getElementById('original-keyword').value = keyword;
             document.getElementById('keyword-input').value = keyword;
             document.getElementById('keyword-comment').value = '';
-            const modal = new bootstrap.Modal(document.getElementById('keyword-modal'));
-            modal.show();
+            editModal.show();
         }
-
+        
         // 保存关键词
         function saveKeyword() {
             const type = document.getElementById('keyword-type').value;
             const original = document.getElementById('original-keyword').value;
             const keyword = document.getElementById('keyword-input').value;
+            const comment = document.getElementById('keyword-comment').value;
 
             if (!keyword.trim()) {
                 alert('请输入关键词');
@@ -222,7 +432,8 @@
             const data = {
                 type: type,
                 keyword: keyword,
-                original: original
+                original: original,
+                comment: comment
             };
 
             fetch('/api/keywords', {
@@ -235,11 +446,16 @@
             .then(response => response.json())
             .then(result => {
                 if (result.status === 'success') {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('keyword-modal'));
-                    modal.hide();
+                    editModal.hide();
                     loadKeywords();
+                    // 显示成功提示
+                    const toast = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999;">' +
+                                   '<i class="fas fa-check-circle me-2"></i>保存成功！' +
+                                   '</div>');
+                    $('body').append(toast);
+                    setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
                 } else {
-                    alert('保存失败: ' + result.message);
+                    alert('保存失败：' + result.message);
                 }
             })
             .catch(error => {
@@ -247,7 +463,7 @@
                 alert('保存失败');
             });
         }
-
+        
         // 删除关键词
         function deleteKeyword(type, keyword) {
             if (!confirm(`确定要删除关键词 "${keyword}" 吗？`)) {
@@ -265,14 +481,104 @@
             .then(result => {
                 if (result.status === 'success') {
                     loadKeywords();
+                    // 显示成功提示
+                    const toast = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999;">' +
+                                   '<i class="fas fa-check-circle me-2"></i>删除成功！' +
+                                   '</div>');
+                    $('body').append(toast);
+                    setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
                 } else {
-                    alert('删除失败: ' + result.message);
+                    alert('删除失败：' + result.message);
                 }
             })
             .catch(error => {
                 console.error('Error deleting keyword:', error);
                 alert('删除失败');
             });
+        }
+        
+        // 加载关键词
+        function loadKeywords() {
+            fetch('/api/keywords')
+                .then(response => response.json())
+                .then(data => {
+                    renderKeywordTable(data.person_keywords, data.system_keywords);
+                    updateStats(data.person_keywords.length, data.system_keywords.length);
+                })
+                .catch(error => {
+                    console.error('Error loading keywords:', error);
+                    $('#keywordTableBody').html(`
+                        <tr>
+                            <td colspan="3" class="empty-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>加载失败</p>
+                            </td>
+                        </tr>
+                    `);
+                });
+        }
+        
+        // 渲染关键词表格
+        function renderKeywordTable(personKeywords, systemKeywords) {
+            const tbody = $('#keywordTableBody');
+            
+            if (personKeywords.length === 0 && systemKeywords.length === 0) {
+                tbody.html(`
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>暂无关键词数据</p>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+            
+            let html = '';
+            
+            // 人工关键词
+            personKeywords.forEach(keyword => {
+                html += `
+                    <tr>
+                        <td><span class="keyword-badge badge-person"><i class="fas fa-user-edit me-1"></i>人工</span></td>
+                        <td><strong>${keyword}</strong></td>
+                        <td>
+                            <button onclick="editKeyword('person', '${keyword}')" class="btn btn-edit-action btn-action">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteKeyword('person', '${keyword}')" class="btn btn-delete-action btn-action">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // 系统关键词
+            systemKeywords.forEach(keyword => {
+                html += `
+                    <tr>
+                        <td><span class="keyword-badge badge-system"><i class="fas fa-robot me-1"></i>系统</span></td>
+                        <td><strong>${keyword}</strong></td>
+                        <td>
+                            <button onclick="editKeyword('system', '${keyword}')" class="btn btn-edit-action btn-action">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteKeyword('system', '${keyword}')" class="btn btn-delete-action btn-action">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.html(html);
+        }
+        
+        // 更新统计
+        function updateStats(personCount, systemCount) {
+            $('#personCount').text(personCount);
+            $('#systemCount').text(systemCount);
         }
     </script>
 </body>
