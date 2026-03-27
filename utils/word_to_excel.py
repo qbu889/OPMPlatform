@@ -25,6 +25,8 @@ class WordDocumentParser:
         self.current_level1 = None  # 一级分类：如"监控管理应用" (Heading 5)
         self.current_level2 = None  # 二级分类：如"分级调度管理" (Heading 6)
         self.current_module = None  # 功能模块：如"分级调度派发" (Heading 7)
+        self.function_points = []  # 记录功能点及其在文档中的位置
+        self.para_index = 0  # 当前段落索引
 
         
     def parse(self, filepath: str) -> List[Dict]:
@@ -49,14 +51,21 @@ class WordDocumentParser:
         
         try:
             doc = Document(filepath)
-            logger.info(f"[WORD_PARSER] 文档加载成功，段落数：{len(doc.paragraphs)}")
+            logger.info(f"[WORD_PARSER] 文档加载成功，段落数：{len(doc.paragraphs)}, 表格数：{len(doc.tables)}")
             
             # 重置状态
             self.reset_state()
             
+            # 用于跟踪当前段落索引，以便关联表格
+            para_index = 0
+            
             # 遍历所有段落
             for para in doc.paragraphs:
                 self._process_paragraph(para)
+                para_index += 1
+            
+            # 处理表格（将表格关联到最近的功能点）
+            self._process_tables(doc)
             
             logger.info(f"[WORD_PARSER] 解析完成，共提取 {len(self.data_rows)} 条功能点")
             return self.data_rows
@@ -72,6 +81,159 @@ class WordDocumentParser:
         self.current_module = None
         self.data_rows = []
         self.sequence_number = 0
+        self.function_points = []  # 记录功能点及其在文档中的位置
+        self.para_index = 0  # 当前段落索引
+        self.last_para_index = -1  # 记录最后一个处理的段落索引
+    
+    def _process_tables(self, doc):
+        """
+        处理文档中的所有表格，将表格内容关联到对应的功能点
+        
+        策略：根据表格在文档中的实际位置，匹配到距离最近的功能点
+        
+        Args:
+            doc: Document 对象
+        """
+        if not doc.tables:
+            return
+        
+        logger.info(f"[WORD_PARSER] 开始处理 {len(doc.tables)} 个表格...")
+        
+        # 关键词映射表：表格内容关键词 -> 功能点名称关键词
+        keyword_mapping = {
+            '影响用户总数': '家宽专业',
+            '影响宽带用户数': '家宽专业',
+            '影响在线用户数': '家宽专业',
+            '家宽': '家宽专业',
+            '动环': '动环专业',
+            '传输': '传输专业',
+            '核心网': '核心网专业',
+            'IP': 'IP专业',
+            '无线': '无线专业',
+        }
+        
+        # 为每个功能点记录其段落索引
+        func_point_by_index = {}
+        for fp in self.function_points:
+            func_point_by_index[fp['index']] = fp
+        
+        sorted_func_indices = sorted(func_point_by_index.keys())
+        
+        # 按顺序处理每个表格
+        for table_idx, table in enumerate(doc.tables):
+            try:
+                # 提取表格内容
+                table_content = self._extract_table_content(table)
+                
+                if not table_content:
+                    continue
+                
+                # 识别表格内容中的关键词
+                target_function_point = None
+                for keyword, fp_keyword in keyword_mapping.items():
+                    if keyword in table_content:
+                        target_function_point = fp_keyword
+                        break
+                
+                if not target_function_point:
+                    logger.debug(f"[WORD_PARSER] 表格 {table_idx+1} 未识别到关键词，跳过")
+                    continue
+                
+                # 找到所有匹配的功能点
+                matched_fps = [
+                    fp for fp in self.function_points 
+                    if target_function_point in fp['title']
+                ]
+                
+                if not matched_fps:
+                    logger.warning(f"[WORD_PARSER] ⚠️ 表格 {table_idx+1} 识别到关键词'{target_function_point}'但未找到匹配的功能点")
+                    continue
+                
+                # 关键改进：估算表格的段落位置，然后找到距离最近的功能点
+                # 策略：表格通常紧跟在某个功能点之后
+                # 我们假设表格 table_idx 出现在大约 table_idx * (总段落数/总表格数) 的位置
+                # 更精确的方法：找到表格前后的功能点
+                
+                # 简化策略：按顺序匹配，每个表格匹配到它之后的第一个未使用的功能点
+                # 首先估算表格位置
+                estimated_table_position = (table_idx + 1) * (len(doc.paragraphs) // (len(doc.tables) + 1))
+                
+                # 找到距离表格最近且未被占用的功能点
+                best_fp = None
+                best_distance = float('inf')
+                
+                for fp in matched_fps:
+                    # 检查是否被占用
+                    row_index = fp['row_index']
+                    if self.data_rows[row_index].get('_table_occupied', False):
+                        continue
+                    
+                    # 计算距离
+                    fp_position = fp['index']
+                    # 我们想要功能点在表格之前的
+                    if fp_position <= estimated_table_position:
+                        distance = estimated_table_position - fp_position
+                        if distance < best_distance:
+                            best_distance = distance
+                            best_fp = fp
+                
+                # 如果没找到，使用第一个未占用的功能点
+                if not best_fp:
+                    for fp in matched_fps:
+                        row_index = fp['row_index']
+                        if not self.data_rows[row_index].get('_table_occupied', False):
+                            best_fp = fp
+                            break
+                
+                # 如果所有都被占用，使用最后一个
+                if not best_fp:
+                    best_fp = matched_fps[-1]
+                
+                if best_fp:
+                    row_index = best_fp['row_index']
+                    last_row = self.data_rows[row_index]
+                    
+                    # 标记这个功能点已被表格占用
+                    last_row['_table_occupied'] = True
+                    
+                    # 如果功能点描述已经是功能点名称本身，替换为表格内容
+                    current_desc = last_row.get('功能点描述', '')
+                    if current_desc == best_fp['title'] or not current_desc.strip():
+                        last_row['功能点描述'] = '[表格内容]\n' + table_content
+                    else:
+                        # 否则追加表格内容
+                        if last_row.get('功能点描述'):
+                            last_row['功能点描述'] += '\n\n[表格内容]\n' + table_content
+                        else:
+                            last_row['功能点描述'] = '[表格内容]\n' + table_content
+                    
+                    logger.info(f"[WORD_PARSER] ✅ 表格 {table_idx+1} 关联到功能点：{best_fp['title']} (位置：{best_fp['index']}, 估算表格：{estimated_table_position})")
+                    
+            except Exception as e:
+                logger.error(f"[WORD_PARSER] ❌ 处理表格 {table_idx+1} 失败：{e}", exc_info=True)
+    
+    def _extract_table_content(self, table) -> str:
+        """
+        提取表格内容，转换为文本格式
+        
+        Args:
+            table: docx 表格对象
+            
+        Returns:
+            表格内容的文本表示
+        """
+        lines = []
+        for i, row in enumerate(table.rows):
+            # 提取每一行的单元格内容
+            cells_text = [cell.text.strip() for cell in row.cells]
+            # 如果只有一个单元格，直接添加文本
+            if len(cells_text) == 1:
+                lines.append(cells_text[0])
+            else:
+                # 多个单元格，用制表符分隔
+                lines.append('\t'.join(cells_text))
+        
+        return '\n'.join(lines)
     
     def _process_paragraph(self, paragraph):
         """
@@ -84,6 +246,19 @@ class WordDocumentParser:
         style = paragraph.style.name if paragraph.style else 'Normal'
         
         if not text:
+            self.para_index += 1
+            return
+        
+        # 首先尝试通过编号识别功能点（不依赖样式）
+        # 这样可以识别出没有使用 Heading 8 样式的功能点
+        hierarchy_info = self._parse_hierarchy_number(text)
+        if hierarchy_info and hierarchy_info['level'] >= 9:
+            # 9 级编号（如 1.1.1.1.9.4）识别为功能点
+            # 提取功能点名称（去掉编号）
+            func_point_name = hierarchy_info['title']
+            logger.debug(f"[WORD_PARSER] 通过编号识别功能点：{func_point_name}")
+            self._extract_function_point(func_point_name, paragraph)
+            self.para_index += 1
             return
         
         # 根据标题样式识别层级
@@ -102,7 +277,7 @@ class WordDocumentParser:
         elif style == 'Heading 8':  # 功能点名称
             # 提取功能点
             self._extract_function_point(text, paragraph)
-        elif style in ['Normal', 'List Paragraph', '正文＋缩进 2 字符']:
+        elif style in ['Normal', 'List Paragraph', '正文＋缩进 2 字符', 'Normal (Web)']:
             # 非标题段落，可能是功能点描述的延续
             # 检查是否属于某个功能点的描述
             if self.data_rows and self.current_module:
@@ -112,6 +287,8 @@ class WordDocumentParser:
                     last_row['功能点描述'] += '\n' + text
                 else:
                     last_row['功能点描述'] = text
+        
+        self.para_index += 1
     
     def _parse_hierarchy_number(self, text: str) -> Optional[Dict]:
         """
@@ -166,6 +343,16 @@ class WordDocumentParser:
         # 提取功能点描述
         description = self._extract_description(paragraph)
         
+        # 如果功能点描述为空，根据标题名称判断是否需要添加默认描述
+        if not description or not description.strip():
+            # 检查标题是否包含某些关键词，如果是则添加相应描述
+            if any(keyword in title for keyword in ['回复', '填写', '选择']):
+                description = f"{title}"
+            elif any(keyword in title for keyword in ['模板', '自动']):
+                description = f"支持{title}功能"
+            else:
+                description = "无文本内容或者仅有图片"
+        
         # 创建数据行
         row = {
             '一级分类': self.current_level1 or '',
@@ -177,7 +364,15 @@ class WordDocumentParser:
         }
         
         self.data_rows.append(row)
-        logger.debug(f"[WORD_PARSER] 提取功能点 #{self.sequence_number}: {title}")
+        
+        # 记录功能点及其位置
+        self.function_points.append({
+            'index': self.para_index,
+            'row_index': len(self.data_rows) - 1,  # 在 data_rows 中的索引
+            'title': title
+        })
+        
+        logger.debug(f"[WORD_PARSER] 提取功能点 #{self.sequence_number}: {title} (位置：{self.para_index})")
     
     def _extract_description(self, paragraph) -> str:
         """
@@ -193,13 +388,13 @@ class WordDocumentParser:
         text = paragraph.text.strip()
         
         # 移除编号部分（如果有的话）
-        # 例如："3.1.1.2.1.1.1.1 派发智能体自动修复" -> 只保留描述部分
+        # 例如："1.1.1.1.9.4 阶段回复" -> 只保留描述部分
         pattern = r'^\d+(?:\.\d+)*[\s、]'
         description = re.sub(pattern, '', text).strip()
         
         # 清理特殊字符和格式符号
         # 移除项目符号（如 、等）
-        description = re.sub(r'^[•◦▪▸▹►‣⁃]\s*', '', description)
+        description = re.sub(r'^[•◦▪▸►‣⁃]\s*', '', description)
         
         # 保留换行符，只将多个连续空格替换为单个空格
         description = re.sub(r'[^\S\n]+', ' ', description).strip()

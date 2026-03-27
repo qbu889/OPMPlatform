@@ -165,8 +165,10 @@ def create_app(config_name='development'):
     app.config.from_object(config[config_name])
     
     # 设置 secret key
-    if not app.config.get('SECRET_KEY'):
-        app.config['SECRET_KEY'] = 'your-temporary-secret-key-for-development'
+    app.config['SECRET_KEY'] = 'your-temporary-secret-key-for-development'
+    
+    # 设置最大上传文件大小（100MB）
+    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
     
     # ==========================================================================
     # 初始化数据库

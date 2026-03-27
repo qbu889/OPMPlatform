@@ -5,10 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：技术需求文档word转excel对比">
+      <change afterPath="$PROJECT_DIR$/test/wordToExcel/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" beforeDir="false" afterPath="$PROJECT_DIR$/docs/need_doc/监控综合应用系统(2025-2026)项目-技术规范书20250519.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FPA_PERFORMANCE_OPTIMIZATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FPA_PERFORMANCE_OPTIMIZATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LOG_LEVEL_QUICK_REFERENCE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/LOG_LEVEL_QUICK_REFERENCE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/QUICK_START_TESTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/QUICK_START_TESTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/downloads/FPA_生成结果_集中故障管理系统-监控综合应用-关于监控综合应用事件识别、事件处理及信息丰富的需求-58300_20250816-需求规格说明书(1).xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/word_to_excel/word_to_excel_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/word_to_excel/word_to_excel_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/word_to_excel.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/word_to_excel.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/word_to_excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/word_to_excel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/在线表格系统使用说明.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/在线表格系统使用说明.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,7 +141,7 @@
     "WebServerToolWindowFactoryState": "false",
     "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
     "git-widget-placeholder": "onlineExcel",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/test/chatbot/上传的文档demo",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/test_uploads",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -161,21 +169,21 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test_uploads" />
+      <recent name="$PROJECT_DIR$/test/wordToExcel" />
       <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
       <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/test/fpa" />
-      <recent name="$PROJECT_DIR$/uploads/fpa_output" />
-      <recent name="$PROJECT_DIR$/test" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
       <recent name="$PROJECT_DIR$/uploads/fpa_input" />
       <recent name="$PROJECT_DIR$/docs/need_doc" />
       <recent name="$PROJECT_DIR$/models" />
       <recent name="$PROJECT_DIR$/test/kafka" />
-      <recent name="$PROJECT_DIR$/docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
+  <component name="RunManager" selected="Flask 服务器.Flask (app.py)">
     <configuration name="run_tests" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -288,7 +296,7 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Flask 服务器.Flask (app.py) (1)" />
+      <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python.wordToWord" />
       <item itemvalue="Python.testJsonToDelay_time" />
       <item itemvalue="Python.run_tests" />
@@ -297,7 +305,7 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Flask 服务器.Flask (app.py) (1)" />
+        <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
         <item itemvalue="Python.testJsonToDelay_time" />
         <item itemvalue="Shell Script.start.sh" />
@@ -363,23 +371,9 @@
       <workItem from="1773991536512" duration="26239000" />
       <workItem from="1774315803092" duration="637000" />
       <workItem from="1774316454829" duration="2488000" />
-      <workItem from="1774320367349" duration="51161000" />
-    </task>
-    <task id="LOCAL-00009" summary="fix：1. 优化排班逻辑；">
-      <option name="closed" value="true" />
-      <created>1772524448486</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1772524448486</updated>
-    </task>
-    <task id="LOCAL-00010" summary="fix：1. 优化排班逻辑和导出；">
-      <option name="closed" value="true" />
-      <created>1772531369563</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1772531369563</updated>
+      <workItem from="1774320367349" duration="52308000" />
+      <workItem from="1774516486608" duration="643000" />
+      <workItem from="1774575879485" duration="10163000" />
     </task>
     <task id="LOCAL-00011" summary="new：新增派单CSV文件导入功能">
       <option name="closed" value="true" />
@@ -757,7 +751,23 @@
       <option name="project" value="LOCAL" />
       <updated>1774513525008</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="fix：技术需求文档word转excel优化">
+      <option name="closed" value="true" />
+      <created>1774515675680</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1774515675680</updated>
+    </task>
+    <task id="LOCAL-00059" summary="new：pytest">
+      <option name="closed" value="true" />
+      <created>1774515713641</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1774515713641</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -798,8 +808,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：查询接口时机、下划线去除、特殊符号去除" />
-    <MESSAGE value="fix：【难修复】生成FPA文档顺序BUG" />
     <MESSAGE value="fix：统计请求数量动态落库" />
     <MESSAGE value="fix：文件结构调整" />
     <MESSAGE value="new：说明文档" />
@@ -823,7 +831,9 @@
     <MESSAGE value="fix：复制结果按钮调整、复制成功提示语调整" />
     <MESSAGE value="fix：sql初始化调整、ai客户端调整、客户端调整" />
     <MESSAGE value="new：技术需求文档word转excel对比" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：技术需求文档word转excel对比" />
+    <MESSAGE value="fix：技术需求文档word转excel优化" />
+    <MESSAGE value="new：pytest" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：pytest" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -872,7 +882,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1773828279327" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1774582874606" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME=" 覆盖结果" MODIFIED="1773978610201" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />

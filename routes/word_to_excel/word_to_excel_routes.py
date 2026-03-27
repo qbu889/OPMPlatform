@@ -71,6 +71,7 @@ def upload_document():
             }), 400
         
         file = request.files['file']
+        logger.debug(f"[WORD_TO_EXCEL] 获取到文件对象：{file.filename}")
         
         # 检查文件名
         if file.filename == '':
@@ -88,19 +89,25 @@ def upload_document():
                 'message': '不支持的文件类型，请上传 .docx 文件'
             }), 400
         
-        # 检查文件大小（通过读取部分数据）
-        file.seek(0, 2)  # 移动到文件末尾
-        file_size = file.tell()
-        file.seek(0)  # 重置到开头
+        logger.info(f"[WORD_TO_EXCEL] 📄 准备检查文件大小：{file.filename}")
         
-        if file_size > MAX_FILE_SIZE:
-            logger.warning(f"[WORD_TO_EXCEL] ❌ 文件过大：{file_size} bytes")
-            return jsonify({
-                'success': False,
-                'message': f'文件过大，最大支持 {MAX_FILE_SIZE // 1024 // 1024}MB'
-            }), 400
-        
-        logger.info(f"[WORD_TO_EXCEL] 📄 上传文件：{file.filename}, 大小：{file_size} bytes")
+        # 获取文件大小（通过读取部分数据）
+        try:
+            file.seek(0, 2)  # 移动到文件末尾
+            file_size = file.tell()
+            file.seek(0)  # 重置到开头
+            
+            logger.info(f"[WORD_TO_EXCEL] 📊 文件大小：{file_size} bytes ({file_size / 1024 / 1024:.2f} MB)")
+            
+            if file_size > MAX_FILE_SIZE:
+                logger.warning(f"[WORD_TO_EXCEL] ❌ 文件过大：{file_size} bytes")
+                return jsonify({
+                    'success': False,
+                    'message': f'文件过大，最大支持 {MAX_FILE_SIZE // 1024 // 1024}MB'
+                }), 400
+        except Exception as e:
+            logger.error(f"[WORD_TO_EXCEL] ⚠️ 获取文件大小失败：{e}")
+            logger.warning(f"[WORD_TO_EXCEL] 继续处理文件，跳过大小检查")
         
         # 生成唯一文件名
         original_filename = Path(file.filename).stem
