@@ -365,6 +365,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-info" onclick="openHistoryModal()">
+                        <i class="fas fa-history me-1"></i>历史记录
+                    </button>
                 </div>
             </div>
         </div>
@@ -404,16 +407,246 @@
         </div>
     </div>
 
+    <!-- 历史记录模态框 -->
+    <div id="historyModal" class="modal fade" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-history me-2"></i>关键词修改历史
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="mb-3">
+                        <button onclick="createSnapshot('person')" class="btn btn-success btn-action">
+                            <i class="fas fa-camera me-1"></i>创建人工版本快照
+                        </button>
+                        <button onclick="createSnapshot('system')" class="btn btn-info btn-action">
+                            <i class="fas fa-camera me-1"></i>创建系统版本快照
+                        </button>
+                        <button onclick="loadHistory()" class="btn btn-secondary btn-action">
+                            <i class="fas fa-sync-alt me-1"></i>刷新历史
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <tr>
+                                    <th style="width: 5%;">ID</th>
+                                    <th style="width: 12%;">类型</th>
+                                    <th style="width: 12%;">操作</th>
+                                    <th style="width: 15%;">关键词</th>
+                                    <th style="width: 12%;">原关键词</th>
+                                    <th style="width: 18%;">备注</th>
+                                    <th style="width: 13%;">操作时间</th>
+                                    <th style="width: 13%;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="7" class="empty-state">
+                                        <i class="fas fa-clock"></i>
+                                        <p>暂无历史记录</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
     <script>
-        let keywordModal, editModal;
+        let keywordModal, editModal, historyModal;
         
         // 初始化模态框
         $(document).ready(function() {
             keywordModal = new bootstrap.Modal(document.getElementById('keywordModal'));
             editModal = new bootstrap.Modal(document.getElementById('keywordEditModal'));
+            historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
         });
+        
+        // 打开历史记录弹窗
+        function openHistoryModal() {
+            loadHistory();
+            historyModal.show();
+        }
+        
+        // 加载历史记录
+        function loadHistory() {
+            fetch('/api/keywords/history?page=1&per_page=50')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        renderHistoryTable(result.data);
+                    } else {
+                        $('#historyTableBody').html('<tr><td colspan="7" class="text-center text-danger">加载失败</td></tr>');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading history:', error);
+                    $('#historyTableBody').html('<tr><td colspan="7" class="text-center text-danger">加载失败</td></tr>');
+                });
+        }
+        
+        // 渲染历史记录表格
+        function renderHistoryTable(history) {
+            const tbody = $('#historyTableBody');
+            
+            if (!history || history.length === 0) {
+                tbody.html(`
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <p>暂无历史记录</p>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+            
+            let html = '';
+            history.forEach(item => {
+                const typeBadge = item.keyword_type === 'person_keywords' 
+                    ? '<span class="keyword-badge badge-person"><i class="fas fa-user-edit me-1"></i>人工</span>'
+                    : '<span class="keyword-badge badge-system"><i class="fas fa-robot me-1"></i>系统</span>';
+                
+                const actionBadge = {
+                    'add': '<span class="badge bg-success"><i class="fas fa-plus me-1"></i>添加</span>',
+                    'edit': '<span class="badge bg-info"><i class="fas fa-edit me-1"></i>编辑</span>',
+                    'delete': '<span class="badge bg-danger"><i class="fas fa-trash-alt me-1"></i>删除</span>',
+                    'snapshot': '<span class="badge bg-primary"><i class="fas fa-camera me-1"></i>版本快照</span>',
+                    'restore_add': '<span class="badge bg-warning"><i class="fas fa-undo me-1"></i>恢复添加</span>',
+                    'restore_edit': '<span class="badge bg-warning"><i class="fas fa-undo me-1"></i>恢复编辑</span>',
+                    'restore_delete': '<span class="badge bg-warning"><i class="fas fa-undo me-1"></i>恢复删除</span>',
+                    'restore_snapshot': '<span class="badge bg-warning"><i class="fas fa-undo me-1"></i>恢复快照</span>'
+                }[item.action] || '<span class="badge bg-secondary">' + item.action + '</span>';
+                
+                // 判断是否显示恢复按钮（快照记录显示完整恢复按钮）
+                const restoreButton = item.is_snapshot 
+                    ? `<button onclick="restoreHistory(${item.id})" class="btn btn-edit-action btn-action" title="恢复到这个完整版本">
+                         <i class="fas fa-undo"></i> 完整恢复
+                       </button>`
+                    : `<button onclick="restoreHistory(${item.id})" class="btn btn-edit-action btn-action" title="恢复此项操作">
+                         <i class="fas fa-undo"></i> 恢复
+                       </button>`;
+                
+                html += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${typeBadge}</td>
+                        <td>${actionBadge}</td>
+                        <td><strong>${item.keyword}</strong></td>
+                        <td>${item.original_keyword || '-'}</td>
+                        <td>${item.remark || '-'}</td>
+                        <td>${formatDateTime(item.created_at)}</td>
+                        <td>${restoreButton}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.html(html);
+        }
+        
+        // 恢复历史记录
+        function restoreHistory(historyId) {
+            const message = confirm('确定要恢复到此历史版本吗？')
+            if (!message) {
+                return;
+            }
+            
+            fetch(`/api/keywords/history/${historyId}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // 显示成功提示
+                    const toast = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999;">' +
+                                   '<i class="fas fa-check-circle me-2"></i>' + result.message +
+                                   '</div>');
+                    $('body').append(toast);
+                    setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
+                    
+                    // 获取最新数据并刷新关键词列表
+                    loadKeywords().then(() => {
+                        // 刷新历史记录
+                        loadHistory();
+                    });
+                } else {
+                    alert('恢复失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error restoring history:', error);
+                alert('恢复失败');
+            });
+        }
+        
+        // 创建版本快照
+        function createSnapshot(type) {
+            const remark = prompt('请输入版本快照备注（可选）:', '手动创建版本快照');
+            if (remark === null) {
+                return;
+            }
+            
+            fetch('/api/keywords/snapshot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    remark: remark || '手动创建版本快照'
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // 显示成功提示
+                    const toast = $('<div class="alert alert-success position-fixed" style="top: 20px; right: 20px; z-index: 9999;">' +
+                                   '<i class="fas fa-check-circle me-2"></i>版本快照创建成功！' +
+                                   '</div>');
+                    $('body').append(toast);
+                    setTimeout(() => toast.fadeOut(500, () => toast.remove()), 2000);
+                    
+                    // 刷新历史记录
+                    loadHistory();
+                } else {
+                    alert('创建失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating snapshot:', error);
+                alert('创建失败');
+            });
+        }
+        
+        // 格式化时间
+        function formatDateTime(datetimeStr) {
+            if (!datetimeStr) return '-';
+            const date = new Date(datetimeStr);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
         
         // 打开关键词管理弹窗
         function openKeywordModal() {
@@ -523,11 +756,12 @@
         
         // 加载关键词
         function loadKeywords() {
-            fetch('/api/keywords')
+            return fetch('/api/keywords')
                 .then(response => response.json())
                 .then(data => {
                     renderKeywordTable(data.person_keywords, data.system_keywords);
                     updateStats(data.person_keywords.length, data.system_keywords.length);
+                    return data; // 返回数据以便后续处理
                 })
                 .catch(error => {
                     console.error('Error loading keywords:', error);
@@ -539,6 +773,7 @@
                             </td>
                         </tr>
                     `);
+                    throw error; // 抛出错误以便调用者知道
                 });
         }
         

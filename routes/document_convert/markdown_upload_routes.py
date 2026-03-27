@@ -1,8 +1,10 @@
 import os
 import logging
 import re
+import sqlite3
+from datetime import datetime
 
-from flask import Blueprint, request, render_template, send_file, json
+from flask import Blueprint, request, render_template, send_file, json, g
 from werkzeug.utils import secure_filename
 import markdown
 from docx import Document
@@ -15,15 +17,103 @@ markdown_upload_bp = Blueprint('markdown', __name__)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'md'}
+DATABASE = 'models/keywords.db'  # 使用 SQLite 数据库存储历史记录
 
 # 确保上传目录存在
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 设置日志配置，默认INFO级别
+# 设置日志配置，默认 INFO 级别
 logging.basicConfig(level=logging.INFO)
 
 KEYWORDS_FILE = os.path.join('config', 'keywords.json')
 TEMPLATE_DOCX = "templates/template.docx"
+
+
+def get_db():
+    """
+    获取数据库连接
+    """
+    if 'db' not in g:
+        g.db = sqlite3.connect(DATABASE)
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+
+@markdown_upload_bp.teardown_request
+def close_db(exception):
+    """
+    关闭数据库连接
+    """
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
+
+
+def init_db():
+    """
+    初始化数据库，创建历史记录表
+    """
+    os.makedirs(os.path.dirname(DATABASE), exist_ok=True)
+    db = sqlite3.connect(DATABASE)
+    with open('sql/create_keyword_history.sql', 'r', encoding='utf-8') as f:
+        db.executescript(f.read())
+    db.commit()
+    db.close()
+
+
+# 初始化数据库
+try:
+    init_db()
+    logging.info("数据库初始化成功")
+except Exception as e:
+    logging.error(f"数据库初始化失败：{e}")
+
+
+def record_keyword_history(keyword_type, keyword, action, original=None, remark='', version_snapshot=None, is_snapshot=False):
+    """
+    记录关键词修改历史
+    """
+    try:
+        db = get_db()
+        db.execute(
+            'INSERT INTO keyword_history (keyword_type, keyword, action, original_keyword, remark, version_snapshot, is_snapshot) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (keyword_type, keyword, action, original, remark, version_snapshot, 1 if is_snapshot else 0)
+        )
+        db.commit()
+        logging.info(f"记录关键词历史：{action} {keyword}")
+    except Exception as e:
+        logging.error(f"记录关键词历史失败：{e}")
+
+
+def create_version_snapshot(keyword_type, remark='手动创建版本快照'):
+    """
+    创建完整版本快照
+    """
+    try:
+        config = load_keywords_config()
+        keywords_list = config.get(keyword_type, [])
+        
+        # 保存完整关键词列表到快照
+        snapshot_data = {
+            'keywords': keywords_list,
+            'count': len(keywords_list),
+            'type': keyword_type
+        }
+        
+        record_keyword_history(
+            keyword_type=keyword_type,
+            keyword='snapshot',
+            action='snapshot',
+            remark=remark,
+            version_snapshot=json.dumps(snapshot_data, ensure_ascii=False),
+            is_snapshot=True
+        )
+        
+        logging.info(f"创建版本快照成功：{keyword_type}, 包含 {len(keywords_list)} 个关键词")
+        return True
+    except Exception as e:
+        logging.error(f"创建版本快照失败：{e}")
+        return False
 
 # 关键字段列表，包含常见变体，方便后续匹配
 FIELD_NAMES = [
@@ -487,7 +577,7 @@ def get_keywords_api():
 @markdown_upload_bp.route('/api/keywords', methods=['POST'])
 def update_keywords_api():
     """
-    更新关键词配置API
+    更新关键词配置 API
     支持添加和编辑关键词
     """
     try:
@@ -495,6 +585,7 @@ def update_keywords_api():
         keyword_type = data.get('type')
         keyword = data.get('keyword')
         original = data.get('original')
+        comment = data.get('comment', '')
 
         type_mapping = {'person': 'person_keywords', 'system': 'system_keywords'}
         if keyword_type in type_mapping:
@@ -510,22 +601,33 @@ def update_keywords_api():
             if original in config.get(keyword_type, []):
                 config[keyword_type].remove(original)
             config[keyword_type].append(keyword)
+            save_keywords_config(config)
+            # 记录历史
+            record_keyword_history(keyword_type, keyword, 'edit', original, comment)
+            # 创建版本快照
+            create_version_snapshot(keyword_type, f'编辑关键词：{original} -> {keyword}')
+            return {'status': 'success', 'message': '编辑成功'}
         else:
             # 新增关键词，避免重复添加
             if keyword not in config.get(keyword_type, []):
                 config[keyword_type].append(keyword)
-
-        save_keywords_config(config)
-        return {'status': 'success'}
+                save_keywords_config(config)
+                # 记录历史
+                record_keyword_history(keyword_type, keyword, 'add', None, comment)
+                # 创建版本快照
+                create_version_snapshot(keyword_type, f'添加关键词：{keyword}')
+                return {'status': 'success', 'message': '添加成功'}
+            else:
+                return {'status': 'error', 'message': '关键词已存在'}, 400
     except Exception as e:
-        logging.error("更新关键词配置失败: %s", e)
+        logging.error("更新关键词配置失败：%s", e)
         return {'status': 'error', 'message': str(e)}, 500
 
 
 @markdown_upload_bp.route('/api/keywords', methods=['DELETE'])
 def delete_keywords_api():
     """
-    删除关键词配置API
+    删除关键词配置 API
     """
     try:
         data = request.json
@@ -547,10 +649,159 @@ def delete_keywords_api():
         if keyword in config[keyword_type]:
             config[keyword_type].remove(keyword)
             save_keywords_config(config)
-
-        return {'status': 'success'}
+            # 记录历史
+            record_keyword_history(keyword_type, keyword, 'delete', None, '删除关键词')
+            # 创建版本快照
+            create_version_snapshot(keyword_type, f'删除关键词：{keyword}')
+            return {'status': 'success', 'message': '删除成功'}
+        else:
+            return {'status': 'error', 'message': '关键词不存在'}, 404
     except Exception as e:
-        logging.error("删除关键词配置失败: %s", e)
+        logging.error("删除关键词配置失败：%s", e)
+        return {'status': 'error', 'message': str(e)}, 500
+
+
+@markdown_upload_bp.route('/api/keywords/history', methods=['GET'])
+def get_keyword_history_api():
+    """
+    获取关键词修改历史 API
+    支持分页和类型筛选
+    """
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        keyword_type = request.args.get('type', '')  # 'person_keywords' or 'system_keywords'
+        
+        db = get_db()
+        
+        # 构建查询
+        if keyword_type:
+            base_query = 'SELECT * FROM keyword_history WHERE keyword_type = ? ORDER BY created_at DESC'
+            count_query = 'SELECT COUNT(*) FROM keyword_history WHERE keyword_type = ?'
+            total = db.execute(count_query, (keyword_type,)).fetchone()[0]
+            offset = (page - 1) * per_page
+            # 使用 Python 切片进行分页
+            all_history = db.execute(base_query, (keyword_type,)).fetchall()
+            history = all_history[offset:offset + per_page]
+        else:
+            base_query = 'SELECT * FROM keyword_history ORDER BY created_at DESC'
+            count_query = 'SELECT COUNT(*) FROM keyword_history'
+            total = db.execute(count_query).fetchone()[0]
+            offset = (page - 1) * per_page
+            # 使用 Python 切片进行分页
+            all_history = db.execute(base_query).fetchall()
+            history = all_history[offset:offset + per_page]
+        
+        # 转换为字典列表
+        history_list = []
+        for row in history:
+            history_list.append({
+                'id': row['id'],
+                'keyword_type': row['keyword_type'],
+                'keyword': row['keyword'],
+                'action': row['action'],
+                'original_keyword': row['original_keyword'],
+                'operator': row['operator'],
+                'remark': row['remark'],
+                'version_snapshot': row['version_snapshot'],
+                'is_snapshot': bool(row['is_snapshot']),  # 转换为布尔值
+                'created_at': row['created_at']
+            })
+        
+        return {
+            'status': 'success',
+            'data': history_list,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': (total + per_page - 1) // per_page
+        }
+    except Exception as e:
+        logging.error("获取关键词历史失败：%s", e)
+        return {'status': 'error', 'message': str(e)}, 500
+
+
+@markdown_upload_bp.route('/api/keywords/history/<int:history_id>/restore', methods=['POST'])
+def restore_keyword_history_api(history_id):
+    """
+    恢复历史记录到指定版本
+    """
+    try:
+        db = get_db()
+        history = db.execute('SELECT * FROM keyword_history WHERE id = ?', (history_id,)).fetchone()
+        
+        if not history:
+            return {'status': 'error', 'message': '历史记录不存在'}, 404
+        
+        keyword_type = history['keyword_type']
+        keyword = history['keyword']
+        action = history['action']
+        original = history['original_keyword']
+        is_snapshot = history['is_snapshot']
+        version_snapshot = history['version_snapshot']
+        
+        config = load_keywords_config()
+        
+        # 如果是完整版本快照，直接恢复快照中的关键词列表
+        if is_snapshot and version_snapshot:
+            snapshot_data = json.loads(version_snapshot)
+            config[keyword_type] = snapshot_data.get('keywords', [])
+            save_keywords_config(config)
+            record_keyword_history(keyword_type, 'snapshot', 'restore_snapshot', None, f'恢复版本快照 #{history_id}')
+            return {'status': 'success', 'message': '版本快照恢复成功'}
+        
+        # 否则按单条记录恢复
+        if action == 'add':
+            # 恢复添加操作：添加关键词
+            if keyword not in config.get(keyword_type, []):
+                config[keyword_type].append(keyword)
+        elif action == 'delete':
+            # 恢复删除操作：如果关键词不存在则添加
+            if keyword not in config.get(keyword_type, []):
+                config[keyword_type].append(keyword)
+        elif action == 'edit':
+            # 恢复编辑操作：恢复到原关键词
+            if original and original not in config.get(keyword_type, []):
+                if keyword in config.get(keyword_type, []):
+                    config[keyword_type].remove(keyword)
+                config[keyword_type].append(original)
+        
+        save_keywords_config(config)
+        
+        # 记录恢复操作
+        record_keyword_history(keyword_type, keyword, f'restore_{action}', original, f'恢复历史 #{history_id}')
+        
+        return {'status': 'success', 'message': '恢复成功'}
+    except Exception as e:
+        logging.error("恢复历史记录失败：%s", e)
+        return {'status': 'error', 'message': str(e)}, 500
+
+
+@markdown_upload_bp.route('/api/keywords/snapshot', methods=['POST'])
+def create_snapshot_api():
+    """
+    手动创建版本快照 API
+    """
+    try:
+        data = request.json
+        keyword_type = data.get('type')
+        remark = data.get('remark', '手动创建版本快照')
+        
+        type_mapping = {'person': 'person_keywords', 'system': 'system_keywords'}
+        if keyword_type in type_mapping:
+            keyword_type = type_mapping[keyword_type]
+        
+        if not keyword_type:
+            return {'status': 'error', 'message': '缺少关键词类型'}, 400
+        
+        success = create_version_snapshot(keyword_type, remark)
+        
+        if success:
+            return {'status': 'success', 'message': '版本快照创建成功'}
+        else:
+            return {'status': 'error', 'message': '创建失败'}, 500
+    except Exception as e:
+        logging.error("创建版本快照失败：%s", e)
         return {'status': 'error', 'message': str(e)}, 500
 
 

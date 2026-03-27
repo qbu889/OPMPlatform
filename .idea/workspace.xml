@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/models/keywords.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sql/create_keyword_history.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/keywords.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/keywords.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/markdown_upload_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/document_convert/markdown_upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/markdown_upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/word_to_md.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/word_to_excel.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/word_to_excel.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -366,15 +369,7 @@
       <workItem from="1774516486608" duration="643000" />
       <workItem from="1774575879485" duration="12020000" />
       <workItem from="1774597037382" duration="654000" />
-      <workItem from="1774602183099" duration="1318000" />
-    </task>
-    <task id="LOCAL-00013" summary="fix：csv导入remark没有填充数据问题">
-      <option name="closed" value="true" />
-      <created>1772610856249</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1772610856249</updated>
+      <workItem from="1774602183099" duration="3548000" />
     </task>
     <task id="LOCAL-00014" summary="new：kafka新增ES字段和对应字典数据查询">
       <option name="closed" value="true" />
@@ -760,7 +755,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774603303479</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="fix：选择文件输入框内容显示不全修复">
+      <option name="closed" value="true" />
+      <created>1774603606128</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1774603606128</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -801,7 +804,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：说明文档" />
     <MESSAGE value="fix：ES生成kafka报错json格式解析修复" />
     <MESSAGE value="fix：注释非必要文件" />
     <MESSAGE value="new：增加日志等级配置" />
@@ -826,7 +828,8 @@
     <MESSAGE value="new：pytest" />
     <MESSAGE value="new：技术需求文档word转excel增加表格内容的兼容提取" />
     <MESSAGE value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
+    <MESSAGE value="fix：选择文件输入框内容显示不全修复" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：选择文件输入框内容显示不全修复" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
