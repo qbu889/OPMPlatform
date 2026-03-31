@@ -663,18 +663,24 @@
             <h6><i class="fas fa-info-circle me-2"></i>使用说明:</h6>
             <ul class="mb-0" style="padding-left: 20px;">
                 <li>粘贴 ES 数据中 <code>_source</code> 对象的完整 JSON 内容</li>
-                <li>如遇到格式错误，可先点击“预处理数据”按钮自动修复常见问题</li>
-                <li>系统会自动映射生成对应的 Kafka 消息格式</li>
-                <li>可通过自定义字段面板覆盖特定字段的值</li>
-                <li>FP 相关字段会自动生成唯一值</li>
-                <li>时间字段会自动设置为当前时间减 15 分钟</li>
+                <li>如遇到格式错误，可先点击"预处理数据"按钮自动修复常见问题 (三重引号、HTML 实体、非法转义字符等)</li>
+                <li>系统会自动映射生成对应的 Kafka 消息格式，保持标准字段顺序</li>
+                <li>可通过自定义字段面板覆盖特定字段的值，支持历史值快速选择</li>
+                <li>FP 相关字段 (FP0_FP1_FP2_FP3、CFP0_CFP1_CFP2_CFP3 等) 会自动生成唯一值</li>
+                <li>时间字段默认设置为当前时间减 15 分钟，可通过"延迟时间"输入框手动调整 (单位：分钟)</li>
+                <li>支持字段置顶功能，常用字段可点击右上角眼睛图标置顶显示</li>
+                <li>所有填写的字段值会自动保存到数据库，下次打开页面时自动加载</li>
+                <li>点击"重新生成"可基于最新 ES 数据重新生成 Kafka 消息</li>
+                <li>生成结果支持一键复制 EVENT_FP 查询语句，方便在 ES 中检索</li>
             </ul>
             <div class="mt-3" style="background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px;">
                 <small style="color: #1976d2;">
-                    <strong><i class="fas fa-lightbulb me-1"></i>常见问题处理：</strong><br>
+                    <strong><i class="fas fa-lightbulb me-1"></i>常见问题处理:</strong><br>
                     • 三重引号 (""") 会自动转换为双引号<br>
-                    • HTML 实体 (&lt; &gt;) 会自动解码<br>
-                    • 多余的尾随逗号会自动移除
+                    • HTML 实体 (&lt; &gt; &amp;) 会自动解码<br>
+                    • 非法转义字符 (\中\触等) 会自动修复<br>
+                    • 尾随逗号会自动移除<br>
+                    • 未加引号的 JSON 键名会自动补充引号
                 </small>
             </div>
         </div>
