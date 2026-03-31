@@ -356,7 +356,85 @@
             background-color: #fff3cd !important;
         }
         
-        /* 卡片式表格 */
+        /* 修复刷新按钮和延迟输入框样式 */
+        .btn-regenerate {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0aacd8 100%) !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(13, 202, 240, 0.5) !important;
+            color: white !important;
+        }
+        
+        .btn-regenerate:hover {
+            background: linear-gradient(135deg, #0aacd8 0%, #0dcaf0 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(13, 202, 240, 0.7) !important;
+            color: white !important;
+        }
+        
+        /* 延迟时间输入框宽度 */
+        #resultDelayTimeInput {
+            width: 60px !important;
+            text-align: center;
+        }
+        
+        /* 单位标签样式 */
+        .input-group-text.unit-label {
+            background-color: #e9ecef;
+            min-width: 35px;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        /* 刷新按钮容器 */
+        .btn-apply-delay {
+            padding: 0.25rem 0.5rem;
+            font-size: 12px;
+            border: none !important;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%) !important;
+            color: white !important;
+            box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4) !important;
+        }
+        
+        .btn-apply-delay:hover {
+            background: linear-gradient(135deg, #ee5a6f 0%, #ff6b6b 100%) !important;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.6) !important;
+            color: white !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        .btn-apply-delay i {
+            color: white !important;
+        }
+        
+        /* 清除所有按钮样式 */
+        .btn-clear-all {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4) !important;
+        }
+        
+        .btn-clear-all:hover {
+            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%) !important;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6) !important;
+            transform: translateY(-2px) !important;
+            color: white !important;
+        }
+        
+        /* 显示/隐藏按钮样式 */
+        .btn-toggle-fields {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.4) !important;
+        }
+        
+        .btn-toggle-fields:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%) !important;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.6) !important;
+            transform: translateY(-2px) !important;
+            color: white !important;
+        }
         #fieldDictTable {
             font-size: 13px;
             border-radius: 8px;
@@ -504,10 +582,10 @@
                     <small style="opacity: 0.9;">可选择性覆盖自动生成的字段值</small>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger btn-sm" onclick="clearAllFields()" title="清除所有已填写的字段">
+                    <button class="btn btn-sm btn-clear-all" onclick="clearAllFields()" title="清除所有已填写的字段">
                         <i class="fas fa-trash-alt me-1"></i>清除所有
                     </button>
-                    <button class="btn btn-secondary btn-lg" onclick="toggleAllFields()">
+                    <button class="btn btn-lg btn-toggle-fields" onclick="toggleAllFields()">
                         <i class="fas fa-eye me-2"></i>显示/隐藏所有字段
                     </button>
                 </div>
@@ -522,7 +600,7 @@
         <div class="card" id="resultCard" style="display: none;">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-file-code me-2"></i>生成结果</h5>
-                <div class="d-flex gap-2 align-items-center">
+                <div class="d-flex gap-2 align-items-center flex-nowrap">
                     <div class="form-check form-switch me-3">
                         <input class="form-check-input" type="checkbox" id="addTestPrefixResult" checked>
                         <label class="form-check-label" for="addTestPrefixResult">
@@ -530,21 +608,21 @@
                         </label>
                     </div>
                     <!-- DELAY_TIME 编辑框 -->
-                    <div class="ms-3 d-flex align-items-center">
-                        <label for="resultDelayTimeInput" class="form-label mb-0 me-2">
+                    <div class="d-flex align-items-center">
+                        <label for="resultDelayTimeInput" class="form-label mb-0 me-2 text-nowrap">
                             <strong><i class="fas fa-clock me-1"></i>延迟时间：</strong>
                         </label>
-                        <div class="input-group input-group-sm" style="width: 120px;">
+                        <div class="input-group input-group-sm" style="width: 130px;">
                             <input type="number" class="form-control" id="resultDelayTimeInput" 
                                    value="15" min="0" step="60">
-                            <span class="input-group-text">分钟</span>
-                            <button class="btn btn-sm btn-outline-primary" type="button" onclick="applyDelayTimeChange()" 
+                            <span class="input-group-text unit-label">分钟</span>
+                            <button class="btn btn-sm btn-outline-primary btn-apply-delay" type="button" onclick="applyDelayTimeChange()" 
                                     title="应用延迟时间修改">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
                     </div>
-                    <button class="btn btn-info" onclick="regenerateMessage()" title="重新生成">
+                    <button class="btn btn-info btn-regenerate" onclick="regenerateMessage()" title="重新生成">
                         <i class="fas fa-redo me-2"></i>重新生成
                     </button>
                     <button class="btn btn-warning" onclick="copyFPValue()" title="复制 FP 值">
