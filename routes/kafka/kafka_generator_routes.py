@@ -424,7 +424,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "ALARM_RESOURCE_STATUS": "_source.ALARM_RESOURCE_STATUS",
         "LOCATE_INFO": "_source.EVENT_LOCATION",
         "NE_LABEL": "_source.NE_LABEL",
-        "OBJECT_LEVEL": "",  # 默认空值
+        "OBJECT_LEVEL": "0",  # 固定值，字符串类型
         "PROFESSIONAL_TYPE": lambda: map_professional_type(get_nested_value(es_data, "MAIN_NET_SORT_ONE")),  # 映射为数字代码
         "NETWORK_TYPE": "_source.NETWORK_SUB_TYPE_ID",
         "ORG_TYPE": lambda: str(get_nested_value(es_data, "ORG_TYPE") or ""),
@@ -433,9 +433,9 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "TITLE_TEXT": "_source.ALARM_NAME",
         "STANDARD_ALARM_NAME": "_source.ALARM_STANDARD_NAME",
         "STANDARD_ALARM_ID": "0500-009-006-10-800007",  # 固定值
-        "STANDARD_FLAG": "_source.ALARM_STANDARD_FLAG",
-        "VENDOR_SEVERITY": "三级告警",  # 固定值
-        "PROBABLE_CAUSE": "_source.EVENT_PROBABLE_CAUSE_TXT",
+        "STANDARD_FLAG": lambda: get_nested_value(es_data, "ALARM_STANDARD_FLAG"),  # 保持 int 类型
+        "VENDOR_SEVERITY": lambda: get_nested_value(es_data, "VENDOR_SEVERITY"),  # 从 ES 获取，保持 string 类型
+        "PROBABLE_CAUSE": lambda: get_nested_value(es_data, "PROBABLE_CAUSE"),  # 厂家告警号
         "NMS_ALARM_ID": "_source.NMS_ALARM_ID",
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",  # 默认空值
@@ -445,7 +445,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "MACHINE_ROOM_INFO": "_source.NE_TAG.MACHINE_ROOM_INFO",
         "INT_ID": "0",  # 默认值
-        "REDEFINE_SEVERITY": "_source.ALARM_LEVEL",
+        "REDEFINE_SEVERITY": lambda: get_nested_value(es_data, "ALARM_LEVEL"),  # 保持 int 类型
         "TYPE_KEYCODE": "_source.TYPE_KEYCODE",
         "NE_LOCATION": "_source.NE_LOCATION",
         "ALARM_EXPLANATION": "_source.EVENT_EXPLANATION",
@@ -485,11 +485,11 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "PREHANDLE": "0",  # 默认值
         "OBJECT_CLASS_TEXT": "_source.OBJECT_CLASS_TEXT",
         "BOARD_TYPE": "",  # 默认空值
-        "OBJECT_CLASS": "_source.OBJECT_CLASS_ID",
+        "OBJECT_CLASS": lambda: get_nested_value(es_data, "OBJECT_CLASS_ID"),  # 保持 int 类型
         "LOGIC_ALARM_TYPE": "",  # 默认空值
-        "LOGIC_SUB_ALARM_TYPE": "",  # 默认空값
-        "EFFECT_NE": "_source.EFFECT_NE_NUM",
-        "EFFECT_SERVICE": "_source.SATOTAL",
+        "LOGIC_SUB_ALARM_TYPE": "",  # 默认空值
+        "EFFECT_NE": lambda: get_nested_value(es_data, "EFFECT_NE_NUM"),  # 保持 int 类型
+        "EFFECT_SERVICE": lambda: get_nested_value(es_data, "SATOTAL"),  # 保持 int 类型
         "SPECIAL_FIELD14": "_source.NE_TAG.ROOM_ID",
         "SPECIAL_FIELD7": "_source.BUSINESS_TAG.HOME_CLIENT_NUM",
         "SPECIAL_FIELD21": "",  # 默认空值
@@ -504,7 +504,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "ADMIN_GRID_ID": "_source.BUSINESS_TAG.ADMIN_GRID_ID",
         "HOME_CLIENT_NUM": "_source.BUSINESS_TAG.HOME_CLIENT_NUM",
         "SRC_ID": lambda: f"GZEVENT{str(uuid.uuid4()).replace('-', '')[:16]}",
-        "SRC_IS_TEST": "",  # 默认空值
+        "SRC_IS_TEST": lambda: get_nested_value(es_data, "IS_TEST"),  # 从 ES 获取，保持 int 类型
         "SRC_APP_ID": "1001",  # 默认值
         "SRC_ORG_ID": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "ORG_TEXT": "",  # 需要特殊处理
@@ -543,13 +543,17 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
                     # 如果是函数，直接调用
                     kafka_message[kafka_field] = mapping_rule()
                 elif isinstance(mapping_rule, str) and mapping_rule.startswith("_source."):
-                    # 如果是ES字段路径
+                    # 如果是 ES 字段路径
                     es_path = mapping_rule.replace("_source.", "")
                     value = get_nested_value(es_data, es_path)
-                    kafka_message[kafka_field] = value if value is not None else ""
+                    # 关键修改：确保所有值都转换为字符串类型
+                    if value is not None:
+                        kafka_message[kafka_field] = str(value)
+                    else:
+                        kafka_message[kafka_field] = ""
                 else:
-                    # 如果是默认值
-                    kafka_message[kafka_field] = mapping_rule
+                    # 如果是默认值，也转换为字符串
+                    kafka_message[kafka_field] = str(mapping_rule) if mapping_rule is not None else ""
             else:
                 # 如果不在映射中，设置默认空值
                 kafka_message[kafka_field] = ""
@@ -1226,13 +1230,31 @@ def generate_kafka_message():
         for field in STANDARD_FIELD_ORDER:
             if field in kafka_message:
                 ordered_data[field] = kafka_message[field]
+        
+        # 添加 DELAY_TIME 信息到返回数据
+        delay_time_value = delay_time  # 优先使用用户输入的值
+        if delay_time_value is None:
+            # 如果没有用户输入，尝试从 ES 数据中提取
+            if isinstance(es_source_data, dict):
+                source_data = es_source_data.get('_source', es_source_data)
+                if 'DELAY_TIME' in source_data:
+                    delay_time_value = source_data['DELAY_TIME']
+                elif isinstance(source_data.get('BUSINESS_TAG'), dict) and 'DELAY_TIME' in source_data['BUSINESS_TAG']:
+                    delay_time_value = source_data['BUSINESS_TAG']['DELAY_TIME']
+                elif isinstance(source_data.get('DISPATCH_INFO'), dict) and 'DELAY_TIME' in source_data['DISPATCH_INFO']:
+                    delay_time_value = source_data['DISPATCH_INFO']['DELAY_TIME']
+        
+        # 默认值 15 分钟
+        if delay_time_value is None:
+            delay_time_value = 15
 
-        # 使用自定义JSON序列化确保字段顺序
+        # 使用自定义 JSON 序列化确保字段顺序
         import json as json_lib
         response_data = {
             "success": True,
             "data": ordered_data,
-            "message": "Kafka消息生成成功",
+            "delay_time": delay_time_value,  # 返回 DELAY_TIME 值
+            "message": "Kafka 消息生成成功",
             "debug_info": {
                 "fields_count": len(ordered_data),
                 "processed_length": len(processed_data)
@@ -1261,7 +1283,7 @@ def json_fixer_page():
 
 @kafka_generator_bp.route('/config')
 def get_config():
-    """获取应用配置信息1"""
+    """获取应用配置信息 1"""
     import os
     port = os.environ.get("PORT", 5002)
     return jsonify({
@@ -1271,3 +1293,132 @@ def get_config():
             "host": "127.0.0.1"
         }
     })
+
+
+@kafka_generator_bp.route('/field-cache', methods=['GET'])
+def get_field_cache():
+    """获取所有字段缓存（包括置顶状态和历史值）"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+    
+    try:
+        with conn.cursor() as cur:
+            query = "SELECT field_name, field_value, is_pinned, history_values FROM knowledge_base.kafka_field_cache"
+            cur.execute(query)
+            rows = cur.fetchall()
+            
+            cache_data = {}
+            pinned_fields = []
+            history_data = {}
+            
+            for row in rows:
+                if row['field_value']:
+                    cache_data[row['field_name']] = row['field_value']
+                if row['is_pinned']:
+                    pinned_fields.append(row['field_name'])
+                if row['history_values']:
+                    try:
+                        history_data[row['field_name']] = json.loads(row['history_values'])
+                    except:
+                        history_data[row['field_name']] = []
+            
+            return jsonify({
+                "success": True,
+                "data": {
+                    "field_cache": cache_data,
+                    "pinned_fields": pinned_fields,
+                    "history_values": history_data
+                }
+            })
+    except Exception as e:
+        logger.error(f"获取字段缓存失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        conn.close()
+
+
+@kafka_generator_bp.route('/field-cache', methods=['POST'])
+def save_field_cache():
+    """保存字段值和置顶状态"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "缺少数据"}), 400
+    
+    field_name = data.get('field_name', '').strip().upper()
+    field_value = data.get('field_value', '')
+    is_pinned = 1 if data.get('is_pinned', False) else 0
+    
+    if not field_name:
+        return jsonify({"success": False, "message": "缺少字段名称"}), 400
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+    
+    try:
+        with conn.cursor() as cur:
+            # 使用 INSERT ... ON DUPLICATE KEY UPDATE
+            query = """
+                INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE 
+                    field_value = VALUES(field_value),
+                    is_pinned = VALUES(is_pinned),
+                    updated_at = CURRENT_TIMESTAMP
+            """
+            cur.execute(query, (field_name, field_value, is_pinned))
+            conn.commit()
+            
+            return jsonify({"success": True, "message": "保存成功"})
+    except Exception as e:
+        logger.error(f"保存字段缓存失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        conn.close()
+
+
+@kafka_generator_bp.route('/field-cache/batch', methods=['POST'])
+def save_batch_field_cache():
+    """批量保存字段缓存（用于页面卸载时）"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "缺少数据"}), 400
+    
+    field_cache = data.get('field_cache', {})
+    pinned_fields = data.get('pinned_fields', [])
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+    
+    try:
+        with conn.cursor() as cur:
+            # 保存字段值
+            for field_name, field_value in field_cache.items():
+                field_name = field_name.strip().upper()
+                is_pinned = 1 if field_name in pinned_fields else 0
+                
+                query = """
+                    INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE 
+                        field_value = VALUES(field_value),
+                        is_pinned = VALUES(is_pinned),
+                        updated_at = CURRENT_TIMESTAMP
+                """
+                cur.execute(query, (field_name, field_value if field_value else None, is_pinned))
+            
+            conn.commit()
+            return jsonify({"success": True, "message": "批量保存成功"})
+    except Exception as e:
+        logger.error(f"批量保存字段缓存失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        conn.close()

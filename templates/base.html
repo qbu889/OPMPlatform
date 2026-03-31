@@ -681,16 +681,16 @@
                     <form id="changePasswordForm">
                         <div class="mb-3">
                             <label for="oldPassword" class="form-label">当前密码</label>
-                            <input type="password" class="form-control" id="oldPassword" required>
+                            <input type="password" class="form-control" id="oldPassword" required autocomplete="current-password">
                         </div>
                         <div class="mb-3">
                             <label for="newPassword" class="form-label">新密码</label>
-                            <input type="password" class="form-control" id="newPassword" required minlength="8">
+                            <input type="password" class="form-control" id="newPassword" required minlength="8" autocomplete="new-password">
                             <div class="form-text">至少 8 位，包含字母和数字</div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmNewPassword" class="form-label">确认新密码</label>
-                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                            <input type="password" class="form-control" id="confirmNewPassword" required autocomplete="new-password">
                         </div>
                     </form>
                 </div>
