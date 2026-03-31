@@ -722,6 +722,7 @@
         let showAllFields = false;
         let pinnedFields = new Set(); // 存储被置顶的字段
         let fieldCache = {}; // 缓存字段值 {field: value}
+        let historyValues = {}; // 缓存历史值 {field: [value1, value2, ...]}
         let saveTimeout = null; // 防抖定时器
 
         // 页面加载时初始化
@@ -914,6 +915,27 @@
                 const fieldItem = document.createElement('div');
                 fieldItem.className = 'field-item' + (hasValue ? ' filled' : '');
                 fieldItem.style.position = 'relative';
+                
+                // 构建历史值下拉列表
+                const fieldHistory = historyValues[field] || [];
+                const datalistId = `history_${field}`;
+                
+                console.log(`[DEBUG] ${field} 历史值:`, {
+                    count: fieldHistory.length,
+                    values: fieldHistory
+                });
+                
+                let datalistHtml = '';
+                if (fieldHistory.length > 0) {
+                    // 构建 option 列表，转义特殊字符
+                    const options = fieldHistory.map(v => {
+                        const escaped = String(v).replace(/"/g, '&quot;');
+                        return `<option value="${escaped}">`;
+                    }).join('');
+                    datalistHtml = `<datalist id="${datalistId}">${options}</datalist>`;
+                    console.log(`[DEBUG] ${field} datalist:`, datalistHtml);
+                }
+                
                 fieldItem.innerHTML = `
                     <button class="btn btn-sm ${isPinned ? 'btn-danger' : 'btn-outline-secondary'}" 
                             style="position: absolute; top: 5px; right: 5px; padding: 2px 8px; font-size: 12px; z-index: 10;"
@@ -928,7 +950,10 @@
                         <input type="text" class="form-control form-control-sm" id="field_${field}" 
                                placeholder="留空则使用自动映射值"
                                value="${fieldCache[field] || ''}"
-                               oninput="saveFieldValue('${field}', this.value)">
+                               list="${datalistId}"
+                               onchange="onFieldChange('${field}', this.value)"
+                               oninput="saveFieldValue('${field}', this.value)"
+                               ${fieldHistory.length > 0 ? 'onclick="this.setSelectionRange(0, this.value.length); this.focus();"' : ''}>
                         ${hasDict ? `
                             <button class="btn btn-outline-secondary btn-sm" type="button"
                                     onclick="openFieldDict('${field}')">
@@ -936,6 +961,7 @@
                             </button>
                         ` : ''}
                     </div>
+                    ${datalistHtml}
                     ${esField ? `
                         <div class="field-meta">
                             <span class="es-field" title="对应 ES 字段：${esField}">ES: ${esField}</span>
@@ -963,6 +989,14 @@
             }, 500);
         }
         
+        // 字段值改变时触发（选择历史值或输入新值）
+        async function onFieldChange(field, value) {
+            if (value && value.trim() !== '') {
+                // 保存到历史值
+                await saveHistoryToDB(field, value);
+            }
+        }
+        
         // 保存到数据库
         async function saveToDB(field, value) {
             try {
@@ -982,6 +1016,66 @@
                 }
             } catch (e) {
                 console.warn(`[WARN] 保存字段 ${field} 失败:`, e);
+            }
+        }
+        
+        // 保存历史值到数据库
+        async function saveHistoryToDB(field, value) {
+            try {
+                const response = await fetch('/kafka-generator/field-history', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        field_name: field,
+                        field_value: value
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log(`[INFO] 字段 ${field} 历史值已保存`);
+                    // 更新本地缓存
+                    if (!historyValues[field]) {
+                        historyValues[field] = [];
+                    }
+                    if (value in historyValues[field]) {
+                        historyValues[field].splice(historyValues[field].indexOf(value), 1);
+                    }
+                    historyValues[field].unshift(value);
+                    historyValues[field] = historyValues[field].slice(0, 20);
+                    // 重新渲染以显示新的历史值
+                    renderCustomFields();
+                }
+            } catch (e) {
+                console.warn(`[WARN] 保存历史值失败:`, e);
+            }
+        }
+        
+        // 删除历史值
+        async function deleteHistoryValue(field, value) {
+            if (!confirm(`确定要删除历史值 "${value}" 吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/kafka-generator/field-history', {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        field_name: field,
+                        value: value
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log(`[INFO] 字段 ${field} 历史值已删除`);
+                    // 更新本地缓存
+                    if (historyValues[field]) {
+                        historyValues[field] = historyValues[field].filter(v => v !== value);
+                        renderCustomFields();
+                    }
+                }
+            } catch (e) {
+                console.warn(`[WARN] 删除历史值失败:`, e);
             }
         }
         
@@ -1013,12 +1107,14 @@
                 if (result.success && result.data) {
                     fieldCache = result.data.field_cache || {};
                     pinnedFields = new Set(result.data.pinned_fields || []);
-                    console.log('[INFO] 从数据库加载字段缓存，共', Object.keys(fieldCache).length, '个字段，置顶', pinnedFields.size, '个字段');
+                    historyValues = result.data.history_values || {};
+                    console.log('[INFO] 从数据库加载字段缓存，共', Object.keys(fieldCache).length, '个字段，置顶', pinnedFields.size, '个字段，历史值', Object.keys(historyValues).length, '个字段');
                 }
             } catch (e) {
                 console.warn('[WARN] 从数据库加载缓存失败:', e);
                 fieldCache = {};
                 pinnedFields = new Set();
+                historyValues = {};
             }
         }
         

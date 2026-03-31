@@ -1310,6 +1310,8 @@ def get_field_cache():
             cur.execute(query)
             rows = cur.fetchall()
             
+            logger.info(f"查询到 {len(rows)} 条缓存记录")
+            
             cache_data = {}
             pinned_fields = []
             history_data = {}
@@ -1319,11 +1321,29 @@ def get_field_cache():
                     cache_data[row['field_name']] = row['field_value']
                 if row['is_pinned']:
                     pinned_fields.append(row['field_name'])
-                if row['history_values']:
+                
+                # 处理历史值
+                history_val = row['history_values']
+                if history_val:
                     try:
-                        history_data[row['field_name']] = json.loads(row['history_values'])
-                    except:
+                        # 如果是字符串，解析 JSON
+                        if isinstance(history_val, str):
+                            parsed = json.loads(history_val)
+                            history_data[row['field_name']] = parsed
+                            logger.info(f"字段 {row['field_name']} 历史值 (字符串解析): {parsed}")
+                        elif isinstance(history_val, (list, tuple)):
+                            # 如果已经是列表或元组
+                            history_data[row['field_name']] = list(history_val)
+                            logger.info(f"字段 {row['field_name']} 历史值 (列表): {history_val}")
+                        else:
+                            # 其他类型，尝试直接转换
+                            history_data[row['field_name']] = history_val
+                            logger.warning(f"字段 {row['field_name']} 历史值未知类型：{type(history_val)}")
+                    except Exception as e:
+                        logger.error(f"解析 {row['field_name']} 历史值失败：{e}, 原始值：{history_val}")
                         history_data[row['field_name']] = []
+            
+            logger.info(f"返回缓存数据：{len(cache_data)} 个字段值，{len(pinned_fields)} 个置顶，{len(history_data)} 个历史值")
             
             return jsonify({
                 "success": True,
@@ -1419,6 +1439,117 @@ def save_batch_field_cache():
             return jsonify({"success": True, "message": "批量保存成功"})
     except Exception as e:
         logger.error(f"批量保存字段缓存失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        conn.close()
+
+
+@kafka_generator_bp.route('/field-history', methods=['POST'])
+def save_field_history():
+    """保存字段历史值"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "缺少数据"}), 400
+    
+    field_name = data.get('field_name', '').strip().upper()
+    field_value = data.get('field_value', '').strip()
+    
+    if not field_name or not field_value:
+        return jsonify({"success": False, "message": "缺少字段名称或值"}), 400
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+    
+    try:
+        with conn.cursor() as cur:
+            # 先获取现有历史值
+            cur.execute("SELECT history_values FROM knowledge_base.kafka_field_cache WHERE field_name = %s", (field_name,))
+            row = cur.fetchone()
+            
+            if row and row['history_values']:
+                try:
+                    history = json.loads(row['history_values'])
+                except:
+                    history = []
+            else:
+                history = []
+            
+            # 如果值已存在，移到最前面
+            if field_value in history:
+                history.remove(field_value)
+            
+            # 添加到最前面
+            history.insert(0, field_value)
+            
+            # 只保留最近 20 条记录
+            history = history[:20]
+            
+            # 更新数据库
+            query = """
+                INSERT INTO knowledge_base.kafka_field_cache (field_name, history_values)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE 
+                    history_values = VALUES(history_values),
+                    updated_at = CURRENT_TIMESTAMP
+            """
+            cur.execute(query, (field_name, json.dumps(history, ensure_ascii=False)))
+            conn.commit()
+            
+            return jsonify({"success": True, "message": "历史值已保存"})
+    except Exception as e:
+        logger.error(f"保存字段历史值失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        conn.close()
+
+
+@kafka_generator_bp.route('/field-history', methods=['DELETE'])
+def delete_field_history():
+    """删除字段的历史值"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "缺少数据"}), 400
+    
+    field_name = data.get('field_name', '').strip().upper()
+    value_to_delete = data.get('value', '').strip()
+    
+    if not field_name:
+        return jsonify({"success": False, "message": "缺少字段名称"}), 400
+    
+    conn = get_mysql_conn_dict_cursor()
+    if not conn:
+        return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+    
+    try:
+        with conn.cursor() as cur:
+            # 获取现有历史值
+            cur.execute("SELECT history_values FROM knowledge_base.kafka_field_cache WHERE field_name = %s", (field_name,))
+            row = cur.fetchone()
+            
+            if row and row['history_values']:
+                try:
+                    history = json.loads(row['history_values'])
+                    # 删除指定的值
+                    if value_to_delete in history:
+                        history.remove(value_to_delete)
+                        # 更新数据库
+                        cur.execute("""
+                            UPDATE knowledge_base.kafka_field_cache 
+                            SET history_values = %s, updated_at = CURRENT_TIMESTAMP 
+                            WHERE field_name = %s
+                        """, (json.dumps(history, ensure_ascii=False), field_name))
+                        conn.commit()
+                except Exception as e:
+                    logger.error(f"解析历史值失败：{e}")
+            
+            return jsonify({"success": True, "message": "历史值已删除"})
+    except Exception as e:
+        logger.error(f"删除字段历史值失败：{e}")
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         conn.close()

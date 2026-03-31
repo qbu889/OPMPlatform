@@ -5,12 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_data.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -371,15 +368,7 @@
       <workItem from="1774597037382" duration="654000" />
       <workItem from="1774602183099" duration="4318000" />
       <workItem from="1774609207689" duration="904000" />
-      <workItem from="1774614196849" duration="20846000" />
-    </task>
-    <task id="LOCAL-00015" summary="fix：完善整理文件">
-      <option name="closed" value="true" />
-      <created>1772762374453</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1772762374453</updated>
+      <workItem from="1774614196849" duration="21872000" />
     </task>
     <task id="LOCAL-00016" summary="fix：复制成功提示错误的提示语">
       <option name="closed" value="true" />
@@ -765,7 +754,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774605775355</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="new：kafka增加填写值效果、置顶存在数据库表、增加清除所有按钮">
+      <option name="closed" value="true" />
+      <created>1774940889177</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1774940889178</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -806,7 +803,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：注释非必要文件" />
     <MESSAGE value="new：增加日志等级配置" />
     <MESSAGE value="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮" />
     <MESSAGE value="new：增加延迟时间的适配" />
@@ -831,7 +827,8 @@
     <MESSAGE value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
     <MESSAGE value="fix：选择文件输入框内容显示不全修复" />
     <MESSAGE value="new：关键词管理增加历史快照恢复功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：关键词管理增加历史快照恢复功能" />
+    <MESSAGE value="new：kafka增加填写值效果、置顶存在数据库表、增加清除所有按钮" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：kafka增加填写值效果、置顶存在数据库表、增加清除所有按钮" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
