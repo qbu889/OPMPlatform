@@ -320,97 +320,59 @@ def parse_requirement_document(md_content: str) -> list:
     # 这是 FPA 标准格式的特殊要求
     # 关键规则：ILF 表应该按照它们在文档中出现的顺序插入到对应的功能点之后
             
-    # 收集所有在功能点中提到的 ILF 表
-    ilf_tables_mentioned = {}
-    for point in function_points:
+    # ★★★★★ 关键修改：如果一个功能点对应多个 ILF 表，需要将其拆分成多个 ILF 功能点 ★★★★★
+    # 例如："规则状态变更历史记录表，事件工单回单模板表 EI" → 拆分成 2 个 ILF
+    # 注意：必须在收集 ilf_tables_mentioned 之前进行拆分!
+    split_ilf_points = []
+    points_to_remove = []
+    
+    for i, point in enumerate(function_points):
         ilf_files = point.get('新增/变更内部逻辑文件', '')
         if ilf_files and ilf_files != '无':
-            # 可能有多个表，支持多种分隔符：逗号、顿号、分号等
-            # 使用正则表达式分割各种中英文分隔符
+            # 分割多个表
             tables = [t.strip() for t in PATTERNS['table_split'].split(ilf_files)]
-            for table in tables:
-                if table and table.endswith('表'):
-                    # 记录这个表首次出现的位置
-                    if table not in ilf_tables_mentioned:
-                        ilf_tables_mentioned[table] = point.get('功能点计数项', '')
+            valid_tables = [t for t in tables if t and t.endswith('表')]
             
-        # 同时检查原有未修改的文件
-        existing_files = point.get('原有未修改内部逻辑文件', '')
-        if existing_files and existing_files != '无':
-            # 同样支持多种分隔符
-            tables = [t.strip() for t in PATTERNS['table_split'].split(existing_files)]
-            for table in tables:
-                if table and table.endswith('表'):
-                    if table not in ilf_tables_mentioned:
-                        ilf_tables_mentioned[table] = point.get('功能点计数项', '')
-        
-    logger.info(f"从文档中提取到 {len(ilf_tables_mentioned)} 个 ILF 表")
-    for table_name, ref_point in ilf_tables_mentioned.items():
-        logger.info(f"  - {table_name} (首次出现在：{ref_point})")
-            
-    # 过滤掉原有的 ILF 功能点（后面会重新插入）
-    non_ilf_points = [p for p in function_points if p.get('类别') != 'ILF']
-    logger.info(f"非 ILF 功能点：{len(non_ilf_points)}个")
-            
-    # 为每个 ILF 表找到它应该跟随的非 ILF 功能点索引
-    ilf_insert_after = {}  # ILF 表名 -> 应该插入到哪个非 ILF 功能点索引之后
-            
-    for ilf_name, ref_point_name in ilf_tables_mentioned.items():
-        # 在非 ILF 列表中找到这个参考功能点
-        for idx, point in enumerate(non_ilf_points):
-            if point.get('功能点计数项', '').strip() == ref_point_name:
-                ilf_insert_after[ilf_name] = idx
-                logger.info(f"ILF 表 '{ilf_name}' 将插入到功能点 '{ref_point_name}' 之后 (索引：{idx})")
-                break
-        
-    logger.info(f"确定了 {len(ilf_insert_after)} 个 ILF 表的插入位置")
-            
-    # 创建新的功能点列表，按文档中的顺序插入 ILF 表
-    new_function_points = []
-    inserted_tables = set()
-            
-    for idx, point in enumerate(non_ilf_points):
-        new_function_points.append(point)
+            # 如果有多个有效的表名，需要拆分
+            if len(valid_tables) > 1:
+                original_item = point.get('功能点计数项', '')
+                logger.info(f"\n发现多表功能点：'{original_item}' -> {len(valid_tables)} 个表")
                 
-        # 检查是否有 ILF 表应该插入到这个位置之后
-        for ilf_name in ilf_tables_mentioned.keys():
-            if ilf_name not in inserted_tables:
-                insert_after_idx = ilf_insert_after.get(ilf_name, -1)
-                if insert_after_idx == idx:
-                    # 创建 ILF 功能点
-                    ref_point = point
-                    ilf_point = {
-                        'level1': ref_point.get('level1', ''),
-                        'level2': ref_point.get('level2', ''),
-                        'level3': ref_point.get('level3', ''),
-                        'level4': ref_point.get('level4', ''),
-                        'level5': ilf_name,
-                        '功能点计数项': ilf_name,
-                        '功能描述': f'{ilf_name}的维护与管理',
-                        '系统界面': '',
-                        '输入': '',
-                        '输出': '',
-                        '处理过程': '',
-                        '内部逻辑文件数': 1,
-                        '外部逻辑文件数': 0,
-                        '新增/变更内部逻辑文件': ilf_name,
-                        '原有未修改内部逻辑文件': '',
-                        '新增/变更外部逻辑文件': '无',
-                        '原有未修改外部逻辑文件': '',
-                        '类别': 'ILF',
-                        'UFP': 7,
-                        '重用程度': '高',
-                        '修改类型': '新增',
-                        'AFP': round(7 * 0.33, 2),
-                        '备注': ''
-                    }
-                    new_function_points.append(ilf_point)
-                    inserted_tables.add(ilf_name)
-                    logger.info(f"插入 ILF 表 '{ilf_name}' 到位置 {len(new_function_points)} (跟随：{ref_point.get('功能点计数项', '')})")
+                # 为每个表创建一个独立的 ILF 功能点
+                for table_idx, table_name in enumerate(valid_tables):
+                    new_point = point.copy()
+                    new_point['level5'] = table_name
+                    new_point['功能点计数项'] = table_name
+                    new_point['功能描述'] = f'{table_name}的维护与管理'
+                    new_point['新增/变更内部逻辑文件'] = table_name
+                    new_point['类别'] = 'ILF'  # 强制设为 ILF
+                    new_point['UFP'] = 7
+                    new_point['重用程度'] = '高'
+                    new_point['修改类型'] = '新增'
+                    new_point['AFP'] = round(7 * 0.33, 2)
+                    new_point['备注'] = f'拆分自：{original_item}' if table_idx > 0 else ''
+                    
+                    split_ilf_points.append(new_point)
+                    logger.info(f"  ✓ 创建 ILF: {table_name}")
+                
+                # 标记原始功能点待删除
+                points_to_remove.append(i)
+    
+    # 从后往前删除原始的多表功能点，避免索引错乱
+    for i in reversed(points_to_remove):
+        del function_points[i]
+    
+    # 将拆分后的 ILF 功能点添加到列表末尾
+    function_points.extend(split_ilf_points)
+    
+    if split_ilf_points:
+        logger.info(f"\n共拆分出 {len(split_ilf_points)} 个 ILF 功能点")
+        logger.info(f"拆分后总功能点数：{len(function_points)}\n")
             
-    function_points = new_function_points
-    logger.info(f"添加 ILF 表后，总功能点数：{len(function_points)}")
-
+    # ★★★★★ 关键修改：不再过滤和重新插入 ILF，直接使用拆分后的结果 ★★★★★
+    # 因为拆分时已经创建了独立的 ILF 功能点，不需要再重复处理
+    # 只需要确保所有 ILF 都在正确的位置即可
+    
     # 智能填充 FPA 字段 - 使用数据库配置的规则
     for point in function_points:
         item_text = point.get('功能点计数项', '')

@@ -513,6 +513,257 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             font-size: 13px;
         }
+        
+        /* 修复历史记录弹窗 z-index 问题 */
+        #historyModal {
+            z-index: 9999 !important;
+        }
+        
+        #historyModal .modal-backdrop {
+            z-index: 9998 !important;
+        }
+        
+        #historyModal .modal-dialog {
+            z-index: 10000 !important;
+        }
+        
+        /* 推送消息弹窗样式 */
+        .push-message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10001;
+            display: none;
+        }
+        
+        .push-message-overlay.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .push-message-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10002;
+        }
+        
+        .push-message-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .push-message-header h5 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .push-message-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .push-message-close:hover {
+            color: #333;
+        }
+        
+        .push-message-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .push-message-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: right;
+        }
+        
+        /* 原生历史记录弹窗样式 */
+        .history-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .history-modal-overlay.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .history-modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 9999;
+        }
+        
+        .history-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-modal-header h5 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .history-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .history-modal-close:hover {
+            color: #333;
+        }
+        
+        .history-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .history-modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: right;
+        }
+        
+        /* 原生字典弹窗样式 */
+        .dict-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9996;
+            display: none;
+        }
+        
+        .dict-modal-overlay.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .dict-modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 85vh;
+            overflow: visible; /* 关键修复：允许内容溢出可见 */
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 9997;
+            /* 关键修复：确保内容区域有正确的尺寸 */
+            min-width: 800px;
+            min-height: 500px;
+        }
+        
+        .dict-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dict-modal-header h5 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .dict-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dict-modal-close:hover {
+            color: #333;
+        }
+        
+        .dict-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 400px; /* 确保有足够高度显示表格 */
+            display: block; /* 关键修复：确保内容正常显示 */
+            width: 100%; /* 关键修复：确保宽度正确 */
+        }
+        
+        /* 修复 table-responsive 可能的高度问题 */
+        .dict-modal-body .table-responsive {
+            overflow-x: auto;
+            overflow-y: visible; /* 关键：允许垂直方向溢出可见 */
+            max-height: none; /* 不限制高度 */
+        }
+        
+        .dict-modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -631,6 +882,9 @@
                     <button class="btn btn-success" onclick="copyResult()">
                         <i class="fas fa-copy me-2"></i>复制结果
                     </button>
+                    <button class="btn btn-primary" onclick="generatePushMessage()" title="生成推送消息">
+                        <i class="fas fa-paper-plane me-2"></i>生成推送消息
+                    </button>
                 </div>
             </div>
             <div class="card-body">
@@ -734,6 +988,208 @@
                             <i class="fas fa-times me-1"></i>关闭
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 历史记录弹窗 -->
+        <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="historyModalLabel">
+                            <i class="fas fa-history me-2"></i>历史生成记录
+                        </h5>
+                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 搜索框 -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="historySearchInput" placeholder="搜索 FP 值、告警名称或地区...">
+                            </div>
+                        </div>
+                        
+                        <!-- 数据统计 -->
+                        <div class="alert alert-info d-flex align-items-center mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <strong>共 <span id="historyTotalCount">0</span> 条记录</strong>
+                            </div>
+                        </div>
+                        
+                        <!-- 表格容器 -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered" id="historyTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60px;">操作</th>
+                                        <th style="width: 150px;">生成时间</th>
+                                        <th style="width: 200px;">FP 值</th>
+                                        <th>告警名称</th>
+                                        <th style="width: 100px;">告警级别</th>
+                                        <th style="width: 150px;">地区</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 无数据提示 -->
+                        <div id="historyNoDataAlert" class="alert alert-warning d-none">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            暂无历史记录
+                        </div>
+                        
+                        <!-- 分页 -->
+                        <nav aria-label="分页导航" class="mt-3">
+                            <ul class="pagination justify-content-center" id="historyPagination"></ul>
+                        </nav>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 推送消息弹窗 -->
+        <div class="push-message-overlay" id="pushMessageModalOverlay">
+            <div class="push-message-content">
+                <div class="push-message-header">
+                    <h5 id="pushMessageModalTitle"><i class="fas fa-paper-plane me-2"></i>推送消息</h5>
+                    <button class="push-message-close" onclick="closePushMessageModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="push-message-body">
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>基于 FP 值生成的推送消息，可直接用于 Kafka 推送</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pushMessageFpInput" class="form-label fw-bold">
+                            <i class="fas fa-hashtag me-2"></i>FP 值
+                        </label>
+                        <input type="text" class="form-control" id="pushMessageFpInput" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pushMessageEventTimeInput" class="form-label fw-bold">
+                            <i class="fas fa-clock me-2"></i>事件时间
+                        </label>
+                        <input type="text" class="form-control" id="pushMessageEventTimeInput" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pushMessageActiveStatusInput" class="form-label fw-bold">
+                            <i class="fas fa-toggle-on me-2"></i>激活状态
+                        </label>
+                        <input type="text" class="form-control" id="pushMessageActiveStatusInput" value="3" readonly>
+                    </div>
+                    <div class="result-section">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong><i class="fas fa-code me-2"></i>生成的推送消息：</strong>
+                            <button class="btn btn-sm btn-outline-success" onclick="copyPushMessage()">
+                                <i class="fas fa-copy me-1"></i>复制
+                            </button>
+                        </div>
+                        <pre id="pushMessageOutput" style="background: white; padding: 15px; border-radius: 8px; border: 2px solid #e0e0e0; margin: 0;"></pre>
+                    </div>
+                </div>
+                <div class="push-message-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closePushMessageModal()">
+                        <i class="fas fa-times me-1"></i>关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 原生历史记录弹窗 -->
+        <div class="history-modal-overlay" id="historyModalOverlay">
+            <div class="history-modal-content">
+                <div class="history-modal-header">
+                    <h5 id="historyModalTitle"><i class="fas fa-history me-2"></i>历史生成记录</h5>
+                    <button class="history-modal-close" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="history-modal-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="historySearchInput" placeholder="搜索 FP 值、告警名称或地区...">
+                        </div>
+                    </div>
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div><strong>共 <span id="historyTotalCount">0</span> 条记录</strong></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="historyTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">操作</th>
+                                    <th style="width: 150px;">生成时间</th>
+                                    <th style="width: 200px;">FP 值</th>
+                                    <th>告警名称</th>
+                                    <th style="width: 100px;">告警级别</th>
+                                    <th style="width: 150px;">地区</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="historyNoDataAlert" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>暂无历史记录
+                    </div>
+                    <nav aria-label="分页导航" class="mt-3">
+                        <ul class="pagination justify-content-center" id="historyPagination"></ul>
+                    </nav>
+                </div>
+                <div class="history-modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeHistoryModal()">
+                        <i class="fas fa-times me-1"></i>关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 原生字典弹窗 -->
+        <div class="dict-modal-overlay" id="dictModalOverlay">
+            <div class="dict-modal-content">
+                <div class="dict-modal-header">
+                    <h5 id="dictModalTitle"><i class="fas fa-book me-2"></i>字段字典</h5>
+                    <button class="dict-modal-close" onclick="closeDictModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="dict-modal-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="dictSearchInput" placeholder="搜索专业名称、ID 或备注...">
+                        </div>
+                    </div>
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>
+                            <strong>共 <span id="dictTotalCount">0</span> 条记录</strong>
+                            <span id="dictFilteredCount" class="ms-2 d-none">（筛选后 <span>0</span> 条）</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="fieldDictTable">
+                            <thead class="table-light">
+                                <tr></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="noDataAlert" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        未找到匹配的数据
+                    </div>
+                </div>
+                <div class="dict-modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeDictModal()">
+                        <i class="fas fa-times me-1"></i>关闭
+                    </button>
                 </div>
             </div>
         </div>
@@ -1038,6 +1494,11 @@
                                onchange="onFieldChange('${field}', this.value)"
                                oninput="saveFieldValue('${field}', this.value)"
                                ${fieldHistory.length > 0 ? 'onclick="this.setSelectionRange(0, this.value.length); this.focus();"' : ''}>
+                        <button class="btn btn-outline-primary btn-sm" type="button"
+                                onclick="openHistoryModal('${field}')" 
+                                title="查看历史生成记录">
+                            历史
+                        </button>
                         ${hasDict ? `
                             <button class="btn btn-outline-secondary btn-sm" type="button"
                                     onclick="openFieldDict('${field}')">
@@ -1205,21 +1666,23 @@
         // 清除所有字段
         async function clearAllFields() {
             if (confirm('确定要清除所有已填写的字段值吗？')) {
+                // 只清除输入框的值，保留置顶字段
                 fieldCache = {};
-                pinnedFields.clear();
+                // pinnedFields.clear();  // 不清除置顶字段
                 renderCustomFields();
                 
-                // 批量清除数据库记录
+                // 批量清除数据库记录（只清除字段值，保留置顶状态）
                 try {
+                    const pinnedFieldsArray = Array.from(pinnedFields);
                     await fetch('/kafka-generator/field-cache/batch', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             field_cache: {},
-                            pinned_fields: []
+                            pinned_fields: pinnedFieldsArray  // 保留置顶字段
                         })
                     });
-                    console.log('[INFO] 已清除数据库缓存');
+                    console.log('[INFO] 已清除数据库缓存，保留置顶字段');
                 } catch (e) {
                     console.warn('[WARN] 清除数据库缓存失败:', e);
                 }
@@ -1247,8 +1710,7 @@
             renderCustomFields();
         }
 
-        // 打开维表弹窗
-        // 打开维表弹窗 - v2 (修复 Modal 初始化问题)
+        // 打开维表弹窗 (原生实现)
         async function openFieldDict(field) {
             console.log(`[INFO] 打开字段字典：${field}`);
             try {
@@ -1279,8 +1741,7 @@
                 }
         
                 // 更新标题
-                const modalTitle = document.getElementById('fieldDictModalLabel');
-                modalTitle.innerHTML = `<i class="fas fa-book me-2"></i>${field} 字典`;
+                document.getElementById('dictModalTitle').innerHTML = `<i class="fas fa-book me-2"></i>${field} 字典`;
                 
                 // 更新统计信息
                 document.getElementById('dictTotalCount').textContent = rows.length;
@@ -1294,22 +1755,26 @@
         
                 // 清空并渲染表格
                 const table = document.getElementById('fieldDictTable');
-                const thead = table.querySelector('thead tr');
+                const thead = table.querySelector('thead');  // 直接获取 thead，不要 tr
                 const tbody = table.querySelector('tbody');
                 
                 thead.innerHTML = '';
                 tbody.innerHTML = '';
         
+                // 创建表头行
+                const tr = document.createElement('tr');
                 // 创建表头
                 columns.forEach(col => {
                     const th = document.createElement('th');
                     th.textContent = col;
                     th.style.minWidth = '120px';
-                    thead.appendChild(th);
+                    tr.appendChild(th);  // 添加到 tr 中
                 });
+                thead.appendChild(tr);  // 把 tr 添加到 thead
         
                 // 创建表格内容
                 if (rows.length > 0) {
+                    console.log(`[DEBUG] 开始渲染 ${rows.length} 行表格数据`);
                     rows.forEach((row, rowIndex) => {
                         const tr = document.createElement('tr');
                         tr.dataset.index = rowIndex;
@@ -1339,13 +1804,9 @@
                                 }
                             }
                             
-                            // 1 秒后自动关闭模态框
+                            // 1 秒后自动关闭弹窗
                             setTimeout(() => {
-                                const modalEl = document.getElementById('fieldDictModal');
-                                const modal = bootstrap.Modal.getInstance(modalEl);
-                                if (modal) {
-                                    modal.hide();
-                                }
+                                closeDictModal();
                             }, 1000);
                         });
                                 
@@ -1367,7 +1828,9 @@
                             tr.appendChild(td);
                         });
                         tbody.appendChild(tr);
+                        console.log(`[DEBUG] 第 ${rowIndex + 1} 行已添加到表格`);
                     });
+                    console.log(`[DEBUG] 表格渲染完成，tbody 中有 ${tbody.children.length} 行`);
                 } else {
                     tbody.innerHTML = '<tr><td colspan="100" class="text-center text-muted py-4">暂无数据</td></tr>';
                 }
@@ -1375,29 +1838,28 @@
                 // 初始化搜索功能
                 initDictSearch(columns);
         
-                // 显示模态框
-                const modalEl = document.getElementById('fieldDictModal');
-                if (!modalEl) {
-                    console.error('[ERROR] 模态框元素不存在');
-                    alert('模态框元素不存在，请检查 HTML 结构');
-                    return;
-                }
+                // 先显示弹窗，确保容器可见后再渲染表格
+                document.getElementById('dictModalOverlay').classList.add('show');
                 
-                console.log('[DEBUG] 模态框元素:', modalEl);
-                console.log('[DEBUG] Bootstrap 版本:', bootstrap.Modal.VERSION || '4.x');
+                console.log('[INFO] 弹窗已显示');
+                console.log(`[DEBUG] 最终检查：tbody 中有 ${tbody.children.length} 行`);
                 
-                // Bootstrap 4 初始化
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-                
-                console.log('[INFO] 模态框已显示');
-                
-                // 调试：检查模态框状态
+                // 使用 setTimeout 确保弹窗显示后再渲染，让浏览器有机会计算布局
                 setTimeout(() => {
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    console.log('[DEBUG] Backdrop 元素:', backdrop);
-                    console.log('[DEBUG] Backdrop z-index:', backdrop ? window.getComputedStyle(backdrop).zIndex : 'N/A');
-                    console.log('[DEBUG] Modal z-index:', window.getComputedStyle(modalEl).zIndex);
+                    console.log('[DEBUG] setTimeout 中检查表格尺寸');
+                    const tableRect = table.getBoundingClientRect();
+                    console.log('[DEBUG] 表格尺寸:', { width: tableRect.width, height: tableRect.height });
+                    
+                    // 如果表格尺寸还是 0，强制重绘
+                    if (tableRect.width === 0 || tableRect.height === 0) {
+                        console.log('[DEBUG] 表格尺寸为 0，尝试强制重绘');
+                        table.style.display = 'none';
+                        setTimeout(() => {
+                            table.style.display = 'table';
+                            const newRect = table.getBoundingClientRect();
+                            console.log('[DEBUG] 重绘后尺寸:', { width: newRect.width, height: newRect.height });
+                        }, 10);
+                    }
                 }, 100);
                 
             } catch (e) {
@@ -1407,17 +1869,44 @@
             }
         }
         
+        // 关闭字典弹窗
+        function closeDictModal() {
+            console.log('[DEBUG] 关闭字典弹窗');
+            document.getElementById('dictModalOverlay').classList.remove('show');
+        }
+        
+        // 点击遮罩层关闭字典弹窗
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('dictModalOverlay');
+            if (overlay) {
+                console.log('[INFO] 字典弹窗元素已加载');
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        console.log('[DEBUG] 点击遮罩层，关闭字典弹窗');
+                        closeDictModal();
+                    }
+                });
+            } else {
+                console.error('[ERROR] 字典弹窗元素未找到!');
+            }
+        });
+        
         // 字段字典搜索功能
         let allTableRows = []; // 存储所有原始行数据
         
         function initDictSearch(columns) {
+            console.log('[DEBUG] initDictSearch 被调用');
             const searchInput = document.getElementById('dictSearchInput');
             const tbody = document.querySelector('#fieldDictTable tbody');
             const noDataAlert = document.getElementById('noDataAlert');
             const filteredCountEl = document.getElementById('dictFilteredCount');
+            const totalCountEl = document.getElementById('dictTotalCount');
+            
+            console.log('[DEBUG] 当前 dictTotalCount 显示:', totalCountEl.textContent);
             
             // 保存所有行数据
             allTableRows = Array.from(tbody.querySelectorAll('tr'));
+            console.log('[DEBUG] allTableRows 保存了', allTableRows.length, '行');
             
             // 绑定搜索事件
             searchInput.addEventListener('input', function() {
@@ -1733,6 +2222,135 @@
                 console.error('解析结果失败:', error);
                 alert('结果格式错误，无法提取 FP 值');
             }
+        }
+        
+        // 生成推送消息
+        function generatePushMessage() {
+            const resultOutput = document.getElementById('resultOutput').textContent;
+            
+            if (!resultOutput) {
+                alert('没有生成结果，请先生成 Kafka 消息');
+                return;
+            }
+            
+            try {
+                const resultData = JSON.parse(resultOutput);
+                const fpValue = resultData.FP0_FP1_FP2_FP3;
+                const eventTime = resultData.EVENT_TIME || new Date().toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }).replace(/\//g, '-');
+                
+                if (!fpValue) {
+                    alert('结果中没有找到 FP0_FP1_FP2_FP3 字段');
+                    return;
+                }
+                
+                // 填充弹窗中的字段
+                document.getElementById('pushMessageFpInput').value = fpValue;
+                document.getElementById('pushMessageEventTimeInput').value = eventTime;
+                document.getElementById('pushMessageActiveStatusInput').value = '3';
+                
+                // 生成推送消息 JSON
+                const pushMessage = {
+                    "ACTIVE_STATUS": "3",
+                    "CFP0_CFP1_CFP2_CFP3": fpValue,
+                    "EVENT_TIME": eventTime,
+                    "FP0_FP1_FP2_FP3": fpValue
+                };
+                
+                // 显示推送消息
+                document.getElementById('pushMessageOutput').textContent = JSON.stringify(pushMessage, null, 2);
+                
+                // 显示弹窗 - 使用原生方式
+                document.getElementById('pushMessageModalOverlay').classList.add('show');
+                console.log('[INFO] 推送消息弹窗已显示');
+                
+            } catch (error) {
+                console.error('生成推送消息失败:', error);
+                alert('生成推送消息失败：' + error.message);
+            }
+        }
+        
+        // 关闭推送消息弹窗
+        function closePushMessageModal() {
+            document.getElementById('pushMessageModalOverlay').classList.remove('show');
+            console.log('[INFO] 推送消息弹窗已关闭');
+        }
+        
+        // 复制推送消息
+        function copyPushMessage() {
+            const pushMessageText = document.getElementById('pushMessageOutput').textContent;
+            
+            if (!pushMessageText) {
+                alert('没有可复制的内容');
+                return;
+            }
+            
+            // 使用现代 Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(pushMessageText)
+                    .then(() => {
+                        showPushMessageCopySuccess();
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        fallbackCopyPushMessage(pushMessageText);
+                    });
+            } else {
+                fallbackCopyPushMessage(pushMessageText);
+            }
+        }
+        
+        // 降级复制推送消息方法
+        function fallbackCopyPushMessage(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showPushMessageCopySuccess();
+                } else {
+                    alert('复制失败，请手动选择文本进行复制');
+                }
+            } catch (err) {
+                alert('复制功能不可用，请手动选择文本进行复制');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        // 显示推送消息复制成功提示
+        function showPushMessageCopySuccess() {
+            const copyBtn = document.querySelector('#pushMessageModalOverlay .btn-outline-success');
+            if (!copyBtn) {
+                console.warn('未找到复制按钮元素');
+                return;
+            }
+            
+            const originalText = copyBtn.innerHTML;
+            const originalClass = copyBtn.className;
+            
+            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>已复制';
+            copyBtn.className = 'btn btn-sm btn-success';
+            copyBtn.disabled = true;
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.className = originalClass;
+                copyBtn.disabled = false;
+            }, 2000);
         }
         
         // 降级复制 FP 方法
@@ -2284,6 +2902,224 @@
             document.getElementById('esSource').value = JSON.stringify(sampleData, null, 2);
             // 自动提取 DELAY_TIME
             setTimeout(extractDelayTimeToInput, 100);
+        }
+        
+        // ========== 历史记录功能 ==========
+        let currentHistoryField = '';
+        let currentHistoryPage = 1;
+        let currentHistoryKeyword = '';
+        
+        // 打开历史记录弹窗 (原生实现)
+        function openHistoryModal(field) {
+            console.log('[DEBUG] 打开历史记录弹窗，字段:', field);
+            
+            // 检查弹窗元素是否存在
+            const overlay = document.getElementById('historyModalOverlay');
+            if (!overlay) {
+                console.error('[ERROR] 弹窗元素不存在!');
+                alert('错误：弹窗元素不存在，请检查页面是否正确加载');
+                return;
+            }
+            
+            currentHistoryField = field;
+            currentHistoryPage = 1;
+            currentHistoryKeyword = '';
+            document.getElementById('historySearchInput').value = '';
+            
+            // 更新标题
+            const meta = fieldMetaMap[field] || {};
+            const labelCn = meta.db_cn || meta.label_cn || '';
+            document.getElementById('historyModalTitle').innerHTML = 
+                `<i class="fas fa-history me-2"></i>${field}${labelCn ? `（${labelCn}）` : ''} - 历史生成记录`;
+            
+            // 显示弹窗
+            console.log('[DEBUG] 显示弹窗');
+            overlay.classList.add('show');
+            
+            // 加载历史数据
+            loadHistoryData();
+        }
+        
+        // 关闭历史记录弹窗
+        function closeHistoryModal() {
+            console.log('[DEBUG] 关闭弹窗');
+            document.getElementById('historyModalOverlay').classList.remove('show');
+        }
+        
+        // 点击遮罩层关闭弹窗
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('historyModalOverlay');
+            if (overlay) {
+                console.log('[INFO] 弹窗元素已加载');
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        console.log('[DEBUG] 点击遮罩层，关闭弹窗');
+                        closeHistoryModal();
+                    }
+                });
+            } else {
+                console.error('[ERROR] 弹窗元素未找到!');
+            }
+        });
+        
+        // 加载历史记录数据
+        async function loadHistoryData() {
+            try {
+                const url = `/kafka-generator/history?page=${currentHistoryPage}&per_page=20&keyword=${encodeURIComponent(currentHistoryKeyword)}`;
+                console.log('[DEBUG] 请求历史记录 URL:', url);
+                
+                const resp = await fetch(url);
+                const result = await resp.json();
+                
+                console.log('[DEBUG] 后端返回结果:', result);
+                
+                if (!result.success) {
+                    alert('加载历史记录失败：' + result.message);
+                    return;
+                }
+                
+                const data = result.data || {};
+                const list = data.list || [];
+                const total = data.total || 0;
+                
+                console.log('[DEBUG] 解析后的数据:', { list, total });
+                
+                // 更新统计
+                document.getElementById('historyTotalCount').textContent = total;
+                
+                // 渲染表格
+                renderHistoryTable(list);
+                
+                // 渲染分页
+                renderHistoryPagination(total, currentHistoryPage, 20);
+                
+            } catch (e) {
+                console.error('加载历史记录失败:', e);
+                alert('加载历史记录失败：' + e.message);
+            }
+        }
+        
+        // 渲染历史记录表格
+        function renderHistoryTable(list) {
+            const tbody = document.querySelector('#historyTable tbody');
+            tbody.innerHTML = '';
+            
+            console.log('[DEBUG] renderHistoryTable 被调用，list 长度:', list.length);
+            console.log('[DEBUG] 第一条数据:', list[0]);
+            
+            if (list.length === 0) {
+                console.log('[DEBUG] 列表为空，显示无数据提示');
+                document.getElementById('historyNoDataAlert').classList.remove('d-none');
+                return;
+            }
+            
+            console.log('[DEBUG] 列表不为空，隐藏无数据提示');
+            document.getElementById('historyNoDataAlert').classList.add('d-none');
+            
+            list.forEach((item, index) => {
+                console.log(`[DEBUG] 渲染第 ${index + 1} 条数据:`, item);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="useHistoryRecord(${item.id})" title="使用此记录">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </td>
+                    <td>${item.created_at || ''}</td>
+                    <td style="font-family: monospace; font-size: 12px;">${item.fp_value || '-'}</td>
+                    <td>${item.alarm_name || '-'}</td>
+                    <td>${item.alarm_level || '-'}</td>
+                    <td>${item.region_name || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            console.log('[DEBUG] 表格渲染完成，tbody 子元素数量:', tbody.children.length);
+        }
+        
+        // 渲染分页
+        function renderHistoryPagination(total, currentPage, perPage) {
+            const totalPages = Math.ceil(total / perPage);
+            const pagination = document.getElementById('historyPagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            // 上一页
+            if (currentPage > 1) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeHistoryPage(${currentPage - 1}); return false;">上一页</a>`;
+                pagination.appendChild(li);
+            }
+            
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = 'page-item' + (i === currentPage ? ' active' : '');
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeHistoryPage(${i}); return false;">${i}</a>`;
+                pagination.appendChild(li);
+            }
+            
+            // 下一页
+            if (currentPage < totalPages) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeHistoryPage(${currentPage + 1}); return false;">下一页</a>`;
+                pagination.appendChild(li);
+            }
+        }
+        
+        // 切换页码
+        function changeHistoryPage(page) {
+            currentHistoryPage = page;
+            loadHistoryData();
+        }
+        
+        // 搜索历史记录
+        document.getElementById('historySearchInput').addEventListener('input', function() {
+            currentHistoryKeyword = this.value.trim();
+            currentHistoryPage = 1;
+            loadHistoryData();
+        });
+        
+        // 使用历史记录
+        async function useHistoryRecord(id) {
+            try {
+                const resp = await fetch(`/kafka-generator/history/${id}`);
+                const result = await resp.json();
+                
+                if (!result.success) {
+                    alert('获取历史记录详情失败：' + result.message);
+                    return;
+                }
+                
+                const data = result.data || {};
+                const kafkaMessage = data.kafka_message || {};
+                
+                // 填充到输入框
+                if (currentHistoryField && kafkaMessage[currentHistoryField]) {
+                    const input = document.getElementById(`field_${currentHistoryField}`);
+                    if (input) {
+                        input.value = kafkaMessage[currentHistoryField];
+                        saveFieldValue(currentHistoryField, kafkaMessage[currentHistoryField]);
+                                                
+                        // 关闭弹窗 (原生)
+                        closeHistoryModal();
+                                                
+                        // 显示提示
+                        alert(`已填充 ${currentHistoryField} 字段：${kafkaMessage[currentHistoryField]}`);
+                    }
+                } else {
+                    alert('该历史记录中没有找到对应字段的值');
+                }
+                
+            } catch (e) {
+                console.error('使用历史记录失败:', e);
+                alert('使用历史记录失败：' + e.message);
+            }
         }
     </script>
 {% endblock %}

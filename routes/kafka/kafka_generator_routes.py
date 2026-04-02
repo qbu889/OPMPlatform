@@ -774,9 +774,10 @@ def kafka_field_options():
 
     table = FIELD_DICT_TABLES.get(kafka_field)
     if not table:
+        logger.error(f"[ERROR] 字段 {kafka_field} 未配置维表。可用配置：{list(FIELD_DICT_TABLES.keys())}")
         return jsonify({"success": False, "message": f"字段 {kafka_field} 未配置维表"}), 400
-
-    logger.debug(f"[DEBUG] 查询维表：{table}, 字段：{kafka_field}")
+    
+    logger.info(f"[INFO] 查询维表：{table}, 字段：{kafka_field}")
 
     conn = get_mysql_conn_dict_cursor()
     if not conn:
@@ -788,10 +789,12 @@ def kafka_field_options():
         with conn.cursor() as cur:
             # 简单限制一下返回行数，避免维表过大
             query = f"SELECT * FROM `{table_escaped}` LIMIT 500"
-            logger.debug(f"[DEBUG] 执行 SQL: {query}")
+            logger.info(f"[INFO] 执行 SQL: {query}")
             cur.execute(query)
             rows = cur.fetchall() or []
-            logger.debug(f"[DEBUG] 查询成功，返回 {len(rows)} 行数据")
+            logger.info(f"[INFO] 查询成功，返回 {len(rows)} 行数据")
+            if rows:
+                logger.info(f"[INFO] 第一行数据示例：{rows[0]}")
     except Exception as e:
         logger.error(f"[ERROR] 查询失败：{e}")
         logger.error(f"[ERROR] 详细错误：{traceback.format_exc()}")
@@ -806,6 +809,8 @@ def kafka_field_options():
 
     # rows 为字典列表：[{col: val, ...}, ...]
     columns = list(rows[0].keys()) if rows else []
+    
+    logger.info(f"[INFO] 返回数据：{len(columns)} 列，{len(rows)} 行")
 
     return jsonify({
         "success": True,
@@ -1248,6 +1253,9 @@ def generate_kafka_message():
         if delay_time_value is None:
             delay_time_value = 15
 
+        # 保存历史记录到数据库
+        save_generation_history(es_source_data, ordered_data)
+        
         # 使用自定义 JSON 序列化确保字段顺序
         import json as json_lib
         response_data = {
@@ -1276,9 +1284,269 @@ def generate_kafka_message():
         }), 500
 
 
-@kafka_generator_bp.route('/fixer')
-def json_fixer_page():
-    return render_template('kafka/json_fixer.html')
+def save_generation_history(es_data, kafka_message):
+    """保存生成历史记录到数据库"""
+    try:
+        from utils.mysql_helper import get_mysql_conn_dict_cursor
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            logger.warning("MySQL 未配置，跳过历史记录保存")
+            return
+        
+        try:
+            # 提取关键信息
+            fp_value = kafka_message.get('FP0_FP1_FP2_FP3', '')
+            alarm_name = kafka_message.get('TITLE_TEXT', '')
+            alarm_level = kafka_message.get('ORG_SEVERITY', '')
+            region_name = kafka_message.get('REGION_NAME', '')
+            
+            with conn.cursor() as cur:
+                query = """
+                    INSERT INTO knowledge_base.kafka_generation_history 
+                    (es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                cur.execute(query, (
+                    json.dumps(es_data, ensure_ascii=False),
+                    json.dumps(kafka_message, ensure_ascii=False),
+                    fp_value,
+                    alarm_name,
+                    alarm_level,
+                    region_name
+                ))
+                conn.commit()
+                logger.info(f"历史记录已保存：FP={fp_value}, 告警={alarm_name}")
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"保存历史记录失败：{e}")
+
+
+@kafka_generator_bp.route('/history', methods=['GET'])
+def get_generation_history():
+    """获取生成历史记录"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        # 获取分页参数
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        keyword = request.args.get('keyword', '', type=str)
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 构建查询条件
+                where_clause = "WHERE 1=1"
+                params = []
+                
+                if keyword:
+                    where_clause += " AND (alarm_name LIKE %s OR fp_value LIKE %s OR region_name LIKE %s)"
+                    keyword_pattern = f"%{keyword}%"
+                    params.extend([keyword_pattern, keyword_pattern, keyword_pattern])
+                
+                # 查询总数
+                count_query = f"SELECT COUNT(*) as total FROM knowledge_base.kafka_generation_history {where_clause}"
+                cur.execute(count_query, params)
+                total = cur.fetchone()['total']
+                
+                # 查询数据 (分页)
+                offset = (page - 1) * per_page
+                data_query = f"""
+                    SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, kafka_message
+                    FROM knowledge_base.kafka_generation_history 
+                    {where_clause}
+                    ORDER BY created_at DESC
+                    LIMIT %s OFFSET %s
+                """
+                cur.execute(data_query, params + [per_page, offset])
+                rows = cur.fetchall() or []
+                
+                # 格式化返回数据
+                history_list = []
+                for row in rows:
+                    kafka_msg = row.get('kafka_message')
+                    if kafka_msg and isinstance(kafka_msg, str):
+                        try:
+                            kafka_msg = json.loads(kafka_msg)
+                        except:
+                            pass
+                    
+                    history_list.append({
+                        'id': row['id'],
+                        'created_at': row['created_at'].strftime('%Y-%m-%d %H:%M:%S') if row['created_at'] else '',
+                        'fp_value': row['fp_value'] or '',
+                        'alarm_name': row['alarm_name'] or '',
+                        'alarm_level': row['alarm_level'] or '',
+                        'region_name': row['region_name'] or '',
+                        'kafka_message': kafka_msg
+                    })
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        "list": history_list,
+                        "total": total,
+                        "page": page,
+                        "per_page": per_page
+                    },
+                    "message": "查询成功"
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"获取历史记录失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/history/<int:history_id>', methods=['GET'])
+def get_generation_history_detail(history_id):
+    """获取单条历史记录的详细信息"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT id, created_at, es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name
+                    FROM knowledge_base.kafka_generation_history
+                    WHERE id = %s
+                """
+                cur.execute(query, (history_id,))
+                row = cur.fetchone()
+                
+                if not row:
+                    return jsonify({"success": False, "message": "记录不存在"}), 404
+                
+                # 格式化返回数据
+                kafka_msg = row.get('kafka_message')
+                es_raw = row.get('es_source_raw')
+                
+                if kafka_msg and isinstance(kafka_msg, str):
+                    try:
+                        kafka_msg = json.loads(kafka_msg)
+                    except:
+                        pass
+                
+                if es_raw and isinstance(es_raw, str):
+                    try:
+                        es_raw = json.loads(es_raw)
+                    except:
+                        pass
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        'id': row['id'],
+                        'created_at': row['created_at'].strftime('%Y-%m-%d %H:%M:%S') if row['created_at'] else '',
+                        'fp_value': row['fp_value'] or '',
+                        'alarm_name': row['alarm_name'] or '',
+                        'alarm_level': row['alarm_level'] or '',
+                        'region_name': row['region_name'] or '',
+                        'es_source_raw': es_raw,
+                        'kafka_message': kafka_msg
+                    }
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"获取历史记录详情失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/generate-push-message', methods=['POST'])
+def generate_push_message():
+    """生成推送消息 API"""
+    try:
+        # 获取前端传入的参数
+        fp_value = request.json.get('fp_value')
+        event_time = request.json.get('event_time')
+        active_status = request.json.get('active_status', '3')
+        
+        # 验证必要参数
+        if not fp_value:
+            return jsonify({
+                "success": False,
+                "message": "缺少必要的 fp_value 参数"
+            }), 400
+        
+        # 如果没有提供事件时间，使用当前时间
+        if not event_time:
+            event_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 构建推送消息
+        push_message = {
+            "ACTIVE_STATUS": str(active_status),
+            "CFP0_CFP1_CFP2_CFP3": fp_value,
+            "EVENT_TIME": event_time,
+            "FP0_FP1_FP2_FP3": fp_value
+        }
+        
+        logger.info(f"推送消息生成成功：FP={fp_value}")
+        
+        return jsonify({
+            "success": True,
+            "data": push_message,
+            "message": "推送消息生成成功"
+        })
+        
+    except Exception as e:
+        logger.error(f"生成推送消息失败：{str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "message": f"生成推送消息失败：{str(e)}"
+        }), 500
+
+
+def save_generation_history(es_data, kafka_message):
+    """保存生成历史记录到数据库"""
+    try:
+        from utils.mysql_helper import get_mysql_conn_dict_cursor
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            logger.warning("MySQL 未配置，跳过历史记录保存")
+            return
+        
+        try:
+            # 提取关键信息
+            fp_value = kafka_message.get('FP0_FP1_FP2_FP3', '')
+            alarm_name = kafka_message.get('TITLE_TEXT', '')
+            alarm_level = kafka_message.get('ORG_SEVERITY', '')
+            region_name = kafka_message.get('REGION_NAME', '')
+            
+            with conn.cursor() as cur:
+                query = """
+                    INSERT INTO knowledge_base.kafka_generation_history 
+                    (es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                cur.execute(query, (
+                    json.dumps(es_data, ensure_ascii=False),
+                    json.dumps(kafka_message, ensure_ascii=False),
+                    fp_value,
+                    alarm_name,
+                    alarm_level,
+                    region_name
+                ))
+                conn.commit()
+                logger.info(f"历史记录已保存：FP={fp_value}, 告警={alarm_name}")
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"保存历史记录失败：{e}")
 
 
 @kafka_generator_bp.route('/config')

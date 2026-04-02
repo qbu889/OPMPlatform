@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：kafka生成时字段历史记录保存">
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -167,11 +169,11 @@
       <recent name="$PROJECT_DIR$/test/fpa" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/templates/kafka" />
       <recent name="$PROJECT_DIR$/docs" />
       <recent name="$PROJECT_DIR$/uploads/fpa_input" />
       <recent name="$PROJECT_DIR$/docs/need_doc" />
       <recent name="$PROJECT_DIR$/models" />
-      <recent name="$PROJECT_DIR$/test/kafka" />
     </key>
   </component>
   <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
@@ -369,6 +371,8 @@
       <workItem from="1774602183099" duration="4318000" />
       <workItem from="1774609207689" duration="904000" />
       <workItem from="1774614196849" duration="23793000" />
+      <workItem from="1775009772745" duration="12544000" />
+      <workItem from="1775045330088" duration="6949000" />
     </task>
     <task id="LOCAL-00017" summary="new：缓存版本">
       <option name="closed" value="true" />
@@ -835,11 +839,11 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py</url>
-          <line>1372</line>
+          <line>1334</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/routes/FPA/fpa_ai_expander.py</url>
+          <url>file://$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py</url>
           <line>245</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
@@ -877,7 +881,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1774942085977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775098245541" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME=" 覆盖结果" MODIFIED="1773978610201" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
