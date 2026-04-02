@@ -369,15 +369,7 @@
       <workItem from="1774609207689" duration="904000" />
       <workItem from="1774614196849" duration="23793000" />
       <workItem from="1775009772745" duration="12544000" />
-      <workItem from="1775045330088" duration="8747000" />
-    </task>
-    <task id="LOCAL-00019" summary="new：FPA生成文档对接AI">
-      <option name="closed" value="true" />
-      <created>1773369688246</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1773369688246</updated>
+      <workItem from="1775045330088" duration="15395000" />
     </task>
     <task id="LOCAL-00020" summary="new：FPA生成文档生成文件时间戳转换格式、异步生成和查询">
       <option name="closed" value="true" />
@@ -763,7 +755,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775108984228</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <task id="LOCAL-00068" summary="new：调整kafka的生成kafka消息的高度">
+      <option name="closed" value="true" />
+      <created>1775110854529</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1775110854529</updated>
+    </task>
+    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -804,7 +804,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：修复CREATION_EVENT_TIME生成默认不是15分钟的问题，并且非15分钟会实际计算" />
     <MESSAGE value="fix：调整按钮排班" />
     <MESSAGE value="new：事件清除增加插入当前时间的功能" />
     <MESSAGE value="fix：前端多展示多余字符" />
@@ -829,7 +828,8 @@
     <MESSAGE value="new：kafka生成时字段历史记录保存" />
     <MESSAGE value="new：kafka生成后支持生成推送消息" />
     <MESSAGE value="new：其他东西推送" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：其他东西推送" />
+    <MESSAGE value="new：调整kafka的生成kafka消息的高度" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：调整kafka的生成kafka消息的高度" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

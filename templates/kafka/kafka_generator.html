@@ -701,7 +701,7 @@
             width: 90%;
             max-width: 1200px;
             max-height: 85vh;
-            overflow: visible; /* 关键修复：允许内容溢出可见 */
+            overflow: hidden; /* 关键修复：隐藏溢出，让内部容器控制滚动 */
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
@@ -748,15 +748,30 @@
             overflow-y: auto;
             flex: 1;
             min-height: 400px; /* 确保有足够高度显示表格 */
-            display: block; /* 关键修复：确保内容正常显示 */
-            width: 100%; /* 关键修复：确保宽度正确 */
+            width: 100%; /* 确保宽度正确 */
         }
         
         /* 修复 table-responsive 可能的高度问题 */
         .dict-modal-body .table-responsive {
             overflow-x: auto;
-            overflow-y: visible; /* 关键：允许垂直方向溢出可见 */
+            overflow-y: auto; /* 关键修复：允许垂直滚动 */
             max-height: none; /* 不限制高度 */
+        }
+        
+        /* 确保表格正常显示 */
+        #fieldDictTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        #fieldDictTable th,
+        #fieldDictTable td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
         }
         
         .dict-modal-footer {
@@ -1163,8 +1178,10 @@
                 <div class="dict-modal-body">
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" id="dictSearchInput" placeholder="搜索专业名称、ID 或备注...">
+                            <span class="input-group-text" title="输入关键字后自动搜索" style="cursor: default;">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="dictSearchInput" placeholder="搜索专业名称、ID 或备注..." autocomplete="off">
                         </div>
                     </div>
                     <div class="alert alert-info d-flex align-items-center mb-3">
@@ -1222,9 +1239,8 @@
 
         // 常用字段列表
         const commonFields = [
-            'ID', 'NETWORK_TYPE_TOP', 'ORG_SEVERITY', 'REGION_NAME', 'CITY_NAME',
-            'EQP_LABEL', 'NE_LABEL', 'VENDOR_NAME', 'TITLE_TEXT', 'STANDARD_ALARM_NAME',
-            'STANDARD_ALARM_ID', 'EVENT_TIME', 'MAINTAIN_GROUP', 'ALARM_SOURCE', 'ALARM_TEXT'
+            'NETWORK_TYPE_TOP', 'ORG_SEVERITY',
+            'EQP_LABEL', 'NE_LABEL', 'TITLE_TEXT', 'STANDARD_ALARM_ID',  'MAINTAIN_GROUP'
         ];
 
         // 所有字段列表
@@ -1756,11 +1772,21 @@
         
                 // 清空并渲染表格
                 const table = document.getElementById('fieldDictTable');
-                const thead = table.querySelector('thead');  // 直接获取 thead，不要 tr
+                const thead = table.querySelector('thead');
                 const tbody = table.querySelector('tbody');
+                
+                // 确保表格元素存在
+                if (!thead || !tbody) {
+                    console.error('[ERROR] 表格的 thead 或 tbody 元素不存在!');
+                    alert('表格初始化失败，请刷新页面');
+                    return;
+                }
                 
                 thead.innerHTML = '';
                 tbody.innerHTML = '';
+                
+                // 关键修复：先显示弹窗，让表格容器有尺寸后再渲染
+                document.getElementById('dictModalOverlay').classList.add('show');
         
                 // 创建表头行
                 const tr = document.createElement('tr');
@@ -1838,14 +1864,11 @@
         
                 // 初始化搜索功能
                 initDictSearch(columns);
-        
-                // 先显示弹窗，确保容器可见后再渲染表格
-                document.getElementById('dictModalOverlay').classList.add('show');
                 
                 console.log('[INFO] 弹窗已显示');
                 console.log(`[DEBUG] 最终检查：tbody 中有 ${tbody.children.length} 行`);
                 
-                // 使用 setTimeout 确保弹窗显示后再渲染，让浏览器有机会计算布局
+                // 使用 setTimeout 确保表格渲染后有尺寸
                 setTimeout(() => {
                     console.log('[DEBUG] setTimeout 中检查表格尺寸');
                     const tableRect = table.getBoundingClientRect();
@@ -2543,32 +2566,58 @@
 
         // 降级复制方法
         function fallbackCopyText(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-999999px";
-            textArea.style.top = "-999999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
             try {
+                // 创建一个临时的可编辑元素
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                textArea.style.width = "2em";
+                textArea.style.height = "2em";
+                textArea.style.padding = "0";
+                textArea.style.border = "none";
+                textArea.style.outline = "none";
+                textArea.style.boxShadow = "none";
+                textArea.style.background = "transparent";
+                textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                
+                textArea.focus();
+                textArea.select();
+                
+                // 尝试使用 execCommand
                 const successful = document.execCommand('copy');
                 if (successful) {
                     showCopySuccess();
+                    console.log('[INFO] 复制成功（使用 execCommand）');
                 } else {
-                    alert('复制失败，请手动选择文本进行复制');
+                    // 如果 execCommand 失败，使用 select 方法
+                    console.log('[WARN] execCommand 失败，尝试使用 select 方法');
+                    textArea.style.display = 'block';
+                    textArea.style.left = '50%';
+                    textArea.style.top = '50%';
+                    textArea.style.transform = 'translate(-50%, -50%)';
+                    textArea.style.zIndex = '9999';
+                    textArea.style.opacity = '1';
+                    textArea.readOnly = false;
+                    textArea.select();
+                    alert('已自动选中内容，请按 Ctrl+C 复制');
                 }
+                
+                setTimeout(() => {
+                    document.body.removeChild(textArea);
+                }, 100);
             } catch (err) {
+                console.error('[ERROR] 复制失败:', err);
                 alert('复制功能不可用，请手动选择文本进行复制');
             }
-            
-            document.body.removeChild(textArea);
         }
 
         // 显示复制成功提示
         function showCopySuccess() {
-            const copyBtn = document.querySelector('#resultCard .btn');
+            // 直接选择【复制结果】按钮，不依赖 event 对象
+            const copyBtn = document.querySelector('button[onclick="copyResult()"]');
             if (!copyBtn) {
                 console.warn('未找到复制按钮元素');
                 return;
