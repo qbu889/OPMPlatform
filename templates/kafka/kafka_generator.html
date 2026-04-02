@@ -416,6 +416,7 @@
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%) !important;
             color: white !important;
             box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4) !important;
+            flex-shrink: 0; /* 防止按钮被压缩 */
         }
         
         .btn-apply-delay:hover {
@@ -427,6 +428,14 @@
         
         .btn-apply-delay i {
             color: white !important;
+        }
+        
+        /* 延迟时间输入框组 */
+        .delay-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap; /* 防止换行 */
         }
         
         /* 清除所有按钮样式 */
@@ -904,10 +913,6 @@
                             <input type="number" class="form-control" id="resultDelayTimeInput" 
                                    value="15" min="0" step="60">
                             <span class="input-group-text unit-label">分钟</span>
-                            <button class="btn btn-sm btn-outline-primary btn-apply-delay" type="button" onclick="applyDelayTimeChange()" 
-                                    title="应用延迟时间修改">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
                         </div>
                     </div>
                     <button class="btn btn-info btn-regenerate" onclick="regenerateMessage()" title="重新生成">
@@ -2100,22 +2105,19 @@
         // 重新生成消息
         function regenerateMessage() {
             console.log('重新生成 Kafka 消息...');
-            generateMessage();
-        }
-        
-        // 应用延迟时间修改
-        function applyDelayTimeChange() {
-            const newDelayTime = document.getElementById('resultDelayTimeInput').value.trim();
-            if (!newDelayTime) {
+            
+            // 获取左侧延迟时间输入框的值
+            const delayTime = document.getElementById('resultDelayTimeInput').value.trim();
+            
+            if (!delayTime) {
                 alert('请输入延迟时间');
                 return;
             }
             
             // 同步到输入区域的延迟时间框
-            document.getElementById('creationEventTimeInput').value = newDelayTime;
+            document.getElementById('creationEventTimeInput').value = delayTime;
             
-            // 重新生成消息
-            console.log(`应用延迟时间修改：${newDelayTime} 分钟`);
+            console.log(`使用延迟时间：${delayTime} 分钟`);
             generateMessage();
         }
         

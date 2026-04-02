@@ -5,21 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/test/kafka/前端展示ES源数据.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/check_backslash.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/check_backslash.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/kafka生成请求CURL.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_browser_scenario.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_browser_scenario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_es_data_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_es_data_validation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_frontend_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_frontend_preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_new_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_new_preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_post_es_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_post_es_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_real_data_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_real_data_preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_real_es_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_real_es_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/test_simple_es_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_simple_es_data.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -384,22 +371,6 @@
       <workItem from="1775009772745" duration="12544000" />
       <workItem from="1775045330088" duration="18036000" />
       <workItem from="1775139746339" duration="3428000" />
-    </task>
-    <task id="LOCAL-00022" summary="fix：FPA生成文档生成功能点顺序修复，页面展示重构">
-      <option name="closed" value="true" />
-      <created>1773385763779</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1773385763779</updated>
-    </task>
-    <task id="LOCAL-00023" summary="fix：FPA生成文档生成FPA计算不正确问题、功能拆分不正确问题">
-      <option name="closed" value="true" />
-      <created>1773394877301</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1773394877301</updated>
     </task>
     <task id="LOCAL-00024" summary="fix：FPA生成文档生成兼顾速度和质量，以及遗漏多线程线程的文件">
       <option name="closed" value="true" />
@@ -777,7 +748,23 @@
       <option name="project" value="LOCAL" />
       <updated>1775142503083</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary="fix：kafka增加历史数据的查询复制">
+      <option name="closed" value="true" />
+      <created>1775145902559</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1775145902559</updated>
+    </task>
+    <task id="LOCAL-00072" summary="new：kafka历史记录复制增加json格式化">
+      <option name="closed" value="true" />
+      <created>1775146107609</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1775146107609</updated>
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -818,8 +805,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：前端多展示多余字符" />
-    <MESSAGE value="fix：剔除omlx" />
     <MESSAGE value="new：重构前端" />
     <MESSAGE value="new：修复FPA前端显示不全、动画一直加载的问题" />
     <MESSAGE value="new：修复前端重构页面样式错乱问题" />
@@ -843,7 +828,9 @@
     <MESSAGE value="new：调整kafka的生成kafka消息的高度" />
     <MESSAGE value="fix：点击复制结果按钮，不额外增加复制成功的按钮" />
     <MESSAGE value="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题" />
+    <MESSAGE value="fix：kafka增加历史数据的查询复制" />
+    <MESSAGE value="new：kafka历史记录复制增加json格式化" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：kafka历史记录复制增加json格式化" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
