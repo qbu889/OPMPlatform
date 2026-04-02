@@ -342,8 +342,10 @@ if __name__ == '__main__':
     import threading
     import subprocess
     
-    port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5001
+    # 从环境变量读取 PORT，如果没有设置则使用 5000
+    port = int(os.environ.get("PORT", 5001))
     app_logger.info(f"启动 Flask 应用，端口：{port}")
+    app_logger.info(f"访问地址：http://127.0.0.1:{port}")
     
     # 启动 cloudflared tunnel
     def start_cloudflared_tunnel():

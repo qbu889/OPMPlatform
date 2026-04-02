@@ -335,20 +335,32 @@
         #fieldDictTable tbody tr:nth-child(odd) {
             background-color: #ffffff;
         }
+        #fieldDictModal .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        /* 表格容器样式 */
+        #fieldDictModal .table-responsive {
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        
         /* 滚动条美化 */
         #fieldDictModal .modal-body::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         #fieldDictModal .modal-body::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 4px;
+            border-radius: 5px;
         }
         #fieldDictModal .modal-body::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
         }
         #fieldDictModal .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
         
         /* 关闭按钮样式增强 */
@@ -1134,10 +1146,8 @@
                                 <tr>
                                     <th style="width: 60px;">操作</th>
                                     <th style="width: 150px;">生成时间</th>
-                                    <th style="width: 200px;">FP 值</th>
-                                    <th>告警名称</th>
-                                    <th style="width: 100px;">告警级别</th>
-                                    <th style="width: 150px;">地区</th>
+                                    <th style="width: 250px;">FP 值</th>
+                                    <th id="historyFieldLabel">字段值</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -2827,6 +2837,12 @@
             document.getElementById('historyModalTitle').innerHTML = 
                 `<i class="fas fa-history me-2"></i>${field}${labelCn ? `（${labelCn}）` : ''} - 历史生成记录`;
             
+            // 更新表格列头
+            const fieldLabel = labelCn || field;
+            document.getElementById('historyFieldLabel').textContent = fieldLabel + '的值';
+            
+            console.log('[DEBUG] 更新表头为:', fieldLabel);
+            
             // 显示弹窗
             console.log('[DEBUG] 显示弹窗');
             overlay.classList.add('show');
@@ -2900,6 +2916,7 @@
             tbody.innerHTML = '';
             
             console.log('[DEBUG] renderHistoryTable 被调用，list 长度:', list.length);
+            console.log('[DEBUG] 当前字段:', currentHistoryField);
             console.log('[DEBUG] 第一条数据:', list[0]);
             
             if (list.length === 0) {
@@ -2911,9 +2928,18 @@
             console.log('[DEBUG] 列表不为空，隐藏无数据提示');
             document.getElementById('historyModalNoDataAlert').classList.add('d-none');
             
+            // 获取当前字段的中文标签
+            const fieldMeta = fieldMetaMap[currentHistoryField] || {};
+            const fieldLabel = fieldMeta.db_cn || fieldMeta.label_cn || currentHistoryField;
+            
             list.forEach((item, index) => {
                 console.log(`[DEBUG] 渲染第 ${index + 1} 条数据:`, item);
                 const tr = document.createElement('tr');
+                
+                // 获取当前字段的值（从 kafka_message 中）
+                const kafkaMessage = item.kafka_message || {};
+                const fieldValue = kafkaMessage[currentHistoryField] || '-';
+                
                 tr.innerHTML = `
                     <td>
                         <button class="btn btn-sm btn-outline-primary" onclick="useHistoryRecord(${item.id})" title="使用此记录">
@@ -2922,9 +2948,7 @@
                     </td>
                     <td>${item.created_at || ''}</td>
                     <td style="font-family: monospace; font-size: 12px;">${item.fp_value || '-'}</td>
-                    <td>${item.alarm_name || '-'}</td>
-                    <td>${item.alarm_level || '-'}</td>
-                    <td>${item.region_name || '-'}</td>
+                    <td>${fieldValue}</td>
                 `;
                 tbody.appendChild(tr);
             });
