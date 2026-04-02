@@ -8,7 +8,7 @@ import subprocess
 import re
 import json
 
-with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
     content = f.read()
 
 match = re.search(r"--data-raw \$'(.+?)'$", content, re.DOTALL)

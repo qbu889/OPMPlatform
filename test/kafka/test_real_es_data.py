@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-直接从 kafka生成请求CURL.txt 复制实际数据进行测试
+直接从 前端展示Kafka 消息.txt 复制实际数据进行测试
 """
 
 import json

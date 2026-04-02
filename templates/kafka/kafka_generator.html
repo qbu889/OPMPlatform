@@ -816,7 +816,12 @@
                     <label for="esSource" class="form-label" style="font-weight: 600; color: #495057;">
                         <i class="fas fa-database me-2"></i>ES 源数据输入
                     </label>
-                    <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
+                    <div class="input-group">
+                        <textarea class="form-control" id="esSource" rows="12" placeholder='请输入 ES _source 数据 (JSON 格式)...'></textarea>
+                        <button class="btn btn-outline-primary" type="button" onclick="showEsSourceHistory()" title="查看历史数据">
+                            <i class="fas fa-history"></i> 历史数据
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex align-items-center">
@@ -1165,6 +1170,55 @@
                         <i class="fas fa-times me-1"></i>关闭
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ES 源数据历史弹窗 -->
+    <div class="history-modal-overlay" id="esSourceHistoryModalOverlay">
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h5><i class="fas fa-history me-2"></i>ES 源数据历史记录</h5>
+                <button class="history-modal-close" onclick="closeEsSourceHistoryModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="history-modal-body">
+                <!-- 搜索框 -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="esSourceHistorySearchInput" placeholder="搜索 FP 值、生成时间...">
+                    </div>
+                </div>
+                
+                <div class="alert alert-info d-flex align-items-center mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <div><strong>共 <span id="esSourceHistoryTotalCount">0</span> 条记录</strong></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered" id="esSourceHistoryTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">操作</th>
+                                <th style="width: 150px;">生成时间</th>
+                                <th style="width: 250px;">FP 值</th>
+                                <th>ES 源数据</th>
+                                <th>Kafka 消息</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="esSourceHistoryNoDataAlert" class="alert alert-warning d-none">
+                    <i class="fas fa-exclamation-triangle me-2"></i>暂无历史记录
+                </div>
+                <nav aria-label="分页导航" class="mt-3">
+                    <ul class="pagination justify-content-center" id="esSourceHistoryPagination"></ul>
+                </nav>
+            </div>
+            <div class="history-modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeEsSourceHistoryModal()">
+                    <i class="fas fa-times me-1"></i>关闭
+                </button>
             </div>
         </div>
     </div>
@@ -3079,6 +3133,264 @@
                 console.error('使用历史记录失败:', e);
                 alert('使用历史记录失败：' + e.message);
             }
+        }
+        
+        // ========== ES 源数据历史记录功能 ==========
+        let esSourceHistoryKeyword = ''; // 当前搜索关键词
+        let esSourceHistoryPage = 1; // 当前页码
+        
+        // 显示 ES 源数据历史记录
+        async function showEsSourceHistory() {
+            console.log('[ES_HISTORY] 打开 ES 源数据历史记录弹窗');
+            
+            const overlay = document.getElementById('esSourceHistoryModalOverlay');
+            if (!overlay) {
+                console.error('[ES_HISTORY] 弹窗元素不存在');
+                return;
+            }
+            
+            overlay.classList.add('show');
+            
+            // 初始化搜索功能
+            initEsSourceHistorySearch();
+            
+            // 加载数据
+            esSourceHistoryKeyword = '';
+            esSourceHistoryPage = 1;
+            await loadEsSourceHistoryData();
+        }
+        
+        // 初始化 ES 源数据历史搜索功能
+        function initEsSourceHistorySearch() {
+            console.log('[ES_HISTORY] 初始化搜索功能');
+            
+            setTimeout(() => {
+                const searchInput = document.getElementById('esSourceHistorySearchInput');
+                console.log('[DEBUG] 搜索框元素:', searchInput ? '找到' : '未找到');
+                
+                if (!searchInput) {
+                    console.error('[ERROR] 搜索框不存在');
+                    return;
+                }
+                
+                // 使用事件委托，绑定到 document 上
+                document.addEventListener('input', function(e) {
+                    if (e.target && e.target.id === 'esSourceHistorySearchInput') {
+                        const keyword = e.target.value.trim();
+                        console.log('[ES_SEARCH] 实时搜索:', keyword);
+                        esSourceHistoryKeyword = keyword;
+                        esSourceHistoryPage = 1;
+                        loadEsSourceHistoryData();
+                    }
+                });
+                
+                // 支持回车键
+                document.addEventListener('keypress', function(e) {
+                    if (e.target && e.target.id === 'esSourceHistorySearchInput' && 
+                        (e.key === 'Enter' || e.keyCode === 13)) {
+                        e.preventDefault();
+                        const keyword = e.target.value.trim();
+                        console.log('[ES_SEARCH] 回车搜索:', keyword);
+                        esSourceHistoryKeyword = keyword;
+                        esSourceHistoryPage = 1;
+                        loadEsSourceHistoryData();
+                    }
+                });
+                
+                console.log('[INFO] ✅ ES 源数据历史搜索功能初始化完成');
+            }, 100);
+        }
+        
+        // 关闭 ES 源数据历史记录弹窗
+        function closeEsSourceHistoryModal() {
+            const overlay = document.getElementById('esSourceHistoryModalOverlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+        }
+        
+        // 加载 ES 源数据历史记录
+        async function loadEsSourceHistoryData() {
+            try {
+                console.log('[ES_HISTORY] 开始加载 ES 源数据历史记录');
+                console.log('[ES_HISTORY] 搜索关键词:', esSourceHistoryKeyword);
+                console.log('[ES_HISTORY] 当前页码:', esSourceHistoryPage);
+                
+                // 构建查询参数
+                const params = new URLSearchParams({
+                    page: esSourceHistoryPage,
+                    per_page: 10
+                });
+                
+                if (esSourceHistoryKeyword) {
+                    params.append('keyword', esSourceHistoryKeyword);
+                }
+                
+                const resp = await fetch(`/kafka-generator/history?${params.toString()}`);
+                const result = await resp.json();
+                
+                console.log('[ES_HISTORY] API 响应:', result);
+                
+                if (!result.success) {
+                    alert('获取历史记录失败：' + result.message);
+                    return;
+                }
+                
+                const data = result.data || {};
+                const list = data.list || [];
+                
+                // 更新总数
+                document.getElementById('esSourceHistoryTotalCount').textContent = data.total || 0;
+                
+                // 渲染表格
+                renderEsSourceHistoryTable(list);
+                
+                // 渲染分页
+                renderEsSourceHistoryPagination(data.total, esSourceHistoryPage, 10);
+                
+            } catch (e) {
+                console.error('[ES_HISTORY] 加载失败:', e);
+                alert('加载历史记录失败：' + e.message);
+            }
+        }
+        
+        // 渲染 ES 源数据历史表格
+        function renderEsSourceHistoryTable(list) {
+            const tbody = document.querySelector('#esSourceHistoryTable tbody');
+            tbody.innerHTML = '';
+            
+            console.log('[ES_HISTORY] 渲染表格，数据数量:', list.length);
+            
+            if (list.length === 0) {
+                document.getElementById('esSourceHistoryNoDataAlert').classList.remove('d-none');
+                return;
+            }
+            
+            document.getElementById('esSourceHistoryNoDataAlert').classList.add('d-none');
+            
+            list.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                
+                // 获取 ES 源数据和 Kafka 消息
+                // es_source_raw 和 kafka_message 现在是字符串格式（保持字段顺序），直接显示
+                let esSourceRaw = item.es_source_raw || '-';
+                let kafkaMessageStr = item.kafka_message || '-';
+                
+                tr.innerHTML = `
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="useEsSourceHistory(${item.id})" title="使用此记录">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </td>
+                    <td>${item.created_at || ''}</td>
+                    <td style="font-family: monospace; font-size: 12px;">${item.fp_value || '-'}</td>
+                    <td>
+                        <div class="d-flex flex-column gap-2">
+                            <textarea class="form-control" rows="3" readonly style="font-family: monospace; font-size: 11px;" onclick="this.select()">${esSourceRaw}</textarea>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('${encodeURIComponent(esSourceRaw)}')">
+                                <i class="fas fa-copy me-1"></i>复制 ES 源数据
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-2">
+                            <textarea class="form-control" rows="3" readonly style="font-family: monospace; font-size: 11px;" onclick="this.select()">${kafkaMessageStr}</textarea>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('${encodeURIComponent(kafkaMessageStr)}')">
+                                <i class="fas fa-copy me-1"></i>复制 Kafka 消息
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // 渲染 ES 源数据历史分页
+        function renderEsSourceHistoryPagination(total, currentPage, perPage) {
+            const totalPages = Math.ceil(total / perPage);
+            const pagination = document.getElementById('esSourceHistoryPagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            // 上一页
+            if (currentPage > 1) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeEsSourceHistoryPage(${currentPage - 1}); return false;">上一页</a>`;
+                pagination.appendChild(li);
+            }
+            
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = 'page-item' + (i === currentPage ? ' active' : '');
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeEsSourceHistoryPage(${i}); return false;">${i}</a>`;
+                pagination.appendChild(li);
+            }
+            
+            // 下一页
+            if (currentPage < totalPages) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="changeEsSourceHistoryPage(${currentPage + 1}); return false;">下一页</a>`;
+                pagination.appendChild(li);
+            }
+        }
+        
+        // 切换 ES 源数据历史页码
+        function changeEsSourceHistoryPage(page) {
+            esSourceHistoryPage = page;
+            loadEsSourceHistoryData();
+        }
+        
+        // 使用 ES 源数据历史记录
+        async function useEsSourceHistory(id) {
+            try {
+                const resp = await fetch(`/kafka-generator/history/${id}`);
+                const result = await resp.json();
+                
+                if (!result.success) {
+                    alert('获取历史记录详情失败：' + result.message);
+                    return;
+                }
+                
+                const data = result.data || {};
+                const esSourceRaw = data.es_source_raw || '';
+                
+                if (esSourceRaw) {
+                    // 填充到 ES 源数据输入框
+                    document.getElementById('esSource').value = esSourceRaw;
+                    
+                    // 关闭弹窗
+                    closeEsSourceHistoryModal();
+                    
+                    // 显示提示
+                    alert('已加载 ES 源数据到输入框');
+                    
+                    // 自动提取 DELAY_TIME
+                    extractDelayTimeToInput();
+                } else {
+                    alert('该历史记录中没有 ES 源数据');
+                }
+                
+            } catch (e) {
+                console.error('使用 ES 源数据历史记录失败:', e);
+                alert('使用历史记录失败：' + e.message);
+            }
+        }
+        
+        // 复制到剪贴板
+        function copyToClipboard(encodedText) {
+            const text = decodeURIComponent(encodedText);
+            navigator.clipboard.writeText(text).then(() => {
+                console.log('[COPY] 复制成功');
+            }).catch(err => {
+                console.error('[COPY] 复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
         }
     </script>
 {% endblock %}

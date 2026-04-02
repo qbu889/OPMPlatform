@@ -16,14 +16,14 @@ def test_es_data_api():
     url = "http://127.0.0.1:5001/kafka-generator/generate"
     
     # 从文件读取 curl 命令
-    with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+    with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
         curl_content = f.read()
     
     print("="*80)
     print("测试写入 ES 数据的 JSON 格式验证")
     print("="*80)
     print(f"\n目标 URL: {url}")
-    print(f"数据来源：test/kafka/kafka生成请求CURL.txt")
+    print(f"数据来源：test/kafka/前端展示Kafka 消息.txt")
     
     # 提取 curl 命令中的 --data-raw 部分
     import re

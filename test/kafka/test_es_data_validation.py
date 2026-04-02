@@ -15,14 +15,14 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 def load_es_data():
-    """从 kafka生成请求CURL.txt 文件加载真实的 curl 命令"""
-    with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+    """从 前端展示Kafka 消息.txt 文件加载真实的 curl 命令"""
+    with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
         content = f.read()
     
     # 提取 --data-raw 后面的 JSON 数据
     match = re.search(r"--data-raw \$'(.+?)'", content, re.DOTALL)
     if not match:
-        raise Exception("无法从 kafka生成请求CURL.txt 中提取 JSON 数据")
+        raise Exception("无法从 前端展示Kafka 消息.txt 中提取 JSON 数据")
     
     raw_json = match.group(1)
     print(f"✅ 成功提取原始 JSON 数据，长度：{len(raw_json)}")
@@ -167,7 +167,7 @@ def test_es_data():
     print("="*80)
     
     # 1. 加载数据
-    print("\n[步骤 1] 加载 kafka生成请求CURL.txt")
+    print("\n[步骤 1] 加载 前端展示Kafka 消息.txt")
     raw_request = load_es_data()
     
     # 2. 提取 es_source_raw

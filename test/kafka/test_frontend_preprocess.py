@@ -108,7 +108,7 @@ def preprocess_es_data(raw_data):
 def test_problematic_json():
     """测试有问题的 JSON 数据"""
     
-    # 从 kafka生成请求CURL.txt 中复制的实际问题数据
+    # 从 前端展示Kafka 消息.txt 中复制的实际问题数据
     test_json = '''{
   "EVENT_REASON": """
 定界结果：初判为市电停电导致；

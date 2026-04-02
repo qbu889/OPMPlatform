@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-简单测试：直接验证 kafka生成请求CURL.txt 中的 JSON
+简单测试：直接验证 前端展示Kafka 消息.txt 中的 JSON
 """
 
 import json
 import re
 
 # 读取文件
-with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
     content = f.read()
 
 # 方法 1: 从 curl 命令中提取 --data-raw 的内容

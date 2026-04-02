@@ -101,7 +101,7 @@ def test_real_es_data():
     """测试真实的 ES 数据"""
     
     # 从文件读取 curl 命令
-    with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+    with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
         curl_content = f.read()
     
     # 提取 --data-raw 部分

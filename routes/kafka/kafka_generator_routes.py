@@ -1325,7 +1325,7 @@ def save_generation_history(es_data, kafka_message):
 
 @kafka_generator_bp.route('/history', methods=['GET'])
 def get_generation_history():
-    """获取生成历史记录"""
+    """获取生成历史记录（支持搜索 ES 源数据和 Kafka 消息）"""
     from utils.mysql_helper import get_mysql_conn_dict_cursor
     
     try:
@@ -1345,9 +1345,21 @@ def get_generation_history():
                 params = []
                 
                 if keyword:
-                    where_clause += " AND (alarm_name LIKE %s OR fp_value LIKE %s OR region_name LIKE %s)"
+                    # 支持搜索：ES 源数据、Kafka 消息、FP 值、告警名称、地区
+                    where_clause += """ 
+                        AND (
+                            alarm_name LIKE %s 
+                            OR fp_value LIKE %s 
+                            OR region_name LIKE %s 
+                            OR es_source_raw LIKE %s 
+                            OR kafka_message LIKE %s
+                        )
+                    """
                     keyword_pattern = f"%{keyword}%"
-                    params.extend([keyword_pattern, keyword_pattern, keyword_pattern])
+                    params.extend([
+                        keyword_pattern, keyword_pattern, keyword_pattern, 
+                        keyword_pattern, keyword_pattern
+                    ])
                 
                 # 查询总数
                 count_query = f"SELECT COUNT(*) as total FROM knowledge_base.kafka_generation_history {where_clause}"
@@ -1357,7 +1369,8 @@ def get_generation_history():
                 # 查询数据 (分页)
                 offset = (page - 1) * per_page
                 data_query = f"""
-                    SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, kafka_message
+                    SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, 
+                           es_source_raw, kafka_message
                     FROM knowledge_base.kafka_generation_history 
                     {where_clause}
                     ORDER BY created_at DESC
@@ -1370,11 +1383,15 @@ def get_generation_history():
                 history_list = []
                 for row in rows:
                     kafka_msg = row.get('kafka_message')
-                    if kafka_msg and isinstance(kafka_msg, str):
-                        try:
-                            kafka_msg = json.loads(kafka_msg)
-                        except:
-                            pass
+                    es_raw = row.get('es_source_raw')
+                    
+                    # es_source_raw 保持原始字符串格式，不解析为 JSON 对象
+                    # 这样可以保持字段的原始顺序
+                    es_raw_str = es_raw if isinstance(es_raw, str) else (json.dumps(es_raw, ensure_ascii=False) if es_raw else None)
+                    
+                    # kafka_message 也保持原始字符串格式，不解析为 JSON 对象
+                    # 这样可以保持字段的原始顺序
+                    kafka_msg_str = kafka_msg if isinstance(kafka_msg, str) else (json.dumps(kafka_msg, ensure_ascii=False) if kafka_msg else None)
                     
                     history_list.append({
                         'id': row['id'],
@@ -1383,7 +1400,8 @@ def get_generation_history():
                         'alarm_name': row['alarm_name'] or '',
                         'alarm_level': row['alarm_level'] or '',
                         'region_name': row['region_name'] or '',
-                        'kafka_message': kafka_msg
+                        'es_source_raw': es_raw_str,  # 返回字符串，保持字段顺序
+                        'kafka_message': kafka_msg_str  # 返回字符串，保持字段顺序
                     })
                 
                 return jsonify({

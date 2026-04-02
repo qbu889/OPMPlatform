@@ -107,7 +107,7 @@ def simulate_browser_scenario():
     """模拟浏览器场景：用户从 curl 复制，粘贴到 textarea"""
     
     # 从文件读取 curl 命令
-    with open('test/kafka/kafka生成请求CURL.txt', 'r', encoding='utf-8') as f:
+    with open('test/kafka/前端展示Kafka 消息.txt', 'r', encoding='utf-8') as f:
         curl_content = f.read()
     
     # 提取 --data-raw 部分
