@@ -1385,13 +1385,33 @@ def get_generation_history():
                     kafka_msg = row.get('kafka_message')
                     es_raw = row.get('es_source_raw')
                     
-                    # es_source_raw 保持原始字符串格式，不解析为 JSON 对象
-                    # 这样可以保持字段的原始顺序
-                    es_raw_str = es_raw if isinstance(es_raw, str) else (json.dumps(es_raw, ensure_ascii=False) if es_raw else None)
+                    # es_source_raw 保持原始字符串格式，但进行格式化
+                    if es_raw and isinstance(es_raw, str):
+                        try:
+                            # 尝试解析并格式化 JSON
+                            es_parsed = json.loads(es_raw)
+                            es_raw_str = json.dumps(es_parsed, ensure_ascii=False, indent=2)
+                        except:
+                            # 如果解析失败，保持原始字符串
+                            es_raw_str = es_raw
+                    elif es_raw:
+                        es_raw_str = json.dumps(es_raw, ensure_ascii=False, indent=2)
+                    else:
+                        es_raw_str = None
                     
-                    # kafka_message 也保持原始字符串格式，不解析为 JSON 对象
-                    # 这样可以保持字段的原始顺序
-                    kafka_msg_str = kafka_msg if isinstance(kafka_msg, str) else (json.dumps(kafka_msg, ensure_ascii=False) if kafka_msg else None)
+                    # kafka_message 保持原始字符串格式，但进行格式化
+                    if kafka_msg and isinstance(kafka_msg, str):
+                        try:
+                            # 尝试解析并格式化 JSON
+                            kafka_parsed = json.loads(kafka_msg)
+                            kafka_msg_str = json.dumps(kafka_parsed, ensure_ascii=False, indent=2)
+                        except:
+                            # 如果解析失败，保持原始字符串
+                            kafka_msg_str = kafka_msg
+                    elif kafka_msg:
+                        kafka_msg_str = json.dumps(kafka_msg, ensure_ascii=False, indent=2)
+                    else:
+                        kafka_msg_str = None
                     
                     history_list.append({
                         'id': row['id'],
@@ -1400,8 +1420,8 @@ def get_generation_history():
                         'alarm_name': row['alarm_name'] or '',
                         'alarm_level': row['alarm_level'] or '',
                         'region_name': row['region_name'] or '',
-                        'es_source_raw': es_raw_str,  # 返回字符串，保持字段顺序
-                        'kafka_message': kafka_msg_str  # 返回字符串，保持字段顺序
+                        'es_source_raw': es_raw_str,  # 格式化后的 JSON 字符串
+                        'kafka_message': kafka_msg_str  # 格式化后的 JSON 字符串
                     })
                 
                 return jsonify({
