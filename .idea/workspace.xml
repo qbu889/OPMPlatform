@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：点击复制结果按钮，不额外增加复制成功的按钮">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html.bak" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html.bak" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -369,15 +370,8 @@
       <workItem from="1774609207689" duration="904000" />
       <workItem from="1774614196849" duration="23793000" />
       <workItem from="1775009772745" duration="12544000" />
-      <workItem from="1775045330088" duration="15395000" />
-    </task>
-    <task id="LOCAL-00020" summary="new：FPA生成文档生成文件时间戳转换格式、异步生成和查询">
-      <option name="closed" value="true" />
-      <created>1773374016016</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1773374016016</updated>
+      <workItem from="1775045330088" duration="18036000" />
+      <workItem from="1775139746339" duration="2502000" />
     </task>
     <task id="LOCAL-00021" summary="fix：FPA生成文档生成重用程度和修改类型为空的问题">
       <option name="closed" value="true" />
@@ -763,7 +757,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775110854529</updated>
     </task>
-    <option name="localTasksCounter" value="69" />
+    <task id="LOCAL-00069" summary="fix：点击复制结果按钮，不额外增加复制成功的按钮">
+      <option name="closed" value="true" />
+      <created>1775137217969</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1775137217969</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -804,7 +806,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：调整按钮排班" />
     <MESSAGE value="new：事件清除增加插入当前时间的功能" />
     <MESSAGE value="fix：前端多展示多余字符" />
     <MESSAGE value="fix：剔除omlx" />
@@ -829,7 +830,8 @@
     <MESSAGE value="new：kafka生成后支持生成推送消息" />
     <MESSAGE value="new：其他东西推送" />
     <MESSAGE value="new：调整kafka的生成kafka消息的高度" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：调整kafka的生成kafka消息的高度" />
+    <MESSAGE value="fix：点击复制结果按钮，不额外增加复制成功的按钮" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：点击复制结果按钮，不额外增加复制成功的按钮" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

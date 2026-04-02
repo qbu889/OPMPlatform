@@ -3,14 +3,6 @@
 {% block title %}Kafka 消息生成器{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kafka 消息生成器</title>
-    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/vendor/fontawesome/all.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -254,8 +246,11 @@
         #fieldDictModal .modal-dialog {
             max-width: 1200px;
             margin: 1.75rem auto;
+            z-index: 1060 !important; /* 确保 dialog 在 backdrop 之上 */
+            position: relative !important;
         }
         
+        /* 关键修复：确保模态框内容在遮罩层之上 */
         #fieldDictModal .modal-content {
             border-radius: 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -264,7 +259,33 @@
             display: flex;
             flex-direction: column;
             background: white;
+            z-index: 1061 !important; /* 确保在 backdrop 之上 */
+            position: relative !important;
+            pointer-events: auto !important; /* 确保可点击 */
         }
+        
+        /* 确保模态框内的所有交互元素都可点击 */
+        #fieldDictModal .modal-body,
+        #fieldDictModal .modal-header,
+        #fieldDictModal .modal-footer {
+            position: relative !important;
+            z-index: 1062 !important; /* 确保在 content 之上 */
+            pointer-events: auto !important; /* 确保可点击 */
+        }
+        
+        /* 确保按钮和输入框可点击 */
+        #fieldDictModal button,
+        #fieldDictModal input,
+        #fieldDictModal .btn {
+            pointer-events: auto !important;
+            cursor: pointer;
+        }
+        
+        /* 关键修复：让 backdrop 不阻挡点击事件 */
+        body.modal-open > .modal-backdrop {
+            pointer-events: none !important;
+        }
+        
         #fieldDictModal .modal-footer {
             border-top: 1px solid #e9ecef;
             padding: 15px 20px;
@@ -330,25 +351,15 @@
             background: #555;
         }
         
-        /* 搜索框样式 */
-        #dictSearchInput {
-            border-radius: 20px;
-            border: 2px solid #dee2e6;
-            padding-left: 15px;
-            transition: all 0.3s ease;
+        /* 关闭按钮样式增强 */
+        #fieldDictModal .btn-close {
+            filter: none !important;
+            opacity: 1 !important;
         }
-        #dictSearchInput:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-right: none;
-            color: #667eea;
-        }
-        #dictSearchInput + .input-group-text {
-            border-left: none;
+        
+        #fieldDictModal .btn-close:hover {
+            transform: scale(1.2) !important;
+            opacity: 1 !important;
         }
         
         /* 表格高亮样式 */
@@ -745,33 +756,29 @@
         
         .dict-modal-body {
             padding: 20px;
-            overflow-y: auto;
+            overflow: auto;
             flex: 1;
-            min-height: 400px; /* 确保有足够高度显示表格 */
-            width: 100%; /* 确保宽度正确 */
         }
         
-        /* 修复 table-responsive 可能的高度问题 */
+        /* 修复 table-responsive 可能的宽度问题 */
         .dict-modal-body .table-responsive {
             overflow-x: auto;
-            overflow-y: auto; /* 关键修复：允许垂直滚动 */
-            max-height: none; /* 不限制高度 */
+            width: 100%;
         }
         
         /* 确保表格正常显示 */
         #fieldDictTable {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px; /* 关键修复：确保表格有最小宽度 */
         }
         
         #fieldDictTable th,
         #fieldDictTable td {
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 300px;
             padding: 8px;
             border: 1px solid #dee2e6;
+            min-width: 100px; /* 关键修复：确保单元格有最小宽度 */
         }
         
         .dict-modal-footer {
@@ -780,8 +787,6 @@
             text-align: right;
         }
     </style>
-</head>
-<body>
     <div class="container">
         <h1 class="text-center mb-4">
             <i class="fas fa-exchange-alt me-2"></i>Kafka 消息生成器
@@ -956,32 +961,17 @@
 
         <!-- 字段维表弹窗 -->
         <div class="modal fade" id="fieldDictModal" tabindex="-1" aria-labelledby="fieldDictModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="fieldDictModalLabel">
                             <i class="fas fa-book me-2"></i>字段字典
                         </h5>
-                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeFieldDictModal()" style="position: absolute; right: 15px; top: 12px; padding: 4px 10px; border-radius: 6px; transition: all 0.2s;">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                     <div class="modal-body">
-                        <!-- 搜索框 -->
-                        <div class="mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                <input type="text" class="form-control" id="dictSearchInput" placeholder="搜索专业名称、ID 或备注...">
-                            </div>
-                        </div>
-                        
-                        <!-- 数据统计 -->
-                        <div class="alert alert-info d-flex align-items-center mb-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <div>
-                                <strong>共 <span id="dictTotalCount">0</span> 条记录</strong>
-                                <span id="dictFilteredCount" class="ms-2 d-none">（筛选后 <span>0</span> 条）</span>
-                            </div>
-                        </div>
-                        
                         <!-- 表格容器 -->
                         <div class="table-responsive">
                             <table class="table table-hover table-bordered" id="fieldDictTable">
@@ -999,7 +989,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="closeFieldDictModal()">
                             <i class="fas fa-times me-1"></i>关闭
                         </button>
                     </div>
@@ -1022,7 +1012,7 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                <input type="text" class="form-control" id="historySearchInput" placeholder="搜索 FP 值、告警名称或地区...">
+                                <input type="text" class="form-control" id="historyModalSearchInput" placeholder="搜索 FP 值、告警名称或地区...">
                             </div>
                         </div>
                         
@@ -1131,15 +1121,15 @@
                     <div class="mb-3">
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" class="form-control" id="historySearchInput" placeholder="搜索 FP 值、告警名称或地区...">
+                            <input type="text" class="form-control" id="historyModalSearchInput" placeholder="搜索 FP 值、告警名称或地区...">
                         </div>
                     </div>
                     <div class="alert alert-info d-flex align-items-center mb-3">
                         <i class="fas fa-info-circle me-2"></i>
-                        <div><strong>共 <span id="historyTotalCount">0</span> 条记录</strong></div>
+                        <div><strong>共 <span id="historyModalTotalCount">0</span> 条记录</strong></div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover table-bordered" id="historyTable">
+                        <table class="table table-hover table-bordered" id="historyModalTable">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 60px;">操作</th>
@@ -1153,59 +1143,15 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="historyNoDataAlert" class="alert alert-warning d-none">
+                    <div id="historyModalNoDataAlert" class="alert alert-warning d-none">
                         <i class="fas fa-exclamation-triangle me-2"></i>暂无历史记录
                     </div>
                     <nav aria-label="分页导航" class="mt-3">
-                        <ul class="pagination justify-content-center" id="historyPagination"></ul>
+                        <ul class="pagination justify-content-center" id="historyModalPagination"></ul>
                     </nav>
                 </div>
                 <div class="history-modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" onclick="closeHistoryModal()">
-                        <i class="fas fa-times me-1"></i>关闭
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 原生字典弹窗 -->
-        <div class="dict-modal-overlay" id="dictModalOverlay">
-            <div class="dict-modal-content">
-                <div class="dict-modal-header">
-                    <h5 id="dictModalTitle"><i class="fas fa-book me-2"></i>字段字典</h5>
-                    <button class="dict-modal-close" onclick="closeDictModal()"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="dict-modal-body">
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text" title="输入关键字后自动搜索" style="cursor: default;">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <input type="text" class="form-control" id="dictSearchInput" placeholder="搜索专业名称、ID 或备注..." autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="alert alert-info d-flex align-items-center mb-3">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <div>
-                            <strong>共 <span id="dictTotalCount">0</span> 条记录</strong>
-                            <span id="dictFilteredCount" class="ms-2 d-none">（筛选后 <span>0</span> 条）</span>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered" id="fieldDictTable">
-                            <thead class="table-light">
-                                <tr></tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <div id="noDataAlert" class="alert alert-warning d-none">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        未找到匹配的数据
-                    </div>
-                </div>
-                <div class="dict-modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeDictModal()">
                         <i class="fas fa-times me-1"></i>关闭
                     </button>
                 </div>
@@ -1727,7 +1673,7 @@
             renderCustomFields();
         }
 
-        // 打开维表弹窗 (原生实现)
+        // 打开维表弹窗 (使用 Bootstrap Modal)
         async function openFieldDict(field) {
             console.log(`[INFO] 打开字段字典：${field}`);
             try {
@@ -1758,134 +1704,94 @@
                 }
         
                 // 更新标题
-                document.getElementById('dictModalTitle').innerHTML = `<i class="fas fa-book me-2"></i>${field} 字典`;
+                document.getElementById('fieldDictModalLabel').textContent = `${field} 字典`;
                 
-                // 更新统计信息
-                document.getElementById('dictTotalCount').textContent = rows.length;
-                document.getElementById('dictFilteredCount').classList.add('d-none');
-                                
-                console.log('[DEBUG] 准备渲染表格，列:', columns);
-                console.log('[DEBUG] 准备渲染表格，行数:', rows.length);
-                if (rows.length > 0) {
-                    console.log('[DEBUG] 第一行数据示例:', rows[0]);
-                }
-        
                 // 清空并渲染表格
-                const table = document.getElementById('fieldDictTable');
-                const thead = table.querySelector('thead');
-                const tbody = table.querySelector('tbody');
-                
-                // 确保表格元素存在
-                if (!thead || !tbody) {
-                    console.error('[ERROR] 表格的 thead 或 tbody 元素不存在!');
-                    alert('表格初始化失败，请刷新页面');
-                    return;
-                }
-                
+                const thead = document.querySelector('#fieldDictTable thead tr');
+                const tbody = document.querySelector('#fieldDictTable tbody');
                 thead.innerHTML = '';
                 tbody.innerHTML = '';
-                
-                // 关键修复：先显示弹窗，让表格容器有尺寸后再渲染
-                document.getElementById('dictModalOverlay').classList.add('show');
         
-                // 创建表头行
-                const tr = document.createElement('tr');
                 // 创建表头
                 columns.forEach(col => {
                     const th = document.createElement('th');
                     th.textContent = col;
-                    th.style.minWidth = '120px';
-                    tr.appendChild(th);  // 添加到 tr 中
+                    thead.appendChild(th);
                 });
-                thead.appendChild(tr);  // 把 tr 添加到 thead
         
                 // 创建表格内容
-                if (rows.length > 0) {
-                    console.log(`[DEBUG] 开始渲染 ${rows.length} 行表格数据`);
-                    rows.forEach((row, rowIndex) => {
-                        const tr = document.createElement('tr');
-                        tr.dataset.index = rowIndex;
-                        tr.title = '点击选择该行数据';
-                        tr.style.cursor = 'pointer';
-                        
-                        // 添加点击事件，选择该行并填充到输入框
-                        tr.addEventListener('click', function() {
-                            // 移除其他行的选中状态
-                            tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
-                            // 选中当前行
-                            this.classList.add('selected');
-                            
-                            console.log(`[INFO] 选中第${rowIndex + 1}行:`, row);
-                            
-                            // 自动填充第一个非空列的值到输入框
-                            for (let col of columns) {
-                                const value = row[col];
-                                if (value != null && value !== '') {
-                                    const inputField = document.getElementById(`field_${field}`);
-                                    if (inputField) {
-                                        inputField.value = value;
-                                        saveFieldValue(field, value); // 保存到缓存
-                                        console.log(`[INFO] 已填充 ${col}: ${value} 到输入框`);
-                                    }
-                                    break;  // 只填充第一个非空值
-                                }
-                            }
-                            
-                            // 1 秒后自动关闭弹窗
-                            setTimeout(() => {
-                                closeDictModal();
-                            }, 1000);
-                        });
-                                
-                        columns.forEach(col => {
-                            const td = document.createElement('td');
-                            const value = row[col] != null ? row[col] : '';
-                            td.textContent = value;
-                            td.title = value; // 鼠标悬停显示完整内容
-                            td.style.whiteSpace = 'nowrap';
-                            td.style.overflow = 'hidden';
-                            td.style.textOverflow = 'ellipsis';
-                            td.style.maxWidth = '300px';
-                            
-                            // 特殊列样式处理
-                            if (col === '专业 ID') {
-                                td.innerHTML = `<span class="badge-professional">${value}</span>`;
-                            }
-                            
-                            tr.appendChild(td);
-                        });
-                        tbody.appendChild(tr);
-                        console.log(`[DEBUG] 第 ${rowIndex + 1} 行已添加到表格`);
-                    });
-                    console.log(`[DEBUG] 表格渲染完成，tbody 中有 ${tbody.children.length} 行`);
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="100" class="text-center text-muted py-4">暂无数据</td></tr>';
-                }
-        
-                // 初始化搜索功能
-                initDictSearch(columns);
-                
-                console.log('[INFO] 弹窗已显示');
-                console.log(`[DEBUG] 最终检查：tbody 中有 ${tbody.children.length} 行`);
-                
-                // 使用 setTimeout 确保表格渲染后有尺寸
-                setTimeout(() => {
-                    console.log('[DEBUG] setTimeout 中检查表格尺寸');
-                    const tableRect = table.getBoundingClientRect();
-                    console.log('[DEBUG] 表格尺寸:', { width: tableRect.width, height: tableRect.height });
+                rows.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.style.cursor = 'pointer';
+                    tr.title = '点击选择该行数据';
                     
-                    // 如果表格尺寸还是 0，强制重绘
-                    if (tableRect.width === 0 || tableRect.height === 0) {
-                        console.log('[DEBUG] 表格尺寸为 0，尝试强制重绘');
-                        table.style.display = 'none';
-                        setTimeout(() => {
-                            table.style.display = 'table';
-                            const newRect = table.getBoundingClientRect();
-                            console.log('[DEBUG] 重绘后尺寸:', { width: newRect.width, height: newRect.height });
-                        }, 10);
-                    }
-                }, 100);
+                    // 添加点击事件，选择该行并填充到输入框
+                    tr.addEventListener('click', function() {
+                        // 移除其他行的选中状态
+                        tbody.querySelectorAll('tr').forEach(r => {
+                            r.style.backgroundColor = '';
+                            r.style.fontWeight = '';
+                        });
+                        // 选中当前行
+                        this.style.backgroundColor = '#007bff';
+                        this.style.color = 'white';
+                        
+                        console.log(`[INFO] 选中行:`, row);
+                        
+                        // 自动填充第一个非空列的值到输入框
+                        for (let col of columns) {
+                            const value = row[col];
+                            if (value != null && value !== '') {
+                                const inputField = document.getElementById(`field_${field}`);
+                                if (inputField) {
+                                    inputField.value = value;
+                                    saveFieldValue(field, value); // 保存到缓存
+                                    console.log(`[INFO] 已填充 ${col}: ${value} 到输入框`);
+                                }
+                                break;  // 只填充第一个非空值
+                            }
+                        }
+                    });
+                    
+                    columns.forEach(col => {
+                        const td = document.createElement('td');
+                        const value = row[col] != null ? row[col] : '';
+                        td.textContent = value;
+                        td.title = value; // 鼠标悬停显示完整内容
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+        
+                console.log(`[DEBUG] 表格渲染完成，tbody 中有 ${tbody.children.length} 行`);
+        
+                // 使用 Bootstrap Modal 显示（不使用 backdrop）
+                const modalEl = document.getElementById('fieldDictModal');
+                const modal = new bootstrap.Modal(modalEl, {
+                    backdrop: false // 不显示遮罩层
+                });
+                modal.show();
                 
+                console.log('[INFO] Bootstrap Modal 已显示');
+                
+                // 关键修复：设置 modal 层级
+                setTimeout(() => {
+                    const modalDialog = document.querySelector('#fieldDictModal .modal-dialog');
+                    if (modalDialog) {
+                        modalDialog.style.zIndex = '1060';
+                        console.log('[DEBUG] modal-dialog z-index 设置为 1060');
+                    }
+                    const modalContent = document.querySelector('#fieldDictModal .modal-content');
+                    if (modalContent) {
+                        modalContent.style.zIndex = '1061';
+                        console.log('[DEBUG] modal-content z-index 设置为 1061');
+                    }
+                    const modalHeader = document.querySelector('#fieldDictModal .modal-header');
+                    if (modalHeader) {
+                        modalHeader.style.zIndex = '1062';
+                        console.log('[DEBUG] modal-header z-index 设置为 1062');
+                    }
+                }, 10);
             } catch (e) {
                 console.error('[ERROR] 加载维表失败', e);
                 console.error('[ERROR] 错误堆栈:', e.stack);
@@ -1893,84 +1799,23 @@
             }
         }
         
-        // 关闭字典弹窗
-        function closeDictModal() {
-            console.log('[DEBUG] 关闭字典弹窗');
-            document.getElementById('dictModalOverlay').classList.remove('show');
-        }
-        
-        // 点击遮罩层关闭字典弹窗
-        document.addEventListener('DOMContentLoaded', function() {
-            const overlay = document.getElementById('dictModalOverlay');
-            if (overlay) {
-                console.log('[INFO] 字典弹窗元素已加载');
-                overlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        console.log('[DEBUG] 点击遮罩层，关闭字典弹窗');
-                        closeDictModal();
-                    }
-                });
-            } else {
-                console.error('[ERROR] 字典弹窗元素未找到!');
+        // 关闭字段字典弹窗
+        function closeFieldDictModal() {
+            const modalEl = document.getElementById('fieldDictModal');
+            // 直接移除 modal 相关的类和样式
+            modalEl.classList.remove('show');
+            modalEl.removeAttribute('style');
+            document.body.classList.remove('modal-open');
+            
+            // 查找并移除可能存在的 backdrop（虽然我们设置了 false，但以防万一）
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
             }
-        });
-        
-        // 字段字典搜索功能
-        let allTableRows = []; // 存储所有原始行数据
-        
-        function initDictSearch(columns) {
-            console.log('[DEBUG] initDictSearch 被调用');
-            const searchInput = document.getElementById('dictSearchInput');
-            const tbody = document.querySelector('#fieldDictTable tbody');
-            const noDataAlert = document.getElementById('noDataAlert');
-            const filteredCountEl = document.getElementById('dictFilteredCount');
-            const totalCountEl = document.getElementById('dictTotalCount');
             
-            console.log('[DEBUG] 当前 dictTotalCount 显示:', totalCountEl.textContent);
-            
-            // 保存所有行数据
-            allTableRows = Array.from(tbody.querySelectorAll('tr'));
-            console.log('[DEBUG] allTableRows 保存了', allTableRows.length, '行');
-            
-            // 绑定搜索事件
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase().trim();
-                let visibleCount = 0;
-                
-                allTableRows.forEach(tr => {
-                    // 如果是"暂无数据"行，跳过
-                    if (tr.querySelector('td[colspan]')) {
-                        return;
-                    }
-                    
-                    const rowData = Array.from(tr.querySelectorAll('td'))
-                        .map(td => td.textContent.toLowerCase())
-                        .join(' ');
-                    
-                    if (rowData.includes(searchTerm)) {
-                        tr.style.display = '';
-                        visibleCount++;
-                    } else {
-                        tr.style.display = 'none';
-                    }
-                });
-                
-                // 更新统计信息
-                if (searchTerm && visibleCount < allTableRows.length) {
-                    filteredCountEl.classList.remove('d-none');
-                    filteredCountEl.querySelector('span').textContent = visibleCount;
-                } else {
-                    filteredCountEl.classList.add('d-none');
-                }
-                
-                // 显示/隐藏无数据提示
-                if (visibleCount === 0) {
-                    noDataAlert.classList.remove('d-none');
-                } else {
-                    noDataAlert.classList.add('d-none');
-                }
-            });
+            console.log('[DEBUG] 字段字典弹窗已关闭');
         }
+
 
         // 增强的预处理函数，专门处理控制字符问题
         function preprocessEsData(rawData) {
@@ -2974,7 +2819,7 @@
             currentHistoryField = field;
             currentHistoryPage = 1;
             currentHistoryKeyword = '';
-            document.getElementById('historySearchInput').value = '';
+            document.getElementById('historyModalSearchInput').value = '';
             
             // 更新标题
             const meta = fieldMetaMap[field] || {};
@@ -3035,7 +2880,7 @@
                 console.log('[DEBUG] 解析后的数据:', { list, total });
                 
                 // 更新统计
-                document.getElementById('historyTotalCount').textContent = total;
+                document.getElementById('historyModalTotalCount').textContent = total;
                 
                 // 渲染表格
                 renderHistoryTable(list);
@@ -3051,7 +2896,7 @@
         
         // 渲染历史记录表格
         function renderHistoryTable(list) {
-            const tbody = document.querySelector('#historyTable tbody');
+            const tbody = document.querySelector('#historyModalTable tbody');
             tbody.innerHTML = '';
             
             console.log('[DEBUG] renderHistoryTable 被调用，list 长度:', list.length);
@@ -3059,12 +2904,12 @@
             
             if (list.length === 0) {
                 console.log('[DEBUG] 列表为空，显示无数据提示');
-                document.getElementById('historyNoDataAlert').classList.remove('d-none');
+                document.getElementById('historyModalNoDataAlert').classList.remove('d-none');
                 return;
             }
             
             console.log('[DEBUG] 列表不为空，隐藏无数据提示');
-            document.getElementById('historyNoDataAlert').classList.add('d-none');
+            document.getElementById('historyModalNoDataAlert').classList.add('d-none');
             
             list.forEach((item, index) => {
                 console.log(`[DEBUG] 渲染第 ${index + 1} 条数据:`, item);
@@ -3090,7 +2935,7 @@
         // 渲染分页
         function renderHistoryPagination(total, currentPage, perPage) {
             const totalPages = Math.ceil(total / perPage);
-            const pagination = document.getElementById('historyPagination');
+            const pagination = document.getElementById('historyModalPagination');
             pagination.innerHTML = '';
             
             if (totalPages <= 1) {
@@ -3128,11 +2973,51 @@
             loadHistoryData();
         }
         
-        // 搜索历史记录
-        document.getElementById('historySearchInput').addEventListener('input', function() {
-            currentHistoryKeyword = this.value.trim();
-            currentHistoryPage = 1;
-            loadHistoryData();
+        // 搜索历史记录 - 重新设计的简洁版本
+        function initHistorySearch() {
+            console.log('[INFO] 初始化搜索功能...');
+            
+            // 延迟绑定，确保 DOM 已完全加载
+            setTimeout(() => {
+                const searchInput = document.getElementById('historyModalSearchInput');
+                console.log('[DEBUG] 搜索框元素:', searchInput);
+                
+                if (!searchInput) {
+                    console.error('[ERROR] 搜索框不存在');
+                    return;
+                }
+                
+                // 使用事件委托，绑定到 document 上
+                document.addEventListener('input', function(e) {
+                    if (e.target && e.target.id === 'historyModalSearchInput') {
+                        const keyword = e.target.value.trim();
+                        console.log('[SEARCH] 实时搜索:', keyword);
+                        currentHistoryKeyword = keyword;
+                        currentHistoryPage = 1;
+                        loadHistoryData();
+                    }
+                });
+                
+                // 支持回车键
+                document.addEventListener('keypress', function(e) {
+                    if (e.target && e.target.id === 'historyModalSearchInput' && 
+                        (e.key === 'Enter' || e.keyCode === 13)) {
+                        e.preventDefault();
+                        const keyword = e.target.value.trim();
+                        console.log('[SEARCH] 回车搜索:', keyword);
+                        currentHistoryKeyword = keyword;
+                        currentHistoryPage = 1;
+                        loadHistoryData();
+                    }
+                });
+                
+                console.log('[INFO] ✅ 搜索功能初始化完成');
+            }, 100);
+        }
+        
+        // 在页面加载时初始化搜索
+        document.addEventListener('DOMContentLoaded', function() {
+            initHistorySearch();
         });
         
         // 使用历史记录
