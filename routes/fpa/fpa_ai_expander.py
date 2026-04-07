@@ -119,7 +119,7 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     sorted_to_split = sorted_indexed_points[:min(points_needed, len(sorted_indexed_points), 50)]  # 最多选择 50 个
 
     logger.info(f"[AI_EXPAND] 开始 AI 辅助扩展，需要扩展 {expand_count} 个功能点")
-    logger.info(f"[AI_EXPAND] 选择了 {len(sorted_to_split)} 个复杂功能点进行拆分（目标：{points_needed}个）")
+    logger.info(f"[AI_EXPAND] 计划选择 {len(sorted_to_split)} 个复杂功能点进行拆分（目标：{points_needed}个）")
     logger.info(f"[AI_EXPAND] 使用多线程模式，最大并发数：8")
 
     # 打印选择的拆分对象及其原始索引，便于调试
@@ -128,7 +128,7 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
 
     if progress_callback and task_id:
         progress_callback(task_id, 40, f'开始 AI 拆分，目标扩展{expand_count}个功能点',
-                          f'选择了{len(sorted_to_split)}个功能点进行 AI 拆分（多线程模式）')
+                          f'计划选择{len(sorted_to_split)}个功能点进行 AI 拆分（实际处理数量以最终结果为准）')
 
     # 使用线程池并行处理
     # 根据 CPU 负载动态调整并发数，避免过热降频
@@ -452,8 +452,10 @@ JSON 格式（每个功能点对应一个数组）：
     all_results.sort(key=lambda x: x[0])
 
     logger.info(f"[AI_EXPAND] AI 扩展完成，共扩展 {len(expanded_points)} 个功能点")
-    logger.info(
-        f"[AI_EXPAND] 实际处理：{len(all_results)} 个批次，平均每批拆分：{len(expanded_points) / max(len(all_results), 1):.2f}个")
+    
+    # ★★★★★ 统计实际处理的功能点数量（有拆分结果的功能点）
+    actual_processed_count = sum(1 for _, new_points, _ in all_results if new_points)
+    logger.info(f"[AI_EXPAND] 实际处理：{actual_processed_count} 个功能点，平均每批拆分：{len(expanded_points) / max(actual_processed_count, 1):.2f}个")
 
     # 重要：将扩展的功能点插入到对应的原始功能点后面
     # ★★★★★ 关键修复：如果原始功能点是 ILF 表，需要找到主功能点，然后插入到主功能点后面
