@@ -1648,8 +1648,8 @@ def get_evaluation_result_from_excel():
         
         # ★★★★★ 关键修改：计算预计功能点数量（而非测试用例数量）
         # 规则：根据 AFP 值和平均每个功能点的 AFP 值来估算功能点数量
-        # 假设：平均每个功能点的 AFP ≈ 2.5（UFP=5 × 0.5 重用系数）
-        avg_afp_per_point = 2.5
+        # 假设：平均每个功能点的 AFP ≈ 1.66（UFP=5 × 重用系数 0.332）
+        avg_afp_per_point = 1.66
         expected_function_points = max(1, round(afp / avg_afp_per_point))
         
         logger.info(f"预计功能点数量计算：")
