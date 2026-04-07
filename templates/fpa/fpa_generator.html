@@ -712,10 +712,6 @@
                     const file = fileInput.files[0];
                     console.log('准备提交文件:', file.name);
                         
-                    // 显示加载动画
-                    if (submitBtn) submitBtn.style.display = 'none';
-                    if (loadingSpinner) loadingSpinner.style.display = 'block';
-                        
                     // 使用异步任务方式提交
                     startAsyncTask(file);
                 });
