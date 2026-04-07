@@ -32,7 +32,7 @@ PATTERNS = {
     'ilf_count': re.compile(r'涉及到 (\d+) 个内部逻辑文件'),  # ILF 数量
     'elf_count': re.compile(r'，(\d+) 个外部逻辑文件'),  # ELF 数量
     'ilf_files': re.compile(r'本期新增/变更的内部逻辑文件\s*[:：]\s*(.+)'),  # ILF 文件列表
-    'table_split': re.compile(r'[,,\u3001]'),  # 表格分隔符
+    'table_split': re.compile(r'[,，,\u3001]'),  # 表格分隔符（半角逗号、全角逗号、顿号）
     'category_note': re.compile(r'\s*[（ (]注.*?[)）]\s*$'),  # 类别注释
 }
 
@@ -327,15 +327,36 @@ def parse_requirement_document(md_content: str) -> list:
     # 收集需要插入的 ILF 功能点，按插入位置分组
     ilf_insertions = {}  # {parent_index: [ilf_points]}
     
+    # 收集需要删除的原始功能点索引
+    # 当功能点只包含多个 ILF 表名（如"规则状态变更历史记录表，事件工单回单模板表"）时，需要删除
+    points_to_remove = []
+    
     for i, point in enumerate(function_points):
         ilf_files = point.get('新增/变更内部逻辑文件', '')
         if ilf_files and ilf_files != '无':
+            logger.info(f"\n处理功能点 {i}: '{point.get('功能点计数项', '')}'")
+            logger.info(f"  新增/变更内部逻辑文件: {ilf_files}")
+            
             # 分割多个表
             tables = [t.strip() for t in PATTERNS['table_split'].split(ilf_files)]
             valid_tables = [t for t in tables if t and t.endswith('表')]
+            logger.info(f"  拆分后的表: {valid_tables}")
             
             if not valid_tables:
                 continue
+            
+            # ★★★★★ 关键逻辑：如果功能点计数项本身就是多个表名的组合
+            # 说明这是一个纯 ILF 功能点，需要拆分为多个独立的 ILF 并删除原功能点
+            item_text = point.get('功能点计数项', '')
+            item_tables = [t.strip() for t in PATTERNS['table_split'].split(item_text)]
+            # 检查功能点计数项是否全部是表名（每个部分都以"表"结尾）
+            is_pure_ilf_point = len(item_tables) > 1 and all(
+                t.endswith('表') for t in item_tables if t
+            )
+            
+            if is_pure_ilf_point:
+                logger.info(f"\n发现纯 ILF 功能点：'{item_text}' -> 需要拆分为 {len(valid_tables)} 个 ILF")
+                points_to_remove.append(i)
             
             # 为每个表创建一个独立的 ILF 功能点
             for table_name in valid_tables:
@@ -358,7 +379,7 @@ def parse_requirement_document(md_content: str) -> list:
                 new_point['重用程度'] = '高'
                 new_point['修改类型'] = '新增'
                 new_point['AFP'] = round(7 * 0.33, 2)
-                new_point['备注'] = f'提取自：{point.get("功能点计数项", "")}'
+                new_point['备注'] = f'提取自：{item_text}'
                 
                 # 记录插入位置（在当前功能点之后）
                 if i not in ilf_insertions:
@@ -377,8 +398,15 @@ def parse_requirement_document(md_content: str) -> list:
             for ilf_idx, ilf_point in enumerate(ilf_points):
                 function_points.insert(insert_pos + ilf_idx, ilf_point)
             logger.info(f"  在功能点 {parent_idx} 之后插入 {len(ilf_points)} 个 ILF")
-        
-        logger.info(f"插入后总功能点数：{len(function_points)}\n")
+    
+    # 删除纯 ILF 功能点（从后往前删除，避免索引错乱）
+    if points_to_remove:
+        logger.info(f"\n删除 {len(points_to_remove)} 个纯 ILF 功能点（已拆分为独立 ILF）")
+        for idx in reversed(points_to_remove):
+            removed_point = function_points.pop(idx)
+            logger.info(f"  删除：{removed_point.get('功能点计数项', '')}")
+    
+    logger.info(f"\nILF 提取完成后总功能点数：{len(function_points)}\n")
     
     # 智能填充 FPA 字段 - 使用数据库配置的规则
     for point in function_points:
