@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -371,15 +374,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="9810000" />
-    </task>
-    <task id="LOCAL-00031" summary="new：导入历史任务新增刷新按钮">
-      <option name="closed" value="true" />
-      <created>1773457516944</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1773457516944</updated>
+      <workItem from="1775530689758" duration="10824000" />
     </task>
     <task id="LOCAL-00032" summary="fix：使用远程并且尝试减少请求量">
       <option name="closed" value="true" />
@@ -765,7 +760,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775550587043</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="new：预计功能点数量在上传文档的时候就计算">
+      <option name="closed" value="true" />
+      <created>1775550906210</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1775550906210</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -806,7 +809,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：增加日志输出" />
     <MESSAGE value="fix：复制结果按钮调整、复制成功提示语调整" />
     <MESSAGE value="fix：sql初始化调整、ai客户端调整、客户端调整" />
     <MESSAGE value="new：技术需求文档word转excel对比" />
@@ -831,7 +833,8 @@
     <MESSAGE value="fix：fpa生成ILF表拆分失败的情况" />
     <MESSAGE value="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入" />
     <MESSAGE value="fix：预计功能点数量计算静态值调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：预计功能点数量计算静态值调整" />
+    <MESSAGE value="new：预计功能点数量在上传文档的时候就计算" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：预计功能点数量在上传文档的时候就计算" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -366,9 +366,9 @@
                             </div>
                                                         
                             <div class="mt-3">
-                                <button type="button" class="btn btn-success" onclick="loadFromExcel()">
-                                    <i class="fas fa-file-excel"></i> 从 Excel 加载
-                                </button>
+{#                                <button type="button" class="btn btn-success" onclick="loadFromExcel()">#}
+{#                                    <i class="fas fa-file-excel"></i> 从 Excel 加载#}
+{#                                </button>#}
 {#                                <button type="button" class="btn btn-secondary" onclick="calculateEvaluationResult()">#}
 {#                                    <i class="fas fa-calculator"></i> 重新计算#}
 {#                                </button>#}
@@ -1090,18 +1090,8 @@
                         document.getElementById('saveStatus').innerHTML = '';
                     }, 3000);
                     
-                    // 计算目标 UFP
-                    const targetUfp = data.afp;
-                    
-                    // 提示用户重新生成 FPA
-                    if (confirm(`评估结果已保存！
-
-目标 UFP: ${targetUfp.toFixed(2)}
-
-是否需要重新上传需求文档以生成 FPA 预估表？
-系统将自动调整功能点数量以达到目标 UFP 值。`)) {
-                        window.location.href = '/fpa-generator/';
-                    }
+                    // ★★★★★ 关键修改：移除重新加载页面的提示，只保留保存成功的提示
+                    console.log('评估结果已保存，AFP:', data.afp);
                 } else {
                     alert('保存失败：' + response.message);
                 }
