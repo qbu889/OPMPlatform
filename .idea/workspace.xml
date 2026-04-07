@@ -374,15 +374,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="18322000" />
-    </task>
-    <task id="LOCAL-00036" summary="fix：文件结构调整">
-      <option name="closed" value="true" />
-      <created>1773829108418</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1773829108418</updated>
+      <workItem from="1775530689758" duration="19881000" />
     </task>
     <task id="LOCAL-00037" summary="new：说明文档">
       <option name="closed" value="true" />
@@ -768,7 +760,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775558255567</updated>
     </task>
-    <option name="localTasksCounter" value="85" />
+    <task id="LOCAL-00085" summary="fix：fpa后缀剔除">
+      <option name="closed" value="true" />
+      <created>1775559262757</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1775559262757</updated>
+    </task>
+    <option name="localTasksCounter" value="86" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -809,7 +809,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：技术需求文档word转excel优化" />
     <MESSAGE value="new：pytest" />
     <MESSAGE value="new：技术需求文档word转excel增加表格内容的兼容提取" />
     <MESSAGE value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
@@ -834,7 +833,8 @@
     <MESSAGE value="new：点击【保存评估结果】按钮，不需要重新加载页面" />
     <MESSAGE value="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅" />
     <MESSAGE value="fix：日志输出内容修改" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：日志输出内容修改" />
+    <MESSAGE value="fix：fpa后缀剔除" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：fpa后缀剔除" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

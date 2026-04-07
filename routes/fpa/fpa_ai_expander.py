@@ -319,21 +319,34 @@ JSON 格式（每个功能点对应一个数组）：
 
                     logger.info(f"[AI_EXPAND] 功能点{idx + 1}: 解析到 {len(sub_points_data)} 个子功能点")
 
+                    # ★★★★★ 关键修复：获取主功能点名称作为前缀
+                    # 如果当前是 ILF 表，需要通过备注找到主功能点
+                    parent_point_name = point.get('功能点计数项', '')
+                    original_category = point.get('类别', '')
+                    if original_category == 'ILF':
+                        ilf_remark = point.get('备注', '')
+                        if ilf_remark.startswith('提取自：'):
+                            parent_point_name = ilf_remark.replace('提取自：', '').strip()
+                            logger.info(f"[AI_EXPAND] ILF 表 '{point.get('功能点计数项', '')}' 的主功能点是 '{parent_point_name}'")
+
                     # 创建新的功能点
                     new_points = []
                     new_names = set()
 
                     # 每个原始功能点最多拆分出 3 个子功能点
                     for sub_idx, sub_point in enumerate(sub_points_data[:3]):
-                        # 生成唯一的名称 - 不使用后缀格式
-                        base_name = sub_point.get('name', '').strip()
+                        # 生成唯一的名称 - 使用主功能点名称作为前缀
+                        ai_base_name = sub_point.get('name', '').strip()
 
                         # 重要：去除名称末尾的数字序号（如"规则校验 1" -> "规则校验"）
                         # 避免写入 Excel 时变成"规则校验 -1"
                         import re
                         # 匹配末尾的数字（包括可能的前导空格或短横线）
-                        base_name = re.sub(r'[\s-]?\d+$', '', base_name).strip()
-                        logger.info(f"[AI_EXPAND] 原始 AI 名称：{sub_point.get('name', '')}, 清理后：{base_name}")
+                        ai_base_name = re.sub(r'[\s-]?\d+$', '', ai_base_name).strip()
+                        logger.info(f"[AI_EXPAND] 原始 AI 名称：{sub_point.get('name', '')}, 清理后：{ai_base_name}")
+
+                        # ★★★★★ 关键修复：将主功能点名称作为前缀，加上 AI 返回的子功能名称
+                        base_name = f"{parent_point_name}{ai_base_name}"
 
                         # 如果名称为空或是占位符，根据功能描述生成有意义的名称
                         if not base_name or any(placeholder in base_name for placeholder in
