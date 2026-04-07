@@ -561,7 +561,7 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                 
                 # 调用 AI 扩展函数
                 from routes.fpa.fpa_ai_expander import ai_assisted_expand_function_points
-                new_points = ai_assisted_expand_function_points(
+                expanded_result = ai_assisted_expand_function_points(
                     function_points, 
                     expand_count,
                     progress_callback=wrapped_progress_callback,
@@ -569,58 +569,19 @@ def generate_fpa_task(temp_md_path: str, filename: str, timestamp: int,
                     use_omlx=USE_OMLX  # 传递模型选择参数
                 )
                 
-                # 将 AI 扩展的功能点插入到对应的父功能点之后（保持文档顺序）
-                # 而不是简单地添加到末尾
-                logger.info(f"开始按文档顺序插入 {len(new_points)} 个 AI 扩展功能点")
+                # ★★★★★ 关键修复：expanded_result 是完整列表（原始+扩展），需要计算新增数量
+                original_count = len(function_points)
+                new_points = [p for p in expanded_result if 'AI 拆分自' in p.get('备注', '')]
+                actual_new_count = len(new_points)
                 
-                # 按照_parent_index 分组
-                from collections import defaultdict
-                points_by_parent = defaultdict(list)
-                for point in new_points:
-                    parent_idx = point.pop('_parent_index', None)  # 移除辅助字段
-                    if parent_idx is not None:
-                        points_by_parent[parent_idx].append(point)
+                logger.info(f"[步骤 4] AI 扩展完成 - 原始: {original_count}个, 扩展后: {len(expanded_result)}个, 新增: {actual_new_count}个")
                 
-                # ★★★★★ 关键修复：从后往前插入，避免索引偏移
-                # 如果 _parent_index 指向 ILF 表，需要找到主功能点，然后插入到主功能点之后
-                for parent_idx in sorted(points_by_parent.keys(), reverse=True):
-                    child_points = points_by_parent[parent_idx]
-                    
-                    # ★★★★★ 核心逻辑：判断 parent_idx 指向的是主功能点还是 ILF 表
-                    real_parent_idx = parent_idx
-                    
-                    if 0 <= parent_idx < len(function_points):
-                        current_point = function_points[parent_idx]
-                        current_category = current_point.get('类别', '')
-                        
-                        if current_category == 'ILF':
-                            # 当前是 ILF 表，需要通过备注找到主功能点
-                            ilf_remark = current_point.get('备注', '')
-                            if ilf_remark.startswith('提取自：'):
-                                main_point_name = ilf_remark.replace('提取自：', '').strip()
-                                
-                                # 在列表中查找主功能点
-                                for i, point in enumerate(function_points):
-                                    if (point.get('功能点计数项', '') == main_point_name and
-                                        point.get('类别', '') != 'ILF'):
-                                        real_parent_idx = i
-                                        logger.info(f"  ILF 表 '{current_point.get('功能点计数项', '')}' (位置 {parent_idx}) 的主功能点是 '{main_point_name}' (位置 {real_parent_idx})")
-                                        break
-                                else:
-                                    logger.warning(f"  未找到 ILF 表 '{current_point.get('功能点计数项', '')}' 的主功能点 '{main_point_name}'，使用 ILF 表本身")
-                                    real_parent_idx = parent_idx
-                        else:
-                            # 当前是主功能点，直接使用
-                            logger.info(f"  主功能点 '{current_point.get('功能点计数项', '')}' (位置 {parent_idx})")
-                    
-                    # ★★★★★ 插入到主功能点之后
-                    insert_pos = real_parent_idx + 1
-                    logger.info(f"  插入 {len(child_points)} 个 AI 拆分功能点到位置 {insert_pos}")
-                    
-                    for i, child_point in enumerate(child_points):
-                        function_points.insert(insert_pos + i, child_point)
+                # 使用完整的扩展结果替换原列表
+                function_points = expanded_result
                 
-                logger.info(f"AI 扩展完成，新增 {len(new_points)} 个功能点，已按文档顺序插入")
+                # ★★★★★ 注意：由于 fpa_ai_expander.py 已经将扩展功能点插入到正确位置
+                # 所以这里不需要再次插入，只需要记录日志即可
+                logger.info(f"AI 扩展完成，新增 {actual_new_count} 个功能点（已由 fpa_ai_expander 插入到正确位置）")
                 
                 # AI 扩展后，需要重新识别所有功能点的类别和计算 UFP、AFP
                 if new_points:

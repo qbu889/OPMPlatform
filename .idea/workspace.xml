@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_async_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_async_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -376,15 +375,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="15618000" />
-    </task>
-    <task id="LOCAL-00033" summary="fix：查询接口时机、下划线去除、特殊符号去除">
-      <option name="closed" value="true" />
-      <created>1773505259375</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1773505259375</updated>
+      <workItem from="1775530689758" duration="16532000" />
     </task>
     <task id="LOCAL-00034" summary="fix：【难修复】生成FPA文档顺序BUG">
       <option name="closed" value="true" />
@@ -770,7 +761,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775551836771</updated>
     </task>
-    <option name="localTasksCounter" value="82" />
+    <task id="LOCAL-00082" summary="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅">
+      <option name="closed" value="true" />
+      <created>1775556712313</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1775556712313</updated>
+    </task>
+    <option name="localTasksCounter" value="83" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -811,7 +810,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：sql初始化调整、ai客户端调整、客户端调整" />
     <MESSAGE value="new：技术需求文档word转excel对比" />
     <MESSAGE value="fix：技术需求文档word转excel优化" />
     <MESSAGE value="new：pytest" />
@@ -836,7 +834,8 @@
     <MESSAGE value="fix：预计功能点数量计算静态值调整" />
     <MESSAGE value="new：预计功能点数量在上传文档的时候就计算" />
     <MESSAGE value="new：点击【保存评估结果】按钮，不需要重新加载页面" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：点击【保存评估结果】按钮，不需要重新加载页面" />
+    <MESSAGE value="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -456,7 +456,7 @@ JSON 格式（每个功能点对应一个数组）：
         f"[AI_EXPAND] 实际处理：{len(all_results)} 个批次，平均每批拆分：{len(expanded_points) / max(len(all_results), 1):.2f}个")
 
     # 重要：将扩展的功能点插入到对应的原始功能点后面
-    # 按照原始功能点的索引位置，将扩展功能点插入到其后面
+    # ★★★★★ 关键修复：如果原始功能点是 ILF 表，需要找到主功能点，然后插入到主功能点后面
     final_expanded_points = []
     expanded_count = 0
 
@@ -465,7 +465,42 @@ JSON 格式（每个功能点对应一个数组）：
     expanded_map = defaultdict(list)
     for orig_idx, new_points, _ in all_results:
         if new_points:
-            expanded_map[orig_idx].extend(new_points)
+            # ★★★★★ 检查原始功能点是否是 ILF 表
+            if 0 <= orig_idx < len(original_points):
+                original_point = original_points[orig_idx]
+                original_category = original_point.get('类别', '')
+                
+                if original_category == 'ILF':
+                    # 当前是 ILF 表，需要通过备注找到主功能点
+                    ilf_remark = original_point.get('备注', '')
+                    if ilf_remark.startswith('提取自：'):
+                        main_point_name = ilf_remark.replace('提取自：', '').strip()
+                        
+                        # 查找主功能点的索引
+                        real_parent_idx = -1
+                        for i, point in enumerate(original_points):
+                            if (point.get('功能点计数项', '') == main_point_name and
+                                point.get('类别', '') != 'ILF'):
+                                real_parent_idx = i
+                                logger.info(f"[AI_EXPAND] ILF 表 '{original_point.get('功能点计数项', '')}' (位置 {orig_idx}) 的主功能点是 '{main_point_name}' (位置 {real_parent_idx})")
+                                break
+                        
+                        if real_parent_idx >= 0:
+                            # 使用主功能点的索引作为父索引
+                            expanded_map[real_parent_idx].extend(new_points)
+                        else:
+                            # 未找到主功能点，使用 ILF 表本身
+                            logger.warning(f"[AI_EXPAND] 未找到 ILF 表 '{original_point.get('功能点计数项', '')}' 的主功能点 '{main_point_name}'，使用 ILF 表本身")
+                            expanded_map[orig_idx].extend(new_points)
+                    else:
+                        # ILF 表没有备注，直接使用
+                        expanded_map[orig_idx].extend(new_points)
+                else:
+                    # 当前是主功能点，直接使用
+                    expanded_map[orig_idx].extend(new_points)
+            else:
+                # 索引越界，跳过
+                logger.warning(f"[AI_EXPAND] 原始索引 {orig_idx} 越界，跳过")
 
     # 遍历原始功能点，将扩展的功能点插入到对应位置后面
     for i, point in enumerate(original_points):
