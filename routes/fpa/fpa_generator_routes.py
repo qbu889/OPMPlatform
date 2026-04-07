@@ -393,13 +393,13 @@ def parse_requirement_document(md_content: str) -> list:
         logger.info(f"\n开始插入 {sum(len(v) for v in ilf_insertions.values())} 个 ILF 功能点")
         for parent_idx in sorted(ilf_insertions.keys(), reverse=True):
             ilf_points = ilf_insertions[parent_idx]
-            # ★★★★★ 关键修改：AI 拆分的功能点插入到 ILF 表之前
-            # 原来的逻辑是插入到父功能点之后 (parent_idx + 1)
-            # 现在改为插入到父功能点位置 (parent_idx)，这样 ILF 就会在后面
-            insert_pos = parent_idx
+            # ★★★★★ 关键修改：ILF 插入到主功能点之后 (parent_idx + 1)
+            # 这样 AI 拆分功能点（后续插入到 parent_idx + 1）会将 ILF 推向后面
+            # 最终顺序：主功能点 -> AI 拆分点 -> ILF 表
+            insert_pos = parent_idx + 1
             for ilf_idx, ilf_point in enumerate(ilf_points):
                 function_points.insert(insert_pos + ilf_idx, ilf_point)
-            logger.info(f"  在功能点 {parent_idx} 之前插入 {len(ilf_points)} 个 AI 拆分的功能点")
+            logger.info(f"  在功能点 {parent_idx} 之后插入 {len(ilf_points)} 个 ILF 表")
     
     # 删除纯 ILF 功能点（从后往前删除，避免索引错乱）
     if points_to_remove:
@@ -1297,35 +1297,95 @@ def upload_requirement():
                         )
                                                     
                         if expanded_points:
-                            # ★★★★★ 关键修复：将扩展的功能点插入到对应的 ILF 表之前
-                            # 1. 首先给每个原始功能点添加索引标记
-                            for idx, point in enumerate(function_points):
-                                point['_original_index'] = idx
+                            # ★★★★★ 关键修复：AI 拆分功能点必须插入到主功能点和 ILF 表之间
+                            # _parent_index 可能指向主功能点或 ILF 表
+                            # 如果指向 ILF 表，需要通过 ILF 表的备注找到主功能点
                             
-                            # 2. 按原始索引分组扩展的功能点
+                            # 1. 按 _parent_index 分组扩展的功能点
                             from collections import defaultdict
                             expanded_by_parent = defaultdict(list)
                             for exp_point in expanded_points:
                                 parent_idx = exp_point.get('_parent_index', -1)
                                 expanded_by_parent[parent_idx].append(exp_point)
                             
-                            # 3. 从后向前插入，避免索引偏移问题
+                            # 2. 从后向前插入，避免索引偏移问题
                             sorted_indices = sorted(expanded_by_parent.keys(), reverse=True)
                             
                             for parent_idx in sorted_indices:
                                 children = expanded_by_parent[parent_idx]
-                                if parent_idx < len(function_points):
-                                    # ★★★★★ 关键修改：AI 拆分的功能点始终插入到原始功能点之前
-                                    parent_point = function_points[parent_idx]
-                                    parent_name = parent_point.get('功能点计数项', '')
+                                
+                                # ★★★★★ 关键：通过 _parent_index 获取当前功能点，判断是主功能点还是 ILF 表
+                                if 0 <= parent_idx < len(function_points):
+                                    current_point = function_points[parent_idx]
+                                    current_name = current_point.get('功能点计数项', '')
+                                    current_category = current_point.get('类别', '')
                                     
-                                    # 始终在原始功能点之前插入 AI 拆分的功能点
-                                    insert_pos = parent_idx
-                                    logger.info(f"  将 {len(children)} 个 AI 拆分的功能点插入到 '{parent_name}' 之前")
+                                    logger.info(f"  [DEBUG] _parent_index={parent_idx}, 当前功能点='{current_name}', 类别={current_category}")
                                     
-                                    for child in children:
-                                        function_points.insert(insert_pos, child)
-                                        insert_pos += 1
+                                    # ★★★★★ 核心逻辑：找到真正的主功能点
+                                    real_parent_idx = -1
+                                    real_parent_name = current_name
+                                    
+                                    if current_category == 'ILF':
+                                        # 当前是 ILF 表，需要通过备注找到主功能点
+                                        ilf_remark = current_point.get('备注', '')
+                                        logger.info(f"  [DEBUG] ILF 表备注：'{ilf_remark}'")
+                                        if ilf_remark.startswith('提取自：'):
+                                            # 从备注中提取主功能点名称
+                                            main_point_name = ilf_remark.replace('提取自：', '').strip()
+                                            logger.info(f"  [DEBUG] 提取的主功能点名称：'{main_point_name}'")
+                                            
+                                            # 在列表中查找主功能点
+                                            for i, point in enumerate(function_points):
+                                                if (point.get('功能点计数项', '') == main_point_name and
+                                                    point.get('类别', '') != 'ILF'):
+                                                    real_parent_idx = i
+                                                    real_parent_name = main_point_name
+                                                    logger.info(f"  [DEBUG] 找到主功能点 '{main_point_name}' 在位置 {i}")
+                                                    break
+                                            
+                                            if real_parent_idx != -1:
+                                                logger.info(f"  ILF 表 '{current_name}' (位置 {parent_idx}) 的主功能点是 '{real_parent_name}' (位置 {real_parent_idx})")
+                                            else:
+                                                logger.warning(f"  未找到 ILF 表 '{current_name}' 的主功能点 '{main_point_name}'，使用 ILF 表本身")
+                                                real_parent_idx = parent_idx
+                                    else:
+                                        # 当前是主功能点，直接使用
+                                        real_parent_idx = parent_idx
+                                        logger.info(f"  [DEBUG] 当前是主功能点，real_parent_idx={real_parent_idx}")
+                                    
+                                    # ★★★★★ 关键：查找主功能点之后是否有 ILF 表
+                                    # 如果找到了 ILF 表，AI 拆分点插入到 ILF 表之前
+                                    # 如果没有找到 ILF 表，AI 拆分点插入到主功能点之后
+                                    
+                                    # 查找主功能点之后的 ILF 表
+                                    ilf_pos = -1
+                                    if real_parent_idx != -1:
+                                        for j in range(real_parent_idx + 1, len(function_points)):
+                                            if function_points[j].get('类别') == 'ILF':
+                                                ilf_pos = j
+                                                logger.info(f"  [DEBUG] 找到 ILF 表 '{function_points[j].get('功能点计数项', '')}' 在位置 {j}")
+                                                break
+                                    
+                                    # ★★★★★ 决定插入位置
+                                    if real_parent_idx != -1:
+                                        if ilf_pos != -1:
+                                            # 有 ILF 表，AI 拆分点插入到主功能点之后、ILF 表之前
+                                            insert_pos = real_parent_idx + 1
+                                            logger.info(f"  主功能点 '{real_parent_name}' (位置 {real_parent_idx})，ILF 表 (位置 {ilf_pos})，AI 拆分功能点插入到位置 {insert_pos}")
+                                        else:
+                                            # 没有 ILF 表，直接插入到主功能点之后
+                                            insert_pos = real_parent_idx + 1
+                                            logger.info(f"  主功能点 '{real_parent_name}' (位置 {real_parent_idx}) 之后无 ILF 表，AI 拆分功能点插入到位置 {insert_pos}")
+                                        
+                                        for child in children:
+                                            logger.info(f"  [DEBUG] 插入 AI 拆分功能点到位置 {insert_pos}: {child.get('功能点计数项', '')}")
+                                            function_points.insert(insert_pos, child)
+                                            insert_pos += 1
+                                    else:
+                                        logger.warning(f"  未找到主功能点，无法插入 AI 拆分功能点")
+                                else:
+                                    logger.warning(f"  无效的主功能点索引：{parent_idx}")
                             
                             # 4. 清理临时索引字段
                             for point in function_points:
@@ -1556,6 +1616,13 @@ def get_evaluation_result():
             for key, value in result.items():
                 if isinstance(value, Decimal):
                     result[key] = float(value)
+            
+            # ★★★★★ 关键修改：计算预计功能点数量（数据库中没有此字段，需要实时计算）
+            afp = result.get('afp', 0)
+            avg_afp_per_point = 1.66
+            result['expected_function_points'] = max(1, round(afp / avg_afp_per_point))
+            
+            logger.info(f"[GET EVALUATION] 从数据库加载，AFP={afp:.2f}, 预计功能点数量={result['expected_function_points']}")
         
         cursor.close()
         conn.close()

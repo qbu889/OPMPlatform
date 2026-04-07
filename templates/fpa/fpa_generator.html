@@ -1020,28 +1020,40 @@
             calculateEvaluationResult();
         }
         
-        // 从 Excel 加载评估结果
+        // ★★★★★ 关键修改：优先从数据库加载评估结果，如果没有则从 Excel 加载
         function loadFromExcel() {
+            console.log('[LOAD EVALUATION] 开始加载评估结果...');
+            
+            // 先尝试从数据库读取最新保存的评估结果
+            fetch('/fpa-generator/api/evaluation-result')
+                .then(response => response.json())
+                .then(dbResponse => {
+                    if (dbResponse.success && dbResponse.data) {
+                        // 数据库中有数据，直接使用
+                        console.log('[LOAD EVALUATION] 从数据库加载成功');
+                        const data = dbResponse.data;
+                        updateEvaluationForm(data);
+                    } else {
+                        // 数据库中没有数据，从 Excel 加载
+                        console.log('[LOAD EVALUATION] 数据库中无数据，从 Excel 加载...');
+                        loadFromExcelFile();
+                    }
+                })
+                .catch(error => {
+                    console.error('[LOAD EVALUATION] 从数据库加载失败，尝试从 Excel 加载:', error);
+                    loadFromExcelFile();
+                });
+        }
+        
+        // 从 Excel 文件加载评估结果
+        function loadFromExcelFile() {
             fetch('/fpa-generator/api/evaluation-result/from-excel')
                 .then(response => response.json())
                 .then(response => {
                     if (response.success) {
                         const data = response.data;
-                        // 填充数据
-                        document.getElementById('afp').value = data.afp.toFixed(2);
-                        document.getElementById('cf').value = data.cf.toFixed(2);
-                        document.getElementById('adjustedScale').value = data.adjusted_scale.toFixed(2);
-                        document.getElementById('baseProductivity').value = data.base_productivity.toFixed(2);
-                        document.getElementById('unadjustedEffort').value = data.unadjusted_effort.toFixed(2);
-                        document.getElementById('factorApplicationType').value = data.factor_application_type.toFixed(2);
-                        document.getElementById('factorQuality').value = data.factor_quality.toFixed(2);
-                        document.getElementById('factorLanguage').value = data.factor_language.toFixed(2);
-                        document.getElementById('factorTeam').value = data.factor_team.toFixed(2);
-                        document.getElementById('adjustedEffort').value = data.adjusted_effort.toFixed(2);
-                        document.getElementById('expectedFunctionPoints').value = data.expected_function_points;
-                        
-                        // 重新计算总调整因子
-                        calculateEvaluationResult();
+                        console.log('[LOAD EVALUATION] 从 Excel 加载成功');
+                        updateEvaluationForm(data);
                         
                         alert(`从 Excel 文件加载成功！
 文件：${response.file}
@@ -1049,13 +1061,30 @@
 调整后工作量：${data.adjusted_effort.toFixed(2)} 人天
 预计功能点数量：${data.expected_function_points} 个`);
                     } else {
-                        alert('加载失败：' + response.message);
+                        console.warn('[LOAD EVALUATION] 从 Excel 加载失败:', response.message);
                     }
                 })
                 .catch(error => {
-                    console.error('加载失败:', error);
-                    alert('加载失败：' + error);
+                    console.error('[LOAD EVALUATION] 从 Excel 加载失败:', error);
                 });
+        }
+        
+        // 更新评估结果表单
+        function updateEvaluationForm(data) {
+            document.getElementById('afp').value = data.afp.toFixed(2);
+            document.getElementById('cf').value = data.cf.toFixed(2);
+            document.getElementById('adjustedScale').value = data.adjusted_scale.toFixed(2);
+            document.getElementById('baseProductivity').value = data.base_productivity.toFixed(2);
+            document.getElementById('unadjustedEffort').value = data.unadjusted_effort.toFixed(2);
+            document.getElementById('factorApplicationType').value = data.factor_application_type.toFixed(2);
+            document.getElementById('factorQuality').value = data.factor_quality.toFixed(2);
+            document.getElementById('factorLanguage').value = data.factor_language.toFixed(2);
+            document.getElementById('factorTeam').value = data.factor_team.toFixed(2);
+            document.getElementById('adjustedEffort').value = data.adjusted_effort.toFixed(2);
+            document.getElementById('expectedFunctionPoints').value = data.expected_function_points;
+            
+            // 重新计算总调整因子
+            calculateEvaluationResult();
         }
         
         // 保存评估结果
