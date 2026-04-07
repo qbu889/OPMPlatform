@@ -442,9 +442,9 @@
                                     
                                     <!-- 进度显示 -->
                                     <div id="progressDisplay" class="mt-3" style="display: none;">
-                                        <div class="progress" style="height: 30px;">
+                                        <div class="progress" style="height: 30px; position: relative;">
                                             <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                                                 role="progressbar" style="width: 0%;"></div>
+                                                 role="progressbar" style="width: 0%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0%</div>
                                         </div>
                                         <p id="progressMessage" class="mt-2 text-center"></p>
                                         
@@ -1234,8 +1234,11 @@
                         
                         // 更新进度条
                         const progressBar = document.getElementById('progressBar');
-                        progressBar.style.width = task.progress + '%';
-                        progressBar.setAttribute('aria-valuenow', task.progress);
+                        const progressValue = task.progress || 0;
+                        progressBar.style.width = progressValue + '%';
+                        progressBar.setAttribute('aria-valuenow', progressValue);
+                        // ★★★★★ 关键修复：在进度条中显示数字百分比
+                        progressBar.textContent = progressValue + '%';
                         
                         // 更新进度消息
                         document.getElementById('progressMessage').textContent = 
@@ -1251,9 +1254,7 @@
                             logsContainer.scrollTop = logsContainer.scrollHeight;
                         }
                         
-                        // 每次查询都刷新历史记录，确保数据同步
-                        loadExportHistory(1);
-                        
+                        // ★★★★★ 关键修复：只在任务完成时才刷新历史记录
                         // 检查是否完成
                         if (task.status === 'COMPLETED') {
                             clearInterval(pollInterval);
@@ -1273,7 +1274,7 @@
                                 document.getElementById('downloadSection').style.display = 'block';
                             }
                             
-                            // 立即刷新历史记录
+                            // ★★★★★ 任务完成时刷新历史记录
                             console.log('[TASK COMPLETED] 立即刷新历史记录');
                             loadExportHistory(1);
                             
@@ -1311,9 +1312,10 @@
                             document.getElementById('progressMessage').textContent = 
                                 '任务已被取消';
                             
-                            // 刷新历史记录
+                            // ★★★★★ 任务取消时刷新历史记录
                             loadExportHistory(1);
                         }
+                        // ★★★★★ 其他状态（PENDING/RUNNING）不刷新历史记录
                     } else {
                         console.error('查询失败:', result.message);
                     }

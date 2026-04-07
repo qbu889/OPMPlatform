@@ -157,13 +157,22 @@ def ai_assisted_expand_function_points(original_points: list, expand_count: int,
     # 批量处理功能点（每次处理 5 个功能点）
     batch_size = 5
     all_results = []
+    total_batches = (len(sorted_to_split) + batch_size - 1) // batch_size  # 计算总批次数
 
     for batch_start in range(0, len(sorted_to_split), batch_size):
         batch_end = min(batch_start + batch_size, len(sorted_to_split))
         batch_points = sorted_to_split[batch_start:batch_end]  # 直接使用带原始索引的元组
+        current_batch = batch_start // batch_size + 1
 
         logger.info(
-            f"[AI_EXPAND] 处理批次 {batch_start // batch_size + 1}: 功能点 {batch_start + 1} 到 {batch_end}（共{len(batch_points)}个）")
+            f"[AI_EXPAND] 处理批次 {current_batch}/{total_batches}: 功能点 {batch_start + 1} 到 {batch_end}（共{len(batch_points)}个）")
+        
+        # ★★★★★ 关键修复：根据批次进度动态更新进度条（40%-70%区间）
+        if progress_callback and task_id:
+            batch_progress = 40 + int((current_batch / total_batches) * 30)  # 40% -> 70%
+            progress_callback(task_id, batch_progress, 
+                            f'正在 AI 拆分（{current_batch}/{total_batches}批次）',
+                            f'已处理 {batch_start} 个，共 {len(sorted_to_split)} 个功能点')
 
         if stop_flag.is_set():
             break
