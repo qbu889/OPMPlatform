@@ -644,14 +644,17 @@
                 }
             });
                 
-            // 文件选择后显示文件名，但不自动提交
+            // 文件选择后显示文件名，并自动加载评估结果
             fileInput.addEventListener('change', function(e) {
                 if (this.files && this.files.length > 0) {
                     const fileName = this.files[0].name;
                     uploadArea.querySelector('h4').textContent = `已选择：${fileName}`;
                     uploadArea.style.borderColor = '#28a745';
                     uploadArea.style.backgroundColor = '#d4edda';
-                    // 不再自动提交，等待用户点击按钮
+                    
+                    // ★★★★★ 关键修改：文件选择后，自动从 Excel 加载评估结果
+                    console.log('[FILE SELECTED] 自动加载评估结果...');
+                    loadFromExcel();
                 }
             });
                 
@@ -692,7 +695,10 @@
                         uploadArea.querySelector('h4').textContent = `已选择：${fileName}`;
                         uploadArea.style.borderColor = '#28a745';
                         uploadArea.style.backgroundColor = '#d4edda';
-                        // 不再自动提交，等待用户点击按钮
+                        
+                        // ★★★★★ 关键修改：文件拖入后，自动从 Excel 加载评估结果
+                        console.log('[FILE DROPPED] 自动加载评估结果...');
+                        loadFromExcel();
                     } else {
                         alert('请上传 Markdown (.md) 格式的文件');
                     }
