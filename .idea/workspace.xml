@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：fpa生成ILF表拆分失败的情况">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -376,15 +375,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="8288000" />
-    </task>
-    <task id="LOCAL-00028" summary="new: 1.增加导出历史记录；2.增加删除功能；3.增加历史记录列表停止进程功能；4.增加进度显示；">
-      <option name="closed" value="true" />
-      <created>1773412595465</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1773412595465</updated>
+      <workItem from="1775530689758" duration="9497000" />
     </task>
     <task id="LOCAL-00029" summary="fix：优化前后端交互">
       <option name="closed" value="true" />
@@ -770,7 +761,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775547502147</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <task id="LOCAL-00077" summary="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入">
+      <option name="closed" value="true" />
+      <created>1775549439047</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1775549439047</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -811,7 +810,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：增加kafka的ES语句生成" />
     <MESSAGE value="fix：页面重构后AI客服页面功能异常调整" />
     <MESSAGE value="fix：增加日志输出" />
     <MESSAGE value="fix：复制结果按钮调整、复制成功提示语调整" />
@@ -836,7 +834,8 @@
     <MESSAGE value="fix：复制结果交互优化、fpa生成时动画去除" />
     <MESSAGE value="fix：fpa生成的ILF顺序错误问题修复；ILF提取错误问题修复。" />
     <MESSAGE value="fix：fpa生成ILF表拆分失败的情况" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：fpa生成ILF表拆分失败的情况" />
+    <MESSAGE value="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

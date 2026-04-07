@@ -1646,10 +1646,16 @@ def get_evaluation_result_from_excel():
         
         adjusted_effort = unadjusted_effort * total_factor  # 调整后工作量
         
-        # 计算用例数量（根据 AFP 值计算）
-        # 规则：AFP 值越大，生成的用例数量越多
-        # 建议：每 2-3 个功能点生成 1 个用例
-        test_case_count = max(1, round(afp / 2.5))
+        # ★★★★★ 关键修改：计算预计功能点数量（而非测试用例数量）
+        # 规则：根据 AFP 值和平均每个功能点的 AFP 值来估算功能点数量
+        # 假设：平均每个功能点的 AFP ≈ 2.5（UFP=5 × 0.5 重用系数）
+        avg_afp_per_point = 2.5
+        expected_function_points = max(1, round(afp / avg_afp_per_point))
+        
+        logger.info(f"预计功能点数量计算：")
+        logger.info(f"  - AFP = {afp:.2f}")
+        logger.info(f"  - 平均每功能点 AFP = {avg_afp_per_point}")
+        logger.info(f"  - 预计功能点数量 = round({afp:.2f} / {avg_afp_per_point}) = {expected_function_points}")
         
         evaluation_data = {
             'afp': afp,
@@ -1663,7 +1669,7 @@ def get_evaluation_result_from_excel():
             'factor_team': adjustment_factors['开发团队背景'],
             'adjusted_effort': adjusted_effort,
             'total_factor': total_factor,
-            'test_case_count': test_case_count
+            'expected_function_points': expected_function_points  # ★★★★★ 修改为功能点数量
         }
         
         logger.info(f"从 Excel 读取评估结果：{evaluation_data}")

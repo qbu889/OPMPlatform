@@ -357,9 +357,9 @@
                                             <td class="align-middle"><strong>AE,S*PDR/8h*A*B*C*D</strong></td>
                                         </tr>
                                         <tr style="background-color: #fff3cd;">
-                                            <td><strong>预计生成用例数量</strong></td>
-                                            <td><input type="number" step="1" class="form-control" id="testCaseCount" value="55" readonly style="font-weight: bold;"></td>
-                                            <td class="align-middle">根据调整后工作量拆分</td>
+                                            <td><strong>预计功能点数量</strong></td>
+                                            <td><input type="number" step="1" class="form-control" id="expectedFunctionPoints" value="52" readonly style="font-weight: bold;"></td>
+                                            <td class="align-middle">根据 AFP 值估算（平均每功能点 AFP ≈ 2.5）</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -778,11 +778,10 @@
             const adjustedEffort = unadjustedEffort * totalFactor;
             document.getElementById('adjustedEffort').value = adjustedEffort.toFixed(2);
             
-            // 计算用例数量（根据 AFP 值计算）
-            // 规则：AFP 值越大，生成的用例数量越多
-            // 建议：每 2-3 个功能点生成 1 个用例
-            const testCaseCount = Math.max(1, Math.round(afp / 2.5));
-            document.getElementById('testCaseCount').value = testCaseCount;
+            // ★★★★★ 关键修改：计算预计功能点数量（而非测试用例数量）
+            const avgAfpperPoint = 1.66;
+            const expectedFunctionPoints = Math.max(1, Math.round(afp / avgAfpperPoint));
+            document.getElementById('expectedFunctionPoints').value = expectedFunctionPoints;
         }
         
         // 从调整后工作量反向计算 AFP
@@ -836,9 +835,10 @@
                         document.getElementById('adjustedScale').value = result.adjusted_scale.toFixed(2);
                         document.getElementById('unadjustedEffort').value = result.unadjusted_effort.toFixed(2);
                         
-                        // 重新计算用例数量
-                        const testCaseCount = Math.max(1, Math.round(adjustedEffort / 2.5));
-                        document.getElementById('testCaseCount').value = testCaseCount;
+                        // ★★★★★ 关键修改：重新计算预计功能点数量
+                        const avgAfpperPoint = 1.66;
+                        const expectedFunctionPoints = Math.max(1, Math.round(result.afp / avgAfpperPoint));
+                        document.getElementById('expectedFunctionPoints').value = expectedFunctionPoints;
                         
                         console.log(`反向计算：调整后工作量=${adjustedEffort}, 目标 AFP=${result.afp.toFixed(2)}`);
                     }
@@ -1032,7 +1032,7 @@
                         document.getElementById('factorLanguage').value = data.factor_language.toFixed(2);
                         document.getElementById('factorTeam').value = data.factor_team.toFixed(2);
                         document.getElementById('adjustedEffort').value = data.adjusted_effort.toFixed(2);
-                        document.getElementById('testCaseCount').value = data.test_case_count;
+                        document.getElementById('expectedFunctionPoints').value = data.expected_function_points;
                         
                         // 重新计算总调整因子
                         calculateEvaluationResult();
@@ -1041,7 +1041,7 @@
 文件：${response.file}
 规模估算结果：${data.afp.toFixed(2)} 功能点
 调整后工作量：${data.adjusted_effort.toFixed(2)} 人天
-预计生成用例数量：${data.test_case_count} 个`);
+预计功能点数量：${data.expected_function_points} 个`);
                     } else {
                         alert('加载失败：' + response.message);
                     }
