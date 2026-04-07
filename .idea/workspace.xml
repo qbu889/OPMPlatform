@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -373,15 +374,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="21517000" />
-    </task>
-    <task id="LOCAL-00039" summary="fix：注释非必要文件">
-      <option name="closed" value="true" />
-      <created>1773988311596</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1773988311596</updated>
+      <workItem from="1775530689758" duration="21661000" />
     </task>
     <task id="LOCAL-00040" summary="new：增加日志等级配置">
       <option name="closed" value="true" />
@@ -767,7 +760,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775562261208</updated>
     </task>
-    <option name="localTasksCounter" value="88" />
+    <task id="LOCAL-00088" summary="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存">
+      <option name="closed" value="true" />
+      <created>1775562454838</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1775562454838</updated>
+    </task>
+    <option name="localTasksCounter" value="89" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -808,7 +809,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
     <MESSAGE value="fix：选择文件输入框内容显示不全修复" />
     <MESSAGE value="new：关键词管理增加历史快照恢复功能" />
     <MESSAGE value="new：kafka增加填写值效果、置顶存在数据库表、增加清除所有按钮" />
@@ -833,7 +833,8 @@
     <MESSAGE value="fix：fpa后缀剔除" />
     <MESSAGE value="fix：fpa生成规则调整" />
     <MESSAGE value="new：fpa生成增加进度条" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：fpa生成增加进度条" />
+    <MESSAGE value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
