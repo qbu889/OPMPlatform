@@ -308,7 +308,7 @@
                                     <tbody>
                                         <tr>
                                             <td>规模估算结果（单位：功能点）</td>
-                                            <td><input type="number" step="0.01" class="form-control" id="afp" value="125.27"></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="afp" value="125.27" onchange="autoSaveEvaluationResult()"></td>
                                             <td class="align-middle">AFP</td>
                                         </tr>
                                         <tr>
@@ -353,7 +353,7 @@
                                         </tr>
                                         <tr style="background-color: #d4edda;">
                                             <td><strong>调整后工作量（单位：人天）</strong></td>
-                                            <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" style="font-weight: bold; color: #155724;"></td>
+                                            <td><input type="number" step="0.01" class="form-control" id="adjustedEffort" value="138.05" style="font-weight: bold; color: #155724;" onchange="autoSaveEvaluationResult()"></td>
                                             <td class="align-middle"><strong>AE,S*PDR/8h*A*B*C*D</strong></td>
                                         </tr>
                                         <tr style="background-color: #fff3cd;">
@@ -1129,6 +1129,27 @@
                 console.error('保存失败:', error);
                 alert('保存失败：' + error);
             });
+        }
+        
+        // ★★★★★ 自动保存评估结果（输入框改变时自动触发）
+        let autoSaveTimer = null;
+        function autoSaveEvaluationResult() {
+            // 防抖处理：等待 500ms 后再保存，避免频繁请求
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            
+            autoSaveTimer = setTimeout(() => {
+                // 重新计算后再保存
+                calculateEvaluationResult();
+                saveEvaluationResult();
+                
+                // 显示自动保存提示
+                document.getElementById('saveStatus').innerHTML = '<span class="text-success"><i class="fas fa-check"></i> 已自动保存</span>';
+                setTimeout(() => {
+                    document.getElementById('saveStatus').innerHTML = '';
+                }, 2000);
+            }, 500);
         }
         
         // 异步任务相关函数

@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/fpa_ai_expander.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/fpa_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -375,15 +373,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="21216000" />
-    </task>
-    <task id="LOCAL-00038" summary="fix：ES生成kafka报错json格式解析修复">
-      <option name="closed" value="true" />
-      <created>1773987465195</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1773987465195</updated>
+      <workItem from="1775530689758" duration="21517000" />
     </task>
     <task id="LOCAL-00039" summary="fix：注释非必要文件">
       <option name="closed" value="true" />
@@ -769,7 +759,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775560763849</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <task id="LOCAL-00087" summary="new：fpa生成增加进度条">
+      <option name="closed" value="true" />
+      <created>1775562261208</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1775562261208</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -810,7 +808,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：技术需求文档word转excel增加表格内容的兼容提取" />
     <MESSAGE value="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互" />
     <MESSAGE value="fix：选择文件输入框内容显示不全修复" />
     <MESSAGE value="new：关键词管理增加历史快照恢复功能" />
@@ -835,7 +832,8 @@
     <MESSAGE value="fix：日志输出内容修改" />
     <MESSAGE value="fix：fpa后缀剔除" />
     <MESSAGE value="fix：fpa生成规则调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：fpa生成规则调整" />
+    <MESSAGE value="new：fpa生成增加进度条" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：fpa生成增加进度条" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
