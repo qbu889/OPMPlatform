@@ -287,13 +287,17 @@ JSON 格式（每个功能点对应一个数组）：
 
                 # 按顺序处理每个功能点的结果
                 for idx, (orig_idx, point) in enumerate(batch_points):
-                    # 尝试多种可能的键名格式（兼容 AI 返回的不同格式）
+                    # ★★★★★ 关键修复：尝试多种可能的键名格式（兼容 AI 返回的不同格式）
+                    original_name = point.get('功能点计数项', '')
                     possible_keys = [
-                        f"功能点{idx + 1}",  # 功能点 1
+                        original_name,  # 原始功能点名称（如"工单管控时段规则基本信息配置表"）
+                        f"功能点{idx + 1}",  # 功能点1
                         f"功能点 {idx + 1}",  # 功能点 1（带空格）
-                        f"功能点{idx + 1}",  # 功能点 1（空格 variations）
+                        f"功能点{idx + 1}",  # 功能点1（变体）
                         f"功能点 {idx + 1}",  # 功能点 1（全空格）
                     ]
+                    
+                    logger.info(f"[AI_EXPAND] 功能点{idx + 1}: 尝试匹配键名 {possible_keys}")
 
                     sub_points_data = None
                     used_key = None
@@ -302,13 +306,14 @@ JSON 格式（每个功能点对应一个数组）：
                         sub_points_data = json_data.get(key, [])
                         if sub_points_data:
                             used_key = key
-                            logger.info(f"[AI_EXPAND] 功能点{idx + 1}: 使用键名 '{key}' 找到数据")
+                            logger.info(f"[AI_EXPAND] ✓ 功能点{idx + 1}: 使用键名 '{key}' 找到数据")
                             success_count += 1
                             break
 
                     if not sub_points_data:
-                        logger.warning(f"[AI_EXPAND] 功能点{idx + 1}未找到拆分结果（尝试的键名：{possible_keys}）")
-                        logger.warning(f"[AI_EXPAND] 可用的键名：{list(json_data.keys())}")
+                        logger.warning(f"[AI_EXPAND] ✗ 功能点{idx + 1}未找到拆分结果")
+                        logger.warning(f"[AI_EXPAND]    尝试的键名：{possible_keys}")
+                        logger.warning(f"[AI_EXPAND]    可用的键名：{list(json_data.keys())}")
                         all_results.append((orig_idx, [], set()))
                         continue
 

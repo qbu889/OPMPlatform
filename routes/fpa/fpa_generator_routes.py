@@ -393,11 +393,13 @@ def parse_requirement_document(md_content: str) -> list:
         logger.info(f"\n开始插入 {sum(len(v) for v in ilf_insertions.values())} 个 ILF 功能点")
         for parent_idx in sorted(ilf_insertions.keys(), reverse=True):
             ilf_points = ilf_insertions[parent_idx]
-            # 插入到父功能点之后
-            insert_pos = parent_idx + 1
+            # ★★★★★ 关键修改：AI 拆分的功能点插入到 ILF 表之前
+            # 原来的逻辑是插入到父功能点之后 (parent_idx + 1)
+            # 现在改为插入到父功能点位置 (parent_idx)，这样 ILF 就会在后面
+            insert_pos = parent_idx
             for ilf_idx, ilf_point in enumerate(ilf_points):
                 function_points.insert(insert_pos + ilf_idx, ilf_point)
-            logger.info(f"  在功能点 {parent_idx} 之后插入 {len(ilf_points)} 个 ILF")
+            logger.info(f"  在功能点 {parent_idx} 之前插入 {len(ilf_points)} 个 AI 拆分的功能点")
     
     # 删除纯 ILF 功能点（从后往前删除，避免索引错乱）
     if points_to_remove:
@@ -1295,7 +1297,7 @@ def upload_requirement():
                         )
                                                     
                         if expanded_points:
-                            # 关键修复：将扩展的功能点插入到对应原始功能点之后，保持文档顺序
+                            # ★★★★★ 关键修复：将扩展的功能点插入到对应的 ILF 表之前
                             # 1. 首先给每个原始功能点添加索引标记
                             for idx, point in enumerate(function_points):
                                 point['_original_index'] = idx
@@ -1308,18 +1310,22 @@ def upload_requirement():
                                 expanded_by_parent[parent_idx].append(exp_point)
                             
                             # 3. 从后向前插入，避免索引偏移问题
-                            # （从大到小排序，这样插入时不会影响前面的索引）
                             sorted_indices = sorted(expanded_by_parent.keys(), reverse=True)
                             
                             for parent_idx in sorted_indices:
                                 children = expanded_by_parent[parent_idx]
                                 if parent_idx < len(function_points):
-                                    # 在原始功能点之后插入所有子功能点
-                                    insert_pos = parent_idx + 1
+                                    # ★★★★★ 关键修改：AI 拆分的功能点始终插入到原始功能点之前
+                                    parent_point = function_points[parent_idx]
+                                    parent_name = parent_point.get('功能点计数项', '')
+                                    
+                                    # 始终在原始功能点之前插入 AI 拆分的功能点
+                                    insert_pos = parent_idx
+                                    logger.info(f"  将 {len(children)} 个 AI 拆分的功能点插入到 '{parent_name}' 之前")
+                                    
                                     for child in children:
                                         function_points.insert(insert_pos, child)
                                         insert_pos += 1
-                                    logger.debug(f"在索引 {parent_idx} 后插入 {len(children)} 个子功能点")
                             
                             # 4. 清理临时索引字段
                             for point in function_points:
