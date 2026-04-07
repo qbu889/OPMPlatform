@@ -377,11 +377,9 @@ JSON 格式（每个功能点对应一个数组）：
                         # 线程安全地检查和添加名称
                         with names_lock:
                             if base_name in existing_names:
-                                counter = 1
-                                while f"{base_name}-{counter}" in existing_names and counter < 100:
-                                    counter += 1
-                                unique_name = f"{base_name}-{counter}"
-                                existing_names.add(unique_name)
+                                # ★★★★★ 关键修复：如果历史中已存在相同的功能点名称，直接跳过，不插入
+                                logger.warning(f"[AI_EXPAND] 跳过重复功能点：'{base_name}'（已存在于历史中）")
+                                continue  # 跳过这个子功能点，不添加到 new_points
                             else:
                                 unique_name = base_name
                                 existing_names.add(unique_name)
@@ -555,23 +553,35 @@ def ensure_unique_name(base_name: str, existing_names: set) -> str:
     if base_name not in existing_names:
         return base_name
 
-    # 如果名称已存在，尝试添加描述性后缀
+    # ★★★★★ 关键修复：优先使用纯中文描述性后缀，避免数字后缀
+    suffixes_cn = [
+        '的子功能',
+        '的扩展功能',
+        '的子项',
+        '的功能点',
+        '的相关功能',
+    ]
+    
+    for suffix in suffixes_cn:
+        candidate = f"{base_name}{suffix}"
+        if candidate not in existing_names:
+            return candidate
+    
+    # 如果所有中文后缀都用完了，才考虑加序号（但尽量避免）
     counter = 1
     while True:
-        # 尝试不同的后缀模式
-        suffixes = [
+        suffixes_with_num = [
             f"的子功能{counter}",
-            f"-{counter}",
             f"（{counter}）",
         ]
-
-        for suffix in suffixes:
+        
+        for suffix in suffixes_with_num:
             candidate = f"{base_name}{suffix}"
             if candidate not in existing_names:
                 return candidate
-
+        
         counter += 1
-
+        
         # 防止无限循环
         if counter > 100:
             import uuid

@@ -374,15 +374,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="17254000" />
-    </task>
-    <task id="LOCAL-00035" summary="fix：统计请求数量动态落库">
-      <option name="closed" value="true" />
-      <created>1773826886157</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1773826886157</updated>
+      <workItem from="1775530689758" duration="18322000" />
     </task>
     <task id="LOCAL-00036" summary="fix：文件结构调整">
       <option name="closed" value="true" />
@@ -768,7 +760,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775557598555</updated>
     </task>
-    <option name="localTasksCounter" value="84" />
+    <task id="LOCAL-00084" summary="fix：日志输出内容修改">
+      <option name="closed" value="true" />
+      <created>1775558255567</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1775558255567</updated>
+    </task>
+    <option name="localTasksCounter" value="85" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
