@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：新的olmx模型名称">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/kafka/test_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/test_data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_input/---44400_20250606-_V4.1_fpa_e42ee657855f_1773905094685.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output/---44400_20250606-_V4.1_FPA_Estimation_fpa_5fa095342a96_20260319_160954.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/uploads/fpa_output/---44400_20250606-_V4.1_FPA_Estimation_fpa_7db9ea21afae_20260319_160707.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -174,7 +178,7 @@
       <recent name="$PROJECT_DIR$/docs/need_doc" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.桌面整理">
+  <component name="RunManager" selected="Shell Script.start.sh">
     <configuration name="桌面整理" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -296,11 +300,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Shell Script.start.sh" />
+        <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Python.桌面整理" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
-        <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Python.testJsonToDelay_time" />
-        <item itemvalue="Shell Script.start.sh" />
       </list>
     </recent_temporary>
   </component>
@@ -374,15 +378,7 @@
       <workItem from="1775139746339" duration="3428000" />
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
-      <workItem from="1775530689758" duration="21661000" />
-    </task>
-    <task id="LOCAL-00040" summary="new：增加日志等级配置">
-      <option name="closed" value="true" />
-      <created>1773998320162</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1773998320162</updated>
+      <workItem from="1775530689758" duration="29832000" />
     </task>
     <task id="LOCAL-00041" summary="fix：kafka生成结果中增加【重新生成】【复制FP】【ES查询语句】生成的按钮">
       <option name="closed" value="true" />
@@ -768,7 +764,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775562454838</updated>
     </task>
-    <option name="localTasksCounter" value="89" />
+    <task id="LOCAL-00089" summary="new：新的olmx模型名称">
+      <option name="closed" value="true" />
+      <created>1775562705944</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1775562705944</updated>
+    </task>
+    <option name="localTasksCounter" value="90" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -809,7 +813,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：选择文件输入框内容显示不全修复" />
     <MESSAGE value="new：关键词管理增加历史快照恢复功能" />
     <MESSAGE value="new：kafka增加填写值效果、置顶存在数据库表、增加清除所有按钮" />
     <MESSAGE value="new：kafka生成时字段历史记录保存" />
@@ -834,7 +837,8 @@
     <MESSAGE value="fix：fpa生成规则调整" />
     <MESSAGE value="new：fpa生成增加进度条" />
     <MESSAGE value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
+    <MESSAGE value="new：新的olmx模型名称" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：新的olmx模型名称" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -883,7 +887,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775530703709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775613003401" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME="桌面整理 覆盖结果" MODIFIED="1775543498036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/桌面" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />

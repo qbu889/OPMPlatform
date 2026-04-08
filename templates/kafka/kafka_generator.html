@@ -981,7 +981,9 @@
             </div>
         </div>
 
-        <!-- 字段维表弹窗 -->
+    </div> <!-- 结束 container -->
+
+        <!-- 字段维表弹窗 - 移到 container 外部 -->
         <div class="modal fade" id="fieldDictModal" tabindex="-1" aria-labelledby="fieldDictModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
@@ -1834,33 +1836,80 @@
         
                 console.log(`[DEBUG] 表格渲染完成，tbody 中有 ${tbody.children.length} 行`);
         
-                // 使用 Bootstrap Modal 显示（不使用 backdrop）
+                // ★★★★★ 关键修复：将模态框移动到 body 直接子元素，避免父容器影响
                 const modalEl = document.getElementById('fieldDictModal');
-                const modal = new bootstrap.Modal(modalEl, {
-                    backdrop: false // 不显示遮罩层
-                });
-                modal.show();
+                const originalParent = modalEl.parentElement;
                 
-                console.log('[INFO] Bootstrap Modal 已显示');
+                // 1. 将模态框移动到 body 下
+                if (originalParent && originalParent !== document.body) {
+                    document.body.appendChild(modalEl);
+                    console.log('[DEBUG] 模态框已移动到 body 下');
+                }
                 
-                // 关键修复：设置 modal 层级
+                // 2. 清理所有旧的 Modal 状态
+                modalEl.classList.remove('show', 'fade');
+                modalEl.style.cssText = '';
+                modalEl.removeAttribute('aria-hidden');
+                document.body.classList.remove('modal-open');
+                
+                // 移除所有旧的 backdrop
+                const oldBackdrops = document.querySelectorAll('.modal-backdrop');
+                oldBackdrops.forEach(b => b.remove());
+                
+                // 3. 延迟一小段时间后再显示，确保清理完成
                 setTimeout(() => {
-                    const modalDialog = document.querySelector('#fieldDictModal .modal-dialog');
+                    // 4. 设置 Modal 为显示状态 - 使用 flexbox 居中布局
+                    modalEl.style.cssText = `
+                        display: flex !important;
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 1050 !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        overflow-x: hidden !important;
+                        overflow-y: auto !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        padding: 1.75rem !important;
+                        margin: 0 !important;
+                    `;
+                    
+                    modalEl.classList.add('show');
+                    modalEl.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('modal-open');
+                    
+                    // 5. 设置内部元素的样式
+                    const modalDialog = modalEl.querySelector('.modal-dialog');
                     if (modalDialog) {
-                        modalDialog.style.zIndex = '1060';
-                        console.log('[DEBUG] modal-dialog z-index 设置为 1060');
+                        modalDialog.style.margin = 'auto';
+                        modalDialog.style.pointerEvents = 'auto';
+                        modalDialog.style.maxWidth = '1140px';
+                        modalDialog.style.width = '90%';
                     }
-                    const modalContent = document.querySelector('#fieldDictModal .modal-content');
+                    
+                    const modalContent = modalEl.querySelector('.modal-content');
                     if (modalContent) {
-                        modalContent.style.zIndex = '1061';
-                        console.log('[DEBUG] modal-content z-index 设置为 1061');
+                        modalContent.style.backgroundColor = 'white';
+                        modalContent.style.borderRadius = '0.3rem';
+                        modalContent.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.5)';
+                        modalContent.style.maxHeight = '85vh';
+                        modalContent.style.overflow = 'hidden';
+                        modalContent.style.display = 'flex';
+                        modalContent.style.flexDirection = 'column';
                     }
-                    const modalHeader = document.querySelector('#fieldDictModal .modal-header');
-                    if (modalHeader) {
-                        modalHeader.style.zIndex = '1062';
-                        console.log('[DEBUG] modal-header z-index 设置为 1062');
-                    }
-                }, 10);
+                    
+                    console.log('[INFO] Modal 已手动显示');
+                    
+                    // 验证模态框是否可见
+                    const rect = modalEl.getBoundingClientRect();
+                    console.log('[DEBUG] Modal 边界矩形:', rect);
+                    console.log('[DEBUG] Modal 是否在视口内:', rect.top >= 0 && rect.left >= 0);
+                    console.log('[DEBUG] Modal offsetTop:', modalEl.offsetTop);
+                    console.log('[DEBUG] Modal scrollY:', window.scrollY);
+                }, 50);
             } catch (e) {
                 console.error('[ERROR] 加载维表失败', e);
                 console.error('[ERROR] 错误堆栈:', e.stack);
@@ -3360,7 +3409,13 @@
                 }
                 
                 const data = result.data || {};
-                const esSourceRaw = data.es_source_raw || '';
+                let esSourceRaw = data.es_source_raw || '';
+                
+                // ★★★★★ 关键修复：如果 es_source_raw 是对象，转换为 JSON 字符串
+                if (typeof esSourceRaw === 'object' && esSourceRaw !== null) {
+                    esSourceRaw = JSON.stringify(esSourceRaw, null, 2);
+                    console.log('[INFO] ES 源数据已从对象转换为 JSON 字符串');
+                }
                 
                 if (esSourceRaw) {
                     // 填充到 ES 源数据输入框
