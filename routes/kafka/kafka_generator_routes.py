@@ -1345,7 +1345,8 @@ def get_generation_history():
                 params = []
                 
                 if keyword:
-                    # 支持搜索：ES 源数据、Kafka 消息、FP 值、告警名称、地区
+                    # ★★★★★ 关键修复：支持搜索 Kafka 消息中的字段名和字段值
+                    # 使用 JSON_CONTAINS_PATH 或 LIKE 搜索 kafka_message 中的字段
                     where_clause += """ 
                         AND (
                             alarm_name LIKE %s 
@@ -1360,6 +1361,8 @@ def get_generation_history():
                         keyword_pattern, keyword_pattern, keyword_pattern, 
                         keyword_pattern, keyword_pattern
                     ])
+                    
+                    logger.info(f"[HISTORY SEARCH] 关键字: {keyword}, 将搜索 alarm_name, fp_value, region_name, es_source_raw, kafka_message")
                 
                 # 查询总数
                 count_query = f"SELECT COUNT(*) as total FROM knowledge_base.kafka_generation_history {where_clause}"
