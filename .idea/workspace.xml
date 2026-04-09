@@ -372,23 +372,7 @@
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
       <workItem from="1775530689758" duration="46228000" />
-      <workItem from="1775698168884" duration="18020000" />
-    </task>
-    <task id="LOCAL-00046" summary="fix：前端多展示多余字符">
-      <option name="closed" value="true" />
-      <created>1774316427705</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1774316427705</updated>
-    </task>
-    <task id="LOCAL-00047" summary="fix：剔除omlx">
-      <option name="closed" value="true" />
-      <created>1774320425758</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1774320425758</updated>
+      <workItem from="1775698168884" duration="18339000" />
     </task>
     <task id="LOCAL-00048" summary="new：重构前端">
       <option name="closed" value="true" />
@@ -766,7 +750,23 @@
       <option name="project" value="LOCAL" />
       <updated>1775723898556</updated>
     </task>
-    <option name="localTasksCounter" value="95" />
+    <task id="LOCAL-00095" summary="new：前端VUE框架">
+      <option name="closed" value="true" />
+      <created>1775724055815</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1775724055815</updated>
+    </task>
+    <task id="LOCAL-00096" summary="new：md文档位置调整">
+      <option name="closed" value="true" />
+      <created>1775724088013</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1775724088013</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -807,7 +807,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：调整kafka的生成kafka消息的高度" />
     <MESSAGE value="fix：点击复制结果按钮，不额外增加复制成功的按钮" />
     <MESSAGE value="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题" />
     <MESSAGE value="fix：kafka增加历史数据的查询复制" />
@@ -828,11 +827,12 @@
     <MESSAGE value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
     <MESSAGE value="new：新的olmx模型名称" />
     <MESSAGE value="fix：kafka消息生成器历史数据插入失败问题" />
-    <MESSAGE value="new：md文档位置调整" />
     <MESSAGE value="new：excel转cosmic" />
     <MESSAGE value="new：kafka增加日志输出" />
     <MESSAGE value="new：es查询结果转excel表格工具" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：es查询结果转excel表格工具" />
+    <MESSAGE value="new：前端VUE框架" />
+    <MESSAGE value="new：md文档位置调整" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：md文档位置调整" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
