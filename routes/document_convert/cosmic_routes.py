@@ -458,6 +458,69 @@ def convert_excel():
         if not excel_path.exists():
             return jsonify({'success': False, 'message': '文件不存在'}), 404
 
+        # 读取数据用于统计
+        df = read_excel_robust(excel_path)
+        if df is None:
+            return jsonify({'success': False, 'message': '无法读取 Excel 文件'}), 500
+
+        # 统计模块数据
+        module_l1_set = set()
+        module_l2_set = set()
+        module_l3_set = set()
+        function_set = set()
+        subprocess_count = 0
+        
+        module_l1_value = None
+        module_l2_value = None
+        module_l3_value = None
+        function_name_value = None
+
+        for idx, row in df.iterrows():
+            module_l1 = str(row.get('一级模块', '')) if pd.notna(row.get('一级模块', '')) else ''
+            module_l2 = str(row.get('二级模块', '')) if pd.notna(row.get('二级模块', '')) else ''
+            module_l3 = str(row.get('三级模块', '')) if pd.notna(row.get('三级模块', '')) else ''
+            function_name = str(row.get('功能过程', '')) if pd.notna(row.get('功能过程', '')) else ''
+            subprocess_desc = str(row.get('子过程描述', '')) if pd.notna(row.get('子过程描述', '')) else ''
+
+            # 记录一级模块和二级模块
+            if module_l1 and module_l1 != 'nan' and module_l1.strip():
+                module_l1_value = module_l1
+                module_l1_set.add(module_l1)
+            if module_l2 and module_l2 != 'nan' and module_l2.strip():
+                module_l2_value = module_l2
+                module_l2_set.add(module_l2)
+            
+            # 三级模块向下填充
+            if module_l3 and module_l3 != 'nan' and module_l3.strip():
+                module_l3_value = module_l3
+            else:
+                module_l3 = module_l3_value if module_l3_value else ''
+            
+            if module_l3 and module_l3.strip():
+                module_l3_set.add(module_l3)
+            
+            # 功能过程向下填充
+            if function_name and function_name != 'nan' and function_name.strip():
+                function_name_value = function_name
+            else:
+                function_name = function_name_value if function_name_value else ''
+
+            # 跳过空行
+            if (not function_name or function_name == 'nan') and (not subprocess_desc or subprocess_desc == 'nan'):
+                continue
+            
+            if not function_name or function_name == 'nan':
+                continue
+            
+            # 只有有效数据才加入功能过程集合
+            if function_name and function_name != 'nan':
+                function_set.add(function_name)
+
+            # 统计子过程
+            if subprocess_desc and subprocess_desc != 'nan' and subprocess_desc.strip():
+                sub_items = split_subprocess_description(subprocess_desc)
+                subprocess_count += len(sub_items)
+
         # 生成输出文件名
         output_filename = f"{Path(filename).stem}_COSMIC.docx"
         word_path = OUTPUT_FOLDER / output_filename
@@ -471,7 +534,14 @@ def convert_excel():
             'success': True,
             'message': '转换成功',
             'output_filename': output_filename,
-            'module_count': module_count
+            'module_count': module_count,
+            'stats': {
+                'l1_modules': len(module_l1_set),
+                'l2_modules': len(module_l2_set),
+                'l3_modules': len(module_l3_set),
+                'functions': len(function_set),
+                'subprocesses': subprocess_count
+            }
         })
 
     except Exception as e:
@@ -538,3 +608,155 @@ def get_module_stats():
     except Exception as e:
         logger.error(f"统计失败：{e}", exc_info=True)
         return jsonify({'success': False, 'message': f'统计失败：{str(e)}'}), 500
+
+
+@cosmic_bp.route('/export-stats', methods=['POST'])
+def export_module_stats():
+    """导出模块统计信息为 Excel"""
+    try:
+        data = request.json
+        filename = data.get('filename')
+
+        if not filename:
+            return jsonify({'success': False, 'message': '缺少文件名参数'}), 400
+
+        excel_path = UPLOAD_FOLDER / filename
+        if not excel_path.exists():
+            return jsonify({'success': False, 'message': '文件不存在'}), 404
+
+        # 读取数据
+        df = read_excel_robust(excel_path)
+        if df is None:
+            return jsonify({'success': False, 'message': '无法读取 Excel 文件'}), 500
+
+        # 重新执行转换逻辑获取详细的模块数据
+        module_data = {}
+        module_l1_value = None
+        module_l2_value = None
+        module_l3_value = None
+        function_name_value = None
+        
+        # 统计用集合
+        module_l1_set = set()
+        module_l2_set = set()
+        module_l3_set = set()
+        function_set = set()
+        total_subprocesses = 0
+
+        for idx, row in df.iterrows():
+            module_l1 = str(row.get('一级模块', '')) if pd.notna(row.get('一级模块', '')) else ''
+            module_l2 = str(row.get('二级模块', '')) if pd.notna(row.get('二级模块', '')) else ''
+            module_l3 = str(row.get('三级模块', '')) if pd.notna(row.get('三级模块', '')) else ''
+            function_name = str(row.get('功能过程', '')) if pd.notna(row.get('功能过程', '')) else ''
+            subprocess_desc = str(row.get('子过程描述', '')) if pd.notna(row.get('子过程描述', '')) else ''
+
+            # 记录一级模块和二级模块
+            if module_l1 and module_l1 != 'nan' and module_l1.strip():
+                module_l1_value = module_l1
+                module_l1_set.add(module_l1)
+            if module_l2 and module_l2 != 'nan' and module_l2.strip():
+                module_l2_value = module_l2
+                module_l2_set.add(module_l2)
+            
+            # 三级模块向下填充
+            if module_l3 and module_l3 != 'nan' and module_l3.strip():
+                module_l3_value = module_l3
+            else:
+                module_l3 = module_l3_value if module_l3_value else ''
+            
+            if module_l3 and module_l3.strip():
+                module_l3_set.add(module_l3)
+            
+            # 功能过程向下填充
+            if function_name and function_name != 'nan' and function_name.strip():
+                function_name_value = function_name
+            else:
+                function_name = function_name_value if function_name_value else ''
+
+            # 跳过空行
+            if (not function_name or function_name == 'nan') and (not subprocess_desc or subprocess_desc == 'nan'):
+                continue
+            
+            if not function_name or function_name == 'nan':
+                continue
+            
+            # 只有有效数据才加入功能过程集合
+            if function_name and function_name != 'nan':
+                function_set.add(function_name)
+
+            # 按三级模块分组
+            if module_l3 not in module_data:
+                module_data[module_l3] = {
+                    '一级模块': module_l1_value,
+                    '二级模块': module_l2_value,
+                    '三级模块': module_l3,
+                    '功能点': {},
+                    'subprocess_count': 0
+                }
+
+            if function_name not in module_data[module_l3]['功能点']:
+                module_data[module_l3]['功能点'][function_name] = []
+
+            # 收集子过程描述
+            if subprocess_desc and subprocess_desc != 'nan' and subprocess_desc.strip():
+                sub_items = split_subprocess_description(subprocess_desc)
+                module_data[module_l3]['功能点'][function_name].extend(sub_items)
+                module_data[module_l3]['subprocess_count'] += len(sub_items)
+                total_subprocesses += len(sub_items)
+
+        # 生成输出文件名
+        output_filename = f"{Path(filename).stem}_模块统计.xlsx"
+        output_path = OUTPUT_FOLDER / output_filename
+
+        # 导出 Excel - 2个 Sheet
+        with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+            # Sheet 1: 汇总统计
+            summary_data = [
+                ['统计项', '数值'],
+                ['一级模块数量', len(module_l1_set)],
+                ['二级模块数量', len(module_l2_set)],
+                ['三级模块数量', len(module_l3_set)],
+                ['功能过程总数', len(function_set)],
+                ['子过程总数', total_subprocesses]
+            ]
+            summary_df = pd.DataFrame(summary_data[1:], columns=summary_data[0])
+            summary_df.to_excel(writer, sheet_name='汇总统计', index=False)
+            
+            # 调整汇总统计表列宽
+            summary_ws = writer.sheets['汇总统计']
+            summary_ws.column_dimensions['A'].width = 15
+            summary_ws.column_dimensions['B'].width = 15
+            
+            # Sheet 2: 详细数据
+            detail_data = []
+            for module_l3, module_info in module_data.items():
+                detail_data.append({
+                    '一级模块名称': module_info['一级模块'],
+                    '二级模块名称': module_info['二级模块'],
+                    '三级模块名称': module_info['三级模块'],
+                    '子过程数量': module_info['subprocess_count'],
+                    'CFP总和': module_info['subprocess_count']  # CFP = 子过程数量
+                })
+            
+            detail_df = pd.DataFrame(detail_data)
+            detail_df.to_excel(writer, sheet_name='详细数据', index=False)
+            
+            # 调整详细数据表列宽
+            detail_ws = writer.sheets['详细数据']
+            detail_ws.column_dimensions['A'].width = 15
+            detail_ws.column_dimensions['B'].width = 15
+            detail_ws.column_dimensions['C'].width = 20
+            detail_ws.column_dimensions['D'].width = 12
+            detail_ws.column_dimensions['E'].width = 12
+
+        logger.info(f"统计 Excel 已保存：{output_path}")
+
+        return jsonify({
+            'success': True,
+            'message': '导出成功',
+            'output_filename': output_filename
+        })
+
+    except Exception as e:
+        logger.error(f"导出统计失败：{e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'导出失败：{str(e)}'}), 500

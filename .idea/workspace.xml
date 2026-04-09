@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：md文档位置调整">
-      <change afterPath="$PROJECT_DIR$/test/cosmic/运行日志.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/order_id去重查询.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/查询工单为空的数据.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/document_convert/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/excel_to_cosmic.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/excel_to_cosmic.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,14 +173,14 @@
       <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs/cosmic" />
       <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
       <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/templates/kafka" />
       <recent name="$PROJECT_DIR$/docs" />
-      <recent name="$PROJECT_DIR$/uploads/fpa_input" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.EsToExcel">
+  <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
     <configuration name="EsToExcel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -268,7 +270,7 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="Python 测试 (test_new_excel.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+    <configuration name="Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -287,16 +289,16 @@
       <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python.wordToWord" />
       <item itemvalue="Python.EsToExcel" />
-      <item itemvalue="Python 测试.Python 测试 (test_new_excel.py 内)" />
+      <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" />
       <item itemvalue="Shell Script.start_with_tunnel.sh" />
       <item itemvalue="Shell Script.start.sh" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.EsToExcel" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
-        <item itemvalue="Python 测试.Python 测试 (test_new_excel.py 内)" />
+        <item itemvalue="Python.EsToExcel" />
+        <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" />
         <item itemvalue="Shell Script.start.sh" />
       </list>
     </recent_temporary>
@@ -372,15 +374,7 @@
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
       <workItem from="1775530689758" duration="46228000" />
-      <workItem from="1775698168884" duration="18339000" />
-    </task>
-    <task id="LOCAL-00048" summary="new：重构前端">
-      <option name="closed" value="true" />
-      <created>1774413718138</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1774413718139</updated>
+      <workItem from="1775698168884" duration="20355000" />
     </task>
     <task id="LOCAL-00049" summary="new：修复FPA前端显示不全、动画一直加载的问题">
       <option name="closed" value="true" />
@@ -766,7 +760,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775724088013</updated>
     </task>
-    <option name="localTasksCounter" value="97" />
+    <task id="LOCAL-00097" summary="new：idea文件">
+      <option name="closed" value="true" />
+      <created>1775724325821</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1775724325821</updated>
+    </task>
+    <option name="localTasksCounter" value="98" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -807,7 +809,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：点击复制结果按钮，不额外增加复制成功的按钮" />
     <MESSAGE value="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题" />
     <MESSAGE value="fix：kafka增加历史数据的查询复制" />
     <MESSAGE value="new：kafka历史记录复制增加json格式化" />
@@ -832,7 +833,8 @@
     <MESSAGE value="new：es查询结果转excel表格工具" />
     <MESSAGE value="new：前端VUE框架" />
     <MESSAGE value="new：md文档位置调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：md文档位置调整" />
+    <MESSAGE value="new：idea文件" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：idea文件" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -881,7 +883,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775722750858" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775725516361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME=" 覆盖结果" MODIFIED="1775706813727" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />

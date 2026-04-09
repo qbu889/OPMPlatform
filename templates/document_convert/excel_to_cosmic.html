@@ -80,12 +80,54 @@
                         <strong>Word 文档已生成！</strong>
                     </div>
                     
-                    <div class="d-flex gap-2">
+                    <!-- 模块统计卡片 -->
+                    <div class="card mb-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-body">
+                            <h5 class="mb-3" style="font-size: 1.25rem;">
+                                <i class="fas fa-chart-pie me-2"></i>模块功能统计
+                            </h5>
+                            <hr style="border-color: rgba(255,255,255,0.3);">
+                            <div class="row g-3">
+                                <div class="col-6 col-md">
+                                    <div class="text-center p-3 rounded" style="background: rgba(255,255,255,0.15);">
+                                        <h3 class="mb-1" id="statL1Modules">0</h3>
+                                        <small>一级模块</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md">
+                                    <div class="text-center p-3 rounded" style="background: rgba(255,255,255,0.15);">
+                                        <h3 class="mb-1" id="statL2Modules">0</h3>
+                                        <small>二级模块</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md">
+                                    <div class="text-center p-3 rounded" style="background: rgba(255,255,255,0.15);">
+                                        <h3 class="mb-1" id="statL3Modules">0</h3>
+                                        <small>三级模块</small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md">
+                                    <div class="text-center p-3 rounded" style="background: rgba(255,255,255,0.15);">
+                                        <h3 class="mb-1" id="statFunctions">0</h3>
+                                        <small>功能过程</small>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="text-center p-3 rounded" style="background: rgba(255,255,255,0.15);">
+                                        <h3 class="mb-1" id="statSubprocesses">0</h3>
+                                        <small>子过程总数</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-primary btn-lg" onclick="downloadWord()">
                             <i class="fas fa-download me-2"></i>下载 Word 文档
                         </button>
-                        <button class="btn btn-outline-info" onclick="viewStats()">
-                            <i class="fas fa-chart-bar me-2"></i>查看统计
+                        <button class="btn btn-success btn-lg" onclick="exportStats()">
+                            <i class="fas fa-file-excel me-2"></i>导出统计 Excel
                         </button>
                     </div>
                 </div>
@@ -94,7 +136,7 @@
             <!-- 模块统计 -->
             <div class="card" id="statsCard" style="display: none;">
                 <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>模块统计</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>详细统计</h5>
                 </div>
                 <div class="card-body">
                     <div id="statsContent"></div>
@@ -113,6 +155,14 @@
     .upload-area.dragover {
         border-color: #28a745;
         background-color: #d4edda;
+    }
+    
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
     }
 </style>
 
@@ -245,6 +295,16 @@ async function convertExcel() {
         if (result.success) {
             showProgress('转换完成！', 100);
             document.getElementById('resultCard').style.display = 'block';
+            
+            // 显示统计数据
+            if (result.stats) {
+                document.getElementById('statL1Modules').textContent = result.stats.l1_modules || 0;
+                document.getElementById('statL2Modules').textContent = result.stats.l2_modules || 0;
+                document.getElementById('statL3Modules').textContent = result.stats.l3_modules || 0;
+                document.getElementById('statFunctions').textContent = result.stats.functions || 0;
+                document.getElementById('statSubprocesses').textContent = result.stats.subprocesses || 0;
+            }
+            
             setTimeout(() => hideProgress(), 1000);
         } else {
             alert('转换失败：' + result.message);
@@ -274,6 +334,31 @@ function downloadWord() {
     }
     
     window.open(`/api/cosmic/download/${outputFilename}`, '_blank');
+}
+
+// 导出统计 Excel
+async function exportStats() {
+    if (!uploadedFilename) return;
+    
+    try {
+        const response = await fetch('/api/cosmic/export-stats', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({filename: uploadedFilename})
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 下载生成的统计 Excel
+            window.open(`/api/cosmic/download/${result.output_filename}`, '_blank');
+        } else {
+            alert('导出失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('导出错误:', error);
+        alert('导出失败：' + error.message);
+    }
 }
 
 // 查看统计

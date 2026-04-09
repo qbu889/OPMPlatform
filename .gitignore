@@ -5141,3 +5141,15 @@
 /dist/诺基亚 OPM 综合业务系统.app/Contents/Frameworks/Python.framework/Resources/
 /dist/诺基亚 OPM 综合业务系统.app/Contents/Resources/lib/python3.13/docx/templates/default-docx-template/[Content_Types].xml
 /omlx/
+/check_excel.py
+/check_latest_indent.py
+/compare_docx.py
+/extract_docx.py
+/test_indent.py
+/test_indent_final.py
+/test_indent_format.py
+/test_indent_structure.py
+/test_kafka_history.py
+/test_new_excel.py
+/test_push_message.py
+/test_read_excel.py
