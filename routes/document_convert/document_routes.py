@@ -107,6 +107,13 @@ def convert_page():
     return render_template('convert_upload.html', demo_exists=demo_exists, convert_result=None)
 
 
+@document_bp.route('/excel-to-cosmic')
+def excel_to_cosmic_page():
+    """表格转 COSMIC 页面"""
+    logger.info("访问表格转COSMIC页面")
+    return render_template('document_convert/excel_to_cosmic.html')
+
+
 @document_bp.route('/upload-and-convert', methods=['POST'])
 def upload_and_convert():
     logger.info("开始处理文档转换请求")

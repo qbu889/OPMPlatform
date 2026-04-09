@@ -30,6 +30,7 @@ from routes.document_convert.document_routes import document_bp
 from routes.document_convert.excel2word_routes import excel2word_bp
 from routes.document_convert.markdown_upload_routes import markdown_upload_bp
 from routes.document_convert.word_to_md_routes import word_to_md_bp
+from routes.document_convert.cosmic_routes import cosmic_bp
 
 # 排班管理模块
 from routes.schedule.schedule_config_routes import schedule_config_bp
@@ -196,6 +197,7 @@ def create_app(config_name='development'):
         excel2word_bp,
         markdown_upload_bp,
         word_to_md_bp,
+        cosmic_bp,  # 表格转 COSMIC
             
         # 排班管理模块（蓝图已定义前缀）
         schedule_config_bp,

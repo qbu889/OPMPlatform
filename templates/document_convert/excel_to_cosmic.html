@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}表格转COSMIC{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-file-excel me-2 text-success"></i>表格转COSMIC
+                <small class="text-muted" style="font-size: 14px;">Excel → Word (COSMIC格式)</small>
+            </h2>
+            
+            <!-- 上传区域 -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-upload me-2"></i>上传 Excel 文件</h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea" 
+                         style="border: 3px dashed #ccc; border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p class="mb-2">拖拽 Excel 文件到此处，或点击选择文件</p>
+                        <p class="text-muted small">支持 .xlsx 和 .xls 格式</p>
+                        <button class="btn btn-primary mt-3" onclick="document.getElementById('excelFile').click()">
+                            <i class="fas fa-folder-open me-2"></i>选择文件
+                        </button>
+                    </div>
+                    
+                    <!-- 文件信息 -->
+                    <div id="fileInfo" class="mt-3" style="display: none;">
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="fas fa-file-excel fa-2x me-3"></i>
+                            <div class="flex-grow-1">
+                                <strong id="fileName"></strong>
+                                <br>
+                                <small class="text-muted" id="fileSize"></small>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="clearFile()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="mt-3 d-flex gap-2">
+                        <button class="btn btn-success btn-lg" id="convertBtn" onclick="convertExcel()" disabled>
+                            <i class="fas fa-cogs me-2"></i>开始转换
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="loadExample()">
+                            <i class="fas fa-lightbulb me-2"></i>加载示例
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 转换进度 -->
+            <div class="card mb-4" id="progressCard" style="display: none;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-spinner fa-spin me-2"></i>转换进度</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress" style="height: 30px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%;">0%</div>
+                    </div>
+                    <p class="mt-2 text-muted" id="progressText">准备中...</p>
+                </div>
+            </div>
+            
+            <!-- 转换结果 -->
+            <div class="card mb-4" id="resultCard" style="display: none;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>转换成功</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check me-2"></i>
+                        <strong>Word 文档已生成！</strong>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-lg" onclick="downloadWord()">
+                            <i class="fas fa-download me-2"></i>下载 Word 文档
+                        </button>
+                        <button class="btn btn-outline-info" onclick="viewStats()">
+                            <i class="fas fa-chart-bar me-2"></i>查看统计
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模块统计 -->
+            <div class="card" id="statsCard" style="display: none;">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>模块统计</h5>
+                </div>
+                <div class="card-body">
+                    <div id="statsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .upload-area:hover {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+    
+    .upload-area.dragover {
+        border-color: #28a745;
+        background-color: #d4edda;
+    }
+</style>
+
+<script>
+let uploadedFilename = null;
+let originalFilename = null;
+
+// 初始化拖拽上传
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('excelFile');
+    
+    // 点击上传
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+    
+    // 文件选择
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            handleFile(file);
+        }
+    });
+    
+    // 拖拽事件
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function() {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+            handleFile(file);
+        } else {
+            alert('请上传 Excel 文件（.xlsx 或 .xls）');
+        }
+    });
+});
+
+// 处理文件
+async function handleFile(file) {
+    originalFilename = file.name;
+    
+    // 显示文件信息
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    document.getElementById('fileInfo').style.display = 'block';
+    
+    // 上传文件
+    await uploadFile(file);
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+// 上传文件
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        showProgress('正在上传文件...', 20);
+        
+        const response = await fetch('/api/cosmic/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            uploadedFilename = result.filename;
+            document.getElementById('convertBtn').disabled = false;
+            showProgress('文件上传成功！', 30);
+            setTimeout(() => hideProgress(), 1000);
+        } else {
+            alert('上传失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('上传错误:', error);
+        alert('上传失败：' + error.message);
+    }
+}
+
+// 清除文件
+function clearFile() {
+    document.getElementById('excelFile').value = '';
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('convertBtn').disabled = true;
+    uploadedFilename = null;
+    originalFilename = null;
+}
+
+// 转换 Excel
+async function convertExcel() {
+    if (!uploadedFilename) {
+        alert('请先上传文件');
+        return;
+    }
+    
+    try {
+        showProgress('正在转换...', 50);
+        
+        const response = await fetch('/api/cosmic/convert', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                filename: uploadedFilename,
+                original_name: originalFilename  // 传递原始文件名
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showProgress('转换完成！', 100);
+            document.getElementById('resultCard').style.display = 'block';
+            setTimeout(() => hideProgress(), 1000);
+        } else {
+            alert('转换失败：' + result.message);
+            hideProgress();
+        }
+    } catch (error) {
+        console.error('转换错误:', error);
+        alert('转换失败：' + error.message);
+        hideProgress();
+    }
+}
+
+// 下载 Word
+function downloadWord() {
+    if (!uploadedFilename) return;
+    
+    // 根据原始文件名生成输出文件名
+    let outputFilename;
+    if (originalFilename) {
+        // 例如：附件1 2024年网络数据共享平台研发-需求说明V1.0.0.docx -> 附件1 2024年网络数据共享平台研发-需求说明cosmic.docx
+        const originalStem = originalFilename.replace(/\.(xlsx|xls)$/i, '');
+        // 用正则替换版本号（如V1.0.0、V2.1、1.0.0等）为cosmic
+        outputFilename = originalStem.replace(/[Vv]?\d+\.\d+(\.\d+)*$/, 'cosmic') + '.docx';
+    } else {
+        // 如果没有原始文件名，使用默认格式
+        outputFilename = uploadedFilename.replace(/\.(xlsx|xls)$/, '') + '_COSMIC.docx';
+    }
+    
+    window.open(`/api/cosmic/download/${outputFilename}`, '_blank');
+}
+
+// 查看统计
+async function viewStats() {
+    if (!uploadedFilename) return;
+    
+    try {
+        const response = await fetch('/api/cosmic/stats', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({filename: uploadedFilename})
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayStats(result.data);
+        } else {
+            alert('获取统计失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('统计错误:', error);
+        alert('获取统计失败：' + error.message);
+    }
+}
+
+// 显示统计
+function displayStats(stats) {
+    const statsCard = document.getElementById('statsCard');
+    const statsContent = document.getElementById('statsContent');
+    
+    let html = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary">${stats.total_rows}</h3>
+                        <p class="mb-0">总行数</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 显示模块统计
+    if (stats.modules && Object.keys(stats.modules).length > 0) {
+        html += '<h6 class="mt-4">模块分布：</h6><ul class="list-group">';
+        for (const [module, count] of Object.entries(stats.modules)) {
+            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${module}
+                <span class="badge badge-primary badge-pill">${count}</span>
+            </li>`;
+        }
+        html += '</ul>';
+    }
+    
+    statsContent.innerHTML = html;
+    statsCard.style.display = 'block';
+}
+
+// 显示进度
+function showProgress(text, percent) {
+    document.getElementById('progressCard').style.display = 'block';
+    document.getElementById('progressText').textContent = text;
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = percent + '%';
+    progressBar.textContent = percent + '%';
+}
+
+// 隐藏进度
+function hideProgress() {
+    document.getElementById('progressCard').style.display = 'none';
+}
+
+// 加载示例
+function loadExample() {
+    alert('示例功能待实现\n\n请上传您的 COSMIC Excel 文件进行转换');
+}
+</script>
+{% endblock %}
