@@ -44,6 +44,15 @@
             <p>根据 ES 数据生成 Kafka 消息</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/es-to-excel')">
+            <div class="feature-icon" style="background: #ffebee">
+              <el-icon size="40" color="#f44336"><Download /></el-icon>
+            </div>
+            <h3>ES 查询结果转 Excel</h3>
+            <p>将 ES 查询结果转换为标准 Excel 格式</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 
@@ -148,6 +157,7 @@ import {
   Grid,
   ChatDotRound,
   Calendar,
+  Download,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()

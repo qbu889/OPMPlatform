@@ -28,9 +28,27 @@ TARGET_COLUMNS = [
 # -------------------------- 核心处理逻辑 --------------------------
 def detect_file_format(file_path):
     """检测文件格式：竖线分隔 或 JSON"""
-    with open(file_path, "r", encoding="utf-8") as f:
+    # 尝试多种编码，优先尝试中文编码
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin-1']
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, "r", encoding=encoding) as f:
+                first_line = f.readline().strip()
+                # 跳过注释行
+                while first_line.startswith("#!"):
+                    first_line = f.readline().strip()
+                
+                if first_line.startswith("{"):
+                    return "json"
+                else:
+                    return "pipe_separated"
+        except (UnicodeDecodeError, Exception):
+            continue
+    
+    # 如果所有编码都失败，默认使用 latin-1（不会抛出解码错误）
+    with open(file_path, "r", encoding="latin-1") as f:
         first_line = f.readline().strip()
-        # 跳过注释行
         while first_line.startswith("#!"):
             first_line = f.readline().strip()
         
@@ -42,11 +60,31 @@ def detect_file_format(file_path):
 
 def parse_json_format(file_path):
     """解析JSON格式的ES查询结果"""
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
-        # 移除可能的注释行（以#!开头）
-        lines = [line for line in content.split('\n') if not line.strip().startswith('#!')]
-        cleaned_content = '\n'.join(lines)
+    # 尝试多种编码读取文件，优先尝试中文编码
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin-1']
+    content = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, "r", encoding=encoding) as f:
+                content = f.read()
+            used_encoding = encoding
+            break
+        except (UnicodeDecodeError, Exception):
+            continue
+    
+    if content is None:
+        # 最后使用 latin-1（不会失败）
+        with open(file_path, "r", encoding="latin-1") as f:
+            content = f.read()
+        used_encoding = 'latin-1'
+    
+    print(f"📖 使用编码: {used_encoding}")
+    
+    # 移除可能的注释行（以#!开头）
+    lines = [line for line in content.split('\n') if not line.strip().startswith('#!')]
+    cleaned_content = '\n'.join(lines)
     
     # 尝试直接解析，如果失败则进行修复
     try:
@@ -81,80 +119,32 @@ def parse_json_format(file_path):
     return _process_json_data(data)
     
 def _process_json_data(data):
-    """处理已解析的 JSON 数据"""
+    """处理已解析的 JSON 数据 - 动态导出传入的字段"""
     # 提取列名和数据
     columns = [col['name'] for col in data['columns']]
     rows = data['rows']
     
-    # 创建DataFrame并映射到目标字段
-    df_raw = pd.DataFrame(rows, columns=columns)
-    
-    # 字段映射关系（ES字段 -> 目标中文字段）
-    field_mapping = {
-        "EVENT_ID": "EVENT_NUMBER",
-        "EVENT_LEVEL_NAME": "事件等级",
-        "CITY_NAME": "地市",
-        "COUNTY_NAME": "区县",
-        "EQUIPMENT_NAME": "网元名称",
-        "OBJECT_CLASS_ID": "设备类型",
-        "VENDOR_NAME": "设备厂家",
-        "FAULT_LOCATION": "定位信息",
-        "DISPATCH_INFO.ORDER_TIME": "派单时间",
-        "MAINTAIN_TEAM": "维护组",
-        "MAIN_NET_SORT_ONE": "网络一级分类",
-        "MAIN_NET_SORT_TWO": "网络二级分类",
-        "MAIN_NET_SORT_THREE": "网络三级分类",
-        "NETWORK_SUB_TYPE_NAME": "二级专业",
-        "NETWORK_TYPE_NAME": "一级专业",
-        "ALARM_SOURCE": "事件来源",
-        "EVENT_NAME": "事件名称",
-        "ALARM_NAME": "告警标题",
-        "EVENT_STANDARD_ID": "事件标准ID",
-        "EVENT_TIME": "事件发生时间",
-        "CREATION_EVENT_TIME": "事件创建时间",
-        "EVENT_COLLECTION_TIME": "告警发现时间",
-        "CANCEL_TIME": "事件清除时间",
-        "ORDER_ID": "工单号",
-        "EVENT_FP": "事件FP",
-        "ORIG_ALARM_FP": "告警FP",
-        "ALARM_LEVEL": "省内网管告警级别",
-        "CANCEL_ARRIVAL_TIME": "告警清除发现时间",
-        "CASE WHEN EVENT_TAG.IS_MATCH_DISPATCH_RULES = 1 THEN 1 ELSE 0 END": "是否满足派单规则",
-        "DISPATCH_INFO.DISPATCH_REASON": "DISPATCH_REASON",
-        "DISPATCH_INFO.DISPATCH_LEVEL": "省内派单级别",
-        "DISPATCH_INFO.DELAY_TIME": "派单时延",
-        "CASE WHEN EVENT_TAG.IS_ROOT = 0 THEN 1 ELSE 0 END": "是否子事件",
-        "CASE WHEN EVENT_TAG.IS_ROOT = 1 THEN 1 ELSE 0 END": "是否根事件",
-        "MASTER_EVENT_FP": "主事件FP",
-        "NE_TAG.MACHINE_ROOM_INFO": "机房信息",
-        "DISPATCH_INFO.ORDER_TYPE": "通知单转处理单标识",
-        "ONE_WARNING_ID": "自研告警预警号",
-        "SUPPRESS_NIGHT": "是否夜间"
-    }
-    
-    # 重命名列
-    df_renamed = df_raw.rename(columns=field_mapping)
-    
-    # 只保留目标字段，缺失的填充空值
-    df_result = pd.DataFrame()
-    for col in TARGET_COLUMNS:
-        if col in df_renamed.columns:
-            df_result[col] = df_renamed[col]
-        else:
-            df_result[col] = None
+    # 创建DataFrame（直接使用原始字段名）
+    df_result = pd.DataFrame(rows, columns=columns)
     
     # 替换null值为空字符串
     df_result = df_result.fillna("")
     
-    # 添加计算字段：事件清除时间（转时间格式）
-    if "事件清除时间" in df_result.columns:
-        df_result["事件清除时间（转时间格式）"] = df_result["事件清除时间"].apply(
-            lambda x: str(x).replace("T", " ").replace(".000Z", "") if x and x != "" else ""
-        )
+    # 格式化时间字段：将 ISO 8601 格式转换为标准格式
+    # 例如：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03.000
+    for col in df_result.columns:
+        if df_result[col].dtype == 'object':  # 只处理字符串类型
+            # 检测是否为时间格式（包含 T 和 Z）
+            sample = df_result[col].dropna().iloc[0] if len(df_result[col].dropna()) > 0 else None
+            if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
+                try:
+                    df_result[col] = df_result[col].apply(
+                        lambda x: str(x).replace('T', ' ').replace('Z', '').rstrip('.') if x and x != '' else x
+                    )
+                except:
+                    pass  # 如果转换失败，保持原样
     
-    # 添加工单子单最后清除时间（当前数据中没有，填充空值）
-    if "工单子单最后清除时间" not in df_result.columns:
-        df_result["工单子单最后清除时间"] = ""
+    print(f"✅ 动态导出 {len(columns)} 个字段: {', '.join(columns)}")
     
     return df_result
 
@@ -203,8 +193,27 @@ def parse_vertical_txt(file_path):
     data_rows = []
     header_skipped = False  # 标记是否已跳过表头
     
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip() and not line.startswith("#!")]
+    # 尝试多种编码读取文件，优先尝试中文编码
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin-1']
+    lines = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, "r", encoding=encoding) as f:
+                lines = [line.strip() for line in f if line.strip() and not line.startswith("#!")]
+            used_encoding = encoding
+            break
+        except (UnicodeDecodeError, Exception):
+            continue
+    
+    if lines is None:
+        # 最后使用 latin-1（不会失败）
+        with open(file_path, "r", encoding="latin-1") as f:
+            lines = [line.strip() for line in f if line.strip() and not line.startswith("#!")]
+        used_encoding = 'latin-1'
+    
+    print(f"📖 使用编码: {used_encoding}")
 
     # 跳过表头分隔线和表头行
     for line in lines:

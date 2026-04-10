@@ -94,6 +94,12 @@ const routes = [
     component: () => import('../views/tools/KafkaGenerator.vue'),
     meta: { title: 'Kafka 消息生成', hidden: true }
   },
+  {
+    path: '/es-to-excel',
+    name: 'EsToExcel',
+    component: () => import('../views/tools/EsToExcel.vue'),
+    meta: { title: 'ES 查询结果转 Excel', hidden: true }
+  },
   // 404 页面
   {
     path: '/:pathMatch(.*)*',

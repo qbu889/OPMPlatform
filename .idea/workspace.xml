@@ -4,8 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加ES滚动查询的格式导出">
+      <change afterPath="$PROJECT_DIR$/docs/EsToExcel/EsToExcel.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/FJ-074-20251119-6678的ES数据.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/es的mapping.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -131,7 +138,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "WebServerToolWindowFactoryState": "false",
     "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
-    "git-widget-placeholder": "f/dev",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -169,14 +176,14 @@
       <recent name="$PROJECT_DIR$/test/wordToExcel" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/docs/cosmic" />
       <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
+      <recent name="$PROJECT_DIR$/docs/cosmic" />
       <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/templates/kafka" />
       <recent name="$PROJECT_DIR$/docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.EsToExcel">
+  <component name="RunManager" selected="Shell Script.start_es_to_excel.sh">
     <configuration name="EsToExcel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -236,10 +243,25 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="start.sh" type="ShConfigurationType" temporary="true">
+    <configuration name="start_es_to_excel.sh" type="ShConfigurationType" temporary="true">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start.sh" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_es_to_excel.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="start_frontend.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_frontend.sh" />
       <option name="SCRIPT_OPTIONS" value="" />
       <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
       <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -266,36 +288,21 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
-      <module name="wordToWord" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/test_new_excel.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python.wordToWord" />
       <item itemvalue="Python.EsToExcel" />
-      <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" />
+      <item itemvalue="Shell Script.start_es_to_excel.sh" />
+      <item itemvalue="Shell Script.start_frontend.sh" />
       <item itemvalue="Shell Script.start_with_tunnel.sh" />
-      <item itemvalue="Shell Script.start.sh" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Shell Script.start_es_to_excel.sh" />
+        <item itemvalue="Shell Script.start_frontend.sh" />
         <item itemvalue="Python.EsToExcel" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
-        <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" />
-        <item itemvalue="Shell Script.start.sh" />
       </list>
     </recent_temporary>
   </component>
@@ -371,23 +378,7 @@
       <workItem from="1775527432011" duration="540000" />
       <workItem from="1775530689758" duration="46228000" />
       <workItem from="1775698168884" duration="24460000" />
-      <workItem from="1775793525093" duration="2565000" />
-    </task>
-    <task id="LOCAL-00050" summary="new：修复前端重构页面样式错乱问题">
-      <option name="closed" value="true" />
-      <created>1774418380265</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1774418380266</updated>
-    </task>
-    <task id="LOCAL-00051" summary="new：增加kafka生成的置顶按钮功能">
-      <option name="closed" value="true" />
-      <created>1774423180489</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1774423180489</updated>
+      <workItem from="1775793525093" duration="3193000" />
     </task>
     <task id="LOCAL-00052" summary="new：增加kafka的ES语句生成">
       <option name="closed" value="true" />
@@ -765,7 +756,23 @@
       <option name="project" value="LOCAL" />
       <updated>1775726547648</updated>
     </task>
-    <option name="localTasksCounter" value="99" />
+    <task id="LOCAL-00099" summary="new：增加ES滚动查询的格式导出">
+      <option name="closed" value="true" />
+      <created>1775802712246</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1775802712247</updated>
+    </task>
+    <task id="LOCAL-00100" summary="new：增加ES滚动查询的格式导出">
+      <option name="closed" value="true" />
+      <created>1775802815481</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1775802815481</updated>
+    </task>
+    <option name="localTasksCounter" value="101" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -793,7 +800,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="master" />
                       </list>
                     </value>
                   </entry>
@@ -806,7 +813,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：kafka增加历史数据的查询复制" />
     <MESSAGE value="new：kafka历史记录复制增加json格式化" />
     <MESSAGE value="new：kafka生成结果延迟时间的独立按钮剔除，重新生成按钮能够兼容适配时间" />
     <MESSAGE value="fix：复制结果交互优化、fpa生成时动画去除" />
@@ -831,7 +837,8 @@
     <MESSAGE value="new：md文档位置调整" />
     <MESSAGE value="new：idea文件" />
     <MESSAGE value="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。" />
+    <MESSAGE value="new：增加ES滚动查询的格式导出" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加ES滚动查询的格式导出" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -887,7 +894,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1772158517894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$paiBanNew.coverage" NAME="paiBanNew Coverage Results" MODIFIED="1772508768432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$kafka_generator_routes.coverage" NAME="kafka_generator_routes Coverage Results" MODIFIED="1772158199279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/wordToWord$EsToExcel.coverage" NAME="EsToExcel 覆盖结果" MODIFIED="1775802327306" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/ES结果导Excel" />
+    <SUITE FILE_PATH="coverage/wordToWord$EsToExcel.coverage" NAME="EsToExcel 覆盖结果" MODIFIED="1775802789440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/ES结果导Excel" />
     <SUITE FILE_PATH="coverage/wordToWord$direct_test.coverage" NAME="direct_test Coverage Results" MODIFIED="1772158527433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$import_dimension_table.coverage" NAME="import_dimension_table Coverage Results" MODIFIED="1772617213196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_auth_system.coverage" NAME="test_auth_system Coverage Results" MODIFIED="1772012691480" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

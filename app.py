@@ -15,6 +15,7 @@ from http import client
 
 from flask import Flask, render_template, request, jsonify, session, send_file, send_from_directory
 from flask import redirect, url_for
+from flask_cors import CORS
 import markdown
 from docx import Document
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ from routes.document_convert.excel2word_routes import excel2word_bp
 from routes.document_convert.markdown_upload_routes import markdown_upload_bp
 from routes.document_convert.word_to_md_routes import word_to_md_bp
 from routes.document_convert.cosmic_routes import cosmic_bp
+from routes.document_convert.es_to_excel_routes import es_to_excel_bp
 
 # 排班管理模块
 from routes.schedule.schedule_config_routes import schedule_config_bp
@@ -162,6 +164,9 @@ def create_app(config_name='development'):
         template_folder='templates'
     )
     
+    # 启用 CORS（允许跨域请求）
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
     # 加载配置
     app.config.from_object(config[config_name])
     
@@ -198,6 +203,7 @@ def create_app(config_name='development'):
         markdown_upload_bp,
         word_to_md_bp,
         cosmic_bp,  # 表格转 COSMIC
+        es_to_excel_bp,  # ES 查询结果转 Excel
             
         # 排班管理模块（蓝图已定义前缀）
         schedule_config_bp,
