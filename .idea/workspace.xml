@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：md文档位置调整">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/document_convert/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/document_convert/excel_to_cosmic.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/excel_to_cosmic.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/fpa/sql_formatter.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,55 +105,55 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
-    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-cosyBalloonNotifications&quot;: &quot;Lingma Notification Balloon Group&quot;,
-    &quot;Notification.DoNotAsk-cosyBalloonNotifications&quot;: &quot;true&quot;,
-    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
-    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
-    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
-    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;f/dev&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/test/cosmic&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Applications/PyCharm.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.Flask (app.py).executor": "Run",
+    "Flask 服务器.Flask (app2.py).executor": "Run",
+    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
+    "JavaScript 调试.schedule.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-cosyBalloonNotifications": "Lingma Notification Balloon Group",
+    "Notification.DoNotAsk-cosyBalloonNotifications": "true",
+    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app2.executor": "Run",
+    "Python.holidaySys.executor": "Run",
+    "Python.kafka_routes.executor": "Debug",
+    "Python.paiBan.executor": "Run",
+    "Python.paiBanNew.executor": "Run",
+    "Python.wordToWord.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "git-widget-placeholder": "f/dev",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Applications/PyCharm.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mysql_aurora&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql_aurora"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "MySQL"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "MySQL"
     ]
   }
-}</component>
+}]]></component>
   <component name="Push.Settings">
     <force-push-targets>
       <force-push-target remote-path="origin" branch="onlineExcel" />
@@ -166,11 +162,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
       <recent name="$PROJECT_DIR$/test/cosmic" />
       <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/test_uploads" />
       <recent name="$PROJECT_DIR$/test/wordToExcel" />
-      <recent name="$PROJECT_DIR$/test/chatbot/上传的文档demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/docs/cosmic" />
@@ -180,7 +176,7 @@
       <recent name="$PROJECT_DIR$/docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.start_with_tunnel.sh">
+  <component name="RunManager" selected="Python.EsToExcel">
     <configuration name="EsToExcel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -295,9 +291,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.EsToExcel" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
         <item itemvalue="Shell Script.start_with_tunnel.sh" />
-        <item itemvalue="Python.EsToExcel" />
         <item itemvalue="Python 测试.Python 测试 (/Users/linziwang/PycharmProjects/wordToWord/test_new_excel.py 内)" />
         <item itemvalue="Shell Script.start.sh" />
       </list>
@@ -374,15 +370,8 @@
       <workItem from="1775180901957" duration="2928000" />
       <workItem from="1775527432011" duration="540000" />
       <workItem from="1775530689758" duration="46228000" />
-      <workItem from="1775698168884" duration="20355000" />
-    </task>
-    <task id="LOCAL-00049" summary="new：修复FPA前端显示不全、动画一直加载的问题">
-      <option name="closed" value="true" />
-      <created>1774414435132</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1774414435132</updated>
+      <workItem from="1775698168884" duration="24460000" />
+      <workItem from="1775793525093" duration="2565000" />
     </task>
     <task id="LOCAL-00050" summary="new：修复前端重构页面样式错乱问题">
       <option name="closed" value="true" />
@@ -768,7 +757,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775724325821</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。">
+      <option name="closed" value="true" />
+      <created>1775726547648</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1775726547648</updated>
+    </task>
+    <option name="localTasksCounter" value="99" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -809,7 +806,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题" />
     <MESSAGE value="fix：kafka增加历史数据的查询复制" />
     <MESSAGE value="new：kafka历史记录复制增加json格式化" />
     <MESSAGE value="new：kafka生成结果延迟时间的独立按钮剔除，重新生成按钮能够兼容适配时间" />
@@ -834,7 +830,8 @@
     <MESSAGE value="new：前端VUE框架" />
     <MESSAGE value="new：md文档位置调整" />
     <MESSAGE value="new：idea文件" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：idea文件" />
+    <MESSAGE value="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -883,14 +880,14 @@
     <SUITE FILE_PATH="coverage/wordToWord$test_mysql_connection.coverage" NAME="test_mysql_connection 覆盖结果" MODIFIED="1773214372731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_debug_calc.coverage" NAME="test_debug_calc 覆盖结果" MODIFIED="1773370120011" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$verify_order_and_category.coverage" NAME="verify_order_and_category 覆盖结果" MODIFIED="1773138954861" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775725516361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775801490416" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$.coverage" NAME=" 覆盖结果" MODIFIED="1775706813727" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$Flask__routes__paiBanNew_py_.coverage" NAME="Flask (routes/排班/paiBanNew.py) 覆盖结果" MODIFIED="1770349141830" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/wordToWord$test_reuse_level.coverage" NAME="test_reuse_level 覆盖结果" MODIFIED="1773138198517" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
     <SUITE FILE_PATH="coverage/wordToWord$quick_test.coverage" NAME="quick_test Coverage Results" MODIFIED="1772158517894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$paiBanNew.coverage" NAME="paiBanNew Coverage Results" MODIFIED="1772508768432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes/排班" />
     <SUITE FILE_PATH="coverage/wordToWord$kafka_generator_routes.coverage" NAME="kafka_generator_routes Coverage Results" MODIFIED="1772158199279" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/wordToWord$EsToExcel.coverage" NAME="EsToExcel 覆盖结果" MODIFIED="1775723207028" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/ES结果导Excel" />
+    <SUITE FILE_PATH="coverage/wordToWord$EsToExcel.coverage" NAME="EsToExcel 覆盖结果" MODIFIED="1775802327306" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/ES结果导Excel" />
     <SUITE FILE_PATH="coverage/wordToWord$direct_test.coverage" NAME="direct_test Coverage Results" MODIFIED="1772158527433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/kafka" />
     <SUITE FILE_PATH="coverage/wordToWord$import_dimension_table.coverage" NAME="import_dimension_table Coverage Results" MODIFIED="1772617213196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$test_auth_system.coverage" NAME="test_auth_system Coverage Results" MODIFIED="1772012691480" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
