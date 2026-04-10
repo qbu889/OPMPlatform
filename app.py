@@ -27,6 +27,7 @@ from config import config
 # 导入路由蓝图（按功能模块分组）
 # ============================================================================
 # 文档转换模块
+from routes.document_convert.document_routes import document_bp
 from routes.document_convert.excel2word_routes import excel2word_bp
 from routes.document_convert.markdown_upload_routes import markdown_upload_bp
 from routes.document_convert.word_to_md_routes import word_to_md_bp
@@ -197,6 +198,7 @@ def create_app(config_name='development'):
     # ==========================================================================
     blueprints = [
         # 文档转换模块（蓝图已定义前缀）
+        document_bp,  # 文档转换主路由（包含 excel-to-cosmic）
         excel2word_bp,
         markdown_upload_bp,
         word_to_md_bp,
@@ -348,7 +350,7 @@ if __name__ == '__main__':
     import threading
     import subprocess
     
-    port = int(os.environ.get("PORT", 5001))  # 优先使用环境变量，否则默认 5001
+    port = int(os.environ.get("PORT", 5002))  # 优先使用环境变量,否则默认 5002
     app_logger.info(f"启动 Flask 应用，端口：{port}")
     
     # 启动 cloudflared tunnel
