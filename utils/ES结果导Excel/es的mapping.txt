@@ -1,0 +1,3713 @@
+{
+  "mw_em_master" : {
+    "mappings" : {
+      "properties" : {
+        "5G_CUSTOMER_LIST" : {
+          "type" : "object"
+        },
+        "ACKNOWLEDGEMENT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "ACKNOWLEDGEMENT_USER" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ACTIVE_STATUS" : {
+          "type" : "long"
+        },
+        "ADDITIONAL_FIELD_1" : {
+          "type" : "integer"
+        },
+        "ALARM_COMPLAINT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ALARM_LEVEL" : {
+          "type" : "integer"
+        },
+        "ALARM_LEVEL_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ALARM_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "ALARM_REASON" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "ALARM_RESOURCE_STATUS" : {
+          "type" : "integer"
+        },
+        "ALARM_SOURCE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ALARM_STANDARD_FLAG" : {
+          "type" : "integer"
+        },
+        "ALARM_STANDARD_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ALARM_STANDARD_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ALARM_UNIQUE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "ASSIGN_TENANCE_GROUP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "BREAKLENGTH" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "BUSINESS_LAYER" : {
+          "type" : "integer"
+        },
+        "BUSINESS_LAYER_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "BUSINESS_LEVEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "BUSINESS_QUALITY_LAST_DESC" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "BUSINESS_QUALITY_LAST_STATUS" : {
+          "type" : "integer"
+        },
+        "BUSINESS_QUALITY_LAST_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "BUSINESS_TAG" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ADMIN_GRID_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ALARM_ANALYSIS" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "BUSINESS_SYSTEM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "BUSINESS_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CIRCUIT_LEVEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CIRCUIT_LEVEL_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CIRCUIT_NO" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "EFFECT_CIRCUIT_NUM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_CLIENT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "GCSS_CLIENT_GRADE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_CLIENT_LEVEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_CLIENT_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "GCSS_CLIENT_NUM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_SERVICE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "GCSS_SERVICE_LEVEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_SERVICE_LEVEL_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_SERVICE_NUM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GCSS_SERVICE_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "HOME_CLIENT_NUM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "IRMS_GRID_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 8191
+                }
+              }
+            },
+            "PRODUCT_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "CANCEL_ARRIVAL_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CANCEL_COLLECT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CANCEL_FORCE_FLAG" : {
+          "type" : "integer"
+        },
+        "CANCEL_FORCE_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CANCEL_STATUS" : {
+          "type" : "integer"
+        },
+        "CANCEL_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CHILD_ALARM_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "CI" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CITY_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CITY_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CI_LAC" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CI_WHITE_LIST" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "CLEAR_CAPACITY_DELAY_TIMES" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_DELAY_TIMES_KEEPALIVE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_NAMES" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_NAMES_KEEPALIVE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_NAMES_TOOLS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_RULE_IDS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_RULE_IDS_KEEPALIVE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_CAPACITY_RULE_IDS_TOOLS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CLEAR_COLLECTION_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CLOSE_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CORRELAT_TAG" : {
+          "properties" : {
+            "CENTENT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CONTENT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "RULEID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "COUNTY_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "COUNTY_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CREATION_EVENT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "CUSTOMER_SERVICE_LEVEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "CUST_GROUP_FEATURE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "DANGER_INFO" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "DANGER_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "DISPATCH_STATUS_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ORDER_STATUS" : {
+              "type" : "integer"
+            },
+            "ORDER_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "PROCESS_STATE" : {
+              "type" : "integer"
+            },
+            "PROCESS_TYPE" : {
+              "type" : "integer"
+            },
+            "RULE_ID" : {
+              "type" : "long"
+            },
+            "RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "DATA_EXCEPTION_CODE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "DETAIL_STATUS" : {
+          "type" : "integer"
+        },
+        "DISPATCH_INF" : {
+          "properties" : {
+            "PROJ_EVENT_FLAG" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            }
+          }
+        },
+        "DISPATCH_INFO" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "APPEND_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "AUTO_RECEIPT_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "AUTO_RECEIPT_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "AUTO_RECEIPT_RULE_ID" : {
+              "type" : "long"
+            },
+            "AUTO_RECEIPT_RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "AUTO_RECEIPT_STATE" : {
+              "type" : "integer"
+            },
+            "BUSINESS_EFFECT_RANGE_RATIO" : {
+              "type" : "float"
+            },
+            "CONFIRMATION_TIME" : {
+              "type" : "integer"
+            },
+            "CONTENT_TEMPLATE_ID" : {
+              "type" : "long"
+            },
+            "DAIWEI_POWER_ORDER_FLAG" : {
+              "type" : "long"
+            },
+            "DELAY_TIME" : {
+              "type" : "long"
+            },
+            "DISPATCH_FLAG" : {
+              "type" : "long"
+            },
+            "DISPATCH_LEVEL" : {
+              "type" : "long"
+            },
+            "DISPATCH_LEVEL_RULE_ID" : {
+              "type" : "long"
+            },
+            "DISPATCH_LEVEL_RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_NIGHT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_STATUS_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DURATION_TIME" : {
+              "type" : "float"
+            },
+            "END_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "INST_ID" : {
+              "type" : "long"
+            },
+            "IS_BUSINESS_EFFECT_RANGE" : {
+              "type" : "integer"
+            },
+            "IS_CALCULATE_DURATION" : {
+              "type" : "integer"
+            },
+            "IS_EFFECT_UPDATE" : {
+              "type" : "integer"
+            },
+            "IS_LEVEL_UPDATE" : {
+              "type" : "integer"
+            },
+            "IS_MANUAL_MERGE" : {
+              "type" : "integer"
+            },
+            "IS_NEW_EFFECT_UPDATE" : {
+              "type" : "integer"
+            },
+            "IS_ROOT_EQP_LABEL_CHANGE" : {
+              "type" : "integer"
+            },
+            "JT_DISPATCH_STATUS_DESC" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "JT_DISPATCH_STATUS_ID" : {
+              "type" : "integer"
+            },
+            "LIMIT_TIME_UPDATE_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "NOTIFY_ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "NOTIFY_ORDER_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ORDER_STATUS" : {
+              "type" : "integer"
+            },
+            "ORDER_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "ORDER_TYPE" : {
+              "type" : "integer"
+            },
+            "PROCESS STATE" : {
+              "type" : "long"
+            },
+            "PROCESSING_TIME" : {
+              "type" : "integer"
+            },
+            "PROCESS_ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PROCESS_ORDER_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "PROCESS_STATE" : {
+              "type" : "long"
+            },
+            "PROCESS_STATUS" : {
+              "type" : "long"
+            },
+            "PROCESS_TYPE" : {
+              "type" : "integer"
+            },
+            "PROJ_EVENT_DELAY_FIELD" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PROJ_EVENT_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "PROJ_EVENT_DISPATCH_FLAG" : {
+              "type" : "integer"
+            },
+            "PROJ_EVENT_DISPATCH_ORDER" : {
+              "type" : "integer"
+            },
+            "PROJ_EVENT_END_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PROJ_EVENT_FLAG" : {
+              "type" : "integer"
+            },
+            "PROJ_EVENT_IDEN_MARK" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PROJ_EVENT_START_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PROJ_EVENT_TIME_RANGE_FLAG" : {
+              "type" : "integer"
+            },
+            "RULE_ID" : {
+              "type" : "long"
+            },
+            "RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "SAME_FOLLOW_COND" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SAME_FOLLOW_RULE_ID" : {
+              "type" : "integer"
+            },
+            "START_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "STOP_DISPATCH_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "STOP_DISPATCH_RULE_ID" : {
+              "type" : "integer"
+            },
+            "SUPPRESS_DELAY_LEVEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SUPPRESS_END_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SUPPRESS_IMMEDIATE_LEVEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SUPPRESS_RULE_ID" : {
+              "type" : "long"
+            },
+            "SUPPRESS_RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SUPPRESS_START_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SUPPRESS_TYPE" : {
+              "type" : "integer"
+            },
+            "SYNC_LAST_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "SYNC_OPERATE_DESC" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "T1_CONFIRMATION_TIME" : {
+              "type" : "integer"
+            },
+            "T1_PROCESSING_TIME" : {
+              "type" : "integer"
+            },
+            "T2_CONFIRMATION_TIME" : {
+              "type" : "integer"
+            },
+            "T2_PROCESSING_TIME" : {
+              "type" : "integer"
+            },
+            "T3_CONFIRMATION_TIME" : {
+              "type" : "integer"
+            },
+            "T3_PROCESSING_TIME" : {
+              "type" : "integer"
+            },
+            "TIME_RULE_ID" : {
+              "type" : "long"
+            },
+            "TIME_RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "TODO_LIST_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "TRANSFER_RULE_ID" : {
+              "type" : "integer"
+            },
+            "TRANSFER_STATUS" : {
+              "type" : "integer"
+            },
+            "TRANSFER_TIME" : {
+              "type" : "integer"
+            },
+            "TRANSFER_TYPE" : {
+              "type" : "integer"
+            },
+            "TRANSFER_WORKING" : {
+              "type" : "integer"
+            },
+            "WARNING_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "WORK_OPERATE_LINK" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "WORK_ORDER_STATUS" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "DISPATCH_LEVEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "EFFECT_CELL_2G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_CELL_4G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_CELL_5G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_CELL_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_CIRCUIT_LEVEL" : {
+          "type" : "long"
+        },
+        "EFFECT_CIRCUIT_NUM_GL" : {
+          "type" : "long"
+        },
+        "EFFECT_CLIENT_LEVEL" : {
+          "type" : "long"
+        },
+        "EFFECT_CLIENT_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_COMPLAINT_FIRST_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "EFFECT_COMPLAINT_NEWEST_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "EFFECT_COMPLAINT_ORDER_NUM" : {
+          "type" : "integer"
+        },
+        "EFFECT_COMPLAINT_ORDER_NUMBER" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EFFECT_COMPLAINT_USER_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_MACHINERY_ROOM_TYPE" : {
+          "type" : "integer"
+        },
+        "EFFECT_NE_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_NODE_2G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_NODE_4G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_NODE_5G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_NODE_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_OLT_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_PON_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_RRU_2G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_RRU_4G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_RRU_5G_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_RRU_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_SERVICE_LEVEL" : {
+          "type" : "long"
+        },
+        "EFFECT_SLA" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EFFECT_TRANS_OOS_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_USER_BROADBAND_CELL_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_USER_BROADBAND_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_USER_BUSINESS_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_USER_NUM" : {
+          "type" : "long"
+        },
+        "EFFECT_USER_ONLINE_NUM" : {
+          "type" : "long"
+        },
+        "EQP_OBJECT_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EQP_OBJECT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EQUIPMENT_IP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EQUIPMENT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "ESCALATE_LOG" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_ARRIVAL_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "EVENT_CAT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_CLEAR_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_COLLECTION_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "EVENT_COLLECTION_TIMEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "EVENT_EFFECT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_EXPLANATION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_EXPLANATION_ADDITION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_GROUP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_LEVEL" : {
+          "type" : "integer"
+        },
+        "EVENT_LEVEL_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_LOCATION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_NUM" : {
+          "type" : "integer"
+        },
+        "EVENT_ORDER_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_ORDER_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_PROBABLE_CAUSE_TXT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_PROVINCE_LEVEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_REASON" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_RECORD_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_ROOT_CATEGORY" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_ROOT_CATEGORY_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_SOURCE" : {
+          "type" : "long"
+        },
+        "EVENT_STANDARD_FLAG" : {
+          "type" : "integer"
+        },
+        "EVENT_STANDARD_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_STANDARD_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_STATUS" : {
+          "type" : "integer"
+        },
+        "EVENT_SUB_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_SUB_TYPE_ID" : {
+          "type" : "integer"
+        },
+        "EVENT_SUMMARY" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EVENT_TAG" : {
+          "type" : "nested",
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "IS_AUTO_PRO_ORDER" : {
+              "type" : "integer"
+            },
+            "IS_CANCEL_ORDER" : {
+              "type" : "integer"
+            },
+            "IS_HAS_TOPO" : {
+              "type" : "integer"
+            },
+            "IS_IMPORT" : {
+              "type" : "integer"
+            },
+            "IS_LOAD_EVENT_API_INFO" : {
+              "type" : "long"
+            },
+            "IS_MATCH_DANGER_RULES" : {
+              "type" : "integer"
+            },
+            "IS_MATCH_DISPATCH_PRO_RULES" : {
+              "type" : "long"
+            },
+            "IS_MATCH_DISPATCH_RULES" : {
+              "type" : "long"
+            },
+            "IS_MATCH_WARNING_RULES" : {
+              "type" : "integer"
+            },
+            "IS_OUTAGE" : {
+              "type" : "integer"
+            },
+            "IS_RELATED" : {
+              "type" : "integer"
+            },
+            "IS_ROOT" : {
+              "type" : "integer"
+            },
+            "IS_SEND_ORDER" : {
+              "type" : "integer"
+            },
+            "IS_SEND_PRO_ORDER" : {
+              "type" : "integer"
+            },
+            "IS_UPGRADE" : {
+              "type" : "integer"
+            },
+            "PREPROCESS_T1" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PREPROCESS_TIME" : {
+              "type" : "long"
+            }
+          }
+        },
+        "EVENT_TAG_LIST" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_TAG_VALUE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "EVENT_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EVENT_TYPE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EXCEPTION_CODES" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "EXCEPTION_SUPPRESS_DISPATCH" : {
+          "type" : "integer"
+        },
+        "EXCEPTION_SUPPRESS_REASON" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EXTRA_ID2" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EXTRA_ID2_CN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "EXTRA_STRING1" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_CARRY_TOOLS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_CAUSE_CATEGORY1" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_CAUSE_CATEGORY2" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_DIAGNOSIS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "FAULT_DISPOSAL_METHOD" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_DISPOSAL_PLAN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_HARDWARE_MODEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVEDISPOSAL_PLAN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVE_CARRY_TOOLS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVE_DISPOSAL_PLAN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVE_METHOD" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVE_PRIORITY" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_KEEPALIVE_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_LOCATION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "FAULT_POSITION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_PROCESS_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_RELATED_ALARM_IDS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_ROOT_CAUSE_SOURCE" : {
+          "type" : "long"
+        },
+        "FAULT_SUB_TYPE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_TYPE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FAULT_WORK_ORDER_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FIRST_EVENT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "FIX_TIMEOUT_LIMIT" : {
+          "type" : "integer"
+        },
+        "FULL_REGION_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "FULL_REGION_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "GROUP_CUSTOMER_LINE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "GROUP_CUSTOMER_LINE_LIST" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "GZ_EVENT_STATUS" : {
+          "type" : "long"
+        },
+        "HOME_BROAD_BAND_LIST" : {
+          "type" : "object"
+        },
+        "IF_HSR" : {
+          "type" : "integer"
+        },
+        "INDUSTRY_CUST_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "INTELLIGENT" : {
+          "type" : "integer"
+        },
+        "INTERFERENCE_FLAG" : {
+          "type" : "integer"
+        },
+        "IS_BAD_WEATHER" : {
+          "type" : "integer"
+        },
+        "IS_CROSS_DOMAIN" : {
+          "type" : "integer"
+        },
+        "IS_CROSS_MAJOR" : {
+          "type" : "integer"
+        },
+        "IS_EFFECT_BUSINESS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "IS_EFFECT_OFF_STATION" : {
+          "type" : "integer"
+        },
+        "IS_EFFECT_SERVICE" : {
+          "type" : "integer"
+        },
+        "IS_ESCALATE" : {
+          "type" : "integer"
+        },
+        "IS_ORDER_DELAY_APPLY" : {
+          "type" : "integer"
+        },
+        "IS_ORDER_DELAY_STATUS" : {
+          "type" : "integer"
+        },
+        "IS_RELATED" : {
+          "type" : "long"
+        },
+        "IS_ROOT" : {
+          "type" : "long"
+        },
+        "IS_SERVICE_EFFECT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "IS_TEST" : {
+          "type" : "integer"
+        },
+        "IS_TIMEOUT_RECENTM" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "IS_TO_MAINTENANCE" : {
+          "type" : "integer"
+        },
+        "KEY_CELL" : {
+          "type" : "integer"
+        },
+        "LAST_EVENT_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "LINE_BUSINESS_LAYER" : {
+          "type" : "integer"
+        },
+        "LINE_BUSINESS_LAYER_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MAINTAIN_TEAM" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MAINTAIN_TEAM_DESC" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MAINTAIN_TEAM_SOURCE" : {
+          "type" : "integer"
+        },
+        "MAIN_NET_SORT_ONE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MAIN_NET_SORT_THREE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MAIN_NET_SORT_TWO" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "MARK_SMART_RULE_ID" : {
+          "type" : "integer"
+        },
+        "MARK_SMART_RULE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "MASTER_EVENT_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "NETWORK_SUB_TYPE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NETWORK_SUB_TYPE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NETWORK_TYPE_ID" : {
+          "type" : "integer"
+        },
+        "NETWORK_TYPE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NE_ADMIN_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NE_ADMIN_STATUS_CN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NE_LABEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "NE_LOCATION" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "NE_TAG" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "BOARD_NUM" : {
+              "type" : "integer"
+            },
+            "BOARD_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "BUILD_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "HAS_FIXED_GENERATOR" : {
+              "type" : "integer"
+            },
+            "IS_AGG_ROOM" : {
+              "type" : "integer"
+            },
+            "IS_CORE_ROOM" : {
+              "type" : "integer"
+            },
+            "MACHINE_ROOM_ADDRESS" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MACHINE_ROOM_GRADE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MACHINE_ROOM_INFO" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MANAGER_ROOM_ADMIN_ACCOUNT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MANAGER_ROOM_ADMIN_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MANAGER_ROOM_ADMIN_TEL" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "NE_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PORT_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "PORT_NUM" : {
+              "type" : "integer"
+            },
+            "PORT_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "RACK_NUM" : {
+              "type" : "integer"
+            },
+            "ROOM_DEPT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ROOM_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SHELF_NUM" : {
+              "type" : "integer"
+            }
+          }
+        },
+        "NMS_ALARM_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NMS_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NOTIFICATION_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "NOTIFICATION_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "OBJECT_CLASS_ID" : {
+          "type" : "integer"
+        },
+        "OBJECT_CLASS_TEXT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "OLD_EVENT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ONE_WARNING_BEGIN_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "ONE_WARNING_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ONE_WARNING_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ON_NET_TIME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "OPDER_STATUS" : {
+          "type" : "long"
+        },
+        "ORDER_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ORDER_INFO" : {
+          "properties" : {
+            "INST_ID" : {
+              "type" : "long"
+            },
+            "PROCESS_STATE" : {
+              "type" : "long"
+            },
+            "RULE_ID" : {
+              "type" : "long"
+            }
+          }
+        },
+        "ORDER_STATUS" : {
+          "type" : "integer"
+        },
+        "ORDER_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "ORG_TYPE" : {
+          "type" : "integer"
+        },
+        "ORIG_ALARM_CLEAR_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ORIG_ALARM_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ORIG_EVENT_EXT" : {
+          "properties" : {
+            "ACTIVE_STATUS" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MAINTAIN_GROUP" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SRC_APP_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SRC_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "SRC_ORG_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "origEventExtMap" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            }
+          }
+        },
+        "PORT_NUM" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PORT_NUM_CN" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "POS_LOGIC_BREAK" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "POS_LOS_TOPO_INFO" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "POS_REAL_BREAK" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "POS_REAL_LATITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "POS_REAL_LONGITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PRIVATE_MODE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROCESS_INSTANCE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PRODUCT_EVENT_FLAG" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_CITY_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_END_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "PROJ_EQP_STATUS" : {
+          "type" : "integer"
+        },
+        "PROJ_EVENT_NETWORK_TYPE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_INTERFERENCE_FLAG" : {
+          "type" : "integer"
+        },
+        "PROJ_INTERFERENCE_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "PROJ_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_NETWORK_TYPE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_NE_STATUS" : {
+          "type" : "integer"
+        },
+        "PROJ_OA_FILE_CONTENT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_OA_FILE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROJ_SAME_SPECIALTY" : {
+          "type" : "integer"
+        },
+        "PROJ_START_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "PROVINCE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PROVINCE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PRO_ORDER_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "PRO_ORDER_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "RECOGNITION_RULE_ID" : {
+          "type" : "integer"
+        },
+        "RECOGNITION_RULE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "RECOGNITION_STANDARD_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "REGION" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "EFFECT_USER_NUM" : {
+              "type" : "long"
+            },
+            "GRID_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "GRID_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "IS_VIP" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MGT_ORG_ATTR" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "MGT_ORG_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "REGION_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "REGION_NO" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "RELATED_ALARM_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "RELATED_EVENT_CANCEL_COUNT" : {
+          "type" : "long"
+        },
+        "RELATED_EVENT_COUNT" : {
+          "type" : "long"
+        },
+        "RELATED_EVENT_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "RELATED_EXCESS_ACTIVE_NUM" : {
+          "type" : "integer"
+        },
+        "RELATED_INFO" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "RULE_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            }
+          }
+        },
+        "RELATED_INFO_LIST" : {
+          "properties" : {
+            "INST_ID" : {
+              "type" : "long"
+            },
+            "PROCESS_STATE" : {
+              "type" : "long"
+            },
+            "RULE_ID" : {
+              "type" : "long"
+            }
+          }
+        },
+        "RELATED_MAINTAIN_GROUP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "RELATED_NETWORK_TYPE_TOP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "RELATION_DESC" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "REMOTE_BUSINESS_LAYER" : {
+          "type" : "integer"
+        },
+        "REMOTE_BUSINESS_LAYER_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "REMOTE_EQUIPMENT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "REMOTE_OBJECT_CLASS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "REMOTE_OBJECT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "REMOTE_RESOURCE_STATUS" : {
+          "type" : "integer"
+        },
+        "ROOT_COORDINATE_TYPE" : {
+          "type" : "integer"
+        },
+        "ROOT_EQP_LABEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ROOT_EQUIPMENT_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "ROOT_EVENT_FP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "ROOT_NETWORK_TYPE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ROOT_NETWORK_TYPE_TOP" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ROOT_NE_LATITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "ROOT_NE_LONGITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "RULE_INFO" : {
+          "type" : "nested",
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ALARM_TYPE_SIGN" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_RULE_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "RESOURCE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "RULE_INFO_MAP" : {
+              "properties" : {
+                "ALARM_TYPE_SIGN" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "EVENT_RULE_ID" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "RESOURCE_NAME" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SATOTAL" : {
+          "type" : "integer"
+        },
+        "SCENCE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SEND_JT_FLAG" : {
+          "type" : "integer"
+        },
+        "SERVICE_ASSURANCE_LEVEL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SERVICE_EFFECT_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "SERVICE_LEVEL_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SERV_EFFECT_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SITE_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SITE_NO" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SITE_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SLA_DURATION" : {
+          "type" : "integer"
+        },
+        "SLA_STATUS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SMART_WARNING_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SPECIFIC_PROBLEMS" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SRC_ORG_ALARM_TEXT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "SRC_ORG_TEXT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "STRATEGIC_CUST_TYPEFL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "STRATEGIC_CUST_TYPESL" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "SUPPRESS_HANDLE_TYPE" : {
+          "type" : "integer"
+        },
+        "SUPPRESS_NIGHT" : {
+          "type" : "integer"
+        },
+        "SUPPRESS_RULE_ID" : {
+          "type" : "integer"
+        },
+        "SUPPRESS_RULE_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "TEMP_EFFECT_RANGE_RATIO" : {
+          "type" : "long"
+        },
+        "TEMP_IS_ROOT_EQP_LABEL_CHANGE" : {
+          "type" : "long"
+        },
+        "TEMP_NEW_EFFECT_UPDATE_NUM" : {
+          "type" : "long"
+        },
+        "TERMINATION_TIME" : {
+          "type" : "date",
+          "format" : "yyyy-MM-dd HH:mm:ss"
+        },
+        "TERMINATION_USER" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TMSC_CAT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TMSC_CAT2" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TODO_LIST_ID" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 8191
+            }
+          }
+        },
+        "TOPIC_PARTITION" : {
+          "type" : "integer"
+        },
+        "TOPIC_PARTITION_KEY" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TOPIC_PREFIX" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TO_MAINTENANCE_TIME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TRIGGER_COORDINATE_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "TRIGGER_NE_LATITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TRIGGER_NE_LONGITUDE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "TRIGGER_TAG" : {
+          "properties" : {
+            "CONTENT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_STANDARD_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "EVENT_STANDARD_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "RULEID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "TYPE_KEYCODE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "USER_TEXT" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "VENDOR_EVENT_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "VENDOR_ID" : {
+          "type" : "long"
+        },
+        "VENDOR_NAME" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "VENDOR_SEVERITY" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "WARNING_INFO" : {
+          "properties" : {
+            "@type" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "BUSINESS_EFFECT_RANGE_RATIO" : {
+              "type" : "float"
+            },
+            "CONTENT_TEMPLATE_ID" : {
+              "type" : "long"
+            },
+            "CONVERGE_DIMENSION" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CONVERGE_TIME" : {
+              "type" : "integer"
+            },
+            "DISPATCH_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "DISPATCH_FLAG" : {
+              "type" : "integer"
+            },
+            "DISPATCH_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "DISPATCH_STATUS_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DURATION_TIME" : {
+              "type" : "float"
+            },
+            "END_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "INST_ID" : {
+              "type" : "long"
+            },
+            "IS_BUSINESS_EFFECT_RANGE" : {
+              "type" : "integer"
+            },
+            "IS_CALCULATE_DURATION" : {
+              "type" : "integer"
+            },
+            "IS_CONVERGE_INCLUDE_RECOVERED" : {
+              "type" : "integer"
+            },
+            "IS_EFFECT_UPDATE" : {
+              "type" : "integer"
+            },
+            "IS_LEVEL_UPDATE" : {
+              "type" : "integer"
+            },
+            "IS_NEW_EFFECT_UPDATE" : {
+              "type" : "integer"
+            },
+            "ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ORDER_STATUS" : {
+              "type" : "integer"
+            },
+            "ORDER_TIME" : {
+              "type" : "date",
+              "format" : "yyyy-MM-dd HH:mm:ss"
+            },
+            "PROCESSING_TIME" : {
+              "type" : "integer"
+            },
+            "PROCESS_STATE" : {
+              "type" : "integer"
+            },
+            "PROCESS_TYPE" : {
+              "type" : "integer"
+            },
+            "RECOVERY_DELAY_TIME" : {
+              "type" : "integer"
+            },
+            "ROOT_EVENT_ID" : {
+              "type" : "long"
+            },
+            "RULE_ID" : {
+              "type" : "long"
+            },
+            "RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "RULE_TYPE" : {
+              "type" : "integer"
+            },
+            "START_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "WARNING_LEVEL" : {
+              "type" : "integer"
+            },
+            "WARNING_PLAN_ID" : {
+              "type" : "integer"
+            },
+            "WARNING_PLAN_RULE_ID" : {
+              "type" : "long"
+            },
+            "WARNING_PLAN_RULE_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "WARNING_REASON" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "WARNING_TYPE" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        },
+        "WIRELESS_SITE_TYPE" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "doc" : {
+          "properties" : {
+            "CANCEL_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "CREATION_EVENT_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "DISPATCH_INFO" : {
+              "properties" : {
+                "@type" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "APPEND_DELAY_TIME" : {
+                  "type" : "long"
+                },
+                "BUSINESS_EFFECT_RANGE_RATIO" : {
+                  "type" : "float"
+                },
+                "CONFIRMATION_TIME" : {
+                  "type" : "long"
+                },
+                "DELAY_TIME" : {
+                  "type" : "long"
+                },
+                "DISPATCH_FLAG" : {
+                  "type" : "long"
+                },
+                "DISPATCH_LEVEL" : {
+                  "type" : "long"
+                },
+                "DISPATCH_STATUS_ID" : {
+                  "type" : "long"
+                },
+                "DISPATCH_TYPE" : {
+                  "type" : "long"
+                },
+                "DURATION_TIME" : {
+                  "type" : "float"
+                },
+                "END_TIME" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "INST_ID" : {
+                  "type" : "long"
+                },
+                "IS_BUSINESS_EFFECT_RANGE" : {
+                  "type" : "long"
+                },
+                "IS_CALCULATE_DURATION" : {
+                  "type" : "long"
+                },
+                "IS_NEW_EFFECT_UPDATE" : {
+                  "type" : "long"
+                },
+                "IS_ROOT_EQP_LABEL_CHANGE" : {
+                  "type" : "long"
+                },
+                "ORDER_ID" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "ORDER_STATUS" : {
+                  "type" : "long"
+                },
+                "ORDER_TIME" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "PROCESSING_TIME" : {
+                  "type" : "long"
+                },
+                "PROCESS_STATE" : {
+                  "type" : "long"
+                },
+                "PROCESS_TYPE" : {
+                  "type" : "long"
+                },
+                "RULE_ID" : {
+                  "type" : "long"
+                },
+                "START_TIME" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "T1_CONFIRMATION_TIME" : {
+                  "type" : "long"
+                },
+                "T1_PROCESSING_TIME" : {
+                  "type" : "long"
+                },
+                "T2_CONFIRMATION_TIME" : {
+                  "type" : "long"
+                },
+                "T2_PROCESSING_TIME" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword"
+                    }
+                  }
+                },
+                "T3_CONFIRMATION_TIME" : {
+                  "type" : "long"
+                },
+                "T3_PROCESSING_TIME" : {
+                  "type" : "long"
+                },
+                "TIME_RULE_ID" : {
+                  "type" : "long"
+                }
+              }
+            },
+            "EQUIPMENT_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_CAT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_CLEAR_FP" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_FP" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_ID" : {
+              "type" : "long"
+            },
+            "EVENT_LOCATION" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_NAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_RECORD_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_STANDARD_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "EVENT_TAG" : {
+              "properties" : {
+                "IS_MATCH_DISPATCH_RULES" : {
+                  "type" : "long"
+                }
+              }
+            },
+            "EVENT_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "IS_RELATED" : {
+              "type" : "long"
+            },
+            "IS_ROOT" : {
+              "type" : "long"
+            },
+            "MAINTAIN_TEAM" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "OPDER_STATUS" : {
+              "type" : "long"
+            },
+            "ORDER_ID" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "ORDER_TIME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "RELATED_EVENT_FP" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
