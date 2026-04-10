@@ -4,7 +4,7 @@ import re
 import sqlite3
 from datetime import datetime
 
-from flask import Blueprint, request, render_template, send_file, json, g
+from flask import Blueprint, request, render_template, send_file, json, g, jsonify
 from werkzeug.utils import secure_filename
 import markdown
 from docx import Document
@@ -193,6 +193,127 @@ def markdown_upload():
     except Exception as e:
         logging.error(f"文件处理异常：{e}", exc_info=True)
         return render_template('document_convert/markdown_upload.html', error="处理过程中发生错误，请稍后再试")
+
+
+@markdown_upload_bp.route('/markdown-upload/upload', methods=['POST'])
+def markdown_upload_api():
+    """
+    Markdown文件上传API（JSON接口）
+    """
+    try:
+        if 'file' not in request.files and 'markdown_file' not in request.files:
+            return jsonify({'success': False, 'message': '没有上传文件'}), 400
+
+        file = request.files.get('file') or request.files.get('markdown_file')
+        if file.filename == '' or not allowed_file(file.filename):
+            return jsonify({'success': False, 'message': '请选择有效的 .md 文件'}), 400
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+        # 防止路径穿越
+        real_path = os.path.realpath(filepath)
+        upload_real_path = os.path.realpath(UPLOAD_FOLDER)
+        if not real_path.startswith(upload_real_path):
+            return jsonify({'success': False, 'message': '非法路径'}), 400
+
+        file.save(real_path)
+        logging.info(f"文件上传成功：{filename}")
+
+        # 转换为 Word
+        word_filename = filename.replace('.md', '.docx').replace('.MD', '.docx')
+        word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
+
+        logging.info(f"开始转换：{real_path} -> {word_filepath}")
+        convert_md_to_docx(real_path, word_filepath)
+        logging.info(f"转换完成：{word_filepath}")
+
+        # 返回下载链接
+        download_url = f'/markdown-upload/download/{word_filename}'
+
+        return jsonify({
+            'success': True,
+            'message': '转换成功',
+            'download_url': download_url,
+            'filename': word_filename
+        })
+
+    except Exception as e:
+        logging.error(f"文件处理异常：{e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'转换失败：{str(e)}'}), 500
+
+
+@markdown_upload_bp.route('/markdown-upload/convert', methods=['POST'])
+def markdown_convert_api():
+    """
+    Markdown内容转换为Word（JSON接口）
+    接收 Markdown 文本内容，转换为 Word 文档后返回下载链接
+    """
+    try:
+        data = request.json
+        if not data or 'content' not in data:
+            return jsonify({'success': False, 'message': '缺少 Markdown 内容'}), 400
+
+        md_content = data['content']
+        if not md_content.strip():
+            return jsonify({'success': False, 'message': 'Markdown 内容为空'}), 400
+
+        # 生成临时文件名
+        timestamp = int(datetime.now().timestamp() * 1000)
+        md_filename = f'temp_{timestamp}.md'
+        md_filepath = os.path.join(UPLOAD_FOLDER, md_filename)
+        word_filename = f'temp_{timestamp}.docx'
+        word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
+
+        # 保存 Markdown 内容
+        with open(md_filepath, 'w', encoding='utf-8') as f:
+            f.write(md_content)
+
+        logging.info(f"开始转换 Markdown 内容 -> {word_filepath}")
+        convert_md_to_docx(md_filepath, word_filepath)
+        logging.info(f"转换完成：{word_filepath}")
+
+        # 返回下载链接
+        download_url = f'/markdown-upload/download/{word_filename}'
+
+        return jsonify({
+            'success': True,
+            'message': '转换成功',
+            'download_url': download_url,
+            'filename': word_filename
+        })
+
+    except Exception as e:
+        logging.error(f"转换失败：{e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'转换失败：{str(e)}'}), 500
+
+
+@markdown_upload_bp.route('/markdown-upload/download/<filename>', methods=['GET'])
+def markdown_download(filename):
+    """
+    下载转换后的 Word 文件
+    """
+    try:
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'message': '文件不存在'}), 404
+
+        response = send_file(filepath, as_attachment=True, download_name=filename)
+
+        # 下载后删除临时文件
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.remove(filepath)
+                logging.info(f"临时文件已删除：{filepath}")
+            except Exception as e:
+                logging.warning(f"删除失败：{e}")
+
+        return response
+
+    except Exception as e:
+        logging.error(f"下载失败：{e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'下载失败：{str(e)}'}), 500
 
 
 def set_font(run, name='宋体', size=None, bold=False):

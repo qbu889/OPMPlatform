@@ -27,7 +27,6 @@ from config import config
 # 导入路由蓝图（按功能模块分组）
 # ============================================================================
 # 文档转换模块
-from routes.document_convert.document_routes import document_bp
 from routes.document_convert.excel2word_routes import excel2word_bp
 from routes.document_convert.markdown_upload_routes import markdown_upload_bp
 from routes.document_convert.word_to_md_routes import word_to_md_bp
@@ -198,7 +197,6 @@ def create_app(config_name='development'):
     # ==========================================================================
     blueprints = [
         # 文档转换模块（蓝图已定义前缀）
-        document_bp,
         excel2word_bp,
         markdown_upload_bp,
         word_to_md_bp,

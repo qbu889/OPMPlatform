@@ -104,7 +104,7 @@ def convert_page():
     logger.info("访问转换页面")
     demo_exists = os.path.exists(current_app.config['DEMO_TEMPLATE_PATH'])
     logger.info(f"Demo模板存在状态: {demo_exists}")
-    return render_template('convert_upload.html', demo_exists=demo_exists, convert_result=None)
+    return render_template('convert_upload（作废）.html', demo_exists=demo_exists, convert_result=None)
 
 
 @document_bp.route('/excel-to-cosmic')
@@ -122,19 +122,19 @@ def upload_and_convert():
     if not os.path.exists(current_app.config['DEMO_TEMPLATE_PATH']):
         logger.warning("Demo模板不存在")
         # 添加格式化功能的提示
-        return render_template('convert_upload.html', demo_exists=False,
+        return render_template('convert_upload（作废）.html', demo_exists=False,
                                convert_result=None, formatter_available=True)
 
     # 处理上传文件
     if 'convert_file' not in request.files:
         logger.warning("未选择待转换文件")
-        return render_template('convert_upload.html', demo_exists=True,
+        return render_template('convert_upload（作废）.html', demo_exists=True,
                                convert_result={'success': False, 'msg': '未选择待转换文件'})
 
     convert_file = request.files['convert_file']
     if convert_file.filename == '':
         logger.warning("待转换文件名为空")
-        return render_template('convert_upload.html', demo_exists=True,
+        return render_template('convert_upload（作废）.html', demo_exists=True,
                                convert_result={'success': False, 'msg': '文件名不能为空'})
 
     try:
@@ -154,7 +154,7 @@ def upload_and_convert():
         parsed_data, parse_error = parse_source_doc(source_path)
         if parse_error:
             logger.error(f"文档解析失败: {parse_error}")
-            return render_template('convert_upload.html', demo_exists=True,
+            return render_template('convert_upload（作废）.html', demo_exists=True,
                                    convert_result={'success': False, 'msg': f'文档解析失败：{parse_error}'})
 
         if not parsed_data or len(parsed_data) == 0:
@@ -164,7 +164,7 @@ def upload_and_convert():
                            "1. 文档是否包含功能需求相关内容；"
                            "2. 文档格式是否符合要求；"
                            "3. 是否参考了标准模板格式")
-            return render_template('convert_upload.html', demo_exists=True,
+            return render_template('convert_upload（作废）.html', demo_exists=True,
                                    convert_result={'success': False, 'msg': detailed_msg})
 
         logger.info(f"文档解析成功，共提取到 {len(parsed_data)} 条数据")
@@ -181,13 +181,13 @@ def upload_and_convert():
 
         if not generate_success:
             logger.error(f"文档转换失败: {generate_error}")
-            return render_template('convert_upload.html', demo_exists=True,
+            return render_template('convert_upload（作废）.html', demo_exists=True,
                                    convert_result={'success': False, 'msg': f'文档转换失败：{generate_error}'})
 
         logger.info(f"文档转换成功，输出文件路径: {output_doc_path}")
 
         # 转换成功，返回下载链接
-        return render_template('convert_upload.html', demo_exists=True, convert_result={
+        return render_template('convert_upload（作废）.html', demo_exists=True, convert_result={
             'success': True,
             'msg': f'文档已成功转换为Demo格式，共处理 {len(parsed_data)} 条数据',
             'download_url': '/download-converted-doc'
@@ -195,7 +195,7 @@ def upload_and_convert():
 
     except Exception as e:
         logger.error(f"文档转换过程中发生未预期错误: {str(e)}", exc_info=True)
-        return render_template('convert_upload.html', demo_exists=True,
+        return render_template('convert_upload（作废）.html', demo_exists=True,
                                convert_result={'success': False, 'msg': f'系统错误：{str(e)}'})
 @document_bp.route('/download-converted-doc')
 def download_converted_doc():

@@ -4,10 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加ES滚动查询的格式导出">
-      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/FJ-074-20251119-6678的ES数据.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/ES结果导Excel/es的mapping.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/EsToExcel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/EsToExcel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements-linux.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements-linux.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/document_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/document_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/es_to_excel_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/es_to_excel_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/markdown_upload_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/markdown_upload_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/convert_upload.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/excel2word.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/excel2word.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/excel2word_content.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/format_check.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/format_check.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/document_convert/json_fixer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/document_convert/json_fixer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ES结果导Excel/EsToExcel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -170,14 +182,14 @@
       <recent name="$PROJECT_DIR$/test/wordToExcel" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
       <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
       <recent name="$PROJECT_DIR$/docs/cosmic" />
       <recent name="$PROJECT_DIR$/test/fpa" />
       <recent name="$PROJECT_DIR$/templates/kafka" />
-      <recent name="$PROJECT_DIR$/docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.start_es_to_excel.sh">
+  <component name="RunManager" selected="Shell Script.start.sh">
     <configuration name="EsToExcel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="wordToWord" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -267,10 +279,10 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="start_with_tunnel.sh" type="ShConfigurationType" temporary="true">
+    <configuration name="start.sh" type="ShConfigurationType" temporary="true">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_with_tunnel.sh" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start.sh" />
       <option name="SCRIPT_OPTIONS" value="" />
       <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
       <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -286,25 +298,24 @@
       <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python.wordToWord" />
       <item itemvalue="Python.EsToExcel" />
+      <item itemvalue="Shell Script.start.sh" />
       <item itemvalue="Shell Script.start_es_to_excel.sh" />
       <item itemvalue="Shell Script.start_frontend.sh" />
-      <item itemvalue="Shell Script.start_with_tunnel.sh" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Shell Script.start.sh" />
         <item itemvalue="Shell Script.start_es_to_excel.sh" />
         <item itemvalue="Shell Script.start_frontend.sh" />
         <item itemvalue="Python.EsToExcel" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
-        <item itemvalue="Shell Script.start_with_tunnel.sh" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.159" />
-        <option value="bundled-python-sdk-e0ed3721d81e-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.159" />
+        <option value="bundled-python-sdk-7a29c1521ef0-c986f194a52a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.11799.298" />
       </set>
     </attachedChunks>
   </component>
@@ -373,14 +384,7 @@
       <workItem from="1775530689758" duration="46228000" />
       <workItem from="1775698168884" duration="24460000" />
       <workItem from="1775793525093" duration="3193000" />
-    </task>
-    <task id="LOCAL-00053" summary="fix：页面重构后AI客服页面功能异常调整">
-      <option name="closed" value="true" />
-      <created>1774490320942</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1774490320942</updated>
+      <workItem from="1775810745899" duration="31000" />
     </task>
     <task id="LOCAL-00054" summary="fix：增加日志输出">
       <option name="closed" value="true" />
@@ -766,7 +770,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775808969916</updated>
     </task>
-    <option name="localTasksCounter" value="102" />
+    <task id="LOCAL-00102" summary="new：es导excel增加批量文件的导入合并成一个导出文件功能">
+      <option name="closed" value="true" />
+      <created>1775809166652</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1775809166652</updated>
+    </task>
+    <option name="localTasksCounter" value="103" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -807,7 +819,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：kafka历史记录复制增加json格式化" />
     <MESSAGE value="new：kafka生成结果延迟时间的独立按钮剔除，重新生成按钮能够兼容适配时间" />
     <MESSAGE value="fix：复制结果交互优化、fpa生成时动画去除" />
     <MESSAGE value="fix：fpa生成的ILF顺序错误问题修复；ILF提取错误问题修复。" />
@@ -832,7 +843,8 @@
     <MESSAGE value="new：idea文件" />
     <MESSAGE value="new：cosmic增加导出功能；SQL ID 格式化工具生成结果框增加上下滚动展示。" />
     <MESSAGE value="new：增加ES滚动查询的格式导出" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加ES滚动查询的格式导出" />
+    <MESSAGE value="new：es导excel增加批量文件的导入合并成一个导出文件功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：es导excel增加批量文件的导入合并成一个导出文件功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

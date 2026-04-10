@@ -131,18 +131,53 @@ def _process_json_data(data):
     df_result = df_result.fillna("")
     
     # 格式化时间字段：将 ISO 8601 格式转换为标准格式
-    # 例如：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03.000
+    # 例如：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03（去掉毫秒）
+    time_columns_count = 0
+    
+    print(f"\n🔍 开始检查时间字段，共 {len(df_result.columns)} 列")
     for col in df_result.columns:
-        if df_result[col].dtype == 'object':  # 只处理字符串类型
-            # 检测是否为时间格式（包含 T 和 Z）
+        col_dtype = str(df_result[col].dtype)
+        print(f"  - 列名: {col}, 数据类型: {col_dtype}")
+        
+        # 支持 object 和 str 类型
+        if col_dtype in ['object', 'str']:
+            # 获取第一个非空样本
             sample = df_result[col].dropna().iloc[0] if len(df_result[col].dropna()) > 0 else None
-            if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
-                try:
-                    df_result[col] = df_result[col].apply(
-                        lambda x: str(x).replace('T', ' ').replace('Z', '').rstrip('.') if x and x != '' else x
-                    )
-                except:
-                    pass  # 如果转换失败，保持原样
+            
+            # 打印所有字符串列的样本值，用于调试
+            if sample and isinstance(sample, str):
+                print(f"    🔍 样本值: '{sample}' (长度: {len(sample)})")
+                
+                # 检测是否为时间格式（包含 T 和 Z）
+                if 'T' in sample and ('Z' in sample or '+' in sample):
+                    try:
+                        print(f"    ⏰ 检测到时间列，开始格式化...")
+                        
+                        def format_time(x):
+                            if not x or x == '':
+                                return x
+                            # 转换：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03
+                            time_str = str(x).replace('T', ' ').replace('Z', '')
+                            # 去掉毫秒部分（如果有）
+                            if '.' in time_str:
+                                time_str = time_str.split('.')[0]
+                            return time_str
+                        
+                        df_result[col] = df_result[col].apply(format_time)
+                        time_columns_count += 1
+                        print(f"    ✅ 已格式化，新示例: {df_result[col].dropna().iloc[0] if len(df_result[col].dropna()) > 0 else 'N/A'}")
+                    except Exception as e:
+                        print(f"    ❌ 格式化失败: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        pass  # 如果转换失败，保持原样
+        else:
+            print(f"    ⏭️  跳过非字符串类型")
+    
+    if time_columns_count > 0:
+        print(f"✅ [JSON] 共处理 {time_columns_count} 个时间字段\n")
+    else:
+        print("⚠️  [JSON] 未检测到需要格式化的时间字段\n")
     
     print(f"✅ 动态导出 {len(columns)} 个字段: {', '.join(columns)}")
     
@@ -235,6 +270,41 @@ def parse_vertical_txt(file_path):
 
     # 构建标准表格
     df = pd.DataFrame(data_rows, columns=TARGET_COLUMNS)
+    
+    # 格式化时间字段：将 ISO 8601 格式转换为标准格式
+    # 例如：2026-04-09T10:37:30.000Z -> 2026-04-09 10:37:30（去掉毫秒）
+    time_columns_count = 0
+    for col in df.columns:
+        col_dtype = str(df[col].dtype)
+        
+        # 支持 object 和 str 类型
+        if col_dtype in ['object', 'str']:
+            # 检测是否为时间格式（包含 T 和 Z）
+            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
+                try:
+                    print(f"⏰ 检测到时间列: {col}，示例值: {sample}")
+                    
+                    def format_time(x):
+                        if not x or x == '':
+                            return x
+                        # 转换：2026-04-09T10:37:30.000Z -> 2026-04-09 10:37:30
+                        time_str = str(x).replace('T', ' ').replace('Z', '')
+                        # 去掉毫秒部分（如果有）
+                        if '.' in time_str:
+                            time_str = time_str.split('.')[0]
+                        return time_str
+                    
+                    df[col] = df[col].apply(format_time)
+                    time_columns_count += 1
+                    print(f"✅ 时间列 {col} 已格式化，示例: {df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else 'N/A'}")
+                except Exception as e:
+                    print(f"❌ 时间列 {col} 格式化失败: {e}")
+                    pass  # 如果转换失败，保持原样
+    
+    if time_columns_count > 0:
+        print(f"✅ 共处理 {time_columns_count} 个时间字段")
+    
     return df
 
 
@@ -303,15 +373,63 @@ def parse_es_result(file_path):
         return parse_vertical_txt(file_path)
 
 
-def export_to_excel(df, output_path):
-    """导出Excel并自动美化列宽"""
-    with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name="告警目标清单", index=False)
+def export_to_excel(df, output_path, use_xlsx=True):
+    """导出Excel并自动美化列宽
+    
+    Args:
+        df: DataFrame 数据
+        output_path: 输出文件路径
+        use_xlsx: 是否使用 xlsx 格式（默认True）
+                   False 则使用 xlwt 直接生成 xls 格式（兼容达梦数据库）
+    """
+    if use_xlsx:
+        # 使用 openpyxl 引擎导出 xlsx 格式（推荐）
+        with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+            df.to_excel(writer, sheet_name="告警目标清单", index=False)
+            # 自动调整列宽
+            worksheet = writer.sheets["告警目标清单"]
+            for col in worksheet.columns:
+                max_len = max(len(str(cell.value or "")) for cell in col)
+                worksheet.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
+    else:
+        # 使用 xlwt 直接生成 xls 格式（兼容达梦数据库迁移工具）
+        import xlwt
+        
+        workbook = xlwt.Workbook(encoding='utf-8')
+        worksheet = workbook.add_sheet('告警目标清单')
+        
+        # 写入表头
+        for col_idx, column_name in enumerate(df.columns):
+            worksheet.write(0, col_idx, str(column_name))
+        
+        # 写入数据
+        for row_idx, row in enumerate(df.itertuples(index=False), start=1):
+            for col_idx, value in enumerate(row):
+                # 处理各种数据类型
+                if pd.isna(value):
+                    worksheet.write(row_idx, col_idx, '')
+                elif isinstance(value, (int, float)):
+                    worksheet.write(row_idx, col_idx, value)
+                else:
+                    worksheet.write(row_idx, col_idx, str(value))
+        
         # 自动调整列宽
-        worksheet = writer.sheets["告警目标清单"]
-        for col in worksheet.columns:
-            max_len = max(len(str(cell.value or "")) for cell in col)
-            worksheet.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
+        for col_idx, column_name in enumerate(df.columns):
+            # 计算该列最大宽度
+            max_width = len(str(column_name))
+            for row_idx in range(len(df)):
+                cell_value = df.iloc[row_idx, col_idx]
+                if not pd.isna(cell_value):
+                    cell_width = len(str(cell_value))
+                    max_width = max(max_width, cell_width)
+            # 设置列宽（xls 单位是 256 * 字符数）
+            worksheet.col(col_idx).width = min(max_width + 2, 50) * 256
+        
+        # 保存文件
+        workbook.save(output_path)
+        print(f"✅ 已生成 XLS 格式文件：{output_path}")
+    
+    return output_path
 
 
 # -------------------------- 执行转换 --------------------------

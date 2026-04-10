@@ -87,6 +87,7 @@ def convert_to_excel():
     try:
         data = request.json
         filenames = data.get('filenames') or ([data.get('filename')] if data.get('filename') else [])
+        excel_format = data.get('format', 'xlsx')  # 默认 xlsx，可选 xls
 
         if not filenames:
             return jsonify({'success': False, 'message': '缺少文件名参数'}), 400
@@ -138,16 +139,23 @@ def convert_to_excel():
             logger.info(f"合并 {len(all_dfs)} 个文件，共 {len(merged_df)} 条数据")
 
         # 生成输出文件名
+        file_ext = '.xls' if excel_format == 'xls' else '.xlsx'
         if len(filenames) == 1:
-            output_filename = f"{Path(filenames[0]).stem}.xlsx"
+            output_filename = f"{Path(filenames[0]).stem}{file_ext}"
         else:
-            output_filename = f"merged_{int(time.time())}.xlsx"
+            output_filename = f"merged_{int(time.time())}{file_ext}"
         
         output_path = OUTPUT_FOLDER / output_filename
 
-        # 导出 Excel
-        logger.info(f"开始导出 Excel：{output_filename}")
-        export_to_excel(merged_df, str(output_path))
+        # 导出 Excel（根据格式选择）
+        logger.info(f"开始导出 Excel：{output_filename} (格式: {excel_format})")
+        use_xlsx = (excel_format != 'xls')
+        actual_output_path = export_to_excel(merged_df, str(output_path), use_xlsx=use_xlsx)
+        
+        # 如果实际输出路径与预期不同（例如 xls 降级为 xlsx），更新文件名
+        if actual_output_path != str(output_path):
+            output_filename = Path(actual_output_path).name
+            logger.info(f"⚠️  文件格式已调整：{output_filename}")
 
         logger.info(f"转换完成：{output_filename}")
 
@@ -157,7 +165,8 @@ def convert_to_excel():
             'output_filename': output_filename,
             'data_count': len(merged_df),
             'column_count': len(merged_df.columns),
-            'file_count': len(all_dfs)
+            'file_count': len(all_dfs),
+            'format': excel_format
         })
 
     except Exception as e:

@@ -63,6 +63,13 @@
             <el-icon><View /></el-icon>
             预览数据
           </el-button>
+          
+          <!-- Excel 格式选择 -->
+          <el-select v-model="excelFormat" placeholder="选择格式" style="width: 150px;">
+            <el-option label="XLS (兼容旧版)" value="xls" />
+            <el-option label="XLSX (推荐)" value="xlsx" />
+          </el-select>
+          
           <el-button type="success" :loading="convertLoading" @click="handleConvert">
             <el-icon><Download /></el-icon>
             转换为 Excel
@@ -135,7 +142,12 @@
             自动将 ES 英文字段映射为中文标准字段
           </el-descriptions-item>
           <el-descriptions-item label="输出格式">
-            Excel (.xlsx) 格式，包含所有标准字段
+            <el-tag type="warning">XLS (兼容旧版 - 默认)</el-tag>
+            <el-tag type="success" style="margin-left: 5px">XLSX (推荐)</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="时间格式">
+            自动将 ISO 8601 格式转换为标准格式（去掉毫秒）：<br>
+            <code>2026-04-09T03:47:03.000Z</code> → <code>2026-04-09 03:47:03</code>
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -158,6 +170,7 @@ const previewData = ref([])
 const columns = ref([])
 const totalCount = ref(0)
 const convertResult = ref(null)
+const excelFormat = ref('xls')  // 默认 xls 格式（兼容达梦数据库）
 
 // 计算后端 API 基础 URL
 const apiBaseUrl = computed(() => {
@@ -270,7 +283,8 @@ const handleConvert = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        filenames: filenames
+        filenames: filenames,
+        format: excelFormat.value  // 传递格式参数
       })
     })
     const result = await response.json()

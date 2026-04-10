@@ -100,6 +100,38 @@ const routes = [
     component: () => import('../views/tools/EsToExcel.vue'),
     meta: { title: 'ES 查询结果转 Excel', hidden: true }
   },
+  {
+    path: '/adjustment-calculator',
+    name: 'AdjustmentCalculator',
+    component: () => import('../views/tools/AdjustmentCalculator.vue'),
+    meta: { title: '调整因子计算器', hidden: true }
+  },
+  {
+    path: '/adjustment-factor',
+    name: 'AdjustmentFactor',
+    component: () => import('../views/tools/AdjustmentFactor.vue'),
+    meta: { title: '调整因子管理', hidden: true }
+  },
+  // 文档模块
+  {
+    path: '/fpa-category-rules',
+    name: 'FpaCategoryRules',
+    component: () => import('../views/document/FpaCategoryRules.vue'),
+    meta: { title: 'FPA 类别规则管理', hidden: true }
+  },
+  {
+    path: '/excel-to-cosmic',
+    name: 'ExcelToCosmic',
+    component: () => import('../views/document/ExcelToCosmic.vue'),
+    meta: { title: 'Excel 转 COSMIC', hidden: true }
+  },
+  // 智能客服
+  {
+    path: '/category-management',
+    name: 'CategoryManagement',
+    component: () => import('../views/chat/CategoryManagement.vue'),
+    meta: { title: '专业领域管理', hidden: true }
+  },
   // 404 页面
   {
     path: '/:pathMatch(.*)*',
