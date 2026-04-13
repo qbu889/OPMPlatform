@@ -758,6 +758,20 @@ def kafka_field_meta():
     })
 
 
+@kafka_generator_bp.route('/field-order')
+def kafka_field_order():
+    """返回所有 Kafka 字段的标准顺序和完整列表
+    
+    返回 STANDARD_FIELD_ORDER 中的所有字段名
+    """
+    return jsonify({
+        "success": True,
+        "data": {
+            "fields": STANDARD_FIELD_ORDER
+        }
+    })
+
+
 @kafka_generator_bp.route('/field-options')
 def kafka_field_options():
     """返回某个 Kafka 字段对应维表中的所有配置项
@@ -1254,7 +1268,7 @@ def generate_kafka_message():
             delay_time_value = 15
 
         # 保存历史记录到数据库
-        save_generation_history(es_source_data, ordered_data)
+        save_generation_history_with_custom_fields(es_source_data, ordered_data, custom_fields)
         
         # 使用自定义 JSON 序列化确保字段顺序
         import json as json_lib
@@ -1323,9 +1337,62 @@ def save_generation_history(es_data, kafka_message):
         logger.error(f"保存历史记录失败：{e}")
 
 
+def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fields=None):
+    """保存生成历史记录到数据库（包含自定义字段）
+    
+    Args:
+        es_data: ES 源数据
+        kafka_message: 生成的 Kafka 消息
+        custom_fields: 自定义字段数据（可选）
+    """
+    try:
+        from utils.mysql_helper import get_mysql_conn_dict_cursor
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            logger.warning("MySQL 未配置，跳过历史记录保存")
+            return
+        
+        try:
+            # 提取关键信息
+            fp_value = kafka_message.get('FP0_FP1_FP2_FP3', '')
+            alarm_name = kafka_message.get('TITLE_TEXT', '')
+            alarm_level = kafka_message.get('ORG_SEVERITY', '')
+            region_name = kafka_message.get('REGION_NAME', '')
+            
+            # 序列化自定义字段
+            custom_fields_json = json.dumps(custom_fields, ensure_ascii=False) if custom_fields else None
+            
+            with conn.cursor() as cur:
+                query = """
+                    INSERT INTO knowledge_base.kafka_generation_history 
+                    (es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name, custom_fields)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                cur.execute(query, (
+                    json.dumps(es_data, ensure_ascii=False),
+                    json.dumps(kafka_message, ensure_ascii=False),
+                    fp_value,
+                    alarm_name,
+                    alarm_level,
+                    region_name,
+                    custom_fields_json
+                ))
+                conn.commit()
+                logger.info(f"历史记录已保存：FP={fp_value}, 告警={alarm_name}, 自定义字段={len(custom_fields) if custom_fields else 0}个")
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"保存历史记录失败：{e}")
+
+
 @kafka_generator_bp.route('/history', methods=['GET'])
 def get_generation_history():
-    """获取生成历史记录（支持搜索 ES 源数据和 Kafka 消息）"""
+    """获取生成历史记录（支持搜索 ES 源数据和 Kafka 消息）
+    
+    新增参数:
+      - field_name: 指定字段名，只查询该字段有值的记录（如 ORG_SEVERITY）
+    """
     from utils.mysql_helper import get_mysql_conn_dict_cursor
     
     try:
@@ -1333,6 +1400,7 @@ def get_generation_history():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
         keyword = request.args.get('keyword', '', type=str)
+        field_name = request.args.get('field_name', '', type=str).strip().upper()  # 新增字段筛选参数
         
         conn = get_mysql_conn_dict_cursor()
         if not conn:
@@ -1344,9 +1412,18 @@ def get_generation_history():
                 where_clause = "WHERE 1=1"
                 params = []
                 
+                # 如果指定了字段名，只查询该字段有值的记录
+                if field_name:
+                    # 使用 JSON_CONTAINS_PATH 或 LIKE 查询 kafka_message 和 custom_fields 中是否包含该字段
+                    where_clause += """ 
+                        AND (
+                            JSON_CONTAINS_PATH(kafka_message, 'one', '$.{field}')
+                            OR JSON_CONTAINS_PATH(custom_fields, 'one', '$.{field}')
+                        )
+                    """.replace('{field}', field_name)
+                    logger.info(f"[HISTORY SEARCH] 筛选字段: {field_name}")
+                
                 if keyword:
-                    # ★★★★★ 关键修复：支持搜索 Kafka 消息中的字段名和字段值
-                    # 使用 JSON_CONTAINS_PATH 或 LIKE 搜索 kafka_message 中的字段
                     where_clause += """ 
                         AND (
                             alarm_name LIKE %s 
@@ -1373,7 +1450,7 @@ def get_generation_history():
                 offset = (page - 1) * per_page
                 data_query = f"""
                     SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, 
-                           es_source_raw, kafka_message
+                           es_source_raw, kafka_message, custom_fields
                     FROM knowledge_base.kafka_generation_history 
                     {where_clause}
                     ORDER BY created_at DESC
@@ -1424,7 +1501,8 @@ def get_generation_history():
                         'alarm_level': row['alarm_level'] or '',
                         'region_name': row['region_name'] or '',
                         'es_source_raw': es_raw_str,  # 格式化后的 JSON 字符串
-                        'kafka_message': kafka_msg_str  # 格式化后的 JSON 字符串
+                        'kafka_message': kafka_msg_str,  # 格式化后的 JSON 字符串
+                        'custom_fields': row.get('custom_fields')  # 自定义字段数据
                     })
                 
                 return jsonify({

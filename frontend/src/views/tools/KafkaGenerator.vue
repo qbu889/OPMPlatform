@@ -24,7 +24,7 @@
         />
         <el-button 
           type="primary" 
-          @click="showEsSourceHistory"
+          @click="showEsSourceHistory()"
           class="es-history-btn"
           title="查看历史数据"
         >
@@ -58,9 +58,9 @@
             <span>自定义字段</span>
           </div>
           <div>
-            <el-button size="small" @click="showAllFields = !showAllFields">
+            <el-button size="small" @click="toggleAllFields">
               <el-icon><View /></el-icon>
-              {{ showAllFields ? '隐藏空字段' : '显示所有字段' }}
+              {{ showAllFields ? '隐藏所有字段' : '显示所有字段' }}
             </el-button>
           </div>
         </div>
@@ -74,7 +74,7 @@
           :class="{ 'filled': fieldValues[field.name] }"
         >
           <div class="field-header">
-            <label>{{ field.label }}</label>
+            <label>{{ field.name }}（{{ field.label }}）:</label>
             <div class="field-actions">
               <el-button 
                 size="small" 
@@ -85,6 +85,7 @@
                 <el-icon><Top /></el-icon>
               </el-button>
               <el-button 
+                v-if="DICT_FIELDS.has(field.name)"
                 size="small" 
                 type="danger"
                 @click="openFieldDict(field.name)"
@@ -316,7 +317,7 @@
     <!-- ES 源数据历史记录弹窗 -->
     <el-dialog
       v-model="esSourceHistoryDialogVisible"
-      title="ES 源数据历史记录"
+      :title="esHistoryDialogTitle"
       width="95%"
       :close-on-click-modal="false"
     >
@@ -364,50 +365,73 @@
         </el-table-column>
         <el-table-column prop="created_at" label="生成时间" width="180" />
         <el-table-column prop="fp_value" label="FP 值" width="250" show-overflow-tooltip />
-        <el-table-column label="ES 源数据" min-width="300">
+        
+        <!-- 如果筛选了特定字段，显示该字段的值 -->
+        <el-table-column 
+          v-if="esHistoryFilterField" 
+          :label="`${esHistoryFilterField} 字段值`" 
+          min-width="150"
+          show-overflow-tooltip
+        >
           <template #default="{ row }">
-            <div class="json-preview">
-              <el-input
-                :model-value="formatJsonString(row.es_source_raw)"
-                type="textarea"
-                :rows="3"
-                readonly
-                class="json-textarea"
-              />
-              <el-button
-                size="small"
-                type="info"
-                @click="copyText(row.es_source_raw, 'ES 源数据')"
-                class="mt-2"
-              >
-                <el-icon><CopyDocument /></el-icon>
-                复制
-              </el-button>
-            </div>
+            <!-- 先从 kafka_message 中查找，再从 custom_fields 中查找 -->
+            <template v-if="row.kafka_message">
+              {{ getFieldValueFromJson(row.kafka_message, esHistoryFilterField) || '-' }}
+            </template>
+            <template v-else-if="row.custom_fields">
+              {{ getFieldValueFromJson(row.custom_fields, esHistoryFilterField) || '-' }}
+            </template>
+            <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column label="Kafka 消息" min-width="300">
-          <template #default="{ row }">
-            <div class="json-preview">
-              <el-input
-                :model-value="formatJsonString(row.kafka_message)"
-                type="textarea"
-                :rows="3"
-                readonly
-                class="json-textarea"
-              />
-              <el-button
-                size="small"
-                type="info"
-                @click="copyText(row.kafka_message, 'Kafka 消息')"
-                class="mt-2"
-              >
-                <el-icon><CopyDocument /></el-icon>
-                复制
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
+        
+        <!-- 如果没有筛选字段，显示原来的列 -->
+        <template v-else>
+          <el-table-column label="ES 源数据" min-width="300">
+            <template #default="{ row }">
+              <div class="json-preview">
+                <el-input
+                  :model-value="formatJsonString(row.es_source_raw)"
+                  type="textarea"
+                  :rows="3"
+                  readonly
+                  class="json-textarea"
+                />
+                <el-button
+                  size="small"
+                  type="info"
+                  @click="copyText(row.es_source_raw, 'ES 源数据')"
+                  class="mt-2"
+                >
+                  <el-icon><CopyDocument /></el-icon>
+                  复制
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="Kafka 消息" min-width="300">
+            <template #default="{ row }">
+              <div class="json-preview">
+                <el-input
+                  :model-value="formatJsonString(row.kafka_message)"
+                  type="textarea"
+                  :rows="3"
+                  readonly
+                  class="json-textarea"
+                />
+                <el-button
+                  size="small"
+                  type="info"
+                  @click="copyText(row.kafka_message, 'Kafka 消息')"
+                  class="mt-2"
+                >
+                  <el-icon><CopyDocument /></el-icon>
+                  复制
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </template>
       </el-table>
 
       <div v-if="!esSourceHistoryData.length && esSourceHistoryTotal === 0" class="text-center py-5 text-muted">
@@ -430,7 +454,7 @@
     <!-- 历史记录弹窗 -->
     <el-dialog
       v-model="historyDialogVisible"
-      title="历史生成记录"
+      :title="historyDialogTitle"
       width="90%"
       :close-on-click-modal="false"
     >
@@ -479,9 +503,13 @@
         </el-table-column>
         <el-table-column prop="created_at" label="生成时间" width="180" />
         <el-table-column prop="fp_value" label="FP 值" width="250" show-overflow-tooltip />
-        <el-table-column label="字段值" min-width="200" show-overflow-tooltip>
+        <el-table-column 
+          :label="`${currentHistoryField || '字段'} 值`" 
+          min-width="200" 
+          show-overflow-tooltip
+        >
           <template #default="{ row }">
-            {{ row.kafka_message?.[currentHistoryField] || '-' }}
+            {{ getFieldValueFromJson(row.kafka_message, currentHistoryField) || '-' }}
           </template>
         </el-table-column>
       </el-table>
@@ -531,17 +559,80 @@ import {
 // ES 源数据
 const esSourceData = ref('')
 
-// 字段配置
-const allFields = ref([
-  { name: 'EQP_LABEL', label: '设备标签', esField: 'eqp_label', placeholder: '请输入设备标签' },
-  { name: 'NE_LABEL', label: '网元标签', esField: 'ne_label', placeholder: '请输入网元标签' },
-  { name: 'ALARM_TITLE', label: '告警标题', esField: 'alarm_title', placeholder: '请输入告警标题' },
-  { name: 'SEVERITY', label: '严重程度', esField: 'severity', placeholder: '请输入严重程度' },
-  { name: 'FP0_FP1_FP2_FP3', label: 'FP值', esField: 'fp', placeholder: '请输入FP值' },
-  { name: 'CREATION_EVENT_TIME', label: '创建时间', esField: 'creation_time', placeholder: '请输入创建时间' },
-  { name: 'EVENT_TYPE', label: '事件类型', esField: 'event_type', placeholder: '请输入事件类型' },
-  { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
+// 有字典的字段列表（与后端 FIELD_DICT_TABLES 保持一致）
+const DICT_FIELDS = new Set([
+  'ALARM_RESOURCE_STATUS',
+  'BUSINESS_LAYER',
+  'CIRCUIT_LEVEL',
+  'EFFECT_NE',
+  'EFFECT_SERVICE',
+  'EQP_OBJECT_CLASS',
+  'EXTRA_ID2',
+  'LOGIC_ALARM_TYPE',
+  'NE_ADMIN_STATUS',
+  'NETWORK_TYPE',
+  'NETWORK_TYPE_TOP',
+  'ORG_SEVERITY',
+  'ORG_TYPE',
+  'PORT_NUM',
+  'SUB_ALARM_TYPE',
 ])
+
+// 字段配置（从后端动态加载）
+const allFields = ref([])
+
+// 从后端加载字段配置
+const loadFieldMeta = async () => {
+  try {
+    // 获取字段元数据（label_cn, es_field, db_cn）
+    const metaResponse = await fetch('/kafka-generator/field-meta')
+    const metaResult = await metaResponse.json()
+    const fieldMeta = metaResult.success ? metaResult.data : {}
+
+    // 获取字段顺序
+    const orderResponse = await fetch('/kafka-generator/field-order')
+    const orderResult = await orderResponse.json()
+    const fieldOrder = orderResult.success ? orderResult.data.fields : []
+
+    // 构建完整的字段配置
+    if (fieldOrder.length > 0) {
+      allFields.value = fieldOrder.map(fieldName => {
+        const meta = fieldMeta[fieldName] || {}
+        return {
+          name: fieldName,
+          label: meta.db_cn || meta.label_cn || fieldName,
+          esField: meta.es_field || '',
+          placeholder: `请输入${meta.db_cn || meta.label_cn || fieldName}`,
+        }
+      })
+    } else {
+      // 回退到默认配置
+      allFields.value = [
+        { name: 'EQP_LABEL', label: '设备标签', esField: 'eqp_label', placeholder: '请输入设备标签' },
+        { name: 'NE_LABEL', label: '网元标签', esField: 'ne_label', placeholder: '请输入网元标签' },
+        { name: 'ALARM_TITLE', label: '告警标题', esField: 'alarm_title', placeholder: '请输入告警标题' },
+        { name: 'SEVERITY', label: '严重程度', esField: 'severity', placeholder: '请输入严重程度' },
+        { name: 'FP0_FP1_FP2_FP3', label: 'FP值', esField: 'fp', placeholder: '请输入FP值' },
+        { name: 'CREATION_EVENT_TIME', label: '创建时间', esField: 'creation_time', placeholder: '请输入创建时间' },
+        { name: 'EVENT_TYPE', label: '事件类型', esField: 'event_type', placeholder: '请输入事件类型' },
+        { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
+      ]
+    }
+  } catch (error) {
+    console.error('加载字段配置失败:', error)
+    // 回退到默认配置
+    allFields.value = [
+      { name: 'EQP_LABEL', label: '设备标签', esField: 'eqp_label', placeholder: '请输入设备标签' },
+      { name: 'NE_LABEL', label: '网元标签', esField: 'ne_label', placeholder: '请输入网元标签' },
+      { name: 'ALARM_TITLE', label: '告警标题', esField: 'alarm_title', placeholder: '请输入告警标题' },
+      { name: 'SEVERITY', label: '严重程度', esField: 'severity', placeholder: '请输入严重程度' },
+      { name: 'FP0_FP1_FP2_FP3', label: 'FP值', esField: 'fp', placeholder: '请输入FP值' },
+      { name: 'CREATION_EVENT_TIME', label: '创建时间', esField: 'creation_time', placeholder: '请输入创建时间' },
+      { name: 'EVENT_TYPE', label: '事件类型', esField: 'event_type', placeholder: '请输入事件类型' },
+      { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
+    ]
+  }
+}
 
 // 字段值缓存
 const fieldValues = reactive({})
@@ -553,7 +644,12 @@ const pinnedFields = ref(new Set())
 const historyValues = ref({})
 
 // 显示所有字段
-const showAllFields = ref(true)
+const showAllFields = ref(false)  // 默认只显示常用字段
+
+// 切换显示/隐藏所有字段
+const toggleAllFields = () => {
+  showAllFields.value = !showAllFields.value
+}
 
 // 显示字段(置顶的优先,且可选择是否显示空字段)
 const displayFields = computed(() => {
@@ -612,6 +708,31 @@ const esSourceHistoryTotal = ref(0)
 const esSourceHistoryPage = ref(1)
 const esSourceHistoryPageSize = 10
 const esSourceHistoryKeyword = ref('')
+
+// 当前筛选的字段名（用于动态标题）
+const esHistoryFilterField = ref('')
+
+// 动态生成 ES 源数据历史记录弹窗标题
+const esHistoryDialogTitle = computed(() => {
+  if (esHistoryFilterField.value) {
+    const field = allFields.value.find(f => f.name === esHistoryFilterField.value)
+    if (field) {
+      return `${esHistoryFilterField.value}（${field.label}）历史记录`
+    }
+  }
+  return 'ES 源数据历史记录'
+})
+
+// 动态生成历史记录弹窗标题
+const historyDialogTitle = computed(() => {
+  if (currentHistoryField.value) {
+    const field = allFields.value.find(f => f.name === currentHistoryField.value)
+    if (field) {
+      return `${currentHistoryField.value}（${field.label}）历史记录`
+    }
+  }
+  return '历史生成记录'
+})
 
 // 字段值改变
 const onFieldChange = async (field, value) => {
@@ -1052,9 +1173,21 @@ const openHistoryModal = (field) => {
 // 加载历史记录数据
 const loadHistoryData = async () => {
   try {
-    const response = await fetch(
-      `/kafka-generator/history?page=${historyCurrentPage.value}&per_page=${historyPageSize}&keyword=${encodeURIComponent(historyKeyword.value)}`
-    )
+    const params = new URLSearchParams({
+      page: historyCurrentPage.value,
+      per_page: historyPageSize,
+    })
+    
+    // 如果指定了字段名，只查询该字段的记录
+    if (currentHistoryField.value) {
+      params.append('field_name', currentHistoryField.value)
+    }
+    
+    if (historyKeyword.value) {
+      params.append('keyword', historyKeyword.value)
+    }
+    
+    const response = await fetch(`/kafka-generator/history?${params.toString()}`)
     const result = await response.json()
     
     if (result.success) {
@@ -1083,22 +1216,30 @@ const searchHistory = () => {
 
 // 使用历史记录
 const useHistoryRecord = (record) => {
-  if (currentHistoryField.value && record.kafka_message) {
-    const fieldValue = record.kafka_message[currentHistoryField.value]
-    if (fieldValue) {
-      fieldValues[currentHistoryField.value] = fieldValue
-      onFieldChange(currentHistoryField.value, fieldValue)
-      ElMessage.success('已填充字段值')
-      historyDialogVisible.value = false
-    }
+  if (!currentHistoryField.value) {
+    ElMessage.warning('未指定字段')
+    return
+  }
+  
+  // 从 kafka_message 中提取字段值
+  const fieldValue = getFieldValueFromJson(record.kafka_message, currentHistoryField.value)
+  
+  if (fieldValue) {
+    fieldValues[currentHistoryField.value] = fieldValue
+    onFieldChange(currentHistoryField.value, fieldValue)
+    ElMessage.success(`已填充 ${currentHistoryField.value} 字段值`)
+    historyDialogVisible.value = false
+  } else {
+    ElMessage.warning('该记录中没有此字段的值')
   }
 }
 
-// 显示 ES 源数据历史记录
-const showEsSourceHistory = () => {
+// 显示 ES 源数据历史记录（支持按字段筛选）
+const showEsSourceHistory = (fieldName = '') => {
   esSourceHistoryDialogVisible.value = true
   esSourceHistoryKeyword.value = ''
   esSourceHistoryPage.value = 1
+  esHistoryFilterField.value = fieldName  // 保存筛选字段名
   loadEsSourceHistoryData()
 }
 
@@ -1109,6 +1250,11 @@ const loadEsSourceHistoryData = async () => {
       page: esSourceHistoryPage.value,
       per_page: esSourceHistoryPageSize,
     })
+    
+    // 传入 field_name 参数筛选特定字段
+    if (esHistoryFilterField.value) {
+      params.append('field_name', esHistoryFilterField.value)
+    }
     
     if (esSourceHistoryKeyword.value) {
       params.append('keyword', esSourceHistoryKeyword.value)
@@ -1143,13 +1289,59 @@ const changeEsSourceHistoryPage = (page) => {
 
 // 使用 ES 源数据历史记录
 const useEsSourceHistory = (record) => {
-  if (record.es_source_raw) {
+  if (!record.es_source_raw) {
+    ElMessage.warning('该记录没有 ES 源数据')
+    return
+  }
+  
+  // 询问是否同步自定义字段
+  ElMessageBox.confirm(
+    '是否要同步自定义字段数据？选择"否"则自定义字段将全部清空。',
+    '同步确认',
+    {
+      confirmButtonText: '是，同步',
+      cancelButtonText: '否，清空',
+      type: 'warning',
+    }
+  ).then(() => {
+    // 用户选择"是" - 同步自定义字段
+    if (record.custom_fields) {
+      try {
+        const customFields = typeof record.custom_fields === 'string' 
+          ? JSON.parse(record.custom_fields) 
+          : record.custom_fields
+        Object.assign(fieldValues, customFields)
+        ElMessage.success('已加载 ES 源数据并同步自定义字段')
+      } catch (e) {
+        console.error('同步自定义字段失败:', e)
+        // 即使同步失败，也清空所有字段值
+        Object.keys(fieldValues).forEach(key => {
+          fieldValues[key] = ''
+        })
+        ElMessage.warning('加载 ES 源数据成功，但自定义字段同步失败，已清空字段值')
+      }
+    } else {
+      // 清空所有自定义字段
+      Object.keys(fieldValues).forEach(key => {
+        fieldValues[key] = ''
+      })
+      ElMessage.success('已加载 ES 源数据，自定义字段已清空')
+    }
     esSourceData.value = typeof record.es_source_raw === 'string' 
       ? record.es_source_raw 
       : JSON.stringify(record.es_source_raw, null, 2)
-    ElMessage.success('已加载 ES 源数据')
     esSourceHistoryDialogVisible.value = false
-  }
+  }).catch((action) => {
+    // 用户选择"否"或取消 - 清空自定义字段
+    Object.keys(fieldValues).forEach(key => {
+      fieldValues[key] = ''
+    })
+    esSourceData.value = typeof record.es_source_raw === 'string' 
+      ? record.es_source_raw 
+      : JSON.stringify(record.es_source_raw, null, 2)
+    ElMessage.success('已加载 ES 源数据，自定义字段已清空')
+    esSourceHistoryDialogVisible.value = false
+  })
 }
 
 // 格式化 JSON 字符串
@@ -1164,6 +1356,31 @@ const formatJsonString = (data) => {
     }
   }
   return JSON.stringify(data, null, 2)
+}
+
+// 从 JSON 字符串中提取字段值
+const getFieldValueFromJson = (jsonData, fieldName) => {
+  if (!jsonData || !fieldName) return null
+  try {
+    // 如果是字符串，先解析
+    const parsed = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData
+    // 尝试从 kafka_message 中获取（如果是字符串，可能包含字段名和值）
+    if (typeof parsed === 'string') {
+      // 尝试解析字符串为 JSON
+      const innerParsed = JSON.parse(parsed)
+      return innerParsed[fieldName] || null
+    }
+    // 直接从对象中获取
+    return parsed[fieldName] || null
+  } catch {
+    // 如果是字符串，尝试直接匹配
+    if (typeof jsonData === 'string') {
+      const regex = new RegExp(`"${fieldName}"\\s*:\\s*"([^"]+)"`)
+      const match = jsonData.match(regex)
+      return match ? match[1] : null
+    }
+    return null
+  }
 }
 
 // 复制文本
@@ -1454,21 +1671,19 @@ const clearAllFields = async () => {
   }
 }
 
-// 从数据库加载缓存
+// 从数据库加载缓存（自定义字段默认全部为空，不恢复缓存值）
 const loadFieldCache = async () => {
   try {
     const response = await fetch('/kafka-generator/field-cache')
     const result = await response.json()
     
     if (result.success && result.data) {
-      // 加载字段值
-      Object.assign(fieldValues, result.data.field_cache || {})
-      // 加载置顶字段
+      // 【需求3】自定义字段默认全部为空，不恢复缓存的字段值
+      // 只加载置顶字段和历史值
       pinnedFields.value = new Set(result.data.pinned_fields || [])
-      // 加载历史值
       historyValues.value = result.data.history_values || {}
       
-      console.log('已加载字段缓存')
+      console.log('已加载字段缓存（字段值已清空）')
     }
   } catch (error) {
     console.warn('加载缓存失败:', error)
@@ -1477,6 +1692,7 @@ const loadFieldCache = async () => {
 
 // 初始化
 onMounted(() => {
+  loadFieldMeta()
   loadFieldCache()
 })
 </script>

@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：透传外网一定要代理的问题修复">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：修复kafka生成的vue功能异常缺漏的地方">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -425,14 +425,6 @@
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
     </task>
-    <task id="LOCAL-00066" summary="new：kafka生成后支持生成推送消息">
-      <option name="closed" value="true" />
-      <created>1775108953843</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1775108953844</updated>
-    </task>
     <task id="LOCAL-00067" summary="new：其他东西推送">
       <option name="closed" value="true" />
       <created>1775108984228</created>
@@ -817,7 +809,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776059798462</updated>
     </task>
-    <option name="localTasksCounter" value="115" />
+    <task id="LOCAL-00115" summary="fix：修复kafka生成的vue功能异常缺漏的地方">
+      <option name="closed" value="true" />
+      <created>1776066069375</created>
+      <option name="number" value="00115" />
+      <option name="presentableId" value="LOCAL-00115" />
+      <option name="project" value="LOCAL" />
+      <updated>1776066069375</updated>
+    </task>
+    <option name="localTasksCounter" value="116" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -858,7 +858,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：日志输出内容修改" />
     <MESSAGE value="fix：fpa后缀剔除" />
     <MESSAGE value="fix：fpa生成规则调整" />
     <MESSAGE value="new：fpa生成增加进度条" />
@@ -883,7 +882,8 @@
     <MESSAGE value="new：cicd测试，推送QQ邮箱" />
     <MESSAGE value="fix：透传外网无法访问的问题" />
     <MESSAGE value="fix：透传外网一定要代理的问题修复" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：透传外网一定要代理的问题修复" />
+    <MESSAGE value="fix：修复kafka生成的vue功能异常缺漏的地方" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：修复kafka生成的vue功能异常缺漏的地方" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
