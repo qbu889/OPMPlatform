@@ -1,58 +1,62 @@
 <template>
   <div class="clean-event-container">
-    <el-card>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2><el-icon :size="28" color="#409eff"><Edit /></el-icon> 事件数据清洗</h2>
+      <p class="subtitle">清洗和格式化事件数据，生成标准 JSON 格式</p>
+    </div>
+
+    <el-card class="cleaner-card" shadow="hover">
       <template #header>
-        <div class="card-header">
-          <el-icon :size="24"><Edit /></el-icon>
-          <span style="margin-left: 10px; font-size: 18px; font-weight: 600;">事件数据清洗</span>
+        <div class="card-header-title">
+          <el-icon><Document /></el-icon>
+          <span>数据输入与输出</span>
         </div>
       </template>
 
-      <div class="content-area">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <div class="input-section">
-              <h4>原始数据</h4>
-              <el-input
-                v-model="rawData"
-                type="textarea"
-                :rows="15"
-                placeholder="请粘贴需要清洗的事件数据..."
-              />
-            </div>
-          </el-col>
-          <el-col :span="12">
-            <div class="output-section">
-              <h4>清洗结果</h4>
-              <el-input
-                v-model="cleanedData"
-                type="textarea"
-                :rows="15"
-                placeholder="清洗后的数据..."
-                readonly
-              />
-            </div>
-          </el-col>
-        </el-row>
+      <el-row :gutter="20">
+        <el-col :xs="24" :lg="12">
+          <div class="input-section">
+            <h4><el-icon color="#409eff"><Document /></el-icon> 原始数据</h4>
+            <el-input
+              v-model="rawData"
+              type="textarea"
+              :rows="15"
+              placeholder="请粘贴需要清洗的事件数据..."
+            />
+          </div>
+        </el-col>
+        <el-col :xs="24" :lg="12">
+          <div class="output-section">
+            <h4><el-icon color="#67c23a"><CircleCheck /></el-icon> 清洗结果</h4>
+            <el-input
+              v-model="cleanedData"
+              type="textarea"
+              :rows="15"
+              placeholder="清洗后的数据..."
+              readonly
+            />
+          </div>
+        </el-col>
+      </el-row>
 
-        <div class="action-area">
-          <el-button type="primary" :loading="loading" @click="handleClean">
-            <el-icon><Edit /></el-icon>
-            开始清洗
-          </el-button>
-          <el-button type="success" @click="handleCopy">
-            <el-icon><DocumentCopy /></el-icon>
-            复制结果
-          </el-button>
-          <el-button type="info" @click="handleDownload">
-            <el-icon><Download /></el-icon>
-            下载 JSON
-          </el-button>
-          <el-button type="warning" @click="handleClear">
-            <el-icon><Delete /></el-icon>
-            清空
-          </el-button>
-        </div>
+      <div class="button-group mt-3">
+        <el-button type="primary" size="large" :loading="loading" @click="handleClean">
+          <el-icon><MagicStick /></el-icon>
+          开始清洗
+        </el-button>
+        <el-button type="success" size="large" @click="handleCopy">
+          <el-icon><DocumentCopy /></el-icon>
+          复制结果
+        </el-button>
+        <el-button type="info" size="large" @click="handleDownload">
+          <el-icon><Download /></el-icon>
+          下载 JSON
+        </el-button>
+        <el-button type="warning" size="large" @click="handleClear">
+          <el-icon><Delete /></el-icon>
+          清空
+        </el-button>
       </div>
     </el-card>
   </div>
@@ -61,7 +65,15 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Edit, DocumentCopy, Download, Delete } from '@element-plus/icons-vue'
+import {
+  Edit,
+  Document,
+  CircleCheck,
+  MagicStick,
+  DocumentCopy,
+  Download,
+  Delete,
+} from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const rawData = ref('')
@@ -130,15 +142,53 @@ const handleClear = () => {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
 }
 
-.card-header {
+.page-header {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.page-header h2 {
+  font-size: 32px;
+  margin: 0 0 10px 0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: #333;
 }
 
-.content-area {
-  margin-top: 20px;
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.cleaner-card {
+  margin-bottom: 25px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.cleaner-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
 }
 
 .input-section,
@@ -148,15 +198,32 @@ const handleClear = () => {
 
 .input-section h4,
 .output-section h4 {
-  margin-bottom: 10px;
-  color: #606266;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.action-area {
-  margin-top: 20px;
+.button-group {
   display: flex;
-  gap: 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid #e4e7ed;
+}
+
+.mt-3 {
+  margin-top: 15px;
+}
+
+:deep(.el-card__header) {
+  padding: 15px 20px;
+}
+
+:deep(.el-card__body) {
+  padding: 20px;
 }
 </style>

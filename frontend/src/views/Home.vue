@@ -100,6 +100,15 @@
             <p>解析技术规范书生成软件资产清单</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/excel-to-cosmic')">
+            <div class="feature-icon" style="background: #e8f5e9">
+              <el-icon size="40" color="#4caf50"><Document /></el-icon>
+            </div>
+            <h3>表格转COSMIC</h3>
+            <p>Excel 转 Word (COSMIC格式)</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 
@@ -158,6 +167,8 @@ import {
   ChatDotRound,
   Calendar,
   Download,
+  Connection,
+  Tools,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -170,77 +181,142 @@ const goTo = (path) => {
 <style scoped>
 .home-container {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
 }
 
 .header {
   text-align: center;
-  padding: 40px 0;
-  margin-bottom: 30px;
+  padding: 50px 0;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .header h1 {
-  font-size: 42px;
-  color: #333;
-  margin-bottom: 10px;
+  font-size: 48px;
+  color: white;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
 }
 
 .header p {
-  font-size: 18px;
-  color: #666;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  position: relative;
+  z-index: 1;
 }
 
 .section-card {
-  margin-bottom: 30px;
-  border-radius: 12px;
+  margin-bottom: 35px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.section-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: #333;
+  padding: 5px 0;
 }
 
 .section-header .el-icon {
-  margin-right: 8px;
-  font-size: 20px;
-  color: #409eff;
+  margin-right: 12px;
+  font-size: 26px;
+  color: #667eea;
 }
 
 .feature-card {
   cursor: pointer;
-  transition: all 0.3s;
-  border-radius: 12px;
-  padding: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  padding: 20px;
   text-align: center;
+  border: 2px solid transparent;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px) scale(1.02);
+  border-color: #667eea;
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
 }
 
 .feature-icon {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 15px;
+  margin: 0 auto 18px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .feature-card h3 {
-  font-size: 18px;
+  font-size: 20px;
   color: #333;
-  margin: 10px 0;
+  margin: 15px 0 10px;
+  font-weight: 600;
 }
 
 .feature-card p {
-  font-size: 14px;
-  color: #999;
+  font-size: 15px;
+  color: #666;
   line-height: 1.6;
+  margin: 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 36px;
+  }
+  
+  .header p {
+    font-size: 16px;
+  }
+  
+  .section-card {
+    margin-bottom: 25px;
+  }
+  
+  .feature-card {
+    margin-bottom: 15px;
+  }
 }
 </style>

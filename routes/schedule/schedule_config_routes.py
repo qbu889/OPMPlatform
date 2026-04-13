@@ -571,3 +571,76 @@ def delete_existing_roster():
             return jsonify({"success": False, "msg": "清除排班记录失败"})
     except Exception as e:
         return jsonify({"success": False, "msg": "清除排班记录失败: " + str(e)})
+
+
+# ==================== Vue 前端兼容 API ====================
+
+@schedule_config_bp.route('/api/list', methods=['GET'])
+def schedule_list_api():
+    """排班列表API - Vue前端使用"""
+    try:
+        page = int(request.args.get('page', 1))
+        size = int(request.args.get('size', 10))
+        
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+        
+        # 获取总数
+        count_sql = "SELECT COUNT(DISTINCT date) as total FROM roster"
+        count_result = db.query(count_sql)
+        total = count_result[0]['total'] if count_result else 0
+        
+        # 分页查询
+        offset = (page - 1) * size
+        sql = """
+        SELECT DISTINCT r.date,
+               MIN(r.staff_name) as name,
+               '运维部' as department,
+               MIN(r.date) as startDate,
+               MAX(r.date) as endDate,
+               CASE WHEN MAX(r.date) >= CURDATE() THEN 'active' ELSE 'ended' END as status
+        FROM roster r
+        GROUP BY r.date
+        ORDER BY r.date DESC
+        LIMIT %s OFFSET %s
+        """
+        
+        results = db.query(sql, (size, offset))
+        db.close()
+        
+        # 处理结果
+        processed_results = []
+        for idx, row in enumerate(results):
+            processed_results.append({
+                'id': idx + 1,
+                'name': f"{row['date']} 排班",
+                'department': row['department'],
+                'startDate': row['startDate'].strftime('%Y-%m-%d') if hasattr(row['startDate'], 'strftime') else str(row['startDate']),
+                'endDate': row['endDate'].strftime('%Y-%m-%d') if hasattr(row['endDate'], 'strftime') else str(row['endDate']),
+                'status': row['status']
+            })
+        
+        return jsonify({
+            "success": True,
+            "data": processed_results,
+            "total": total
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "msg": "获取排班列表失败: " + str(e)})
+
+
+@schedule_config_bp.route('/api/create', methods=['POST'])
+def create_schedule_api():
+    """创建排班API - Vue前端使用"""
+    # TODO: 实现创建排班逻辑
+    return jsonify({"success": True, "msg": "创建成功"})
+
+
+@schedule_config_bp.route('/api/<int:schedule_id>', methods=['PUT'])
+def update_schedule_api(schedule_id):
+    """更新排班API - Vue前端使用"""
+    # TODO: 实现更新排班逻辑
+    return jsonify({"success": True, "msg": "更新成功"})

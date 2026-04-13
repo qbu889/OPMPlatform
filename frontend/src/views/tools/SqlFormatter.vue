@@ -1,61 +1,76 @@
 <template>
   <div class="sql-formatter-container">
-    <el-card>
+    <!-- 页面标题 -->
+    <div class="page-header">
+      <h2><el-icon :size="28" color="#67c23a"><DataBoard /></el-icon> SQL ID 格式化工具</h2>
+      <p class="subtitle">快速格式化 ID 列表用于 SQL 查询</p>
+    </div>
+
+    <el-card class="formatter-card" shadow="hover">
       <template #header>
-        <div class="card-header">
-          <el-icon :size="24"><DataBoard /></el-icon>
-          <span style="margin-left: 10px; font-size: 18px; font-weight: 600;">SQL ID 格式化</span>
+        <div class="card-header-title">
+          <el-icon><EditPen /></el-icon>
+          <span>输入 ID 列表</span>
         </div>
       </template>
 
-      <el-descriptions title="使用说明" border size="small">
-        <el-descriptions-item>
-          在左侧输入 ID 列表（每行一个或用逗号分隔），点击"格式化"按钮生成 SQL IN 语句
-        </el-descriptions-item>
-      </el-descriptions>
+      <el-alert
+        title="使用说明"
+        type="info"
+        :closable="false"
+        show-icon
+        class="mb-3"
+      >
+        <template #default>
+          在下方输入 ID 列表（每行一个或用逗号分隔），点击“格式化”按钮生成 SQL IN 语句
+        </template>
+      </el-alert>
 
-      <div class="content-area">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <div class="input-section">
-              <h4>输入 ID 列表</h4>
-              <el-input
-                v-model="idList"
-                type="textarea"
-                :rows="12"
-                placeholder="请输入 ID 列表，例如：&#10;123&#10;456&#10;789&#10;或用逗号分隔：123, 456, 789"
-              />
-            </div>
-          </el-col>
-          <el-col :span="12">
-            <div class="output-section">
-              <h4>格式化结果</h4>
-              <el-input
-                v-model="sqlResult"
-                type="textarea"
-                :rows="12"
-                placeholder="格式化后的 SQL IN 语句..."
-                readonly
-              />
-            </div>
-          </el-col>
-        </el-row>
+      <el-input
+        v-model="idList"
+        type="textarea"
+        :rows="12"
+        placeholder="请输入 ID 列表，例如：&#10;123&#10;456&#10;789&#10;或用逗号分隔：123, 456, 789"
+      />
 
-        <div class="action-area">
-          <el-button type="primary" @click="handleFormat">
-            <el-icon><Sort /></el-icon>
-            格式化为 IN 语句
-          </el-button>
+      <div class="button-group mt-3">
+        <el-button type="primary" size="large" @click="handleFormat">
+          <el-icon><Sort /></el-icon>
+          格式化为 IN 语句
+        </el-button>
+        <el-button type="info" size="large" @click="handleClear">
+          <el-icon><Delete /></el-icon>
+          清空
+        </el-button>
+      </div>
+    </el-card>
+
+    <!-- 格式化结果 -->
+    <el-card v-if="sqlResult" class="result-card" shadow="hover">
+      <template #header>
+        <div class="card-header-title justify-between">
+          <div>
+            <el-icon color="#67c23a"><CircleCheck /></el-icon>
+            <span>格式化结果</span>
+          </div>
           <el-button type="success" @click="handleCopy">
             <el-icon><DocumentCopy /></el-icon>
             复制结果
           </el-button>
-          <el-button type="info" @click="handleClear">
-            <el-icon><Delete /></el-icon>
-            清空
-          </el-button>
         </div>
+      </template>
+
+      <div class="result-content">
+        {{ sqlResult }}
       </div>
+
+      <el-alert
+        :title="`已格式化 ${idCount} 个 ID`"
+        type="success"
+        show-icon
+        :closable="false"
+        class="mt-3"
+      />
     </el-card>
   </div>
 </template>
@@ -63,10 +78,24 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { DataBoard, Sort, DocumentCopy, Delete } from '@element-plus/icons-vue'
+import {
+  DataBoard,
+  EditPen,
+  Sort,
+  DocumentCopy,
+  Delete,
+  CircleCheck,
+} from '@element-plus/icons-vue'
 
 const idList = ref('')
 const sqlResult = ref('')
+
+const idCount = computed(() => {
+  if (!sqlResult.value) return 0
+  const match = sqlResult.value.match(/IN \((.+)\)/)
+  if (!match) return 0
+  return match[1].split(',').length
+})
 
 const parseIds = () => {
   if (!idList.value.trim()) return []
@@ -115,35 +144,97 @@ const handleClear = () => {
 <style scoped>
 .sql-formatter-container {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
 }
 
-.card-header {
+.page-header {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.page-header h2 {
+  font-size: 32px;
+  margin: 0 0 10px 0;
   display: flex;
   align-items: center;
-}
-
-.content-area {
-  margin-top: 20px;
-}
-
-.input-section,
-.output-section {
-  margin-bottom: 20px;
-}
-
-.input-section h4,
-.output-section h4 {
-  margin-bottom: 10px;
-  color: #606266;
-}
-
-.action-area {
-  margin-top: 20px;
-  display: flex;
+  justify-content: center;
   gap: 15px;
-  padding-top: 20px;
-  border-top: 1px solid #e4e7ed;
+  color: #333;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.formatter-card,
+.result-card {
+  margin-bottom: 25px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.formatter-card:hover,
+.result-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mt-3 {
+  margin-top: 15px;
+}
+
+.mb-3 {
+  margin-bottom: 15px;
+}
+
+.result-content {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+  color: #2d3748;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+:deep(.el-card__header) {
+  padding: 15px 20px;
+}
+
+:deep(.el-card__body) {
+  padding: 20px;
 }
 </style>
