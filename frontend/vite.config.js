@@ -84,6 +84,10 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      '/clean-event': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
       '/sql-formatter': {
         target: BACKEND_URL,
         changeOrigin: true,

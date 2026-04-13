@@ -3,7 +3,7 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <h2><el-icon :size="28" color="#67c23a"><DataBoard /></el-icon> SQL ID 格式化工具</h2>
-      <p class="subtitle">快速格式化 ID 列表用于 SQL 查询</p>
+      <p class="subtitle">快速格式化 ID 列表，添加单引号并换行</p>
     </div>
 
     <el-card class="formatter-card" shadow="hover">
@@ -22,7 +22,7 @@
         class="mb-3"
       >
         <template #default>
-          在下方输入 ID 列表（每行一个或用逗号分隔），点击“格式化”按钮生成 SQL IN 语句
+          在下方输入 ID 列表（每行一个或用逗号分隔），点击“格式化”按钮生成带引号的 ID 列表
         </template>
       </el-alert>
 
@@ -36,7 +36,7 @@
       <div class="button-group mt-3">
         <el-button type="primary" size="large" @click="handleFormat">
           <el-icon><Sort /></el-icon>
-          格式化为 IN 语句
+          格式化
         </el-button>
         <el-button type="info" size="large" @click="handleClear">
           <el-icon><Delete /></el-icon>
@@ -92,9 +92,8 @@ const sqlResult = ref('')
 
 const idCount = computed(() => {
   if (!sqlResult.value) return 0
-  const match = sqlResult.value.match(/IN \((.+)\)/)
-  if (!match) return 0
-  return match[1].split(',').length
+  // 计算换行分隔的 ID 数量
+  return sqlResult.value.split(',\n').length
 })
 
 const parseIds = () => {
@@ -113,16 +112,13 @@ const handleFormat = () => {
     return
   }
 
-  // 格式化 ID（数字加引号，字符串检查）
+  // 格式化 ID（所有 ID 都加单引号）
   const formattedIds = ids.map((id) => {
-    if (!isNaN(id)) {
-      return id // 数字 ID 不加引号
-    } else {
-      return `'${id.replace(/'/g, "''")}'` // 字符串加引号
-    }
+    return `'${id.replace(/'/g, "''")}'` // 所有 ID 都加引号，并转义单引号
   })
 
-  sqlResult.value = `WHERE id IN (${formattedIds.join(', ')} )`
+  // 直接输出带引号的 ID 列表，每行一个
+  sqlResult.value = formattedIds.join(',\n')
   ElMessage.success(`已格式化 ${ids.length} 个 ID`)
 }
 
