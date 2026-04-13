@@ -2,6 +2,10 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
+// 后端 API 地址配置
+const BACKEND_PORT = 5001
+const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
@@ -21,67 +25,67 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/spreadsheet': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/login': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/register': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/forgot-password': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/word-to-md': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/markdown-upload': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/fpa-generator': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/word-to-excel': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/chatbot': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/chat': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/schedule-config': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/schedule': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/kafka-generator': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/clean-event-page': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/sql-formatter': {
-        target: 'http://localhost:5001',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
     },
