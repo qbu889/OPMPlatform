@@ -174,12 +174,13 @@ const excelFormat = ref('xls')  // 默认 xls 格式（兼容达梦数据库）
 
 // 计算后端 API 基础 URL
 const apiBaseUrl = computed(() => {
-  return `${window.location.protocol}//${window.location.hostname}:5001`
+  // 开发环境使用相对路径,通过 Vite 代理到后端
+  return ''
 })
 
-// 计算上传 URL（开发环境代理到后端）
+// 计算上传 URL(开发环境代理到后端)
 const uploadUrl = computed(() => {
-  return `${apiBaseUrl.value}/api/es-to-excel/upload`
+  return '/api/es-to-excel/upload'
 })
 
 // 上传请求头

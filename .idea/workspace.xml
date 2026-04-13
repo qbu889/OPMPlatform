@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：忽略文件" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：忽略文件">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/python-tests.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/python-tests.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/EsToExcel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/EsToExcel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -419,15 +424,7 @@
       <workItem from="1775810745899" duration="31000" />
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
-      <workItem from="1776046865040" duration="1022000" />
-    </task>
-    <task id="LOCAL-00061" summary="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互">
-      <option name="closed" value="true" />
-      <created>1774603303479</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1774603303479</updated>
+      <workItem from="1776046865040" duration="2767000" />
     </task>
     <task id="LOCAL-00062" summary="fix：选择文件输入框内容显示不全修复">
       <option name="closed" value="true" />
@@ -813,7 +810,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776047877443</updated>
     </task>
-    <option name="localTasksCounter" value="110" />
+    <task id="LOCAL-00110" summary="new：忽略文件">
+      <option name="closed" value="true" />
+      <created>1776047927443</created>
+      <option name="number" value="00110" />
+      <option name="presentableId" value="LOCAL-00110" />
+      <option name="project" value="LOCAL" />
+      <updated>1776047927443</updated>
+    </task>
+    <option name="localTasksCounter" value="111" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
