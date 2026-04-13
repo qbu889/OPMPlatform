@@ -4,11 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new/fix：修复kafka生成历史记录查询和插入">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new/fix：修改事件清除、sqlid格式化工具">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/SqlFormatter.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/SqlFormatter.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -426,14 +427,6 @@
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
     </task>
-    <task id="LOCAL-00068" summary="new：调整kafka的生成kafka消息的高度">
-      <option name="closed" value="true" />
-      <created>1775110854529</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
-      <option name="project" value="LOCAL" />
-      <updated>1775110854529</updated>
-    </task>
     <task id="LOCAL-00069" summary="fix：点击复制结果按钮，不额外增加复制成功的按钮">
       <option name="closed" value="true" />
       <created>1775137217969</created>
@@ -818,7 +811,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776077594051</updated>
     </task>
-    <option name="localTasksCounter" value="117" />
+    <task id="LOCAL-00117" summary="new/fix：修改事件清除、sqlid格式化工具">
+      <option name="closed" value="true" />
+      <created>1776078324967</created>
+      <option name="number" value="00117" />
+      <option name="presentableId" value="LOCAL-00117" />
+      <option name="project" value="LOCAL" />
+      <updated>1776078324967</updated>
+    </task>
+    <option name="localTasksCounter" value="118" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -859,7 +860,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：fpa生成规则调整" />
     <MESSAGE value="new：fpa生成增加进度条" />
     <MESSAGE value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
     <MESSAGE value="new：新的olmx模型名称" />
@@ -884,7 +884,8 @@
     <MESSAGE value="fix：透传外网一定要代理的问题修复" />
     <MESSAGE value="fix：修复kafka生成的vue功能异常缺漏的地方" />
     <MESSAGE value="new/fix：修复kafka生成历史记录查询和插入" />
-    <option name="LAST_COMMIT_MESSAGE" value="new/fix：修复kafka生成历史记录查询和插入" />
+    <MESSAGE value="new/fix：修改事件清除、sqlid格式化工具" />
+    <option name="LAST_COMMIT_MESSAGE" value="new/fix：修改事件清除、sqlid格式化工具" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

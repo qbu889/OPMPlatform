@@ -180,16 +180,16 @@ const goTo = (path) => {
 
 <style scoped>
 .home-container {
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  min-height: calc(100vh - 48px);
 }
 
+/* Hero 区域 - Apple 风格 */
 .header {
   text-align: center;
-  padding: 50px 0;
-  margin-bottom: 40px;
+  padding: 80px 20px 60px;
+  background: var(--apple-bg);
   position: relative;
+  overflow: hidden;
 }
 
 .header::before {
@@ -199,124 +199,151 @@ const goTo = (path) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(0, 113, 227, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .header h1 {
-  font-size: 48px;
-  color: white;
-  margin-bottom: 15px;
+  font-size: 56px;
   font-weight: 700;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.025em;
+  margin: 0 0 16px;
+  background: linear-gradient(135deg, var(--apple-text) 0%, var(--apple-text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   position: relative;
   z-index: 1;
 }
 
 .header p {
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--apple-text-secondary);
   position: relative;
   z-index: 1;
+  letter-spacing: -0.01em;
 }
 
+/* 章节卡片 */
 .section-card {
-  margin-bottom: 35px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-.section-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  max-width: 1200px;
+  margin: 0 auto 60px;
+  padding: 0 24px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  font-size: 22px;
+  font-size: 40px;
   font-weight: 700;
-  color: #333;
-  padding: 5px 0;
+  color: var(--apple-text);
+  padding: 0 0 40px;
+  letter-spacing: -0.02em;
 }
 
 .section-header .el-icon {
-  margin-right: 12px;
-  font-size: 26px;
-  color: #667eea;
+  margin-right: 16px;
+  font-size: 40px;
+  color: var(--apple-blue);
+}
+
+/* 功能卡片网格 */
+.el-row {
+  margin: 0 -12px;
+}
+
+.el-col {
+  padding: 0 12px;
+  margin-bottom: 24px;
 }
 
 .feature-card {
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  border: 2px solid transparent;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 20px;
+  padding: 32px;
+  text-align: left;
+  border: none;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background: var(--apple-card-bg);
+  box-shadow: var(--apple-shadow);
+  backdrop-filter: blur(20px);
 }
 
 .feature-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  border-color: #667eea;
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
+  transform: translateY(-4px);
+  box-shadow: var(--apple-shadow-hover);
 }
 
 .feature-icon {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 18px;
+  margin: 0 0 20px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .feature-card:hover .feature-icon {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
 }
 
 .feature-card h3 {
-  font-size: 20px;
-  color: #333;
-  margin: 15px 0 10px;
+  font-size: 21px;
   font-weight: 600;
+  color: var(--apple-text);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
 }
 
 .feature-card p {
   font-size: 15px;
-  color: #666;
-  line-height: 1.6;
+  color: var(--apple-text-secondary);
+  line-height: 1.5;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
+  .header {
+    padding: 60px 20px 40px;
+  }
+  
   .header h1 {
-    font-size: 36px;
+    font-size: 40px;
   }
   
   .header p {
-    font-size: 16px;
+    font-size: 17px;
+  }
+  
+  .section-header {
+    font-size: 32px;
+    padding: 0 0 30px;
   }
   
   .section-card {
-    margin-bottom: 25px;
+    margin-bottom: 40px;
+    padding: 0 16px;
   }
   
   .feature-card {
-    margin-bottom: 15px;
+    padding: 24px;
+  }
+  
+  .el-col {
+    margin-bottom: 16px;
   }
 }
 </style>

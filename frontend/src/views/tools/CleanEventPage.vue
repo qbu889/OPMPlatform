@@ -47,12 +47,16 @@
         </el-form-item>
         
         <el-form-item>
-          <div class="button-group">
-            <el-button type="primary" size="large" :loading="loading" @click="handleClean">
-              <el-icon><MagicStick /></el-icon>
-              清洗数据
-            </el-button>
-          </div>
+          <el-button 
+            type="primary" 
+            size="large" 
+            :loading="loading" 
+            @click="handleClean"
+            class="clean-button"
+          >
+            <el-icon><MagicStick /></el-icon>
+            清洗数据
+          </el-button>
         </el-form-item>
       </el-form>
       
@@ -308,7 +312,7 @@ const handleCopy = async () => {
   margin-top: 10px;
 }
 
-:deep(.el-button--primary) {
+.clean-button {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
   padding: 14px 40px;
@@ -319,12 +323,12 @@ const handleCopy = async () => {
   transition: all 0.3s ease;
 }
 
-:deep(.el-button--primary:hover) {
+:deep(.clean-button:hover) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-:deep(.el-button--primary:active) {
+:deep(.clean-button:active) {
   transform: translateY(0);
 }
 

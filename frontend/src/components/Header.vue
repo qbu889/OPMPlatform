@@ -264,111 +264,152 @@ const handleSavePassword = async () => {
 
 <style scoped>
 .header {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: rgba(251, 251, 253, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--apple-border);
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 1000;
+  height: 48px;
+}
+
+/* Dark mode header */
+@media (prefers-color-scheme: dark) {
+  .header {
+    background: rgba(29, 29, 31, 0.72);
+  }
 }
 
 .header-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  height: 60px;
+  padding: 0 24px;
+  height: 48px;
 }
 
 .logo {
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-right: 40px;
+  margin-right: 32px;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.7;
 }
 
 .logo-icon {
-  height: 32px;
-  margin-right: 12px;
+  height: 20px;
+  margin-right: 10px;
 }
 
 .logo-text {
-  color: white;
-  font-weight: 600;
-  font-size: 18px;
+  color: var(--apple-text);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.01em;
 }
 
 .el-menu {
   background: transparent;
   border: none;
   flex: 1;
+  height: 48px;
 }
 
 .el-menu-item,
 .el-sub-menu__title {
-  color: rgba(255, 255, 255, 0.95);
-  height: 60px;
-  line-height: 60px;
+  color: var(--apple-text-secondary);
+  height: 48px;
+  line-height: 48px;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 0 16px;
+  transition: color 0.2s ease;
 }
 
 .el-menu-item:hover,
 .el-sub-menu__title:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: transparent;
+  color: var(--apple-text);
 }
 
 .el-menu-item.is-active {
-  color: #409eff;
+  color: var(--apple-text);
+  font-weight: 500;
 }
 
-/* 子菜单样式 - 深色背景 */
+/* 子菜单样式 - Apple 风格 */
 .el-menu--popup {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
+  background-color: rgba(251, 251, 253, 0.95) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  border-color: var(--apple-border) !important;
+  border-radius: 12px;
+  padding: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .el-menu--popup {
+    background-color: rgba(30, 30, 30, 0.95) !important;
+  }
 }
 
 .el-menu--popup .el-menu-item {
-  color: rgba(255, 255, 255, 0.9) !important;
-  background-color: #1e293b !important;
+  color: var(--apple-text) !important;
+  background-color: transparent !important;
+  height: 36px;
+  line-height: 36px;
+  font-size: 13px;
+  border-radius: 6px;
+  margin: 2px 8px;
+  padding: 0 12px;
 }
 
 .el-menu--popup .el-menu-item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  background: var(--apple-blue) !important;
+  color: white !important;
 }
 
 .el-menu--popup .el-menu-item.is-active {
-  color: #409eff !important;
+  color: var(--apple-blue) !important;
+  font-weight: 500;
 }
 
 /* 子菜单箭头颜色 */
 .el-sub-menu__icon-arrow {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--apple-text-secondary);
 }
 
 .user-menu {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .user-info {
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background 0.3s;
+  color: var(--apple-text);
+  padding: 6px 12px;
+  border-radius: 980px;
+  transition: all 0.2s ease;
+  font-size: 13px;
 }
 
 .user-info:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--apple-bg-secondary);
 }
 
 .user-info .el-icon {
   margin-right: 6px;
+  font-size: 16px;
 }
 
 .user-info span:first-child {
@@ -376,32 +417,37 @@ const handleSavePassword = async () => {
 }
 
 .admin-badge {
-  background: #f56c6c;
+  background: #ff3b30;
   color: white;
-  font-size: 12px;
+  font-size: 11px;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: 980px;
+  font-weight: 500;
 }
 
 .el-button {
-  color: white;
-  border-color: rgba(255, 255, 255, 0.5);
+  color: var(--apple-text);
+  border-color: transparent;
+  background: transparent;
+  border-radius: 980px;
+  font-size: 13px;
+  height: 32px;
+  padding: 0 16px;
 }
 
 .el-button:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.8);
+  background: var(--apple-bg-secondary);
+  border-color: transparent;
 }
 
 .el-button--primary {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: var(--apple-blue);
+  border-color: var(--apple-blue);
   color: white;
 }
 
 .el-button--primary:hover {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
+  background-color: var(--apple-blue-hover);
+  border-color: var(--apple-blue-hover);
 }
 </style>
