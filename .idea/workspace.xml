@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：透传外网一定要代理的问题修复">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,61 +106,61 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.Flask (app.py) .executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app.py:create_app).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
-    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-cosyBalloonNotifications&quot;: &quot;Lingma Notification Balloon Group&quot;,
-    &quot;Notification.DoNotAsk-cosyBalloonNotifications&quot;: &quot;true&quot;,
-    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
-    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
-    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
-    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Shell Script.start.sh.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.start_frontend.sh.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.start_with_tunnel.sh.executor&quot;: &quot;Run&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.Flask (app.py) .executor": "Run",
+    "Flask 服务器.Flask (app.py).executor": "Run",
+    "Flask 服务器.Flask (app.py:create_app).executor": "Run",
+    "Flask 服务器.Flask (app2.py).executor": "Run",
+    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
+    "JavaScript 调试.schedule.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-cosyBalloonNotifications": "Lingma Notification Balloon Group",
+    "Notification.DoNotAsk-cosyBalloonNotifications": "true",
+    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app.py.executor": "Run",
+    "Python.app2.executor": "Run",
+    "Python.holidaySys.executor": "Run",
+    "Python.kafka_routes.executor": "Debug",
+    "Python.paiBan.executor": "Run",
+    "Python.paiBanNew.executor": "Run",
+    "Python.wordToWord.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Shell Script.start.sh.executor": "Run",
+    "Shell Script.start_frontend.sh.executor": "Run",
+    "Shell Script.start_with_tunnel.sh.executor": "Run",
+    "WebServerToolWindowFactoryState": "false",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "git-widget-placeholder": "f/dev",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mysql_aurora&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql_aurora"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "MySQL"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "MySQL"
     ]
   }
-}</component>
+}]]></component>
   <component name="Push.Settings">
     <force-push-targets>
       <force-push-target remote-path="origin" branch="onlineExcel" />

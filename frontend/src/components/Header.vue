@@ -306,19 +306,44 @@ const handleSavePassword = async () => {
 
 .el-menu-item,
 .el-sub-menu__title {
-  color: #b0b8c4;
+  color: rgba(255, 255, 255, 0.95);
   height: 60px;
   line-height: 60px;
 }
 
 .el-menu-item:hover,
 .el-sub-menu__title:hover {
-  background: transparent;
-  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .el-menu-item.is-active {
   color: #409eff;
+}
+
+/* 子菜单样式 - 深色背景 */
+.el-menu--popup {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.el-menu--popup .el-menu-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background-color: #1e293b !important;
+}
+
+.el-menu--popup .el-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.el-menu--popup .el-menu-item.is-active {
+  color: #409eff !important;
+}
+
+/* 子菜单箭头颜色 */
+.el-sub-menu__icon-arrow {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .user-menu {
@@ -360,5 +385,23 @@ const handleSavePassword = async () => {
 
 .el-button {
   color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.el-button:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.el-button--primary {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: white;
+}
+
+.el-button--primary:hover {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
 }
 </style>

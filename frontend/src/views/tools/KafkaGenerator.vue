@@ -15,19 +15,34 @@
         </div>
       </template>
 
-      <el-input
-        v-model="esSourceData"
-        type="textarea"
-        :rows="10"
-        placeholder="请输入 ES 查询结果的 JSON 数据"
-      />
+      <div class="es-input-wrapper">
+        <el-input
+          v-model="esSourceData"
+          type="textarea"
+          :rows="10"
+          placeholder="请输入 ES 查询结果的 JSON 数据"
+        />
+        <el-button 
+          type="primary" 
+          @click="showEsSourceHistory"
+          class="es-history-btn"
+          title="查看历史数据"
+        >
+          <el-icon><Clock /></el-icon>
+          历史数据
+        </el-button>
+      </div>
 
       <div class="button-group mt-3">
         <el-button type="primary" @click="generateMessage">
           <el-icon><Cpu /></el-icon>
           生成 Kafka 消息
         </el-button>
-        <el-button type="info" @click="clearAllFields">
+        <el-button type="info" @click="loadSampleData">
+          <el-icon><Upload /></el-icon>
+          加载示例数据
+        </el-button>
+        <el-button type="danger" @click="clearAllFields">
           <el-icon><Delete /></el-icon>
           清除所有字段
         </el-button>
@@ -76,6 +91,14 @@
                 title="查看字段字典"
               >
                 <el-icon><Notebook /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                type="primary"
+                @click="openHistoryModal(field.name)"
+                title="查看历史记录"
+              >
+                <el-icon><Clock /></el-icon>
               </el-button>
             </div>
           </div>
@@ -133,13 +156,35 @@
             <span>生成结果</span>
           </div>
           <div class="result-actions">
+            <!-- 【测试】前缀开关 -->
+            <el-switch
+              v-model="addTestPrefix"
+              active-text="【测试】前缀"
+              inline-prompt
+            />
+            
+            <!-- 延迟时间设置 -->
+            <el-input-number
+              v-model="delayTime"
+              :min="0"
+              :max="1440"
+              size="small"
+              style="width: 150px; margin-left: 15px"
+            >
+              <template #prepend>
+                <el-icon><Clock /></el-icon>
+                延迟时间
+              </template>
+              <template #append>分钟</template>
+            </el-input-number>
+            
             <!-- 事件时间设置 -->
             <div class="event-time-control">
               <el-input
                 v-model="eventTime"
                 placeholder="事件时间"
                 size="small"
-                style="width: 200px; margin-right: 10px"
+                style="width: 200px; margin-left: 15px"
               >
                 <template #prepend>事件时间</template>
               </el-input>
@@ -147,21 +192,11 @@
                 size="small" 
                 type="primary"
                 @click="subtractEventTime(15)"
+                style="margin-left: 5px"
               >
                 -15分钟
               </el-button>
             </div>
-            
-            <el-input-number
-              v-model="delayTime"
-              :min="0"
-              :max="1440"
-              size="small"
-              style="width: 120px; margin-right: 10px"
-            >
-              <template #prepend>延迟(分钟)</template>
-            </el-input-number>
-            <el-checkbox v-model="addTestPrefix">添加【测试】前缀</el-checkbox>
           </div>
         </div>
       </template>
@@ -183,7 +218,11 @@
           <el-icon><CopyDocument /></el-icon>
           复制 FP 值
         </el-button>
-        <el-button type="warning" @click="regenerateMessage">
+        <el-button type="warning" @click="generatePushMessage">
+          <el-icon><ChatDotRound /></el-icon>
+          生成推送消息
+        </el-button>
+        <el-button type="info" @click="regenerateMessage">
           <el-icon><Refresh /></el-icon>
           重新生成
         </el-button>
@@ -229,6 +268,240 @@
         <el-button @click="dictDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 推送消息弹窗 -->
+    <el-dialog
+      v-model="pushMessageDialogVisible"
+      title="推送消息"
+      width="60%"
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="FP值">
+          <el-input v-model="pushMessageFp" readonly />
+        </el-form-item>
+        
+        <el-form-item label="事件时间">
+          <el-input v-model="pushMessageEventTime" placeholder="请输入事件时间 (YYYY-MM-DD HH:mm:ss)">
+            <template #append>
+              <el-button @click="subtractPushMessageEventTime(15)">-15分钟</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        
+        <el-form-item label="激活状态">
+          <el-input v-model="pushMessageActiveStatus" readonly />
+        </el-form-item>
+        
+        <el-divider>推送消息 JSON</el-divider>
+        
+        <el-input
+          v-model="pushMessageJson"
+          type="textarea"
+          :rows="8"
+          readonly
+          class="result-textarea"
+        />
+      </el-form>
+
+      <template #footer>
+        <el-button type="success" @click="copyPushMessage">
+          <el-icon><CopyDocument /></el-icon>
+          复制推送消息
+        </el-button>
+        <el-button @click="pushMessageDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- ES 源数据历史记录弹窗 -->
+    <el-dialog
+      v-model="esSourceHistoryDialogVisible"
+      title="ES 源数据历史记录"
+      width="95%"
+      :close-on-click-modal="false"
+    >
+      <div class="mb-3">
+        <el-input
+          v-model="esSourceHistoryKeyword"
+          placeholder="搜索 FP 值、生成时间..."
+          clearable
+          @keyup.enter="searchEsSourceHistory"
+          style="width: 400px"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button @click="searchEsSourceHistory">搜索</el-button>
+          </template>
+        </el-input>
+      </div>
+
+      <el-alert
+        :title="`共 ${esSourceHistoryTotal} 条记录`"
+        type="info"
+        :closable="false"
+        class="mb-3"
+      />
+
+      <el-table
+        :data="esSourceHistoryData"
+        border
+        stripe
+        max-height="500"
+      >
+        <el-table-column label="操作" width="80" align="center">
+          <template #default="{ row }">
+            <el-button
+              size="small"
+              type="primary"
+              @click="useEsSourceHistory(row)"
+              title="使用此记录"
+            >
+              <el-icon><Check /></el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="生成时间" width="180" />
+        <el-table-column prop="fp_value" label="FP 值" width="250" show-overflow-tooltip />
+        <el-table-column label="ES 源数据" min-width="300">
+          <template #default="{ row }">
+            <div class="json-preview">
+              <el-input
+                :model-value="formatJsonString(row.es_source_raw)"
+                type="textarea"
+                :rows="3"
+                readonly
+                class="json-textarea"
+              />
+              <el-button
+                size="small"
+                type="info"
+                @click="copyText(row.es_source_raw, 'ES 源数据')"
+                class="mt-2"
+              >
+                <el-icon><CopyDocument /></el-icon>
+                复制
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Kafka 消息" min-width="300">
+          <template #default="{ row }">
+            <div class="json-preview">
+              <el-input
+                :model-value="formatJsonString(row.kafka_message)"
+                type="textarea"
+                :rows="3"
+                readonly
+                class="json-textarea"
+              />
+              <el-button
+                size="small"
+                type="info"
+                @click="copyText(row.kafka_message, 'Kafka 消息')"
+                class="mt-2"
+              >
+                <el-icon><CopyDocument /></el-icon>
+                复制
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div v-if="!esSourceHistoryData.length && esSourceHistoryTotal === 0" class="text-center py-5 text-muted">
+        <el-empty description="暂无历史记录" />
+      </div>
+
+      <template #footer>
+        <el-pagination
+          v-if="esSourceHistoryTotal > 0"
+          v-model:current-page="esSourceHistoryPage"
+          :page-size="esSourceHistoryPageSize"
+          :total="esSourceHistoryTotal"
+          layout="prev, pager, next"
+          @current-change="changeEsSourceHistoryPage"
+        />
+        <el-button @click="esSourceHistoryDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 历史记录弹窗 -->
+    <el-dialog
+      v-model="historyDialogVisible"
+      title="历史生成记录"
+      width="90%"
+      :close-on-click-modal="false"
+    >
+      <div class="mb-3">
+        <el-input
+          v-model="historyKeyword"
+          placeholder="搜索 FP 值、生成时间..."
+          clearable
+          @keyup.enter="searchHistory"
+          style="width: 400px"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+          <template #append>
+            <el-button @click="searchHistory">搜索</el-button>
+          </template>
+        </el-input>
+      </div>
+
+      <el-alert
+        :title="`共 ${historyTotal} 条记录`"
+        type="info"
+        :closable="false"
+        class="mb-3"
+      />
+
+      <el-table
+        :data="historyData"
+        border
+        stripe
+        max-height="500"
+        v-loading="!historyData.length && historyTotal === 0"
+      >
+        <el-table-column label="操作" width="80" align="center">
+          <template #default="{ row }">
+            <el-button
+              size="small"
+              type="primary"
+              @click="useHistoryRecord(row)"
+              title="使用此记录"
+            >
+              <el-icon><Check /></el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="生成时间" width="180" />
+        <el-table-column prop="fp_value" label="FP 值" width="250" show-overflow-tooltip />
+        <el-table-column label="字段值" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.kafka_message?.[currentHistoryField] || '-' }}
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div v-if="!historyData.length && historyTotal === 0" class="text-center py-5 text-muted">
+        <el-empty description="暂无历史记录" />
+      </div>
+
+      <template #footer>
+        <el-pagination
+          v-if="historyTotal > 0"
+          v-model:current-page="historyCurrentPage"
+          :page-size="historyPageSize"
+          :total="historyTotal"
+          layout="prev, pager, next"
+          @current-change="changeHistoryPage"
+        />
+        <el-button @click="historyDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -248,6 +521,11 @@ import {
   CircleCheck,
   CopyDocument,
   Refresh,
+  ChatDotRound,
+  Clock,
+  Search,
+  Check,
+  Upload,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -310,6 +588,30 @@ const esQuery = ref('')
 const dictDialogVisible = ref(false)
 const dictData = ref([])
 const currentDictField = ref('')
+
+// 推送消息弹窗
+const pushMessageDialogVisible = ref(false)
+const pushMessageFp = ref('')
+const pushMessageEventTime = ref('')
+const pushMessageActiveStatus = ref('3')
+const pushMessageJson = ref('')
+
+// 历史记录弹窗
+const historyDialogVisible = ref(false)
+const historyData = ref([])
+const historyTotal = ref(0)
+const historyCurrentPage = ref(1)
+const historyPageSize = 20
+const historyKeyword = ref('')
+const currentHistoryField = ref('')
+
+// ES 源数据历史记录弹窗
+const esSourceHistoryDialogVisible = ref(false)
+const esSourceHistoryData = ref([])
+const esSourceHistoryTotal = ref(0)
+const esSourceHistoryPage = ref(1)
+const esSourceHistoryPageSize = 10
+const esSourceHistoryKeyword = ref('')
 
 // 字段值改变
 const onFieldChange = async (field, value) => {
@@ -421,11 +723,23 @@ const openFieldDict = async (field) => {
   dictDialogVisible.value = true
   
   try {
-    const response = await fetch(`/kafka-generator/field-dict?field=${field}`)
+    // 使用 /field-options API
+    const response = await fetch(`/kafka-generator/field-options?kafka_field=${field}`)
     const result = await response.json()
     
     if (result.success) {
-      dictData.value = result.data || []
+      // 转换数据格式为表格所需格式
+      const rows = result.data.rows || []
+      const columns = result.data.columns || []
+      
+      // 将行数据转换为对象数组，添加字段名和说明列
+      dictData.value = rows.map(row => ({
+        field_name: field,
+        field_value: row[columns[0]] || '',
+        description: row[columns[1]] || row['description'] || '',
+        source: '维表',
+        ...row,
+      }))
     } else {
       ElMessage.error(result.message || '加载字典失败')
     }
@@ -514,8 +828,29 @@ const copyResult = async () => {
   }
 
   try {
-    await navigator.clipboard.writeText(resultJson.value)
-    ElMessage.success('已复制到剪贴板')
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(resultJson.value)
+      ElMessage.success('已复制到剪贴板')
+    } else {
+      // 降级方案：使用 execCommand
+      const textarea = document.createElement('textarea')
+      textarea.value = resultJson.value
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success('已复制到剪贴板')
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败')
@@ -536,12 +871,467 @@ const copyFPValue = async () => {
   }
 
   try {
-    await navigator.clipboard.writeText(fpValue)
-    ElMessage.success('FP 值已复制')
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(fpValue)
+      ElMessage.success('FP 值已复制')
+    } else {
+      // 降级方案
+      const textarea = document.createElement('textarea')
+      textarea.value = fpValue
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success('FP 值已复制')
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败')
   }
+}
+
+// 生成推送消息
+const generatePushMessage = () => {
+  if (!resultData.value) {
+    ElMessage.warning('请先生成 Kafka 消息')
+    return
+  }
+
+  const fpValue = resultData.value.FP0_FP1_FP2_FP3
+  if (!fpValue) {
+    ElMessage.warning('结果中没有找到 FP0_FP1_FP2_FP3 字段')
+    return
+  }
+
+  // 填充推送消息字段
+  pushMessageFp.value = fpValue
+  
+  // 使用 EVENT_TIME 或当前时间
+  pushMessageEventTime.value = resultData.value.EVENT_TIME || formatCurrentTime()
+  pushMessageActiveStatus.value = '3'
+  
+  // 生成推送消息 JSON
+  updatePushMessageJson()
+  
+  // 显示弹窗
+  pushMessageDialogVisible.value = true
+}
+
+// 格式化当前时间
+const formatCurrentTime = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const mins = String(now.getMinutes()).padStart(2, '0')
+  const secs = String(now.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${mins}:${secs}`
+}
+
+// 更新推送消息 JSON
+const updatePushMessageJson = () => {
+  const pushMessage = {
+    ACTIVE_STATUS: pushMessageActiveStatus.value,
+    CFP0_CFP1_CFP2_CFP3: pushMessageFp.value,
+    EVENT_TIME: pushMessageEventTime.value,
+    FP0_FP1_FP2_FP3: pushMessageFp.value,
+  }
+  pushMessageJson.value = JSON.stringify(pushMessage, null, 2)
+}
+
+// 推送消息事件时间减指定分钟数
+const subtractPushMessageEventTime = (minutes) => {
+  if (!pushMessageEventTime.value) {
+    ElMessage.warning('请先输入事件时间')
+    return
+  }
+
+  try {
+    // 解析时间字符串
+    let date = new Date(pushMessageEventTime.value)
+    
+    // 如果解析失败，尝试其他格式
+    if (isNaN(date.getTime())) {
+      // 尝试 YYYY-MM-DD HH:mm:ss 格式
+      const parts = pushMessageEventTime.value.split(/[- :]/)
+      if (parts.length >= 6) {
+        date = new Date(
+          parseInt(parts[0]),
+          parseInt(parts[1]) - 1,
+          parseInt(parts[2]),
+          parseInt(parts[3]),
+          parseInt(parts[4]),
+          parseInt(parts[5])
+        )
+      } else {
+        ElMessage.error('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式')
+        return
+      }
+    }
+    
+    // 减去指定分钟数
+    date.setMinutes(date.getMinutes() - minutes)
+    
+    // 格式化为 YYYY-MM-DD HH:mm:ss
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const mins = String(date.getMinutes()).padStart(2, '0')
+    const secs = String(date.getSeconds()).padStart(2, '0')
+    
+    pushMessageEventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
+    
+    // 同时更新推送消息 JSON
+    updatePushMessageJson()
+    
+    ElMessage.success(`事件时间已减${minutes}分钟`)
+  } catch (error) {
+    console.error('时间计算错误:', error)
+    ElMessage.error('时间格式错误，请检查输入')
+  }
+}
+
+// 复制推送消息
+const copyPushMessage = async () => {
+  if (!pushMessageJson.value) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+
+  try {
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(pushMessageJson.value)
+      ElMessage.success('推送消息已复制')
+    } else {
+      // 降级方案
+      const textarea = document.createElement('textarea')
+      textarea.value = pushMessageJson.value
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success('推送消息已复制')
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败')
+  }
+}
+
+// 打开历史记录弹窗
+const openHistoryModal = (field) => {
+  currentHistoryField.value = field
+  historyCurrentPage.value = 1
+  historyKeyword.value = ''
+  historyDialogVisible.value = true
+  loadHistoryData()
+}
+
+// 加载历史记录数据
+const loadHistoryData = async () => {
+  try {
+    const response = await fetch(
+      `/kafka-generator/history?page=${historyCurrentPage.value}&per_page=${historyPageSize}&keyword=${encodeURIComponent(historyKeyword.value)}`
+    )
+    const result = await response.json()
+    
+    if (result.success) {
+      historyData.value = result.data.list || []
+      historyTotal.value = result.data.total || 0
+    } else {
+      ElMessage.error(result.message || '加载历史记录失败')
+    }
+  } catch (error) {
+    console.error('加载历史记录错误:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  }
+}
+
+// 切换页码
+const changeHistoryPage = (page) => {
+  historyCurrentPage.value = page
+  loadHistoryData()
+}
+
+// 搜索历史记录
+const searchHistory = () => {
+  historyCurrentPage.value = 1
+  loadHistoryData()
+}
+
+// 使用历史记录
+const useHistoryRecord = (record) => {
+  if (currentHistoryField.value && record.kafka_message) {
+    const fieldValue = record.kafka_message[currentHistoryField.value]
+    if (fieldValue) {
+      fieldValues[currentHistoryField.value] = fieldValue
+      onFieldChange(currentHistoryField.value, fieldValue)
+      ElMessage.success('已填充字段值')
+      historyDialogVisible.value = false
+    }
+  }
+}
+
+// 显示 ES 源数据历史记录
+const showEsSourceHistory = () => {
+  esSourceHistoryDialogVisible.value = true
+  esSourceHistoryKeyword.value = ''
+  esSourceHistoryPage.value = 1
+  loadEsSourceHistoryData()
+}
+
+// 加载 ES 源数据历史记录
+const loadEsSourceHistoryData = async () => {
+  try {
+    const params = new URLSearchParams({
+      page: esSourceHistoryPage.value,
+      per_page: esSourceHistoryPageSize,
+    })
+    
+    if (esSourceHistoryKeyword.value) {
+      params.append('keyword', esSourceHistoryKeyword.value)
+    }
+    
+    const response = await fetch(`/kafka-generator/history?${params.toString()}`)
+    const result = await response.json()
+    
+    if (result.success) {
+      esSourceHistoryData.value = result.data.list || []
+      esSourceHistoryTotal.value = result.data.total || 0
+    } else {
+      ElMessage.error(result.message || '加载历史记录失败')
+    }
+  } catch (error) {
+    console.error('加载 ES 源数据历史记录错误:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  }
+}
+
+// 搜索 ES 源数据历史
+const searchEsSourceHistory = () => {
+  esSourceHistoryPage.value = 1
+  loadEsSourceHistoryData()
+}
+
+// 切换 ES 源数据历史页码
+const changeEsSourceHistoryPage = (page) => {
+  esSourceHistoryPage.value = page
+  loadEsSourceHistoryData()
+}
+
+// 使用 ES 源数据历史记录
+const useEsSourceHistory = (record) => {
+  if (record.es_source_raw) {
+    esSourceData.value = typeof record.es_source_raw === 'string' 
+      ? record.es_source_raw 
+      : JSON.stringify(record.es_source_raw, null, 2)
+    ElMessage.success('已加载 ES 源数据')
+    esSourceHistoryDialogVisible.value = false
+  }
+}
+
+// 格式化 JSON 字符串
+const formatJsonString = (data) => {
+  if (!data) return '-'
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      return JSON.stringify(parsed, null, 2)
+    } catch {
+      return data
+    }
+  }
+  return JSON.stringify(data, null, 2)
+}
+
+// 复制文本
+const copyText = async (text, label) => {
+  if (!text) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+  
+  try {
+    const textToCopy = typeof text === 'string' ? text : JSON.stringify(text, null, 2)
+    
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(textToCopy)
+      ElMessage.success(`${label}已复制`)
+    } else {
+      // 降级方案：使用 execCommand
+      const textarea = document.createElement('textarea')
+      textarea.value = textToCopy
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success(`${label}已复制`)
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败')
+  }
+}
+
+// 加载示例数据
+const loadSampleData = () => {
+  const sampleData = {
+    "HOME_BROAD_BAND_LIST": [],
+    "FULL_REGION_ID": "35000/350600/350623",
+    "EVENT_LEVEL": 4,
+    "ORG_TYPE": 14104,
+    "EVENT_LOCATION": "MSP",
+    "INDUSTRY_CUST_TYPE": "10",
+    "TOPIC_PREFIX": "EVENT-GZ",
+    "REMOTE_OBJECT_NAME": "SSAP",
+    "EVENT_TIME": "2026-02-09 14:03:50",
+    "IS_TEST": 0,
+    "PORT_NUM_CN": "集客直真",
+    "EVENT_REASON": "告警分析：设备脱网\n定位信息：MSP。",
+    "VENDOR_ID": 323,
+    "REMOTE_EQUIPMENT_NAME": "",
+    "SRC_ORG_ALARM_TEXT": "【发生时间】2026-02-09 14:03:50;\n【告警对象】MSP;\n【告警内容】设备脱网(影响1条电路);\n【业务影响情况】1条业务;\n(1).数据专线(5901351420250509296606),漳州漳浦消防救援(古雷EE)宿舍楼-漳州漳浦消防救援(杜浔AG专职站)FE5980KA\n【归属客户】漳州市消防救援支队(5916596304)(金牌,非直服直管);\n【A端】福建省漳州漳浦县古雷镇古雷港经济开发区新港城裕民路801号;\n【业务信息】数据专线,本地专线,A;\n;【告警分析】设备脱网;\n【预定位信息】【工程信息查询】1、自身工程：初步核实故障网元62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1近24小时无工程割接信息\n\n【客户侧信息查询】1、客户侧网元：62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1\n2、告警情况：客户侧无相关告警\n【对端故障信息查询】对端无故障\n【集客动环信息查询】1、故障网元：62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1\n2、查询资源：初步核实归属机房名称为漳州漳浦消防救援(杜浔AG专职站)一楼办公室机房，归属站点名称为3、查询告警：经核实查询最近6小时无相关停电故障，设备所在机房动环运行正常;",
+    "ALARM_SOURCE": "直真专线监控系统",
+    "CITY_NAME": "漳州市",
+    "EQUIPMENT_NAME": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+    "NETWORK_SUB_TYPE_ID": "1100",
+    "EVENT_ID": 311980616,
+    "SITE_TYPE": "",
+    "EVENT_NUM": 2,
+    "DETAIL_STATUS": 2,
+    "CANCEL_STATUS": 1,
+    "PROJ_INTERFERENCE_FLAG": 0,
+    "ROOT_NETWORK_TYPE_ID": "1",
+    "NETWORK_SUB_TYPE_NAME": "集客",
+    "ALARM_STANDARD_NAME": "设备脱网",
+    "ALARM_STANDARD_FLAG": 2,
+    "MAINTAIN_TEAM": "漳州漳浦集客铁通维护组",
+    "EQP_OBJECT_ID": "87002",
+    "EVENT_ROOT_CATEGORY": "客户侧故障",
+    "EVENT_SOURCE": 2,
+    "EVENT_STATUS": 0,
+    "KEY_CELL": "0",
+    "NE_LABEL": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+    "TYPE_KEYCODE": "预处理,",
+    "EVENT_EXPLANATION": "",
+    "ALARM_RESOURCE_STATUS": "1",
+    "EFFECT_CLIENT_LEVEL": "1",
+    "SERVICE_ASSURANCE_LEVEL": "2",
+    "SUPPRESS_NIGHT": "0",
+    "NMS_ALARM_ID": "2020740405373157376",
+    "EXCEPTION_SUPPRESS_DISPATCH": 0,
+    "EVENT_NAME": "单条集客A本地专线故障事件-设备脱网",
+    "EQUIPMENT_IP": "5901351420250509296606",
+    "FAULT_LOCATION": "【告警对象】MSP;<br>",
+    "EVENT_COLLECTION_TIME": "2026-02-09 14:04:57",
+    "TOPIC_PARTITION": 12,
+    "SPECIFIC_PROBLEMS": "631ed71a84cadfbeb9d29c7659232abf",
+    "FULL_REGION_NAME": "福建省/漳州市/漳浦县",
+    "EXTRA_STRING1": "",
+    "IS_EFFECT_BUSINESS": "是",
+    "EVENT_CAT": "【工程信息查询】1、自身工程：初步核实故障网元62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1近24小时无工程割接信息",
+    "ALARM_UNIQUE_ID": "2028480021",
+    "ALARM_NAME": "设备脱网(影响1条电路)",
+    "VENDOR_NAME": "瑞斯康达",
+    "RECOGNITION_STANDARD_ID": "WLSJ-YW-B-03-80-0032",
+    "5G_CUSTOMER_LIST": [],
+    "EVENT_TYPE_ID": "业务类",
+    "MAIN_NET_SORT_ONE": "集团专线",
+    "EVENT_STANDARD_FLAG": 2,
+    "VENDOR_EVENT_TYPE": "14202",
+    "ALARM_REASON": "",
+    "OBJECT_CLASS_ID": 87002,
+    "PORT_NUM": "300205",
+    "COUNTY_ID": "350623",
+    "EVENT_LEVEL_NAME": "四级",
+    "ALARM_LEVEL_NAME": "二级告警",
+    "EVENT_EFFECT": "网络层面：[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1；\n业务层面：影响集客业务1条，涉及客户：漳州市消防救援支队(5916596304)；\n社会层面：无。\n",
+    "EVENT_FP": "1713996274_3872318956_2520283298_4136070826_2",
+    "SERVICE_EFFECT_STATUS": "有影响",
+    "EVENT_ARRIVAL_TIME": "2026-02-09 14:04:59",
+    "FAULT_DIAGNOSIS": "经核实无工程操作、无传输故障，无光功率异常，无动环停电，初步判断为对端故障导致，请进一步核实。",
+    "EFFECT_SERVICE_LEVEL": "2",
+    "PROJ_INTERFERENCE_TYPE": "【是否干扰告警】：否。",
+    "TMSC_CAT": "",
+    "FAULT_TYPE_ID": "设备",
+    "GZ_EVENT_STATUS": 2,
+    "EVENT_PROVINCE_LEVEL": "2",
+    "NETWORK_TYPE_ID": "11",
+    "NE_ADMIN_STATUS": "",
+    "NMS_NAME": "集客网管",
+    "NETWORK_TYPE_NAME": "集客",
+    "FAULT_SUB_TYPE_ID": "产品故障类",
+    "PROVINCE_NAME": "福建省",
+    "EVENT_PROBABLE_CAUSE_TXT": "",
+    "OBJECT_CLASS_TEXT": "SSAP",
+    "ALARM_STANDARD_ID": "1100-064-371-10-860022",
+    "EXTRA_ID2": "",
+    "INTELLIGENT": 0,
+    "MAIN_NET_SORT_TWO": "传输专线",
+    "COUNTY_NAME": "漳浦县",
+    "SATOTAL": 3,
+    "EVENT_STANDARD_ID": "WLSJ-YW-B-03-80-0032",
+    "EFFECT_NE_NUM": 1,
+    "ROOT_NETWORK_TYPE_TOP": "集客",
+    "LAST_EVENT_TIME": "2026-02-09 14:03:50",
+    "EVENT_EXPLANATION_ADDITION": "",
+    "VENDOR_SEVERITY": "1",
+    "INTERFERENCE_FLAG": "0",
+    "EQP_OBJECT_NAME": "SSAP",
+    "OLD_EVENT_NAME": "单条集客A本地专线故障事件-设备脱网",
+    "EVENT_SUMMARY": "预处理步骤： 1.核查是否工程操作导致；\n 2.核查是否动环停电故障导致；\n 3.核查是否传输光缆故障导致；\n 4.核查是否设备故障导致；\n 5.核查是否客户下电导致。\n",
+    "PROVINCE_ID": "35000",
+    "EVENT_CLEAR_FP": "1713996274_3872318956_2520283298_4136070826_2",
+    "GROUP_CUSTOMER_LINE_LIST": "[]",
+    "ALARM_LEVEL": 2,
+    "EVENT_ROOT_CATEGORY_ID": "11002",
+    "EVENT_STANDARD_NAME": "单条集客专线故障事件",
+    "NE_LOCATION": "62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+    "EFFECT_CIRCUIT_LEVEL": "1403",
+    "MAINTAIN_TEAM_SOURCE": "1",
+    "CITY_ID": "350600",
+    "REMOTE_OBJECT_CLASS": "87002",
+    "MAIN_NET_SORT_THREE": "SSAP",
+    "CUSTOMER_SERVICE_LEVEL": "1",
+    "CREATION_EVENT_TIME": "2026-02-09 14:04:59",
+    "FIRST_EVENT_TIME": "2026-02-09 14:03:50",
+    "SERV_EFFECT_TYPE": "政企业务-集团专线"
+  }
+  
+  esSourceData.value = JSON.stringify(sampleData, null, 2)
+  ElMessage.success('示例数据已加载')
 }
 
 // 复制 ES 查询
@@ -552,8 +1342,29 @@ const copyEsQuery = async () => {
   }
 
   try {
-    await navigator.clipboard.writeText(esQuery.value)
-    ElMessage.success('ES 查询已复制')
+    // 尝试使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(esQuery.value)
+      ElMessage.success('ES 查询已复制')
+    } else {
+      // 降级方案
+      const textarea = document.createElement('textarea')
+      textarea.value = esQuery.value
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success('ES 查询已复制')
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败')
@@ -823,6 +1634,51 @@ onMounted(() => {
 
 .es-query-section {
   margin-top: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+/* ES 输入框包装器 */
+.es-input-wrapper {
+  position: relative;
+}
+
+.es-history-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 10;
+}
+
+/* JSON 预览样式 */
+.json-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.json-textarea {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.mt-2 {
+  margin-top: 8px;
 }
 
 :deep(.el-card__header) {
