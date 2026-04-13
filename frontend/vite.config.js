@@ -14,6 +14,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     allowedHosts: ['opmvue.nokiafz.asia'],
+    hmr: process.env.NODE_ENV === 'production' ? false : {
+      protocol: 'wss',
+      host: 'opmvue.nokiafz.asia',
+      clientPort: 443,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
