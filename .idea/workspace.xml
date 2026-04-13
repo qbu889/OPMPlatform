@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：表格转COSMIC访问失败">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/SqlFormatter.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/SqlFormatter.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/schedule/schedule_config_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/schedule/schedule_config_routes.py" afterDir="false" />
-    </list>
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：忽略文件" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -428,31 +419,7 @@
       <workItem from="1775810745899" duration="31000" />
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
-      <workItem from="1776046865040" duration="707000" />
-    </task>
-    <task id="LOCAL-00058" summary="fix：技术需求文档word转excel优化">
-      <option name="closed" value="true" />
-      <created>1774515675680</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1774515675680</updated>
-    </task>
-    <task id="LOCAL-00059" summary="new：pytest">
-      <option name="closed" value="true" />
-      <created>1774515713641</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1774515713641</updated>
-    </task>
-    <task id="LOCAL-00060" summary="new：技术需求文档word转excel增加表格内容的兼容提取">
-      <option name="closed" value="true" />
-      <created>1774594870718</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1774594870719</updated>
+      <workItem from="1776046865040" duration="1022000" />
     </task>
     <task id="LOCAL-00061" summary="fix：sql格式化工具复制功能修复及样式恢复、Markdown 上传转换关键词管理样式调整及改成弹窗交互">
       <option name="closed" value="true" />
@@ -822,7 +789,31 @@
       <option name="project" value="LOCAL" />
       <updated>1775818101321</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="new：vue重构">
+      <option name="closed" value="true" />
+      <created>1776047838481</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1776047838481</updated>
+    </task>
+    <task id="LOCAL-00108" summary="new：vue重构">
+      <option name="closed" value="true" />
+      <created>1776047861881</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1776047861881</updated>
+    </task>
+    <task id="LOCAL-00109" summary="new：忽略文件">
+      <option name="closed" value="true" />
+      <created>1776047877443</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1776047877443</updated>
+    </task>
+    <option name="localTasksCounter" value="110" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -863,8 +854,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入" />
-    <MESSAGE value="fix：预计功能点数量计算静态值调整" />
     <MESSAGE value="new：预计功能点数量在上传文档的时候就计算" />
     <MESSAGE value="new：点击【保存评估结果】按钮，不需要重新加载页面" />
     <MESSAGE value="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅" />
@@ -888,7 +877,9 @@
     <MESSAGE value="new：启动文档说明" />
     <MESSAGE value="new：vue重构页面" />
     <MESSAGE value="fix：表格转COSMIC访问失败" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：表格转COSMIC访问失败" />
+    <MESSAGE value="new：vue重构" />
+    <MESSAGE value="new：忽略文件" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：忽略文件" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
