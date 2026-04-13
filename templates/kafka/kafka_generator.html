@@ -1108,7 +1108,12 @@
                     <label for="pushMessageEventTimeInput" class="form-label fw-bold">
                         <i class="fas fa-clock me-2"></i>事件时间
                     </label>
-                    <input type="text" class="form-control" id="pushMessageEventTimeInput" readonly>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="pushMessageEventTimeInput" placeholder="请输入事件时间 (YYYY-MM-DD HH:mm:ss)">
+                        <button class="btn btn-outline-primary" type="button" onclick="subtractPushMessageEventTime(15)" title="减15分钟">
+                            <i class="fas fa-minus-circle me-1"></i>-15分钟
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="pushMessageActiveStatusInput" class="form-label fw-bold">
@@ -2264,6 +2269,75 @@
         function closePushMessageModal() {
             document.getElementById('pushMessageModalOverlay').classList.remove('show');
             console.log('[INFO] 推送消息弹窗已关闭');
+        }
+        
+        // 推送消息事件时间减指定分钟数
+        function subtractPushMessageEventTime(minutes) {
+            const eventTimeInput = document.getElementById('pushMessageEventTimeInput');
+            const eventTimeValue = eventTimeInput.value.trim();
+            
+            if (!eventTimeValue) {
+                alert('请先输入事件时间');
+                return;
+            }
+            
+            try {
+                // 解析时间字符串
+                let date = new Date(eventTimeValue);
+                
+                // 如果解析失败，尝试其他格式
+                if (isNaN(date.getTime())) {
+                    // 尝试 YYYY-MM-DD HH:mm:ss 格式
+                    const parts = eventTimeValue.split(/[- :]/);
+                    if (parts.length >= 6) {
+                        date = new Date(
+                            parseInt(parts[0]),
+                            parseInt(parts[1]) - 1,
+                            parseInt(parts[2]),
+                            parseInt(parts[3]),
+                            parseInt(parts[4]),
+                            parseInt(parts[5])
+                        );
+                    } else {
+                        alert('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式');
+                        return;
+                    }
+                }
+                
+                // 减去指定分钟数
+                date.setMinutes(date.getMinutes() - minutes);
+                
+                // 格式化为 YYYY-MM-DD HH:mm:ss
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const mins = String(date.getMinutes()).padStart(2, '0');
+                const secs = String(date.getSeconds()).padStart(2, '0');
+                
+                const newTime = `${year}-${month}-${day} ${hours}:${mins}:${secs}`;
+                eventTimeInput.value = newTime;
+                
+                // 同时更新推送消息 JSON 中的 EVENT_TIME
+                updatePushMessageJSON(newTime);
+                
+                console.log(`[INFO] 事件时间已减${minutes}分钟: ${newTime}`);
+            } catch (error) {
+                console.error('时间计算错误:', error);
+                alert('时间格式错误，请检查输入');
+            }
+        }
+        
+        // 更新推送消息 JSON 中的事件时间
+        function updatePushMessageJSON(newEventTime) {
+            const pushMessageOutput = document.getElementById('pushMessageOutput');
+            try {
+                const pushMessage = JSON.parse(pushMessageOutput.textContent);
+                pushMessage.EVENT_TIME = newEventTime;
+                pushMessageOutput.textContent = JSON.stringify(pushMessage, null, 2);
+            } catch (error) {
+                console.error('更新推送消息 JSON 失败:', error);
+            }
         }
         
         // 复制推送消息

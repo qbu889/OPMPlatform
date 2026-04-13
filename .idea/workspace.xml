@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：透传外网无法访问的问题">
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：透传外网一定要代理的问题修复">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/kafka/kafka_generator.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -421,15 +423,7 @@
       <workItem from="1775810745899" duration="31000" />
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
-      <workItem from="1776046865040" duration="5933000" />
-    </task>
-    <task id="LOCAL-00065" summary="new：kafka生成时字段历史记录保存">
-      <option name="closed" value="true" />
-      <created>1774942070835</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
-      <option name="project" value="LOCAL" />
-      <updated>1774942070835</updated>
+      <workItem from="1776046865040" duration="7404000" />
     </task>
     <task id="LOCAL-00066" summary="new：kafka生成后支持生成推送消息">
       <option name="closed" value="true" />
@@ -815,7 +809,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776059382339</updated>
     </task>
-    <option name="localTasksCounter" value="114" />
+    <task id="LOCAL-00114" summary="fix：透传外网一定要代理的问题修复">
+      <option name="closed" value="true" />
+      <created>1776059798462</created>
+      <option name="number" value="00114" />
+      <option name="presentableId" value="LOCAL-00114" />
+      <option name="project" value="LOCAL" />
+      <updated>1776059798462</updated>
+    </task>
+    <option name="localTasksCounter" value="115" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -856,7 +858,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：AI拆分功能点插入顺序问题修复&#10;完美！我已经修复了 fpa_async_routes.py 文件中的插入逻辑。现在的逻辑是：&#10;检查 _parent_index 指向的功能点类型&#10;如果是 ILF 表：通过 ILF 表的备注（&quot;提取自：xxx&quot;）找到主功能点&#10;如果是主功能点：直接使用&#10;插入位置：AI 拆分功能点插入到主功能点之后（real_parent_idx + 1）&#10;效果：由于是从后向前插入，AI 拆分功能点会把 ILF 表推向后面，最终顺序是：&#10;主功能点&#10;AI 拆分功能点&#10;ILF 表 ✅" />
     <MESSAGE value="fix：日志输出内容修改" />
     <MESSAGE value="fix：fpa后缀剔除" />
     <MESSAGE value="fix：fpa生成规则调整" />
@@ -881,7 +882,8 @@
     <MESSAGE value="new：忽略文件" />
     <MESSAGE value="new：cicd测试，推送QQ邮箱" />
     <MESSAGE value="fix：透传外网无法访问的问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：透传外网无法访问的问题" />
+    <MESSAGE value="fix：透传外网一定要代理的问题修复" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：透传外网一定要代理的问题修复" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

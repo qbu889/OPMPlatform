@@ -133,6 +133,25 @@
             <span>生成结果</span>
           </div>
           <div class="result-actions">
+            <!-- 事件时间设置 -->
+            <div class="event-time-control">
+              <el-input
+                v-model="eventTime"
+                placeholder="事件时间"
+                size="small"
+                style="width: 200px; margin-right: 10px"
+              >
+                <template #prepend>事件时间</template>
+              </el-input>
+              <el-button 
+                size="small" 
+                type="primary"
+                @click="subtractEventTime(15)"
+              >
+                -15分钟
+              </el-button>
+            </div>
+            
             <el-input-number
               v-model="delayTime"
               :min="0"
@@ -282,6 +301,7 @@ const displayFields = computed(() => {
 // 生成结果
 const resultData = ref(null)
 const resultJson = ref('')
+const eventTime = ref('')  // 事件时间
 const delayTime = ref(15)
 const addTestPrefix = ref(false)
 const esQuery = ref('')
@@ -540,6 +560,56 @@ const copyEsQuery = async () => {
   }
 }
 
+// 事件时间减指定分钟数
+const subtractEventTime = (minutes) => {
+  if (!eventTime.value) {
+    ElMessage.warning('请先输入事件时间')
+    return
+  }
+
+  try {
+    // 解析时间字符串
+    let date = new Date(eventTime.value)
+    
+    // 如果解析失败，尝试其他格式
+    if (isNaN(date.getTime())) {
+      // 尝试 YYYY-MM-DD HH:mm:ss 格式
+      const parts = eventTime.value.split(/[- :]/)
+      if (parts.length >= 6) {
+        date = new Date(
+          parseInt(parts[0]),
+          parseInt(parts[1]) - 1,
+          parseInt(parts[2]),
+          parseInt(parts[3]),
+          parseInt(parts[4]),
+          parseInt(parts[5])
+        )
+      } else {
+        ElMessage.error('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式')
+        return
+      }
+    }
+    
+    // 减去指定分钟数
+    date.setMinutes(date.getMinutes() - minutes)
+    
+    // 格式化为 YYYY-MM-DD HH:mm:ss
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const mins = String(date.getMinutes()).padStart(2, '0')
+    const secs = String(date.getSeconds()).padStart(2, '0')
+    
+    eventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
+    
+    ElMessage.success(`事件时间已减${minutes}分钟`)
+  } catch (error) {
+    console.error('时间计算错误:', error)
+    ElMessage.error('时间格式错误，请检查输入')
+  }
+}
+
 // 清除所有字段
 const clearAllFields = async () => {
   try {
@@ -743,6 +813,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.event-time-control {
+  display: flex;
+  align-items: center;
 }
 
 .es-query-section {
