@@ -3,7 +3,7 @@
     <div class="header-content">
       <div class="logo" @click="goHome">
         <img src="/nokia-06.png" alt="NOKIA" class="logo-icon" />
-        <span class="logo-text">诺基亚 OPM 系统</span>
+        <span class="logo-text">OPM 系统</span>
       </div>
 
       <el-menu mode="horizontal" :ellipsis="false">
@@ -94,6 +94,14 @@
               <el-menu-item index="/clean-event-page">
                 <el-icon><Edit /></el-icon>
                 <span>事件数据清洗</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/es-to-excel" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/es-to-excel">
+                <el-icon><Download /></el-icon>
+                <span>ES 查询结果转 Excel</span>
               </el-menu-item>
             </a>
           </router-link>
@@ -201,6 +209,7 @@ import {
   Avatar,
   Key,
   Setting,
+  Download,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'
@@ -381,7 +390,7 @@ const handleSavePassword = async () => {
 .el-menu-item:hover,
 .el-sub-menu__title:hover {
   background: transparent;
-  color: var(--apple-text);
+  color: #0071e3;
 }
 
 .el-menu-item.is-active {
@@ -405,7 +414,7 @@ const handleSavePassword = async () => {
 }
 
 .el-menu--popup .el-menu-item {
-  color: var(--apple-text) !important;
+  color: #1d1d1f !important;
   background-color: transparent !important;
   height: 36px;
   line-height: 36px;
@@ -509,10 +518,20 @@ const handleSavePassword = async () => {
   text-decoration: none;
   color: inherit;
   display: block;
+  pointer-events: none;
+}
+
+.menu-link .el-menu-item {
+  pointer-events: auto;
 }
 
 .menu-link:hover {
   text-decoration: none;
+  color: #1d1d1f;
+}
+
+.menu-link:hover .el-menu-item {
+  color: #1d1d1f !important;
 }
 
 /* Deep selectors to override Element Plus */

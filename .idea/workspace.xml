@@ -4,15 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：优化前端性能">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：顶部导航栏支持右键新窗口打开">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/AdjustmentCalculator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/AdjustmentCalculator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -430,14 +424,6 @@
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
     </task>
-    <task id="LOCAL-00071" summary="fix：kafka增加历史数据的查询复制">
-      <option name="closed" value="true" />
-      <created>1775145902559</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
-      <option name="project" value="LOCAL" />
-      <updated>1775145902559</updated>
-    </task>
     <task id="LOCAL-00072" summary="new：kafka历史记录复制增加json格式化">
       <option name="closed" value="true" />
       <created>1775146107609</created>
@@ -822,7 +808,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776132943440</updated>
     </task>
-    <option name="localTasksCounter" value="120" />
+    <task id="LOCAL-00120" summary="fix：顶部导航栏支持右键新窗口打开">
+      <option name="closed" value="true" />
+      <created>1776135829454</created>
+      <option name="number" value="00120" />
+      <option name="presentableId" value="LOCAL-00120" />
+      <option name="project" value="LOCAL" />
+      <updated>1776135829454</updated>
+    </task>
+    <option name="localTasksCounter" value="121" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -863,7 +857,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：新的olmx模型名称" />
     <MESSAGE value="fix：kafka消息生成器历史数据插入失败问题" />
     <MESSAGE value="new：excel转cosmic" />
     <MESSAGE value="new：kafka增加日志输出" />
@@ -888,7 +881,8 @@
     <MESSAGE value="new/fix：修改事件清除、sqlid格式化工具" />
     <MESSAGE value="new：前端风格调整" />
     <MESSAGE value="new：优化前端性能" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：优化前端性能" />
+    <MESSAGE value="fix：顶部导航栏支持右键新窗口打开" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：顶部导航栏支持右键新窗口打开" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
