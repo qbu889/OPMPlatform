@@ -22,15 +22,26 @@
           :rows="10"
           placeholder="请输入 ES 查询结果的 JSON 数据"
         />
-        <el-button 
-          type="primary" 
-          @click="showEsSourceHistory()"
-          class="es-history-btn"
-          title="查看历史数据"
-        >
-          <el-icon><Clock /></el-icon>
-          历史数据
-        </el-button>
+        <div class="es-input-buttons">
+          <el-button 
+            type="primary" 
+            @click="showEsSourceHistory()"
+            class="es-history-btn"
+            title="查看历史数据"
+          >
+            <el-icon><Clock /></el-icon>
+            历史数据
+          </el-button>
+          <el-button 
+            type="warning" 
+            @click="forceFormatJson()"
+            class="format-btn"
+            title="将 Python 三引号字符串转换为标准 JSON 格式"
+          >
+            <el-icon><MagicStick /></el-icon>
+            强制格式化
+          </el-button>
+        </div>
       </div>
 
       <div class="button-group mt-3">
@@ -555,6 +566,7 @@ import {
   Search,
   Check,
   Upload,
+  MagicStick,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -1424,6 +1436,45 @@ const copyText = async (text, label) => {
   }
 }
 
+// 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式）
+const forceFormatJson = () => {
+  if (!esSourceData.value.trim()) {
+    ElMessage.warning('请先输入 ES 源数据')
+    return
+  }
+
+  try {
+    let text = esSourceData.value
+    
+    // 匹配 Python 三引号字符串："""内容"""
+    // 替换为转义后的 JSON 字符串："内容"
+    const tripleQuoteRegex = /"""([\s\S]*?)"""/g
+    
+    let hasChanges = false
+    const formattedText = text.replace(tripleQuoteRegex, (match, content) => {
+      hasChanges = true
+      // 转义内容中的双引号和反斜杠
+      const escaped = content
+        .replace(/\\/g, '\\\\')  // 先转义反斜杠
+        .replace(/"/g, '\\"')     // 再转义双引号
+        .replace(/\n/g, '\\n')    // 转义换行符
+        .replace(/\r/g, '\\r')    // 转义回车符
+        .replace(/\t/g, '\\t')    // 转义制表符
+      return `"${escaped}"`
+    })
+    
+    if (hasChanges) {
+      esSourceData.value = formattedText
+      ElMessage.success('格式化成功！已将 Python 三引号字符串转换为标准 JSON 格式')
+    } else {
+      ElMessage.info('未检测到需要格式化的内容')
+    }
+  } catch (error) {
+    console.error('格式化失败:', error)
+    ElMessage.error('格式化失败：' + error.message)
+  }
+}
+
 // 加载示例数据
 const loadSampleData = () => {
   const sampleData = {
@@ -1876,11 +1927,18 @@ onMounted(() => {
   position: relative;
 }
 
-.es-history-btn {
+.es-input-buttons {
   position: absolute;
   right: 10px;
   bottom: 10px;
   z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+.es-history-btn,
+.format-btn {
+  white-space: nowrap;
 }
 
 /* JSON 预览样式 */
