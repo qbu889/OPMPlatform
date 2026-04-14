@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, request, render_template, send_file, abort
+from flask import Blueprint, request, render_template, send_file, abort, jsonify
 from werkzeug.utils import secure_filename
 from docx import Document
 from markdownify import markdownify as md
@@ -52,6 +52,66 @@ def docx_to_markdown(docx_path):
         if md_line:
             md_lines.append(md_line)
     return '\n\n'.join(md_lines)
+
+
+# ============================================================================
+# Vue 前端 API 接口（返回 JSON）
+# ============================================================================
+
+@word_to_md_bp.route('/word-to-md/convert', methods=['POST'])
+def word_to_md_convert_api():
+    """Word 转 Markdown API（Vue 前端使用，返回 JSON）"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '没有选择文件'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '请选择有效的 Word 文件（.docx）'}), 400
+        
+        # 检查文件扩展名
+        if not allowed_file(file.filename):
+            return jsonify({'success': False, 'message': '请选择有效的 Word 文件（.docx）'}), 400
+
+        # 获取原始文件名（保留中文）
+        original_filename = file.filename
+        
+        # 安全检查：防止路径遍历攻击
+        safe_filename = os.path.basename(original_filename)
+        
+        # 生成 MD 文件名
+        filename_without_ext = os.path.splitext(safe_filename)[0]
+        md_filename = filename_without_ext + '.md'
+        
+        # 保存文件
+        filepath = os.path.join(UPLOAD_FOLDER, safe_filename)
+        file.save(filepath)
+
+        try:
+            markdown_text = docx_to_markdown(filepath)
+        except Exception as e:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return jsonify({'success': False, 'message': f'转换失败：{str(e)}'}), 500
+
+        # 删除临时上传文件
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+        return jsonify({
+            'success': True,
+            'message': '转换成功',
+            'markdown': markdown_text,
+            'filename': md_filename
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'服务器错误：{str(e)}'}), 500
+
+
+# ============================================================================
+# 传统 HTML 模板接口
+# ============================================================================
 
 @word_to_md_bp.route('/word-to-md', methods=['GET', 'POST'])
 def word_to_md():
