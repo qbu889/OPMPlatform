@@ -71,14 +71,34 @@
       <!-- 统计信息 -->
       <el-dialog
         v-model="statsVisible"
-        title="模块统计信息"
-        width="800px"
+        title="模块功能统计"
+        width="900px"
+        :close-on-click-modal="false"
       >
-        <el-table :data="statsData" stripe style="width: 100%">
-          <el-table-column prop="module_name" label="模块名称" min-width="200" />
-          <el-table-column prop="l3_count" label="三级功能点数量" width="150" />
-          <el-table-column prop="total_cfp" label="总CFP" width="120" />
-        </el-table>
+        <div class="stats-container">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value">{{ statsData.l1_count || 0 }}</div>
+              <div class="stat-label">一级模块</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ statsData.l2_count || 0 }}</div>
+              <div class="stat-label">二级模块</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ statsData.l3_count || 0 }}</div>
+              <div class="stat-label">三级模块</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ statsData.function_count || 0 }}</div>
+              <div class="stat-label">功能过程</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-full">
+            <div class="stat-value">{{ statsData.subprocess_count || 0 }}</div>
+            <div class="stat-label">子过程总数</div>
+          </div>
+        </div>
         <template #footer>
           <el-button @click="statsVisible = false">关闭</el-button>
           <el-button type="primary" @click="exportStats">
@@ -91,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, VideoPlay, DataAnalysis, Download, Document } from '@element-plus/icons-vue'
 
@@ -107,7 +127,13 @@ const progressPercent = ref(0)
 const progressStatus = ref('')
 const progressText = ref('')
 const statsVisible = ref(false)
-const statsData = ref([])
+const statsData = ref({
+  l1_count: 0,
+  l2_count: 0,
+  l3_count: 0,
+  function_count: 0,
+  subprocess_count: 0
+})
 
 // 处理文件选择
 const handleFileSelect = (file) => {
@@ -234,12 +260,7 @@ const getStats = async () => {
     const result = await response.json()
     
     if (result.success) {
-      const modules = result.data?.modules || result.modules || {}
-      statsData.value = Object.entries(modules).map(([name, count]) => ({
-        module_name: name || '未分类',
-        l3_count: count,
-        total_cfp: count
-      }))
+      statsData.value = result.data || {}
       statsVisible.value = true
     } else {
       ElMessage.error(result.message || '获取统计失败')
@@ -328,5 +349,48 @@ const downloadFile = () => {
 
 .download-section {
   margin-top: 20px;
+}
+
+/* 统计卡片样式 */
+.stats-container {
+  padding: 10px 0;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-card-full {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.9;
 }
 </style>

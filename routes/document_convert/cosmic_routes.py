@@ -583,26 +583,78 @@ def get_module_stats():
         if not excel_path.exists():
             return jsonify({'success': False, 'message': '文件不存在'}), 404
 
-        # 读取 Excel 并统计
+        # 读取数据
         df = read_excel_robust(excel_path)
         if df is None:
             return jsonify({'success': False, 'message': '无法读取 Excel 文件'}), 500
 
-        # 简单统计（根据实际数据结构调整）
-        stats = {
-            'total_rows': len(df),
-            'columns': list(df.columns),
-            'modules': {}
-        }
+        # 统计各层级模块数量
+        module_l1_set = set()
+        module_l2_set = set()
+        module_l3_set = set()
+        function_set = set()
+        total_subprocesses = 0
+        
+        module_l1_value = None
+        module_l2_value = None
+        module_l3_value = None
+        function_name_value = None
 
-        # 如果有模块列，统计各模块数量
-        if '一级模块' in df.columns:
-            module_counts = df['一级模块'].value_counts().to_dict()
-            stats['modules'] = {str(k): int(v) for k, v in module_counts.items()}
+        for idx, row in df.iterrows():
+            module_l1 = str(row.get('一级模块', '')) if pd.notna(row.get('一级模块', '')) else ''
+            module_l2 = str(row.get('二级模块', '')) if pd.notna(row.get('二级模块', '')) else ''
+            module_l3 = str(row.get('三级模块', '')) if pd.notna(row.get('三级模块', '')) else ''
+            function_name = str(row.get('功能过程', '')) if pd.notna(row.get('功能过程', '')) else ''
+            subprocess_desc = str(row.get('子过程描述', '')) if pd.notna(row.get('子过程描述', '')) else ''
+
+            # 记录一级模块和二级模块
+            if module_l1 and module_l1 != 'nan' and module_l1.strip():
+                module_l1_value = module_l1
+                module_l1_set.add(module_l1)
+            if module_l2 and module_l2 != 'nan' and module_l2.strip():
+                module_l2_value = module_l2
+                module_l2_set.add(module_l2)
+            
+            # 三级模块向下填充
+            if module_l3 and module_l3 != 'nan' and module_l3.strip():
+                module_l3_value = module_l3
+            else:
+                module_l3 = module_l3_value if module_l3_value else ''
+            
+            if module_l3 and module_l3.strip():
+                module_l3_set.add(module_l3)
+            
+            # 功能过程向下填充
+            if function_name and function_name != 'nan' and function_name.strip():
+                function_name_value = function_name
+            else:
+                function_name = function_name_value if function_name_value else ''
+
+            # 跳过空行
+            if (not function_name or function_name == 'nan') and (not subprocess_desc or subprocess_desc == 'nan'):
+                continue
+            
+            if not function_name or function_name == 'nan':
+                continue
+            
+            # 只有有效数据才加入功能过程集合
+            if function_name and function_name != 'nan':
+                function_set.add(function_name)
+
+            # 统计子过程数量
+            if subprocess_desc and subprocess_desc != 'nan' and subprocess_desc.strip():
+                sub_items = split_subprocess_description(subprocess_desc)
+                total_subprocesses += len(sub_items)
 
         return jsonify({
             'success': True,
-            'data': stats
+            'data': {
+                'l1_count': len(module_l1_set),
+                'l2_count': len(module_l2_set),
+                'l3_count': len(module_l3_set),
+                'function_count': len(function_set),
+                'subprocess_count': total_subprocesses
+            }
         })
 
     except Exception as e:
@@ -751,11 +803,13 @@ def export_module_stats():
 
         logger.info(f"统计 Excel 已保存：{output_path}")
 
-        return jsonify({
-            'success': True,
-            'message': '导出成功',
-            'output_filename': output_filename
-        })
+        # 直接返回文件下载
+        return send_file(
+            str(output_path),
+            as_attachment=True,
+            download_name=output_filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
     except Exception as e:
         logger.error(f"导出统计失败：{e}", exc_info=True)
