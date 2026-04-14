@@ -397,7 +397,7 @@ const handleSavePassword = async () => {
 
 .el-menu-item:hover,
 .el-sub-menu__title:hover {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
   color: #0071e3;
 }
 
@@ -430,11 +430,16 @@ const handleSavePassword = async () => {
   border-radius: 6px;
   margin: 2px 8px;
   padding: 0 12px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .el-menu--popup .el-menu-item:hover {
-  background: var(--apple-blue) !important;
-  color: white !important;
+  background: rgba(0, 113, 227, 0.1) !important;
+  color: #0071e3 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .el-menu--popup .el-menu-item.is-active {
