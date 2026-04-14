@@ -26,9 +26,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // 分割代码块
-        manualChunks: {
-          'vendor': ['vue', 'vue-router', 'pinia'],
-          'element-plus': ['element-plus'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+              return 'vendor'
+            }
+            if (id.includes('element-plus')) {
+              return 'element-plus'
+            }
+          }
         },
       },
     },

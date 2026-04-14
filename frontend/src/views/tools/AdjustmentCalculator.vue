@@ -215,7 +215,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Calculator, Setting, VideoPlay, TrendCharts } from '@element-plus/icons-vue'
+import { TrendCharts, Setting, VideoPlay } from '@element-plus/icons-vue'
 
 const form = reactive({
   scale_timing: '估算中期',

@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：前端风格调整">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：优化前端性能">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/document/FpaGenerator.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/AdjustmentCalculator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/AdjustmentCalculator.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -427,14 +430,6 @@
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
     </task>
-    <task id="LOCAL-00070" summary="fix：kafka历史、字典弹窗无法查询到数据和无法点击问题">
-      <option name="closed" value="true" />
-      <created>1775142503083</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1775142503083</updated>
-    </task>
     <task id="LOCAL-00071" summary="fix：kafka增加历史数据的查询复制">
       <option name="closed" value="true" />
       <created>1775145902559</created>
@@ -819,7 +814,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776078926005</updated>
     </task>
-    <option name="localTasksCounter" value="119" />
+    <task id="LOCAL-00119" summary="new：优化前端性能">
+      <option name="closed" value="true" />
+      <created>1776132943440</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1776132943440</updated>
+    </task>
+    <option name="localTasksCounter" value="120" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -860,7 +863,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：fpa评估值交互修改为：输入框输入后，鼠标点击其他地方就保存" />
     <MESSAGE value="new：新的olmx模型名称" />
     <MESSAGE value="fix：kafka消息生成器历史数据插入失败问题" />
     <MESSAGE value="new：excel转cosmic" />
@@ -885,7 +887,8 @@
     <MESSAGE value="new/fix：修复kafka生成历史记录查询和插入" />
     <MESSAGE value="new/fix：修改事件清除、sqlid格式化工具" />
     <MESSAGE value="new：前端风格调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：前端风格调整" />
+    <MESSAGE value="new：优化前端性能" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：优化前端性能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
