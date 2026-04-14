@@ -208,10 +208,7 @@ const goTo = (path) => {
   font-weight: 700;
   letter-spacing: -0.025em;
   margin: 0 0 16px;
-  background: linear-gradient(135deg, var(--apple-text) 0%, var(--apple-text-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1d1d1f;
   position: relative;
   z-index: 1;
 }

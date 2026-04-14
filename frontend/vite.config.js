@@ -14,15 +14,30 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  // 优化构建性能
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'element-plus'],
+  },
+  build: {
+    // 生产环境优化
+    target: 'esnext',
+    minify: 'esbuild',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        // 分割代码块
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia'],
+          'element-plus': ['element-plus'],
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
     allowedHosts: ['opmvue.nokiafz.asia'],
-    hmr: process.env.NODE_ENV === 'production' ? false : {
-      protocol: 'wss',
-      host: 'opmvue.nokiafz.asia',
-      clientPort: 443,
-    },
+    // 移除 HMR 的 wss 配置，使用默认 WebSocket
     proxy: {
       '/api': {
         target: BACKEND_URL,

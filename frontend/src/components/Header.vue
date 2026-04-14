@@ -264,15 +264,16 @@ const handleSavePassword = async () => {
 
 <style scoped>
 .header {
-  background: rgba(251, 251, 253, 0.8);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--apple-border);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 48px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Dark mode header */
@@ -309,8 +310,8 @@ const handleSavePassword = async () => {
 }
 
 .logo-text {
-  color: var(--apple-text);
-  font-weight: 500;
+  color: #1d1d1f;
+  font-weight: 600;
   font-size: 14px;
   letter-spacing: -0.01em;
 }
@@ -324,7 +325,7 @@ const handleSavePassword = async () => {
 
 .el-menu-item,
 .el-sub-menu__title {
-  color: var(--apple-text-secondary);
+  color: #1d1d1f;
   height: 48px;
   line-height: 48px;
   font-size: 13px;
@@ -426,28 +427,53 @@ const handleSavePassword = async () => {
 }
 
 .el-button {
-  color: var(--apple-text);
-  border-color: transparent;
-  background: transparent;
-  border-radius: 980px;
-  font-size: 13px;
-  height: 32px;
-  padding: 0 16px;
+  color: #1d1d1f !important;
+  border-radius: 980px !important;
+  font-size: 13px !important;
+  height: 32px !important;
+  padding: 0 16px !important;
+  font-weight: 500 !important;
 }
 
 .el-button:hover {
-  background: var(--apple-bg-secondary);
-  border-color: transparent;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: transparent !important;
+}
+
+.el-button span,
+.el-button .el-icon {
+  color: #1d1d1f !important;
 }
 
 .el-button--primary {
-  background-color: var(--apple-blue);
-  border-color: var(--apple-blue);
-  color: white;
+  background-color: #0071e3 !important;
+  border-color: #0071e3 !important;
+}
+
+.el-button--primary span,
+.el-button--primary .el-icon {
+  color: white !important;
 }
 
 .el-button--primary:hover {
-  background-color: var(--apple-blue-hover);
-  border-color: var(--apple-blue-hover);
+  background-color: #0077ed !important;
+  border-color: #0077ed !important;
+}
+
+/* Deep selectors to override Element Plus */
+:deep(.el-button.el-button--primary) {
+  background-color: #0071e3 !important;
+  border-color: #0071e3 !important;
+  color: white !important;
+}
+
+:deep(.el-button.el-button--primary span),
+:deep(.el-button.el-button--primary .el-icon) {
+  color: white !important;
+}
+
+:deep(.el-button.el-button--primary:hover) {
+  background-color: #0077ed !important;
+  border-color: #0077ed !important;
 }
 </style>
