@@ -7,6 +7,13 @@
     <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：顶部导航栏支持右键新窗口打开">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/document/ExcelToCosmic.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/document/ExcelToCosmic.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/vue-assets/ExcelToCosmic-CQ4VKhtD.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/vue-assets/ExcelToCosmic-CfKMJ-UT.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/vue-assets/index-0K4I7pZd.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/vue-assets/index-D7XvBm-N.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/vue-app.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/vue-app.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -424,14 +431,6 @@
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
     </task>
-    <task id="LOCAL-00072" summary="new：kafka历史记录复制增加json格式化">
-      <option name="closed" value="true" />
-      <created>1775146107609</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1775146107609</updated>
-    </task>
     <task id="LOCAL-00073" summary="new：kafka生成结果延迟时间的独立按钮剔除，重新生成按钮能够兼容适配时间">
       <option name="closed" value="true" />
       <created>1775146559919</created>
@@ -816,7 +815,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776135829454</updated>
     </task>
-    <option name="localTasksCounter" value="121" />
+    <task id="LOCAL-00121" summary="fix：顶部导航栏支持右键新窗口打开">
+      <option name="closed" value="true" />
+      <created>1776146210914</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1776146210914</updated>
+    </task>
+    <option name="localTasksCounter" value="122" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

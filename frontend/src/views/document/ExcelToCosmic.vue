@@ -11,9 +11,9 @@
       <el-upload
         class="upload-demo"
         drag
-        action="#"
         :auto-upload="false"
-        :on-change="handleFileChange"
+        :on-change="handleFileSelect"
+        :on-remove="handleRemove"
         :file-list="fileList"
         accept=".xlsx,.xls"
         :limit="1"
@@ -28,6 +28,13 @@
           </div>
         </template>
       </el-upload>
+
+      <!-- 上传按钮 -->
+      <div class="action-buttons" v-if="selectedFile && !uploadedFilename">
+        <el-button type="primary" @click="uploadFile" :loading="uploading">
+          <el-icon><UploadFilled /></el-icon> 上传文件
+        </el-button>
+      </div>
 
       <!-- 转换按钮 -->
       <div class="action-buttons" v-if="uploadedFilename">
@@ -89,8 +96,10 @@ import { ElMessage } from 'element-plus'
 import { UploadFilled, VideoPlay, DataAnalysis, Download, Document } from '@element-plus/icons-vue'
 
 const fileList = ref([])
+const selectedFile = ref(null)
 const uploadedFilename = ref('')
 const originalFilename = ref('')
+const uploading = ref(false)
 const converting = ref(false)
 const downloadUrl = ref('')
 const showProgress = ref(false)
@@ -101,24 +110,42 @@ const statsVisible = ref(false)
 const statsData = ref([])
 
 // 处理文件选择
-const handleFileChange = async (file) => {
+const handleFileSelect = (file) => {
+  selectedFile.value = file
   fileList.value = [file]
-  
+}
+
+// 处理文件移除
+const handleRemove = () => {
+  selectedFile.value = null
+  uploadedFilename.value = ''
+  downloadUrl.value = ''
+  fileList.value = []
+}
+
+// 上传文件
+const uploadFile = async () => {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+
+  uploading.value = true
   const formData = new FormData()
-  formData.append('file', file.raw)
-  
+  formData.append('file', selectedFile.value.raw)
+
   try {
     showProgress.value = true
-    progressPercent.value = 20
+    progressPercent.value = 50
     progressText.value = '正在上传文件...'
-    
+
     const response = await fetch('/api/cosmic/upload', {
       method: 'POST',
       body: formData
     })
-    
+
     const result = await response.json()
-    
+
     if (result.success) {
       uploadedFilename.value = result.filename
       originalFilename.value = result.original_name
@@ -126,20 +153,22 @@ const handleFileChange = async (file) => {
       progressStatus.value = 'success'
       progressText.value = '文件上传成功'
       ElMessage.success('文件上传成功')
-      
+
       setTimeout(() => {
         showProgress.value = false
       }, 1000)
     } else {
       ElMessage.error(result.message || '上传失败')
       showProgress.value = false
-      fileList.value = []
+      selectedFile.value = null
     }
   } catch (error) {
     console.error('上传失败:', error)
     ElMessage.error('网络错误，请稍后重试')
     showProgress.value = false
-    fileList.value = []
+    selectedFile.value = null
+  } finally {
+    uploading.value = false
   }
 }
 
@@ -205,7 +234,12 @@ const getStats = async () => {
     const result = await response.json()
     
     if (result.success) {
-      statsData.value = result.stats || []
+      const modules = result.data?.modules || result.modules || {}
+      statsData.value = Object.entries(modules).map(([name, count]) => ({
+        module_name: name || '未分类',
+        l3_count: count,
+        total_cfp: count
+      }))
       statsVisible.value = true
     } else {
       ElMessage.error(result.message || '获取统计失败')

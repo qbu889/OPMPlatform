@@ -51,6 +51,14 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/excel-to-cosmic" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/excel-to-cosmic">
+                <el-icon><Document /></el-icon>
+                <span>表格转 COSMIC</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
 
         <el-sub-menu index="smart">

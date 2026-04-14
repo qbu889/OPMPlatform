@@ -327,6 +327,7 @@
           placeholder="搜索 FP 值、生成时间..."
           clearable
           @keyup.enter="searchEsSourceHistory"
+          @blur="esSourceHistoryKeyword = esSourceHistoryKeyword?.trim()"
           style="width: 400px"
         >
           <template #prefix>
@@ -1277,6 +1278,7 @@ const loadEsSourceHistoryData = async () => {
 
 // 搜索 ES 源数据历史
 const searchEsSourceHistory = () => {
+  esSourceHistoryKeyword.value = esSourceHistoryKeyword.value?.trim()
   esSourceHistoryPage.value = 1
   loadEsSourceHistoryData()
 }
