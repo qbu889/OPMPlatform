@@ -4,16 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：顶部导航栏支持右键新窗口打开">
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加强制格式化">
+      <change afterPath="$PROJECT_DIR$/docs/06-文档转换工具/word转md格式.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/views/document/CleanEvent.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/routes/document_convert/clean_event_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/document/ExcelToCosmic.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/document/ExcelToCosmic.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/KafkaGenerator.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/vue-assets/ExcelToCosmic-CQ4VKhtD.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/vue-assets/ExcelToCosmic-CfKMJ-UT.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/vue-assets/index-0K4I7pZd.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/vue-assets/index-D7XvBm-N.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/vue-app.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/vue-app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/app_20260414.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260414.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/fpa/event_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/event_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/kafka/输入json.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/输入json.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,61 +116,61 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask 服务器.Flask (app.py) .executor": "Run",
-    "Flask 服务器.Flask (app.py).executor": "Run",
-    "Flask 服务器.Flask (app.py:create_app).executor": "Run",
-    "Flask 服务器.Flask (app2.py).executor": "Run",
-    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
-    "JavaScript 调试.schedule.html.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Notification.DisplayName-DoNotAsk-cosyBalloonNotifications": "Lingma Notification Balloon Group",
-    "Notification.DoNotAsk-cosyBalloonNotifications": "true",
-    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.app.py.executor": "Run",
-    "Python.app2.executor": "Run",
-    "Python.holidaySys.executor": "Run",
-    "Python.kafka_routes.executor": "Debug",
-    "Python.paiBan.executor": "Run",
-    "Python.paiBanNew.executor": "Run",
-    "Python.wordToWord.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Shell Script.start.sh.executor": "Run",
-    "Shell Script.start_frontend.sh.executor": "Run",
-    "Shell Script.start_with_tunnel.sh.executor": "Run",
-    "WebServerToolWindowFactoryState": "false",
-    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
-    "git-widget-placeholder": "f/dev",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.Flask (app.py) .executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (app.py:create_app).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-cosyBalloonNotifications&quot;: &quot;Lingma Notification Balloon Group&quot;,
+    &quot;Notification.DoNotAsk-cosyBalloonNotifications&quot;: &quot;true&quot;,
+    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
+    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
+    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
+    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Shell Script.start.sh.executor&quot;: &quot;Run&quot;,
+    &quot;Shell Script.start_frontend.sh.executor&quot;: &quot;Run&quot;,
+    &quot;Shell Script.start_with_tunnel.sh.executor&quot;: &quot;Run&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;f/dev&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql_aurora"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql_aurora&quot;
     ],
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
-      "MySQL"
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
+      &quot;MySQL&quot;
     ],
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
-      "MySQL"
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言&quot;: [
+      &quot;MySQL&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="Push.Settings">
     <force-push-targets>
       <force-push-target remote-path="origin" branch="onlineExcel" />
@@ -430,14 +434,6 @@
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
-    </task>
-    <task id="LOCAL-00073" summary="new：kafka生成结果延迟时间的独立按钮剔除，重新生成按钮能够兼容适配时间">
-      <option name="closed" value="true" />
-      <created>1775146559919</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
-      <option name="project" value="LOCAL" />
-      <updated>1775146559919</updated>
     </task>
     <task id="LOCAL-00074" summary="fix：复制结果交互优化、fpa生成时动画去除">
       <option name="closed" value="true" />
@@ -823,7 +819,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776146210914</updated>
     </task>
-    <option name="localTasksCounter" value="122" />
+    <task id="LOCAL-00122" summary="new：增加强制格式化">
+      <option name="closed" value="true" />
+      <created>1776160013076</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1776160013076</updated>
+    </task>
+    <option name="localTasksCounter" value="123" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -864,7 +868,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix：kafka消息生成器历史数据插入失败问题" />
     <MESSAGE value="new：excel转cosmic" />
     <MESSAGE value="new：kafka增加日志输出" />
     <MESSAGE value="new：es查询结果转excel表格工具" />
@@ -889,7 +892,8 @@
     <MESSAGE value="new：前端风格调整" />
     <MESSAGE value="new：优化前端性能" />
     <MESSAGE value="fix：顶部导航栏支持右键新窗口打开" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix：顶部导航栏支持右键新窗口打开" />
+    <MESSAGE value="new：增加强制格式化" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加强制格式化" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

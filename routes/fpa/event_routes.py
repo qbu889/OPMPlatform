@@ -15,15 +15,28 @@ def clean_event_page():
 def clean_event():
     """处理事件数据清洗请求"""
     try:
+        logger.info('========== 开始处理 /clean-event 请求 ==========')
+        
         data = request.get_json()
+        logger.info(f'接收到的原始数据: {data}')
+        
+        if not data:
+            logger.error('缺少请求体数据')
+            return jsonify({'error': '缺少必需参数'}), 400
+            
         fp_value = data.get('fp_value')
         event_time = data.get('event_time')
+        
+        logger.info(f'fp_value: {fp_value}')
+        logger.info(f'event_time: {event_time}')
 
         if not fp_value or not event_time:
+            logger.error(f'缺少参数: fp_value={fp_value}, event_time={event_time}')
             return jsonify({'error': '缺少必需参数'}), 400
 
         # 修改FP值验证：只要求非空且长度不超过1000
         if not fp_value.strip() or len(fp_value) > 1000:
+            logger.error(f'FP值验证失败: 长度={len(fp_value)}, 是否为空={not fp_value.strip()}')
             return jsonify({'error': 'FP值不能为空且长度不能超过1000个字符'}), 400
 
         # 时间格式验证，支持多种格式
@@ -33,18 +46,107 @@ def clean_event():
         time_pattern3 = r'^\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$'    # YYYY-MM-DD HH:MM:SS
         time_pattern4 = r'^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$'    # YYYY/MM/DD HH:MM:SS
 
-        if not (re.match(time_pattern1, event_time) or
+        time_valid = (re.match(time_pattern1, event_time) or
             re.match(time_pattern2, event_time) or
             re.match(time_pattern3, event_time) or
-            re.match(time_pattern4, event_time)):
+            re.match(time_pattern4, event_time))
+        
+        logger.info(f'时间格式验证结果: {time_valid}')
+        
+        if not time_valid:
+            logger.error(f'时间格式不正确: {event_time}')
             return jsonify({'error': '时间格式不正确，支持格式: YYYY/MM/DD HH:MM 或 YYYY-MM-DD HH:MM'}), 400
 
+        logger.info('开始调用 clean_event_data 函数...')
         # 处理数据
         result = clean_event_data(fp_value, event_time)
+        logger.info(f'清洗结果: {result}')
+        logger.info('========== /clean-event 请求处理成功 ==========')
         return jsonify({'result': result})
 
     except Exception as e:
+        logger.error(f'处理数据时发生错误: {str(e)}', exc_info=True)
+        logger.error('========== /clean-event 请求处理失败 ==========')
         return jsonify({'error': f'处理数据时发生错误: {str(e)}'}), 500
+
+@event_bp.route('/api/clean-event/process', methods=['POST'])
+def process_es_data():
+    """处理 ES 查询结果，提取 EVENT_FP 并生成推送消息"""
+    try:
+        request_data = request.get_json()
+        
+        logger.info(f'接收到请求数据: {request_data}')
+        
+        if not request_data:
+            return jsonify({'success': False, 'message': '缺少数据'}), 400
+        
+        # 提取自定义事件时间和实际数据
+        custom_event_time = request_data.get('custom_event_time')
+        data = request_data.get('data')
+        
+        logger.info(f'custom_event_time: {custom_event_time}')
+        logger.info(f'data 类型: {type(data)}, 是否为列表: {isinstance(data, list)}')
+        
+        if not data:
+            return jsonify({'success': False, 'message': '缺少数据内容'}), 400
+        
+        # 提取 EVENT_FP 字段（支持单个对象或数组）
+        push_messages = []
+        
+        # 如果是列表，遍历处理每个对象
+        if isinstance(data, list):
+            logger.info(f'处理列表，共 {len(data)} 个对象')
+            for idx, item in enumerate(data):
+                event_fp = item.get('EVENT_FP')
+                logger.info(f'对象 {idx}: EVENT_FP = {event_fp}')
+                if event_fp:
+                    # 优先使用自定义事件时间，否则使用数据中的 EVENT_TIME
+                    if custom_event_time:
+                        event_time = custom_event_time
+                    else:
+                        event_time = item.get('EVENT_TIME', '')
+                    
+                    push_message = {
+                        'ACTIVE_STATUS': '3',
+                        'CFP0_CFP1_CFP2_CFP3': event_fp,
+                        'EVENT_TIME': event_time,
+                        'FP0_FP1_FP2_FP3': event_fp
+                    }
+                    push_messages.append(push_message)
+        else:
+            # 单个对象
+            event_fp = data.get('EVENT_FP')
+            if not event_fp:
+                return jsonify({'success': False, 'message': '未找到 EVENT_FP 字段'}), 400
+            
+            # 优先使用自定义事件时间，否则使用数据中的 EVENT_TIME
+            if custom_event_time:
+                event_time = custom_event_time
+            else:
+                event_time = data.get('EVENT_TIME', '')
+            
+            push_message = {
+                'ACTIVE_STATUS': '3',
+                'CFP0_CFP1_CFP2_CFP3': event_fp,
+                'EVENT_TIME': event_time,
+                'FP0_FP1_FP2_FP3': event_fp
+            }
+            push_messages.append(push_message)
+        
+        if not push_messages:
+            return jsonify({'success': False, 'message': '未找到有效的 EVENT_FP 字段'}), 400
+        
+        logger.info(f'成功生成 {len(push_messages)} 条消息')
+        
+        return jsonify({
+            'success': True,
+            'message': f'处理成功，共生成 {len(push_messages)} 条消息',
+            'data': push_messages
+        })
+        
+    except Exception as e:
+        logger.error(f'处理 ES 数据失败: {str(e)}', exc_info=True)
+        return jsonify({'success': False, 'message': f'处理失败: {str(e)}'}), 500
 
 # 修改 clean_event_data 函数以支持多种时间格式
 def clean_event_data(fp_value, event_time):

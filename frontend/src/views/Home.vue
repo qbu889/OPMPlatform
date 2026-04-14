@@ -18,12 +18,12 @@
       </template>
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :lg="8">
-          <el-card class="feature-card" shadow="hover" @click="goTo('/clean-event-page')">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/clean-event')">
             <div class="feature-icon" style="background: #e1f3ff">
-              <el-icon size="40" color="#409eff"><Edit /></el-icon>
+              <el-icon size="40" color="#409eff"><Filter /></el-icon>
             </div>
             <h3>事件数据清洗</h3>
-            <p>清洗和格式化事件数据，生成标准 JSON 格式</p>
+            <p>处理 ES 查询结果，提取 EVENT_FP 并生成推送消息（支持新旧功能切换）</p>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12" :lg="8">
@@ -158,6 +158,7 @@ import {
   OfficeBuilding,
   Document,
   Platform,
+  Filter,
   Edit,
   DataBoard,
   Operation,

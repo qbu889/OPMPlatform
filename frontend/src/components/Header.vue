@@ -97,10 +97,10 @@
             <el-icon><OfficeBuilding /></el-icon>
             <span>高效工具</span>
           </template>
-          <router-link to="/clean-event-page" custom v-slot="{ navigate, href }">
+          <router-link to="/clean-event" custom v-slot="{ navigate, href }">
             <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/clean-event-page">
-                <el-icon><Edit /></el-icon>
+              <el-menu-item index="/clean-event">
+                <el-icon><Filter /></el-icon>
                 <span>事件数据清洗</span>
               </el-menu-item>
             </a>
@@ -218,6 +218,8 @@ import {
   Key,
   Setting,
   Download,
+  Filter,
+  Edit,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'
@@ -255,7 +257,7 @@ const handleMenuSelect = (index) => {
     spreadsheet: '/spreadsheet',
     chatbot: '/chatbot',
     'schedule-config': '/schedule-config',
-    'clean-event-page': '/clean-event-page',
+    'clean-event': '/clean-event',
     'sql-formatter': '/sql-formatter',
     'kafka-generator': '/kafka-generator',
   }

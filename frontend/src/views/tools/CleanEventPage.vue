@@ -217,6 +217,14 @@ const handleCopy = async () => {
 
 <style scoped>
 .clean-event-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  min-height: auto;
+}
+
+/* 当作为独立页面时保持原有样式 */
+.clean-event-container.standalone {
   padding: 40px 20px;
   max-width: 900px;
   margin: 0 auto;

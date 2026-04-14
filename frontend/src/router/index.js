@@ -80,6 +80,12 @@ const routes = [
     path: '/clean-event-page',
     name: 'CleanEventPage',
     component: () => import('../views/tools/CleanEventPage.vue'),
+    meta: { title: '事件数据清洗（旧）', hidden: true }
+  },
+  {
+    path: '/clean-event',
+    name: 'CleanEvent',
+    component: () => import('../views/document/CleanEvent.vue'),
     meta: { title: '事件数据清洗', hidden: true }
   },
   {
@@ -124,6 +130,12 @@ const routes = [
     name: 'ExcelToCosmic',
     component: () => import('../views/document/ExcelToCosmic.vue'),
     meta: { title: 'Excel 转 COSMIC', hidden: true }
+  },
+  {
+    path: '/clean-event',
+    name: 'CleanEvent',
+    component: () => import('../views/document/CleanEvent.vue'),
+    meta: { title: '事件数据清洗', hidden: true }
   },
   // 智能客服
   {
