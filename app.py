@@ -65,6 +65,9 @@ from routes.word_to_excel.word_to_excel_routes import word_to_excel_bp
 # 在线表格模块
 from routes.spreadsheet.spreadsheet_routes import spreadsheet_bp
 
+# Swagger API 文档
+from routes.swagger_config import swagger_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -166,7 +169,7 @@ def create_app(config_name='development'):
     )
     
     # 启用 CORS（允许跨域请求）
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/*": {"origins": "*"}})
     
     # 加载配置
     app.config.from_object(config[config_name])
@@ -234,6 +237,9 @@ def create_app(config_name='development'):
         
         # 在线表格模块（蓝图已定义前缀）
         spreadsheet_bp,
+        
+        # Swagger API 文档
+        swagger_bp,
     ]
         
     for blueprint in blueprints:
@@ -357,6 +363,41 @@ def uploaded_file(filename):
 
 
 # ============================================================================
+# Vue SPA Fallback - 必须在最后注册
+# ============================================================================
+FRONTEND_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'frontend', 'dist')
+
+@app.errorhandler(404)
+def handle_404(error):
+    """
+    404 错误处理 - 如果是前端路由，返回 index.html
+    """
+    # 如果是 API 请求，返回 JSON 404
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found', 'path': request.path}), 404
+    
+    # 如果是静态资源请求（JS/CSS/图片等），不要返回 index.html
+    if request.path.startswith('/assets/') or \
+       request.path.endswith('.js') or \
+       request.path.endswith('.css') or \
+       request.path.endswith('.map') or \
+       request.path.endswith('.png') or \
+       request.path.endswith('.jpg') or \
+       request.path.endswith('.svg') or \
+       request.path.endswith('.ico'):
+        return jsonify({'error': 'Static file not found', 'path': request.path}), 404
+    
+    # 如果是前端路由，返回 index.html（让 Vue Router 处理）
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    
+    # 默认 404 响应
+    return jsonify({'error': 'Not found'}), 404
+
+
+# ============================================================================
 # 应用主入口
 # ============================================================================
 if __name__ == '__main__':
@@ -364,8 +405,14 @@ if __name__ == '__main__':
     import threading
     import subprocess
     
-    port = int(os.environ.get("PORT", 5002))  # 优先使用环境变量,否则默认 5002
-    app_logger.info(f"启动 Flask 应用，端口：{port}")
+    # 根据环境变量确定端口
+    # 开发环境: 5001, 生产环境: 5004 (避免与 macOS AirTunes 的 5000 端口冲突)
+    is_prod = os.environ.get("NODE_ENV") == "production" or os.environ.get("FLASK_ENV") == "production"
+    default_port = 5004 if is_prod else 5001
+    port = int(os.environ.get("PORT", default_port))
+    
+    env_name = "生产环境" if is_prod else "开发环境"
+    app_logger.info(f"启动 Flask 应用 ({env_name})，端口：{port}")
     
     # 启动 cloudflared tunnel
     def start_cloudflared_tunnel():

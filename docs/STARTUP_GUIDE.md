@@ -23,8 +23,8 @@ start_es_to_excel.bat
 
 **macOS/Linux:**
 ```bash
-chmod +x start_frontend.sh
-./start_frontend.sh
+chmod +x start_frontend_prod.sh
+./start_frontend_prod.sh
 ```
 
 **Windows:**

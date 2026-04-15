@@ -4,20 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加强制格式化">
-      <change afterPath="$PROJECT_DIR$/docs/06-文档转换工具/word转md格式.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/views/document/CleanEvent.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/document_convert/clean_event_routes.py" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加事件清除批量生成推送消息">
+      <change afterPath="$PROJECT_DIR$/routes/swagger_config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/start_dev.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/start_frontend_dev.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/start_frontend_prod.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_COMPLETION.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_COMPLETION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_DEVELOPMENT_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_DEVELOPMENT_SUMMARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_QUICKSTART.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_QUICKSTART.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/STARTUP_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/STARTUP_GUIDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Home.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/tools/CleanEventPage.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/app_20260414.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260414.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/fpa/event_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/fpa/event_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/kafka/输入json.json" beforeDir="false" afterPath="$PROJECT_DIR$/test/kafka/输入json.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_all.sh" beforeDir="false" afterPath="$PROJECT_DIR$/start_all.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_es_to_excel.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_es_to_excel.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_frontend.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_frontend.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/ollama_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,61 +125,64 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.Flask (app.py) .executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app.py:create_app).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (app2.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (routes/排班/paiBanNew.py).executor&quot;: &quot;Run&quot;,
-    &quot;JavaScript 调试.schedule.html.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-cosyBalloonNotifications&quot;: &quot;Lingma Notification Balloon Group&quot;,
-    &quot;Notification.DoNotAsk-cosyBalloonNotifications&quot;: &quot;true&quot;,
-    &quot;Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.holidaySys.executor&quot;: &quot;Run&quot;,
-    &quot;Python.kafka_routes.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.paiBan.executor&quot;: &quot;Run&quot;,
-    &quot;Python.paiBanNew.executor&quot;: &quot;Run&quot;,
-    &quot;Python.wordToWord.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Shell Script.start.sh.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.start_frontend.sh.executor&quot;: &quot;Run&quot;,
-    &quot;Shell Script.start_with_tunnel.sh.executor&quot;: &quot;Run&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;database.data.extractors.current.export.id&quot;: &quot;Comma-separated (CSV)_id&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;f/dev&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/linziwang/PycharmProjects/wordToWord/utils/ES结果导Excel&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.Flask (app.py) .executor": "Run",
+    "Flask 服务器.Flask (app.py).executor": "Run",
+    "Flask 服务器.Flask (app.py:create_app).executor": "Run",
+    "Flask 服务器.Flask (app2.py).executor": "Run",
+    "Flask 服务器.Flask (routes/排班/paiBanNew.py).executor": "Run",
+    "JavaScript 调试.schedule.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Notification.DisplayName-DoNotAsk-cosyBalloonNotifications": "Lingma Notification Balloon Group",
+    "Notification.DoNotAsk-cosyBalloonNotifications": "true",
+    "Python 测试.Python 测试 (TestKafkaRoutes.py 内).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app.py.executor": "Run",
+    "Python.app2.executor": "Run",
+    "Python.holidaySys.executor": "Run",
+    "Python.kafka_routes.executor": "Debug",
+    "Python.paiBan.executor": "Run",
+    "Python.paiBanNew.executor": "Run",
+    "Python.wordToWord.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Shell Script.start.sh.executor": "Run",
+    "Shell Script.start_all.sh.executor": "Run",
+    "Shell Script.start_dev.sh.executor": "Run",
+    "Shell Script.start_frontend.sh.executor": "Run",
+    "Shell Script.start_frontend_dev.sh.executor": "Run",
+    "Shell Script.start_with_tunnel.sh.executor": "Run",
+    "WebServerToolWindowFactoryState": "false",
+    "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
+    "git-widget-placeholder": "f/dev",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Applications/PyCharm 2.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mysql_aurora&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql_aurora"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
+      "MySQL"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "MySQL"
     ]
   }
-}</component>
+}]]></component>
   <component name="Push.Settings">
     <force-push-targets>
       <force-push-target remote-path="origin" branch="onlineExcel" />
@@ -179,11 +191,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
       <recent name="$PROJECT_DIR$/test/cosmic" />
       <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/test_uploads" />
-      <recent name="$PROJECT_DIR$/test/wordToExcel" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/docs" />
@@ -259,7 +271,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -267,37 +279,40 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Flask (app.py:create_app)" type="Python.FlaskServer" temporary="true">
-      <option name="application" value="create_app" />
-      <module name="wordToWord" />
-      <option name="target" value="$PROJECT_DIR$/app.py" />
-      <option name="targetType" value="PATH" />
-      <option name="ENV_FILES" value="" />
+    <configuration name="start_dev.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_dev.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
       <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <EXTENSION ID="net.ashald.envfile">
-        <option name="IS_ENABLED" value="false" />
-        <option name="IS_SUBST" value="false" />
-        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-        <option name="IS_IGNORE_MISSING_FILES" value="false" />
-        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-        <ENTRIES>
-          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-        </ENTRIES>
-      </EXTENSION>
-      <option name="launchJavascriptDebuger" value="false" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="start_frontend_dev.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_frontend_dev.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
       <method v="2" />
     </configuration>
     <configuration name="start_frontend.sh" type="ShConfigurationType" temporary="true">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_frontend.sh" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_frontend_prod.sh" />
       <option name="SCRIPT_OPTIONS" value="" />
       <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
       <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -312,22 +327,7 @@
     <configuration name="start.sh" type="ShConfigurationType" temporary="true">
       <option name="SCRIPT_TEXT" value="" />
       <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start.sh" />
-      <option name="SCRIPT_OPTIONS" value="" />
-      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-      <option name="INTERPRETER_PATH" value="/bin/bash" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="EXECUTE_IN_TERMINAL" value="true" />
-      <option name="EXECUTE_SCRIPT_FILE" value="true" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="start_with_tunnel.sh" type="ShConfigurationType" temporary="true">
-      <option name="SCRIPT_TEXT" value="" />
-      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_with_tunnel.sh" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/start_prod.sh" />
       <option name="SCRIPT_OPTIONS" value="" />
       <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
       <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -341,20 +341,20 @@
     </configuration>
     <list>
       <item itemvalue="Flask 服务器.Flask (app.py)" />
-      <item itemvalue="Flask 服务器.Flask (app.py:create_app)" />
       <item itemvalue="Python.app.py" />
       <item itemvalue="Python.wordToWord" />
-      <item itemvalue="Shell Script.start_with_tunnel.sh" />
+      <item itemvalue="Shell Script.start_dev.sh" />
+      <item itemvalue="Shell Script.start_frontend_dev.sh" />
       <item itemvalue="Shell Script.start.sh" />
       <item itemvalue="Shell Script.start_frontend.sh" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Shell Script.start.sh" />
+        <item itemvalue="Shell Script.start_dev.sh" />
+        <item itemvalue="Shell Script.start_frontend_dev.sh" />
         <item itemvalue="Shell Script.start_frontend.sh" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
-        <item itemvalue="Flask 服务器.Flask (app.py:create_app)" />
-        <item itemvalue="Shell Script.start_with_tunnel.sh" />
       </list>
     </recent_temporary>
   </component>
@@ -434,14 +434,7 @@
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
-    </task>
-    <task id="LOCAL-00074" summary="fix：复制结果交互优化、fpa生成时动画去除">
-      <option name="closed" value="true" />
-      <created>1775545047701</created>
-      <option name="number" value="00074" />
-      <option name="presentableId" value="LOCAL-00074" />
-      <option name="project" value="LOCAL" />
-      <updated>1775545047701</updated>
+      <workItem from="1776222883081" duration="14077000" />
     </task>
     <task id="LOCAL-00075" summary="fix：fpa生成的ILF顺序错误问题修复；ILF提取错误问题修复。">
       <option name="closed" value="true" />
@@ -827,7 +820,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776160013076</updated>
     </task>
-    <option name="localTasksCounter" value="123" />
+    <task id="LOCAL-00123" summary="new：增加事件清除批量生成推送消息">
+      <option name="closed" value="true" />
+      <created>1776167719957</created>
+      <option name="number" value="00123" />
+      <option name="presentableId" value="LOCAL-00123" />
+      <option name="project" value="LOCAL" />
+      <updated>1776167719957</updated>
+    </task>
+    <option name="localTasksCounter" value="124" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -868,7 +869,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：excel转cosmic" />
     <MESSAGE value="new：kafka增加日志输出" />
     <MESSAGE value="new：es查询结果转excel表格工具" />
     <MESSAGE value="new：前端VUE框架" />
@@ -893,7 +893,8 @@
     <MESSAGE value="new：优化前端性能" />
     <MESSAGE value="fix：顶部导航栏支持右键新窗口打开" />
     <MESSAGE value="new：增加强制格式化" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加强制格式化" />
+    <MESSAGE value="new：增加事件清除批量生成推送消息" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加事件清除批量生成推送消息" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -967,7 +968,7 @@
     <SUITE FILE_PATH="coverage/wordToWord$import_kafka_field_meta.coverage" NAME="import_kafka_field_meta Coverage Results" MODIFIED="1772614862970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/wordToWord$word.coverage" NAME="生成word 覆盖结果" MODIFIED="1773225617538" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/生成word" />
     <SUITE FILE_PATH="coverage/wordToWord$test_adjustment_sheet.coverage" NAME="test_adjustment_sheet Coverage Results" MODIFIED="1773132794020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
-    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1775818883078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/wordToWord$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1776247969410" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$test_full_es_data.coverage" NAME="test_full_es_data 覆盖结果" MODIFIED="1773370148135" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/wordToWord$testapi.coverage" NAME="testapi 覆盖结果" MODIFIED="1773550017825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test/fpa" />
     <SUITE FILE_PATH="coverage/wordToWord$import_adjustment_factor_excel.coverage" NAME="import_adjustment_factor_excel 覆盖结果" MODIFIED="1773213533591" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />

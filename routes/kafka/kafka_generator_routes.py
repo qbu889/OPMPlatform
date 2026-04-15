@@ -740,8 +740,15 @@ def generate_creation_event_time(es_data, user_delay_time=None):
 
 @kafka_generator_bp.route('/')
 def kafka_generator_page():
-    """Kafka消息生成器页面"""
-    return render_template('kafka/kafka_generator.html')
+    """Kafka消息生成器页面 - 不返回任何内容，由前端 Vue Router 处理
+    
+    注意：这个路由不应该被直接访问。
+    前端通过 Vue Router 的 /kafka-generator 路径访问，
+    后端只负责提供 API 接口（如 /field-meta, /generate 等）。
+    """
+    # 返回 404，触发 Flask 的 errorhandler(404)，返回 index.html
+    from flask import abort
+    abort(404)
 
 
 @kafka_generator_bp.route('/field-meta')

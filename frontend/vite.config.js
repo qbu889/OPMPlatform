@@ -3,7 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
 // 后端 API 地址配置
-const BACKEND_PORT = 5001
+const isProd = process.env.NODE_ENV === 'production'
+const BACKEND_PORT = isProd ? 5004 : 5001
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 
 // https://vite.dev/config/
@@ -41,7 +42,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: isProd ? 5173 : 5200,
     allowedHosts: ['opmvue.nokiafz.asia'],
     // 移除 HMR 的 wss 配置，使用默认 WebSocket
     proxy: {
@@ -97,7 +98,28 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      '/kafka-generator': {
+      // Kafka Generator API 接口（注意：不包括 /kafka-generator 页面路由）
+      '/kafka-generator/field-meta': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/field-cache': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/field-order': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/field-options': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/generate': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/history': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
@@ -114,6 +136,10 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/sql-formatter': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/swagger': {
         target: BACKEND_URL,
         changeOrigin: true,
       },

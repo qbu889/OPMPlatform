@@ -19,45 +19,35 @@
             <el-icon><Document /></el-icon>
             <span>文档</span>
           </template>
-          <router-link to="/word-to-md" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/word-to-md">
-                <el-icon><Document /></el-icon>
-                <span>Word 转 Markdown</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/word-to-md" custom v-slot="{ navigate }">
+            <el-menu-item index="/word-to-md" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/word-to-md')">
+              <el-icon><Document /></el-icon>
+              <span>Word 转 Markdown</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/markdown-upload" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/markdown-upload">
-                <el-icon><Files /></el-icon>
-                <span>Markdown 转 Word</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/markdown-upload" custom v-slot="{ navigate }">
+            <el-menu-item index="/markdown-upload" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/markdown-upload')">
+              <el-icon><Files /></el-icon>
+              <span>Markdown 转 Word</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/word-to-excel" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/word-to-excel">
-                <el-icon><DataBoard /></el-icon>
-                <span>Word 转 Excel</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/word-to-excel" custom v-slot="{ navigate }">
+            <el-menu-item index="/word-to-excel" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/word-to-excel')">
+              <el-icon><DataBoard /></el-icon>
+              <span>Word 转 Excel</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/fpa-generator" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/fpa-generator">
-                <el-icon><DataAnalysis /></el-icon>
-                <span>FPA 预估表生成</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/fpa-generator" custom v-slot="{ navigate }">
+            <el-menu-item index="/fpa-generator" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/fpa-generator')">
+              <el-icon><DataAnalysis /></el-icon>
+              <span>FPA 预估表生成</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/excel-to-cosmic" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/excel-to-cosmic">
-                <el-icon><Document /></el-icon>
-                <span>表格转 COSMIC</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/excel-to-cosmic" custom v-slot="{ navigate }">
+            <el-menu-item index="/excel-to-cosmic" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/excel-to-cosmic')">
+              <el-icon><Document /></el-icon>
+              <span>表格转 COSMIC</span>
+            </el-menu-item>
           </router-link>
         </el-sub-menu>
 
@@ -66,29 +56,23 @@
             <el-icon><Platform /></el-icon>
             <span>智能系统</span>
           </template>
-          <router-link to="/spreadsheet" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/spreadsheet">
-                <el-icon><Grid /></el-icon>
-                <span>在线表格</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/spreadsheet" custom v-slot="{ navigate }">
+            <el-menu-item index="/spreadsheet" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/spreadsheet')">
+              <el-icon><Grid /></el-icon>
+              <span>在线表格</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/chatbot" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/chatbot">
-                <el-icon><ChatDotRound /></el-icon>
-                <span>智能客服</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/chatbot" custom v-slot="{ navigate }">
+            <el-menu-item index="/chatbot" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/chatbot')">
+              <el-icon><ChatDotRound /></el-icon>
+              <span>智能客服</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/schedule-config" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/schedule-config">
-                <el-icon><Calendar /></el-icon>
-                <span>排班配置管理</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/schedule-config" custom v-slot="{ navigate }">
+            <el-menu-item index="/schedule-config" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/schedule-config')">
+              <el-icon><Calendar /></el-icon>
+              <span>排班配置管理</span>
+            </el-menu-item>
           </router-link>
         </el-sub-menu>
 
@@ -97,37 +81,29 @@
             <el-icon><OfficeBuilding /></el-icon>
             <span>高效工具</span>
           </template>
-          <router-link to="/clean-event" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/clean-event">
-                <el-icon><Filter /></el-icon>
-                <span>事件数据清洗</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/clean-event" custom v-slot="{ navigate }">
+            <el-menu-item index="/clean-event" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/clean-event')">
+              <el-icon><Filter /></el-icon>
+              <span>事件数据清洗</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/es-to-excel" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/es-to-excel">
-                <el-icon><Download /></el-icon>
-                <span>ES 查询结果转 Excel</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/es-to-excel" custom v-slot="{ navigate }">
+            <el-menu-item index="/es-to-excel" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/es-to-excel')">
+              <el-icon><Download /></el-icon>
+              <span>ES 查询结果转 Excel</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/sql-formatter" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/sql-formatter">
-                <el-icon><DataBoard /></el-icon>
-                <span>SQL ID 格式化</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/sql-formatter" custom v-slot="{ navigate }">
+            <el-menu-item index="/sql-formatter" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/sql-formatter')">
+              <el-icon><DataBoard /></el-icon>
+              <span>SQL ID 格式化</span>
+            </el-menu-item>
           </router-link>
-          <router-link to="/kafka-generator" custom v-slot="{ navigate, href }">
-            <a :href="href" class="menu-link" @click="navigate">
-              <el-menu-item index="/kafka-generator">
-                <el-icon><Operation /></el-icon>
-                <span>Kafka 消息生成</span>
-              </el-menu-item>
-            </a>
+          <router-link to="/kafka-generator" custom v-slot="{ navigate }">
+            <el-menu-item index="/kafka-generator" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/kafka-generator')">
+              <el-icon><Operation /></el-icon>
+              <span>Kafka 消息生成</span>
+            </el-menu-item>
           </router-link>
         </el-sub-menu>
       </el-menu>
@@ -243,6 +219,15 @@ const goHome = () => {
 
 const goTo = (path) => {
   router.push(path)
+}
+
+// 处理右键菜单 - 在新窗口打开
+const handleContextMenu = (event, path) => {
+  // 阻止默认右键菜单
+  event.preventDefault()
+  // 在新窗口/标签页打开
+  const url = window.location.origin + path
+  window.open(url, '_blank')
 }
 
 

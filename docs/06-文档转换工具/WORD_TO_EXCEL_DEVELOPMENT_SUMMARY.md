@@ -297,7 +297,7 @@ source .venv1/bin/activate
 pip install -r requirements.txt
 
 # 3. 启动应用
-./start.sh
+./start_prod.sh
 
 # 4. 访问功能
 http://127.0.0.1:5001/word-to-excel/

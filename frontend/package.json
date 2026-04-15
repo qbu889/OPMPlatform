@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --port 5173 --host 0.0.0.0",
+    "prod": "npm run build && npm run preview"
   },
   "dependencies": {
     "axios": "^1.14.0",

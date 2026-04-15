@@ -102,7 +102,7 @@
 
 ```bash
 # 1. 启动应用
-./start.sh
+./start_prod.sh
 
 # 2. 访问页面
 http://127.0.0.1:5001/word-to-excel/

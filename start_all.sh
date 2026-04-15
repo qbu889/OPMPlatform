@@ -96,7 +96,6 @@ echo ""
 echo "📍 访问地址:"
 echo "   后端 API: http://localhost:5001"
 echo "   前端页面: http://localhost:5173"
-echo "   ES转Excel: http://localhost:5173/es-to-excel"
 echo ""
 echo "📋 管理命令:"
 if [ "$SESSION_MANAGER" = "tmux" ]; then

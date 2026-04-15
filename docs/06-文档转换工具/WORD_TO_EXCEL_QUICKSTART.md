@@ -6,7 +6,7 @@
 
 ```bash
 cd /Users/linziwang/PycharmProjects/wordToWord
-./start.sh
+./start_prod.sh
 ```
 
 应用将在 http://127.0.0.1:5001 启动

@@ -478,7 +478,7 @@ def init_ollama_service(use_omlx: bool = None) -> OllamaClient:
             # 初始化 OMLX 客户端
             logger.info(f"[OLLAMA_INIT_SERVICE] 正在初始化 OMLX 客户端...")
             logger.info(f"   - 配置来源：环境变量")
-            logger.info(f"   - OMLX_BASE_URL: {os.getenv('OMLX_BASE_URL', 'http://localhost:8000/v1')}")
+            logger.info(f"   - OMLX_BASE_URL: {os.getenv('OMLX_BASE_URL', 'http://localhost:11434/v1')}")
             logger.info(f"   - OMLX_MODEL: {os.getenv('OMLX_MODEL', 'Qwen3.5-4B-OptiQ-4bit')}")
             
             _omlx_client = OllamaClient(use_omlx=True)
@@ -577,7 +577,7 @@ def get_ollama_client_for_fpa() -> Optional[OllamaClient]:
             # 使用 OMLX 客户端
             if _omlx_client is None:
                 logger.info("[FPA_AI] OMLX 客户端未初始化，正在初始化...")
-                omlx_url = os.getenv("OMLX_BASE_URL", "http://localhost:8000/v1")
+                omlx_url = os.getenv("OMLX_BASE_URL", "http://localhost:11434/v1")
                 omlx_model = os.getenv("OMLX_MODEL", "Qwen3.5-4B-OptiQ-4bit")
                 _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
             
@@ -623,7 +623,7 @@ def get_ollama_client(base_url: str = None, model: str = None, use_omlx: bool = 
             # 使用 OMLX 服务
             if _omlx_client is None:
                 import os
-                omlx_url = base_url or os.getenv("OMLX_BASE_URL", "http://localhost:8000/v1")
+                omlx_url = base_url or os.getenv("OMLX_BASE_URL", "http://localhost:11434/v1")
                 omlx_model = model or os.getenv("OMLX_MODEL", "Qwen3.5-9B-MLX-4bit")
                 
                 _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
