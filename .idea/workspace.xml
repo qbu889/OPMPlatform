@@ -4,29 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加事件清除批量生成推送消息">
-      <change afterPath="$PROJECT_DIR$/routes/swagger_config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start_dev.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start_frontend_dev.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start_frontend_prod.sh" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加生产环境和测试环境的配置">
+      <change afterPath="$PROJECT_DIR$/test/cosmic/副本附件1-2024年网络数据共享平台研发-需求说明V1.0.0.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_COMPLETION.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_COMPLETION.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_DEVELOPMENT_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_DEVELOPMENT_SUMMARY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_QUICKSTART.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/06-文档转换工具/WORD_TO_EXCEL_QUICKSTART.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/STARTUP_GUIDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/STARTUP_GUIDE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/app_20260414.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app_20260414.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/kafka/kafka_generator_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_all.sh" beforeDir="false" afterPath="$PROJECT_DIR$/start_all.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_es_to_excel.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_es_to_excel.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_frontend.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/start_frontend.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/ollama_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/ollama_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +143,7 @@
     "WebServerToolWindowFactoryState": "false",
     "database.data.extractors.current.export.id": "Comma-separated (CSV)_id",
     "git-widget-placeholder": "f/dev",
-    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord",
+    "last_opened_file_path": "/Users/linziwang/PycharmProjects/wordToWord/test/cosmic",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -191,9 +173,9 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/cosmic" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/utils/ES结果导Excel" />
-      <recent name="$PROJECT_DIR$/test/cosmic" />
       <recent name="$PROJECT_DIR$/test/kafka" />
       <recent name="$PROJECT_DIR$/test_uploads" />
     </key>
@@ -434,15 +416,7 @@
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
-      <workItem from="1776222883081" duration="14077000" />
-    </task>
-    <task id="LOCAL-00075" summary="fix：fpa生成的ILF顺序错误问题修复；ILF提取错误问题修复。">
-      <option name="closed" value="true" />
-      <created>1775545202561</created>
-      <option name="number" value="00075" />
-      <option name="presentableId" value="LOCAL-00075" />
-      <option name="project" value="LOCAL" />
-      <updated>1775545202561</updated>
+      <workItem from="1776222883081" duration="17311000" />
     </task>
     <task id="LOCAL-00076" summary="fix：fpa生成ILF表拆分失败的情况">
       <option name="closed" value="true" />
@@ -828,7 +802,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776167719957</updated>
     </task>
-    <option name="localTasksCounter" value="124" />
+    <task id="LOCAL-00124" summary="new：增加生产环境和测试环境的配置">
+      <option name="closed" value="true" />
+      <created>1776249491913</created>
+      <option name="number" value="00124" />
+      <option name="presentableId" value="LOCAL-00124" />
+      <option name="project" value="LOCAL" />
+      <updated>1776249491913</updated>
+    </task>
+    <option name="localTasksCounter" value="125" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -869,7 +851,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：kafka增加日志输出" />
     <MESSAGE value="new：es查询结果转excel表格工具" />
     <MESSAGE value="new：前端VUE框架" />
     <MESSAGE value="new：md文档位置调整" />
@@ -894,7 +875,8 @@
     <MESSAGE value="fix：顶部导航栏支持右键新窗口打开" />
     <MESSAGE value="new：增加强制格式化" />
     <MESSAGE value="new：增加事件清除批量生成推送消息" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加事件清除批量生成推送消息" />
+    <MESSAGE value="new：增加生产环境和测试环境的配置" />
+    <option name="LAST_COMMIT_MESSAGE" value="new：增加生产环境和测试环境的配置" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

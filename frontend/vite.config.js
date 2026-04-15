@@ -66,38 +66,6 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      '/word-to-md': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/markdown-upload': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/fpa-generator': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/word-to-excel': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/chatbot': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/chat': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/schedule-config': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/schedule': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
       // Kafka Generator API 接口（注意：不包括 /kafka-generator 页面路由）
       '/kafka-generator/field-meta': {
         target: BACKEND_URL,
@@ -123,22 +91,12 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      '/clean-event-page': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/clean-event': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
+      // Clean Event API 接口
       '/api/clean-event': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      '/sql-formatter': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
+      // SQL Formatter API 接口
       '/swagger': {
         target: BACKEND_URL,
         changeOrigin: true,
