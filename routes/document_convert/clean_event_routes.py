@@ -45,22 +45,59 @@ def process_es_data():
         if not data:
             return jsonify({'success': False, 'message': '未提供数据'}), 400
         
-        # 提取 hits 数据
-        hits = data.get('hits', {}).get('hits', [])
+        # 兼容两种数据格式：
+        # 1. 前端 Vue 发送的格式：{"data": [{"EVENT_FP": "...", "EVENT_TIME": "..."}], "custom_event_time": "..."}
+        # 2. 原始 ES 格式：{"hits": {"hits": [{"_source": {...}}]}}
         
-        if not hits:
-            return jsonify({'success': False, 'message': '未找到 hits 数据'}), 400
+        # 获取自定义事件时间（如果有）
+        custom_event_time = data.get('custom_event_time')
         
-        # 提取 EVENT_FP 并去重
-        event_fp_map = {}  # 使用字典保持顺序，key=EVENT_FP, value=EVENT_TIME
-        
-        for hit in hits:
-            source = hit.get('_source', {})
-            event_fp = source.get('EVENT_FP')
-            event_time = source.get('EVENT_TIME')
+        # 检测前端 Vue 发送的 data 字段
+        if 'data' in data:
+            # 前端格式：data 是数组
+            hits_data = data.get('data', [])
+            if not isinstance(hits_data, list):
+                return jsonify({'success': False, 'message': 'data 字段必须是数组'}), 400
             
-            if event_fp and event_fp not in event_fp_map:
-                event_fp_map[event_fp] = event_time
+            # 直接遍历数组提取 EVENT_FP
+            event_fp_map = {}
+            for item in hits_data:
+                event_fp = item.get('EVENT_FP')
+                event_time = item.get('EVENT_TIME')
+                
+                # 如果指定了自定义事件时间，则覆盖
+                if custom_event_time:
+                    event_time = custom_event_time
+                
+                if event_fp and event_fp not in event_fp_map:
+                    event_fp_map[event_fp] = event_time
+            
+            # 用于日志记录
+            hits_count = len(hits_data)
+        else:
+            # 原始 ES 格式：从 hits.hits 中提取
+            hits = data.get('hits', {}).get('hits', [])
+            
+            if not hits:
+                return jsonify({'success': False, 'message': '未找到 hits 数据'}), 400
+            
+            # 提取 EVENT_FP 并去重
+            event_fp_map = {}  # 使用字典保持顺序，key=EVENT_FP, value=EVENT_TIME
+            
+            for hit in hits:
+                source = hit.get('_source', {})
+                event_fp = source.get('EVENT_FP')
+                event_time = source.get('EVENT_TIME')
+                
+                # 如果指定了自定义事件时间，则覆盖
+                if custom_event_time:
+                    event_time = custom_event_time
+                
+                if event_fp and event_fp not in event_fp_map:
+                    event_fp_map[event_fp] = event_time
+            
+            # 用于日志记录
+            hits_count = len(hits)
         
         # 生成推送消息
         push_messages = []
@@ -75,7 +112,7 @@ def process_es_data():
             }
             push_messages.append(message)
         
-        logger.info(f'成功处理 {len(hits)} 条数据，生成 {len(push_messages)} 条推送消息')
+        logger.info(f'成功处理 {hits_count} 条数据，生成 {len(push_messages)} 条推送消息')
         
         return jsonify({
             'success': True,

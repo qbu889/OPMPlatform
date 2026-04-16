@@ -44,6 +44,10 @@ export default defineConfig({
     host: '0.0.0.0',
     port: isProd ? 5173 : 5200,
     allowedHosts: ['opmvue.nokiafz.asia'],
+    // 强制禁用 HMR 缓存
+    hmr: {
+      overlay: true,
+    },
     // 移除 HMR 的 wss 配置，使用默认 WebSocket
     proxy: {
       '/api': {

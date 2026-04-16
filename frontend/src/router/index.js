@@ -125,18 +125,6 @@ const routes = [
     component: () => import('../views/document/FpaCategoryRules.vue'),
     meta: { title: 'FPA 类别规则管理', hidden: true }
   },
-  {
-    path: '/excel-to-cosmic',
-    name: 'ExcelToCosmic',
-    component: () => import('../views/document/ExcelToCosmic.vue'),
-    meta: { title: 'Excel 转 COSMIC', hidden: true }
-  },
-  {
-    path: '/clean-event',
-    name: 'CleanEvent',
-    component: () => import('../views/document/CleanEvent.vue'),
-    meta: { title: '事件数据清洗', hidden: true }
-  },
   // 智能客服
   {
     path: '/category-management',

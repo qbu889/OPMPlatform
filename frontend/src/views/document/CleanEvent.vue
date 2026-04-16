@@ -222,8 +222,8 @@ import {
 } from '@element-plus/icons-vue'
 import CleanEventPage from '../tools/CleanEventPage.vue'
 
-const activeTab = ref('es-processing')
-const inputMode = ref('json')
+const activeTab = ref('legacy-format')
+const inputMode = ref('textarea')
 const selectedFile = ref(null)
 const jsonText = ref('')
 const loading = ref(false)
