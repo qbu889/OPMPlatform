@@ -20,19 +20,19 @@ spreadsheet_bp = Blueprint('spreadsheet', __name__, url_prefix='/spreadsheet')
 
 
 # ============================================================================
-# 页面路由
+# 页面路由 (已废弃，使用 Vue 页面)
 # ============================================================================
 
-@spreadsheet_bp.route('/')
-def spreadsheet_list():
-    """表格列表页面"""
-    return render_template('spreadsheet/spreadsheet_list.html')
+# @spreadsheet_bp.route('/')
+# def spreadsheet_list():
+#     """表格列表页面"""
+#     return render_template('spreadsheet/spreadsheet_list.html')
 
 
-@spreadsheet_bp.route('/<int:spreadsheet_id>')
-def spreadsheet_detail(spreadsheet_id):
-    """表格详情页面"""
-    return render_template('spreadsheet/spreadsheet_detail.html', spreadsheet_id=spreadsheet_id)
+# @spreadsheet_bp.route('/<int:spreadsheet_id>')
+# def spreadsheet_detail(spreadsheet_id):
+#     """表格详情页面"""
+#     return render_template('spreadsheet/spreadsheet_detail.html', spreadsheet_id=spreadsheet_id)
 
 
 # ============================================================================

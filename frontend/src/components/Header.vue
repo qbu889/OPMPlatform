@@ -323,7 +323,7 @@ const handleSavePassword = async () => {
   top: 0;
   z-index: 1000;
   height: 48px;
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Dark mode header */

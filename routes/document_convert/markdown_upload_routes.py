@@ -136,63 +136,60 @@ def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@markdown_upload_bp.route('/markdown-upload', methods=['GET', 'POST'])
+@markdown_upload_bp.route('/markdown-upload', methods=['POST'])
 def markdown_upload():
     """
     Markdown文件上传与转换接口
-    支持GET显示上传页面，POST上传文件并转换为Word后返回下载
+    仅支持POST上传文件并转换为Word后返回下载
+    页面由 Vue SPA 处理
     """
     try:
         logging.info("请求 /markdown-upload 方法: %s", request.method)
-        if request.method == 'POST':
-            if 'markdown_file' not in request.files:
-                logging.warning("POST请求缺少markdown_file")
-                return render_template('markdown_upload.html', error='没有选择文件')
+        if 'markdown_file' not in request.files:
+            logging.warning("POST请求缺少markdown_file")
+            return jsonify({'success': False, 'message': '没有选择文件'}), 400
 
-            file = request.files['markdown_file']
-            if file.filename == '' or not allowed_file(file.filename):
-                logging.warning("上传文件无效或为空，文件名: %s", file.filename)
-                return render_template('markdown_upload.html', error='没有选择有效的 Markdown 文件')
+        file = request.files['markdown_file']
+        if file.filename == '' or not allowed_file(file.filename):
+            logging.warning("上传文件无效或为空，文件名: %s", file.filename)
+            return jsonify({'success': False, 'message': '没有选择有效的 Markdown 文件'}), 400
 
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
 
-            # 防止路径穿越攻击
-            real_path = os.path.realpath(filepath)
-            upload_real_path = os.path.realpath(UPLOAD_FOLDER)
-            if not real_path.startswith(upload_real_path):
-                logging.error("非法路径访问尝试，路径: %s", real_path)
-                raise ValueError("非法路径访问尝试")
+        # 防止路径穿越攻击
+        real_path = os.path.realpath(filepath)
+        upload_real_path = os.path.realpath(UPLOAD_FOLDER)
+        if not real_path.startswith(upload_real_path):
+            logging.error("非法路径访问尝试，路径: %s", real_path)
+            raise ValueError("非法路径访问尝试")
 
-            file.save(real_path)
-            logging.info("上传文件保存成功: %s", real_path)
+        file.save(real_path)
+        logging.info("上传文件保存成功: %s", real_path)
 
-            word_filename = clean_filename(file.filename).replace('.md', '.docx').replace('.MD', '.docx')
-            word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
+        word_filename = clean_filename(file.filename).replace('.md', '.docx').replace('.MD', '.docx')
+        word_filepath = os.path.join(UPLOAD_FOLDER, word_filename)
 
-            logging.info("开始转换Markdown为Word: %s -> %s", real_path, word_filepath)
-            convert_md_to_docx(real_path, word_filepath)
-            logging.info("转换完成，准备发送文件: %s", word_filepath)
+        logging.info("开始转换Markdown为Word: %s -> %s", real_path, word_filepath)
+        convert_md_to_docx(real_path, word_filepath)
+        logging.info("转换完成，准备发送文件: %s", word_filepath)
 
-            response = send_file(word_filepath, as_attachment=True)
+        response = send_file(word_filepath, as_attachment=True)
 
-            @response.call_on_close
-            def cleanup():
-                try:
-                    os.remove(real_path)
-                    os.remove(word_filepath)
-                    logging.info("临时文件删除成功：%s 和 %s", real_path, word_filepath)
-                except Exception as e:
-                    logging.warning(f"Cleanup failed: {e}")
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.remove(real_path)
+                os.remove(word_filepath)
+                logging.info("临时文件删除成功：%s 和 %s", real_path, word_filepath)
+            except Exception as e:
+                logging.warning(f"Cleanup failed: {e}")
 
-            return response
-
-        # GET 请求显示上传页面
-        return render_template('document_convert/markdown_upload.html')
+        return response
 
     except Exception as e:
         logging.error(f"文件处理异常：{e}", exc_info=True)
-        return render_template('document_convert/markdown_upload.html', error="处理过程中发生错误，请稍后再试")
+        return jsonify({'success': False, 'message': f'处理过程中发生错误：{str(e)}'}), 500
 
 
 @markdown_upload_bp.route('/markdown-upload/upload', methods=['POST'])

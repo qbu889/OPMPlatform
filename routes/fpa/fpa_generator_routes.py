@@ -1089,10 +1089,10 @@ def generate_fpa_excel(function_points: list, output_path: str) -> str:
 
 # ---------------------- 路由定义 ----------------------
 
-@fpa_generator_bp.route('/')
-def fpa_generator_page():
-    """FPA 预估表生成主页面"""
-    return render_template('fpa/fpa_generator.html')
+# @fpa_generator_bp.route('/')
+# def fpa_generator_page():
+#     """FPA 预估表生成主页面（已废弃，使用 Vue 页面）"""
+#     return render_template('fpa/fpa_generator.html')
 
 
 @fpa_generator_bp.route('/upload', methods=['POST'])

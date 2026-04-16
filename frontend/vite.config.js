@@ -143,6 +143,19 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      // Markdown Upload API 接口（不包括 /markdown-upload 页面路由）
+      '/markdown-upload/upload': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/markdown-upload/convert': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/markdown-upload/download': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
       // SQL Formatter API 接口
       '/swagger': {
         target: BACKEND_URL,

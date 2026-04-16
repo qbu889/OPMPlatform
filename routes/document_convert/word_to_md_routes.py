@@ -110,10 +110,11 @@ def word_to_md_convert_api():
 
 
 # ============================================================================
-# 传统 HTML 模板接口
+# 传统 HTML 模板接口 (已废弃，使用 Vue 页面)
+# 保留 POST 用于文件上传处理
 # ============================================================================
 
-@word_to_md_bp.route('/word-to-md', methods=['GET', 'POST'])
+@word_to_md_bp.route('/word-to-md', methods=['POST'])
 def word_to_md():
     if request.method == 'POST':
         if 'word_file' not in request.files:
@@ -174,4 +175,4 @@ def word_to_md():
             mimetype='text/markdown'
         )
 
-    return render_template('document_convert/word_to_md.html')
+    return jsonify({'success': False, 'message': '请使用 Vue 前端页面访问'}), 404
