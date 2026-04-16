@@ -4,11 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="new：增加生产环境和测试环境的配置">
-      <change afterPath="$PROJECT_DIR$/test/cosmic/副本附件1-2024年网络数据共享平台研发-需求说明V1.0.0.docx" afterDir="false" />
+    <list default="true" id="354db7b6-ad2e-4e86-baed-a5f302838dda" name="更改" comment="fix：cosmic的层级修复">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/app_20260414.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/document_convert/cosmic_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_all.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_spreadsheet.sh" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +95,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_HOME_DIR$/plugins/python/helpers/typeshed/stdlib/builtins.pyi" root0="SKIP_INSPECTION" />
     <setting file="file://$APPLICATION_HOME_DIR$/plugins/python/helpers/typeshed/stdlib/os/__init__.pyi" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../Api_Auto_Test_Excel/.venv1/lib/python3.13/site-packages/werkzeug/utils.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/frontend/src/style.css" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -187,7 +190,7 @@
       <recent name="$PROJECT_DIR$/templates/kafka" />
     </key>
   </component>
-  <component name="RunManager" selected="Shell Script.start.sh">
+  <component name="RunManager" selected="Shell Script.start_frontend_dev.sh">
     <configuration name="app.py" type="PythonConfigurationType" factoryName="Python">
       <module name="wordToWord" />
       <option name="ENV_FILES" value="" />
@@ -332,10 +335,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Shell Script.start.sh" />
-        <item itemvalue="Shell Script.start_dev.sh" />
         <item itemvalue="Shell Script.start_frontend_dev.sh" />
+        <item itemvalue="Shell Script.start_dev.sh" />
         <item itemvalue="Shell Script.start_frontend.sh" />
+        <item itemvalue="Shell Script.start.sh" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
       </list>
     </recent_temporary>
@@ -416,15 +419,7 @@
       <workItem from="1775814117536" duration="2762000" />
       <workItem from="1775816980687" duration="1928000" />
       <workItem from="1776046865040" duration="7404000" />
-      <workItem from="1776222883081" duration="17311000" />
-    </task>
-    <task id="LOCAL-00076" summary="fix：fpa生成ILF表拆分失败的情况">
-      <option name="closed" value="true" />
-      <created>1775547502146</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
-      <option name="project" value="LOCAL" />
-      <updated>1775547502147</updated>
+      <workItem from="1776222883081" duration="21078000" />
     </task>
     <task id="LOCAL-00077" summary="new：fpa生成ILF表拆分后插入保持在拆分的员工能点之前插入">
       <option name="closed" value="true" />
@@ -810,7 +805,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776249491913</updated>
     </task>
-    <option name="localTasksCounter" value="125" />
+    <task id="LOCAL-00125" summary="fix：cosmic的层级修复">
+      <option name="closed" value="true" />
+      <created>1776252587886</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1776252587886</updated>
+    </task>
+    <option name="localTasksCounter" value="126" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -851,7 +854,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="new：es查询结果转excel表格工具" />
     <MESSAGE value="new：前端VUE框架" />
     <MESSAGE value="new：md文档位置调整" />
     <MESSAGE value="new：idea文件" />
@@ -876,7 +878,8 @@
     <MESSAGE value="new：增加强制格式化" />
     <MESSAGE value="new：增加事件清除批量生成推送消息" />
     <MESSAGE value="new：增加生产环境和测试环境的配置" />
-    <option name="LAST_COMMIT_MESSAGE" value="new：增加生产环境和测试环境的配置" />
+    <MESSAGE value="fix：cosmic的层级修复" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix：cosmic的层级修复" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
