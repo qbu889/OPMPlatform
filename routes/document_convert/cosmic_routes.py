@@ -291,65 +291,58 @@ def excel_to_word_conversion(excel_path, word_path):
             module_data[module_l3][function_name].extend(sub_items)
             logger.debug(f"添加 {len(sub_items)} 个子过程描述到 {function_name}")
 
-    # 按一级模块 -> 三级模块分组（嵌套字典）
-    # 结构: {一级模块: {三级模块: {功能过程: [子过程]}}}
+    # 按一级模块 -> 二级模块 -> 三级模块分组（嵌套字典）
+    # 结构: {L1: {L2: {L3: {功能过程: [子过程]}}}}
     hierarchical_data = {}
     
     logger.info(f"数据处理完成: 总行数={total_rows}, 处理={processed_rows}, 跳过={skipped_rows}")
-    logger.info(f"共识别到 {len(module_data)} 个三级模块")
     
-    # 重新组织 module_data 为层级结构
-    # 需要重新遍历，使用向下填充后的值
+    # 重新遍历，使用向下填充后的值构建完整层级
     module_l1_value = None
+    module_l2_value = None
     module_l3_value = None
     function_name_value = None
     
     for idx, row in df.iterrows():
         module_l1 = str(row.get('一级模块', '')) if pd.notna(row.get('一级模块', '')) else ''
+        module_l2 = str(row.get('二级模块', '')) if pd.notna(row.get('二级模块', '')) else ''
         module_l3 = str(row.get('三级模块', '')) if pd.notna(row.get('三级模块', '')) else ''
         function_name = str(row.get('功能过程', '')) if pd.notna(row.get('功能过程', '')) else ''
         subprocess_desc = str(row.get('子过程描述', '')) if pd.notna(row.get('子过程描述', '')) else ''
         
-        # 向下填充
-        if module_l1 and module_l1 != 'nan' and module_l1.strip():
-            module_l1_value = module_l1
-        if module_l3 and module_l3 != 'nan' and module_l3.strip():
-            module_l3_value = module_l3
+        # 向下填充所有层级
+        if module_l1 and module_l1 != 'nan' and module_l1.strip(): module_l1_value = module_l1
+        if module_l2 and module_l2 != 'nan' and module_l2.strip(): module_l2_value = module_l2
+        if module_l3 and module_l3 != 'nan' and module_l3.strip(): module_l3_value = module_l3
         if function_name and function_name != 'nan' and function_name.strip():
             function_name_value = function_name
         else:
             function_name = function_name_value if function_name_value else ''
-        
+            
         # 使用填充后的值
-        if not module_l1 or module_l1 == 'nan':
-            module_l1 = module_l1_value if module_l1_value else '未分类'
-        if not module_l3 or module_l3 == 'nan':
-            module_l3 = module_l3_value if module_l3_value else '未分类'
+        if not module_l1 or module_l1 == 'nan': module_l1 = module_l1_value or '未分类'
+        if not module_l2 or module_l2 == 'nan': module_l2 = module_l2_value or '未分类'
+        if not module_l3 or module_l3 == 'nan': module_l3 = module_l3_value or '未分类'
         
         # 跳过空行
-        if not function_name or function_name == 'nan':
-            continue
-        
-        # 构建层级结构
-        if module_l1 not in hierarchical_data:
-            hierarchical_data[module_l1] = {}
-        
-        if module_l3 not in hierarchical_data[module_l1]:
-            hierarchical_data[module_l1][module_l3] = {}
-        
-        if function_name not in hierarchical_data[module_l1][module_l3]:
-            hierarchical_data[module_l1][module_l3][function_name] = []
-        
+        if not function_name or function_name == 'nan': continue
+            
+        # 构建四级嵌套结构: L1 -> L2 -> L3 -> {Func: []}
+        if module_l1 not in hierarchical_data: hierarchical_data[module_l1] = {}
+        if module_l2 not in hierarchical_data[module_l1]: hierarchical_data[module_l1][module_l2] = {}
+        if module_l3 not in hierarchical_data[module_l1][module_l2]: hierarchical_data[module_l1][module_l2][module_l3] = {}
+        if function_name not in hierarchical_data[module_l1][module_l2][module_l3]:
+            hierarchical_data[module_l1][module_l2][module_l3][function_name] = []
+            
         # 添加子过程
         if subprocess_desc and subprocess_desc != 'nan' and subprocess_desc.strip():
-            sub_items = split_subprocess_description(subprocess_desc)
-            hierarchical_data[module_l1][module_l3][function_name].extend(sub_items)
+            hierarchical_data[module_l1][module_l2][module_l3][function_name].extend(split_subprocess_description(subprocess_desc))
     
     logger.info(f"层级数据统计:")
-    for l1, l3_dict in hierarchical_data.items():
-        logger.info(f"  一级模块 '{l1}' 包含 {len(l3_dict)} 个三级模块: {list(l3_dict.keys())}")
-        for l3, funcs in l3_dict.items():
-            logger.info(f"    三级模块 '{l3}' 包含 {len(funcs)} 个功能点: {list(funcs.keys())[:3]}...")
+    for l1, l2_dict in hierarchical_data.items():
+        logger.info(f"  一级模块 '{l1}' 包含 {len(l2_dict)} 个二级模块")
+        for l2, l3_dict in l2_dict.items():
+            logger.info(f"    二级模块 '{l2}' 包含 {len(l3_dict)} 个三级模块: {list(l3_dict.keys())[:3]}...")
 
     # 生成文档
     # 标题 1：功能需求（固定）
@@ -357,73 +350,57 @@ def excel_to_word_conversion(excel_path, word_path):
     for run in p.runs:
         set_font(run, font_name='宋体', font_size=22, bold=True)
 
-    # 遍历每个一级模块 -> 三级模块
-    for module_l1, l3_dict in hierarchical_data.items():
+    # 遍历每个一级模块 -> 二级模块 -> 三级模块
+    for module_l1, l2_dict in hierarchical_data.items():
         # 标题 2：一级模块（流程管理、国产化改造等）
         p = doc.add_heading(module_l1, level=2)
         for run in p.runs:
             set_font(run, font_name='宋体', font_size=18, bold=True)
         
-        # 遍历该一级模块下的所有三级模块
-        for module_l3, functions in l3_dict.items():
-            # 标题 3：二级模块/功能分类（如"数据接入流程"）
-            p = doc.add_heading(module_l3, level=3)
+        # 遍历该一级模块下的所有二级模块
+        for module_l2, l3_dict in l2_dict.items():
+            # 标题 3：二级模块（如"适配国产化CPU"）
+            p = doc.add_heading(module_l2, level=3)
             for run in p.runs:
                 set_font(run, font_name='宋体', font_size=16, bold=True)
-                    
-            # 标题 4：三级模块 = H3 + "（新增）"后缀（如"数据接入流程（新增）"）
-            h4_title = f"{module_l3}（新增）"
-            p = doc.add_heading(h4_title, level=4)
-            for run in p.runs:
-                set_font(run, font_name='宋体', font_size=14, bold=True)
-        
-            # 标题 5：关键时序图/业务逻辑图（固定）
-            p = doc.add_heading('关键时序图/业务逻辑图', level=5)
-            for run in p.runs:
-                set_font(run, font_name='宋体', font_size=12, bold=True)
-        
-            # 正文：无
-            p = doc.add_paragraph('无。')
-            for run in p.runs:
-                set_font(run, font_name='宋体', font_size=10.5, bold=False)
-            # 通过 XML 直接设置左缩进 2 字符（800 twips = 40 磅）
-            from docx.oxml import OxmlElement
-            pPr = p._element.get_or_add_pPr()
-            old_ind = pPr.find(qn('w:ind'))
-            if old_ind is not None:
-                pPr.remove(old_ind)
-            ind = OxmlElement('w:ind')
-            ind.set(qn('w:left'), '800')
-            pPr.insert(0, ind)
-        
-            # 标题 5：功能描述（固定）
-            p = doc.add_heading('功能描述', level=5)
-            for run in p.runs:
-                set_font(run, font_name='宋体', font_size=12, bold=True)
-        
-            # 整体功能列表（该三级模块下的所有功能过程）
-            all_functions = list(functions.keys())
-            p = doc.add_paragraph('整体功能列表包含如下：' + '、'.join(all_functions) + '。')
-            for run in p.runs:
-                set_font(run, font_name='宋体', font_size=10.5, bold=False)
-            # 通过 XML 直接设置首行缩进 2 字符（800 twips = 40 磅）
-            from docx.oxml import OxmlElement
-            pPr = p._element.get_or_add_pPr()
-            # 清除可能存在的 ind 元素
-            old_ind = pPr.find(qn('w:ind'))
-            if old_ind is not None:
-                pPr.remove(old_ind)
-            # 创建新的 ind 元素，只设置 firstLine
-            ind = OxmlElement('w:ind')
-            ind.set(qn('w:firstLine'), '800')
-            pPr.insert(0, ind)
-        
-            # 详细功能点描述（带序号）- 按照 cosmic.md 的要求格式
-            for i, (func_name, subprocesses) in enumerate(functions.items(), 1):
-                # 功能点标题（编号 + 功能过程名称）- 不需要加粗
-                p = doc.add_paragraph()
-                run = p.add_run(f"{i}.{func_name}")
-                set_font(run, font_name='宋体', font_size=10.5, bold=False)
+            
+            # 遍历该二级模块下的所有三级模块
+            for module_l3, functions in l3_dict.items():
+                # 标题 4：三级模块 + "（新增）"后缀（如"数据接入（新增）"）
+                h4_title = f"{module_l3}（新增）"
+                p = doc.add_heading(h4_title, level=4)
+                for run in p.runs:
+                    set_font(run, font_name='宋体', font_size=14, bold=True)
+
+                # 标题 5：关键时序图/业务逻辑图（固定）
+                p = doc.add_heading('关键时序图/业务逻辑图', level=5)
+                for run in p.runs:
+                    set_font(run, font_name='宋体', font_size=12, bold=True)
+
+                # 正文：无
+                p = doc.add_paragraph('无。')
+                for run in p.runs:
+                    set_font(run, font_name='宋体', font_size=10.5, bold=False)
+                # 通过 XML 直接设置左缩进 2 字符（800 twips = 40 磅）
+                from docx.oxml import OxmlElement
+                pPr = p._element.get_or_add_pPr()
+                old_ind = pPr.find(qn('w:ind'))
+                if old_ind is not None:
+                    pPr.remove(old_ind)
+                ind = OxmlElement('w:ind')
+                ind.set(qn('w:left'), '800')
+                pPr.insert(0, ind)
+
+                # 标题 5：功能描述（固定）
+                p = doc.add_heading('功能描述', level=5)
+                for run in p.runs:
+                    set_font(run, font_name='宋体', font_size=12, bold=True)
+
+                # 整体功能列表（该三级模块下的所有功能过程）
+                all_functions = list(functions.keys())
+                p = doc.add_paragraph('整体功能列表包含如下：' + '、'.join(all_functions) + '。')
+                for run in p.runs:
+                    set_font(run, font_name='宋体', font_size=10.5, bold=False)
                 # 通过 XML 直接设置首行缩进 2 字符（800 twips = 40 磅）
                 from docx.oxml import OxmlElement
                 pPr = p._element.get_or_add_pPr()
@@ -435,12 +412,13 @@ def excel_to_word_conversion(excel_path, word_path):
                 ind = OxmlElement('w:ind')
                 ind.set(qn('w:firstLine'), '800')
                 pPr.insert(0, ind)
-        
-                # 子过程描述（首行缩进）
-                for subprocess in subprocesses:
-                    p = doc.add_paragraph(subprocess)
-                    for run in p.runs:
-                        set_font(run, font_name='宋体', font_size=10.5, bold=False)
+
+                # 详细功能点描述（带序号）- 按照 cosmic.md 的要求格式
+                for i, (func_name, subprocesses) in enumerate(functions.items(), 1):
+                    # 功能点标题（编号 + 功能过程名称）- 不需要加粗
+                    p = doc.add_paragraph()
+                    run = p.add_run(f"{i}.{func_name}")
+                    set_font(run, font_name='宋体', font_size=10.5, bold=False)
                     # 通过 XML 直接设置首行缩进 2 字符（800 twips = 40 磅）
                     from docx.oxml import OxmlElement
                     pPr = p._element.get_or_add_pPr()
@@ -452,8 +430,25 @@ def excel_to_word_conversion(excel_path, word_path):
                     ind = OxmlElement('w:ind')
                     ind.set(qn('w:firstLine'), '800')
                     pPr.insert(0, ind)
-            # 添加空行分隔
-            doc.add_paragraph()
+
+                    # 子过程描述（首行缩进）
+                    for subprocess in subprocesses:
+                        p = doc.add_paragraph(subprocess)
+                        for run in p.runs:
+                            set_font(run, font_name='宋体', font_size=10.5, bold=False)
+                        # 通过 XML 直接设置首行缩进 2 字符（800 twips = 40 磅）
+                        from docx.oxml import OxmlElement
+                        pPr = p._element.get_or_add_pPr()
+                        # 清除可能存在的 ind 元素
+                        old_ind = pPr.find(qn('w:ind'))
+                        if old_ind is not None:
+                            pPr.remove(old_ind)
+                        # 创建新的 ind 元素，只设置 firstLine
+                        ind = OxmlElement('w:ind')
+                        ind.set(qn('w:firstLine'), '800')
+                        pPr.insert(0, ind)
+                # 添加空行分隔
+                doc.add_paragraph()
 
     # 保存文档
     doc.save(word_path)
