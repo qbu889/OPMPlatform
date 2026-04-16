@@ -164,7 +164,7 @@ const handleClean = async () => {
 
   loading.value = true
   try {
-    const response = await fetch('/clean-event', {
+    const response = await fetch('/api/clean-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -203,14 +203,35 @@ const handleCopy = async () => {
   }
   
   try {
-    await navigator.clipboard.writeText(cleanedData.value)
+    // 方法1：使用现代 Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(cleanedData.value)
+    } else {
+      // 方法2：降级方案 - 使用传统的 execCommand
+      const textarea = document.createElement('textarea')
+      textarea.value = cleanedData.value
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-999999px'
+      textarea.style.top = '-999999px'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+    
     copySuccess.value = true
+    ElMessage.success('已复制到剪贴板')
     setTimeout(() => {
       copySuccess.value = false
     }, 2000)
   } catch (error) {
     console.error('复制失败:', error)
-    ElMessage.error('复制失败')
+    ElMessage.error('复制失败，请手动选择文本复制')
   }
 }
 </script>

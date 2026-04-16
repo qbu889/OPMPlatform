@@ -100,6 +100,10 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      '/clean-event': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
       // SQL Formatter API 接口
       '/swagger': {
         target: BACKEND_URL,

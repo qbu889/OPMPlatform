@@ -11,7 +11,7 @@ def clean_event_page():
     """事件数据清洗页面"""
     return render_template('fpa/clean_event.html')
 
-@event_bp.route('/clean-event', methods=['POST'])
+@event_bp.route('/api/clean-event', methods=['POST'])
 def clean_event():
     """处理事件数据清洗请求"""
     try:
