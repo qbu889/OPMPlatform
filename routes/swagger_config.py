@@ -345,12 +345,14 @@ def generate_paths():
                 "responses": {"200": {"description": "批量更新成功"}}
             }
         },
-        "/fpa-rules/api/categories": {
+        "/api/category/list": {
             "get": {
                 "summary": "获取分类列表",
                 "tags": ["FPA功能点估算"],
                 "responses": {"200": {"description": "成功"}}
-            },
+            }
+        },
+        "/api/category/add": {
             "post": {
                 "summary": "新增分类",
                 "tags": ["FPA功能点估算"],
@@ -364,7 +366,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/categories/update": {
+        "/api/category/update": {
             "post": {
                 "summary": "更新分类",
                 "tags": ["FPA功能点估算"],
@@ -376,7 +378,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/categories/delete": {
+        "/api/category/delete": {
             "post": {
                 "summary": "删除分类",
                 "tags": ["FPA功能点估算"],
@@ -388,7 +390,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/adjustment-factors": {
+        "/adjustment/api/factors": {
             "get": {
                 "summary": "获取调整因子列表",
                 "tags": ["FPA功能点估算"],
@@ -405,7 +407,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/adjustment-factor/{factor_id}": {
+        "/adjustment/api/factor/{factor_id}": {
             "put": {
                 "summary": "更新调整因子",
                 "tags": ["FPA功能点估算"],
@@ -423,7 +425,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/import-excel": {
+        "/adjustment/api/import-excel": {
             "post": {
                 "summary": "从 Excel 导入调整因子",
                 "tags": ["FPA功能点估算"],
@@ -442,7 +444,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/calculate-score": {
+        "/adjustment-calc/api/calculate-score": {
             "post": {
                 "summary": "计算 FPA 分数",
                 "tags": ["FPA功能点估算"],
@@ -454,7 +456,7 @@ def generate_paths():
                 "responses": {"200": {"description": "成功"}}
             }
         },
-        "/fpa-rules/api/scale-timing-config": {
+        "/adjustment-calc/api/scale-timing-config": {
             "get": {
                 "summary": "获取规模计数时机配置",
                 "tags": ["FPA功能点估算"],

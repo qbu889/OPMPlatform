@@ -140,7 +140,7 @@ const convertFile = () => {
   const formData = new FormData()
   formData.append('file', selectedFile.value.raw)
 
-  fetch('/word-to-md/convert', {
+  fetch('/api/word-to-md/convert', {
     method: 'POST',
     body: formData,
   })

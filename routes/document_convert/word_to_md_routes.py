@@ -5,7 +5,7 @@ from docx import Document
 from markdownify import markdownify as md
 import io
 
-word_to_md_bp = Blueprint('word_to_md', __name__)
+word_to_md_bp = Blueprint('word_to_md', __name__, url_prefix='/api')
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'docx'}
