@@ -5,78 +5,114 @@
         <div class="card-header">
           <el-icon :size="24"><Document /></el-icon>
           <span style="margin-left: 10px; font-size: 18px; font-weight: 600;">ES 查询结果转 Excel</span>
+          <el-button type="primary" size="small" @click="goToMappingConfig" style="margin-left: auto;">
+            <el-icon><Setting /></el-icon>
+            映射中文字段配置
+          </el-button>
         </div>
       </template>
 
       <div class="content-area">
-        <!-- 上传区域 -->
-        <el-upload
-          class="upload-area"
-          drag
-          :auto-upload="false"
-          :on-change="handleFileChange"
-          :on-remove="handleFileRemove"
-          :file-list="fileList"
-          multiple
-          accept=".txt"
-        >
-          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-          <div class="el-upload__text">
-            拖拽文件到此处，或 <em>点击上传</em>
-          </div>
-          <template #tip>
-            <div class="el-upload__tip">
-              支持 .txt 格式（竖线分隔或 JSON 格式的 ES 查询结果），可上传多个文件
-            </div>
-          </template>
-        </el-upload>
-
-        <!-- 文件信息 -->
-        <div v-if="uploadedFiles.length > 0" class="file-info">
-          <el-alert
-            :title="`已上传 ${uploadedFiles.length} 个文件`"
-            type="success"
-            :closable="false"
-            show-icon
-          >
-            <template #default>
-              <div style="margin-top: 10px;">
-                <div v-for="(file, index) in uploadedFiles" :key="index" style="margin-bottom: 5px;">
-                  <el-tag size="small">{{ file.original_name }}</el-tag>
-                </div>
+        <!-- 输入方式 Tab -->
+        <el-tabs v-model="activeTab" type="border-card">
+          <!-- Tab 1: 文件上传 -->
+          <el-tab-pane label="文件上传" name="upload">
+            <el-upload
+              class="upload-area"
+              drag
+              :auto-upload="false"
+              :on-change="handleFileChange"
+              :on-remove="handleFileRemove"
+              :file-list="fileList"
+              multiple
+              accept=".txt,.json"
+            >
+              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+              <div class="el-upload__text">
+                拖拽文件到此处，或 <em>点击上传</em>
               </div>
-            </template>
-          </el-alert>
-        </div>
+              <template #tip>
+                <div class="el-upload__tip">
+                  支持 .txt（竖线分隔 / ES SQL 表格）和 .json（ES SQL 查询结果），可上传多个文件
+                </div>
+              </template>
+            </el-upload>
 
-        <!-- 上传按钮 -->
-        <div v-if="pendingFiles.length > 0" class="upload-buttons">
-          <el-button type="primary" :loading="uploading" @click="handleUploadAll">
-            <el-icon><UploadFilled /></el-icon>
-            上传全部文件 ({{ pendingFiles.length }} 个)
-          </el-button>
-        </div>
+            <!-- 文件信息 -->
+            <div v-if="uploadedFiles.length > 0" class="file-info">
+              <el-alert
+                :title="`已上传 ${uploadedFiles.length} 个文件`"
+                type="success"
+                :closable="false"
+                show-icon
+              >
+                <template #default>
+                  <div style="margin-top: 10px;">
+                    <div v-for="(file, index) in uploadedFiles" :key="index" style="margin-bottom: 5px;">
+                      <el-tag size="small">{{ file.original_name }}</el-tag>
+                    </div>
+                  </div>
+                </template>
+              </el-alert>
+            </div>
+
+            <!-- 上传按钮 -->
+            <div v-if="pendingFiles.length > 0" class="upload-buttons">
+              <el-button type="primary" :loading="uploading" @click="handleUploadAll">
+                <el-icon><UploadFilled /></el-icon>
+                上传全部文件 ({{ pendingFiles.length }} 个)
+              </el-button>
+            </div>
+          </el-tab-pane>
+
+          <!-- Tab 2: 文本粘贴 -->
+          <el-tab-pane label="文本粘贴" name="paste">
+            <el-input
+              v-model="pasteText"
+              type="textarea"
+              :rows="15"
+              placeholder="请粘贴 ES SQL 查询结果（支持表格格式、JSON 格式、竖线分隔格式）&#10;例如：POST /_sql?format=txt 返回的结果"
+              style="margin-bottom: 15px;"
+            />
+          </el-tab-pane>
+        </el-tabs>
 
         <!-- 操作按钮 -->
-        <div v-if="uploadedFiles.length > 0" class="action-buttons">
-          <el-button type="primary" :loading="previewLoading" @click="handlePreview">
-            <el-icon><View /></el-icon>
-            预览数据
-          </el-button>
+        <div class="action-buttons">
+          <!-- 文件模式按钮 -->
+          <template v-if="activeTab === 'upload'">
+            <el-button type="primary" :loading="previewLoading" :disabled="uploadedFiles.length === 0" @click="handlePreview">
+              <el-icon><View /></el-icon>
+              预览数据
+            </el-button>
+          </template>
           
           <!-- Excel 格式选择 -->
           <el-select v-model="excelFormat" placeholder="选择格式" style="width: 150px;">
-            <el-option label="XLS (兼容旧版)" value="xls" />
             <el-option label="XLSX (推荐)" value="xlsx" />
+            <el-option label="XLS (兼容旧版)" value="xls" />
           </el-select>
           
-          <el-button type="success" :loading="convertLoading" @click="handleConvert">
+          <!-- 中文字段名开关 -->
+          <el-checkbox v-model="useChineseNames" border>
+            映射中文字段名
+          </el-checkbox>
+          
+          <!-- 转换按钮（文件模式） -->
+          <el-button v-if="activeTab === 'upload'" type="success" :loading="convertLoading" :disabled="uploadedFiles.length === 0" @click="handleConvert">
             <el-icon><Download /></el-icon>
             转换为 Excel
           </el-button>
+          
+          <!-- 处理按钮（粘贴模式） -->
+          <el-button v-if="activeTab === 'paste'" type="success" :loading="pasteLoading" :disabled="!pasteText.trim()" @click="handlePaste">
+            <el-icon><Download /></el-icon>
+            处理并生成 Excel
+          </el-button>
+          
           <el-button type="info" @click="handleReset">
             <el-icon><RefreshLeft /></el-icon>
-            重新上传
+            重置
           </el-button>
         </div>
 
@@ -95,10 +131,10 @@
             style="width: 100%"
           >
             <el-table-column
-              v-for="col in columns"
-              :key="col"
-              :prop="col"
-              :label="col"
+              v-for="col in displayColumns"
+              :key="col.key"
+              :prop="col.key"
+              :label="col.label"
               min-width="150"
               show-overflow-tooltip
             />
@@ -131,23 +167,21 @@
           使用说明
         </el-divider>
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="支持格式">
-            <el-tag type="info">竖线分隔格式</el-tag>
-            <el-tag type="info" style="margin-left: 5px">JSON 格式（ES SQL 查询结果）</el-tag>
+          <el-descriptions-item label="文件上传">
+            支持 .txt（竖线分隔 / ES SQL 表格）和 .json（ES SQL 查询结果）
+          </el-descriptions-item>
+          <el-descriptions-item label="文本粘贴">
+            直接粘贴 ES SQL 查询结果（POST /_sql?format=txt 返回的表格格式）
           </el-descriptions-item>
           <el-descriptions-item label="自动检测">
-            系统会自动识别文件格式并选择合适的解析方式
+            系统会自动识别输入格式并选择合适的解析方式
           </el-descriptions-item>
           <el-descriptions-item label="字段映射">
-            自动将 ES 英文字段映射为中文标准字段
-          </el-descriptions-item>
-          <el-descriptions-item label="输出格式">
-            <el-tag type="warning">XLS (兼容旧版 - 默认)</el-tag>
-            <el-tag type="success" style="margin-left: 5px">XLSX (推荐)</el-tag>
+            勾选「映射中文字段名」后，Excel 表头将显示中文名称（基于数据库配置）
           </el-descriptions-item>
           <el-descriptions-item label="时间格式">
-            自动将 ISO 8601 格式转换为标准格式（去掉毫秒）：<br>
-            <code>2026-04-09T03:47:03.000Z</code> → <code>2026-04-09 03:47:03</code>
+            自动将 ISO 8601 格式转换为标准格式：<br>
+            <code>2026-04-16T10:04:21.000Z</code> → <code>2026-04-16 10:04:21</code>
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -156,21 +190,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Document, UploadFilled, View, Download, RefreshLeft, List, InfoFilled } from '@element-plus/icons-vue'
+import { Document, UploadFilled, View, Download, RefreshLeft, List, InfoFilled, Setting } from '@element-plus/icons-vue'
 
+const router = useRouter()
+
+const activeTab = ref('upload')  // 当前激活的 Tab
 const uploadedFiles = ref([])
 const pendingFiles = ref([])
 const fileList = ref([])
+const pasteText = ref('')  // 粘贴的文本内容
 const uploading = ref(false)
 const previewLoading = ref(false)
 const convertLoading = ref(false)
+const pasteLoading = ref(false)  // 粘贴处理加载状态
 const previewData = ref([])
 const columns = ref([])
 const totalCount = ref(0)
 const convertResult = ref(null)
-const excelFormat = ref('xls')  // 默认 xls 格式（兼容达梦数据库）
+const excelFormat = ref('xlsx')  // 默认 xlsx 格式
+const useChineseNames = ref(true)  // 是否使用中文字段名
+const fieldMapping = ref({})  // 字段映射关系 {english: chinese}
 
 // 计算后端 API 基础 URL
 const apiBaseUrl = computed(() => {
@@ -187,6 +229,51 @@ const uploadUrl = computed(() => {
 const uploadHeaders = computed(() => ({
   'Accept': 'application/json'
 }))
+
+// 加载字段映射关系
+const loadFieldMapping = async () => {
+  try {
+    const response = await fetch('/api/es-field-mapping/all')
+    const result = await response.json()
+    if (result.success) {
+      fieldMapping.value = result.data
+    }
+  } catch (error) {
+    console.error('加载字段映射失败:', error)
+  }
+}
+
+// 计算是否可以操作（有上传文件或粘贴文本）
+const canOperate = computed(() => {
+  return (activeTab.value === 'upload' && uploadedFiles.value.length > 0) ||
+         (activeTab.value === 'paste' && pasteText.value.trim().length > 0)
+})
+
+// 显示列（根据是否映射中文进行转换）
+const displayColumns = computed(() => {
+  if (!useChineseNames.value || !columns.value.length) {
+    return columns.value.map(col => ({ key: col, label: col }))
+  }
+  
+  // 使用字段映射关系转换列名
+  return columns.value.map(col => {
+    // 先尝试直接匹配
+    if (fieldMapping.value[col]) {
+      return { key: col, label: fieldMapping.value[col] }
+    }
+    
+    // 如果包含点号，尝试匹配点号后面的部分
+    if (col.includes('.')) {
+      const simpleName = col.split('.').pop()
+      if (fieldMapping.value[simpleName]) {
+        return { key: col, label: fieldMapping.value[simpleName] }
+      }
+    }
+    
+    // 保持原名
+    return { key: col, label: col }
+  })
+})
 
 const handleFileChange = (file, files) => {
   fileList.value = files
@@ -236,30 +323,46 @@ const handleUploadAll = async () => {
 }
 
 const handlePreview = async () => {
-  if (uploadedFiles.value.length === 0) {
-    ElMessage.warning('请先上传文件')
+  if (!canOperate.value) {
+    ElMessage.warning('请先上传文件或粘贴文本')
     return
   }
 
   previewLoading.value = true
   try {
-    // 只预览第一个文件
-    const firstFile = uploadedFiles.value[0]
-    const response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/preview`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filename: firstFile.filename,
-        limit: 10
+    let response, result
+    
+    if (activeTab.value === 'upload') {
+      // 文件上传模式：预览第一个文件
+      const firstFile = uploadedFiles.value[0]
+      response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: firstFile.filename,
+          limit: 10
+        })
       })
-    })
-    const result = await response.json()
+    } else {
+      // 文本粘贴模式
+      response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/paste`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: pasteText.value,
+          format: excelFormat.value,
+          preview_only: true  // 仅预览，不生成文件
+        })
+      })
+    }
+    
+    result = await response.json()
 
     if (result.success) {
-      previewData.value = result.data
-      columns.value = result.columns
-      totalCount.value = result.total_count
-      ElMessage.success(`预览成功，共 ${result.total_count} 条数据（仅显示第一个文件）`)
+      previewData.value = result.data || []
+      columns.value = result.columns || []
+      totalCount.value = result.total_count || result.data_count || 0
+      ElMessage.success(`预览成功，共 ${totalCount.value} 条数据`)
     } else {
       ElMessage.error(result.message || '预览失败')
     }
@@ -272,29 +375,47 @@ const handlePreview = async () => {
 }
 
 const handleConvert = async () => {
-  if (uploadedFiles.value.length === 0) {
-    ElMessage.warning('请先上传文件')
+  if (!canOperate.value) {
+    ElMessage.warning('请先上传文件或粘贴文本')
     return
   }
 
   convertLoading.value = true
   try {
-    const filenames = uploadedFiles.value.map(f => f.filename)
-    const response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/convert`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filenames: filenames,
-        format: excelFormat.value  // 传递格式参数
+    let response, result
+    
+    if (activeTab.value === 'upload') {
+      // 文件上传模式
+      const filenames = uploadedFiles.value.map(f => f.filename)
+      response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filenames: filenames,
+          format: excelFormat.value,
+          use_chinese_names: useChineseNames.value  // 传递中文字段名开关
+        })
       })
-    })
-    const result = await response.json()
+    } else {
+      // 文本粘贴模式
+      response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/paste`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: pasteText.value,
+          format: excelFormat.value,
+          use_chinese_names: useChineseNames.value  // 传递中文字段名开关
+        })
+      })
+    }
+    
+    result = await response.json()
 
     if (result.success) {
       convertResult.value = result
-      const msg = uploadedFiles.value.length > 1 
+      const msg = activeTab.value === 'upload' && uploadedFiles.value.length > 1
         ? `转换成功！合并了 ${result.file_count} 个文件，共 ${result.data_count} 条数据`
-        : `转换成功！共处理 ${result.data_count} 条数据`
+        : `转换成功！共处理 ${result.data_count} 条数据，${result.column_count} 个字段`
       ElMessage.success(msg)
     } else {
       ElMessage.error(result.message || '转换失败')
@@ -317,13 +438,60 @@ const handleDownload = () => {
   window.open(downloadUrl, '_blank')
 }
 
+const handlePaste = async () => {
+  if (!pasteText.value.trim()) {
+    ElMessage.warning('请先粘贴文本内容')
+    return
+  }
+
+  pasteLoading.value = true
+  try {
+    const response = await fetch(`${apiBaseUrl.value}/api/es-to-excel/paste`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: pasteText.value,
+        format: excelFormat.value,
+        use_chinese_names: useChineseNames.value
+      })
+    })
+    const result = await response.json()
+
+    if (result.success) {
+      convertResult.value = result
+      ElMessage.success(`处理成功！共 ${result.data_count} 条数据，${result.column_count} 个字段`)
+    } else {
+      ElMessage.error(result.message || '处理失败')
+    }
+  } catch (error) {
+    console.error('处理错误:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  } finally {
+    pasteLoading.value = false
+  }
+}
+
 const handleReset = () => {
+  activeTab.value = 'upload'
   uploadedFiles.value = []
+  pendingFiles.value = []
+  fileList.value = []
+  pasteText.value = ''
   previewData.value = []
   columns.value = []
   totalCount.value = 0
   convertResult.value = null
 }
+
+// 跳转到字段映射配置页面
+const goToMappingConfig = () => {
+  router.push('/es-field-mapping')
+}
+
+// 组件挂载时加载字段映射
+onMounted(() => {
+  loadFieldMapping()
+})
 </script>
 
 <style scoped>
@@ -359,6 +527,8 @@ const handleReset = () => {
   margin: 20px 0;
   display: flex;
   gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .preview-section {
@@ -367,6 +537,18 @@ const handleReset = () => {
 
 .result-section {
   margin-top: 20px;
+}
+
+.paste-textarea {
+  margin-bottom: 15px;
+}
+
+.paste-tips {
+  margin-top: 10px;
+}
+
+.input-tabs {
+  margin-bottom: 20px;
 }
 
 .el-upload__tip {

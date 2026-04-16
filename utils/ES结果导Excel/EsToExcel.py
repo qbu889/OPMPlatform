@@ -27,35 +27,41 @@ TARGET_COLUMNS = [
 
 # -------------------------- 核心处理逻辑 --------------------------
 def detect_file_format(file_path):
-    """检测文件格式：竖线分隔 或 JSON"""
-    # 尝试多种编码，优先尝试中文编码
+    """检测文件格式：ES SQL表格(txt) / 竖线分隔 / JSON"""
     encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin-1']
     
     for encoding in encodings:
         try:
             with open(file_path, "r", encoding=encoding) as f:
-                first_line = f.readline().strip()
-                # 跳过注释行
-                while first_line.startswith("#!"):
-                    first_line = f.readline().strip()
+                lines = []
+                for line in f:
+                    stripped = line.strip()
+                    if stripped and not stripped.startswith("#!"):
+                        lines.append(stripped)
+                    if len(lines) >= 3:
+                        break
                 
+                if not lines:
+                    return "json"
+                
+                first_line = lines[0]
+                
+                # 检测 ES SQL 表格格式（包含 ───+─── 或 -+- 分隔线）
+                if len(lines) >= 2:
+                    second_line = lines[1]
+                    if re.match(r'^[-+\s]+$', second_line) and '|' in first_line:
+                        return "es_sql_table"
+                
+                # 检测 JSON 格式
                 if first_line.startswith("{"):
                     return "json"
-                else:
-                    return "pipe_separated"
+                
+                # 默认为竖线分隔
+                return "pipe_separated"
         except (UnicodeDecodeError, Exception):
             continue
     
-    # 如果所有编码都失败，默认使用 latin-1（不会抛出解码错误）
-    with open(file_path, "r", encoding="latin-1") as f:
-        first_line = f.readline().strip()
-        while first_line.startswith("#!"):
-            first_line = f.readline().strip()
-        
-        if first_line.startswith("{"):
-            return "json"
-        else:
-            return "pipe_separated"
+    return "pipe_separated"
 
 
 def parse_json_format(file_path):
@@ -223,6 +229,103 @@ def _auto_fix_json_file(input_path):
         return None
 
 
+def parse_es_sql_table(file_path):
+    """解析 ES SQL 表格格式（POST /_sql?format=txt 返回的结果）
+    示例格式：
+      CREATION_EVENT_TIME   |     EVENT_FP     |  ORDER_ID  
+    ------------------------+------------------+------------
+    2026-04-16T10:04:21.000Z|2681494263_...    |FJ-076-...
+    """
+    encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'latin-1']
+    lines = None
+    used_encoding = None
+    
+    for encoding in encodings:
+        try:
+            with open(file_path, "r", encoding=encoding) as f:
+                lines = [line.rstrip('\n') for line in f if line.strip() and not line.startswith("#!")]
+            used_encoding = encoding
+            break
+        except (UnicodeDecodeError, Exception):
+            continue
+    
+    if lines is None:
+        with open(file_path, "r", encoding="latin-1") as f:
+            lines = [line.rstrip('\n') for line in f if line.strip() and not line.startswith("#!")]
+        used_encoding = 'latin-1'
+    
+    print(f"📖 使用编码: {used_encoding}")
+    
+    # 找到分隔线位置（包含 ---+--- 的行）
+    separator_idx = -1
+    for i, line in enumerate(lines):
+        if re.match(r'^[-+\s]+$', line) and '+' in line:
+            separator_idx = i
+            break
+    
+    if separator_idx == -1:
+        raise ValueError("未找到表格分隔线，无法解析 ES SQL 表格格式")
+    
+    # 解析表头（分隔线上一行）
+    header_line = lines[separator_idx - 1]
+    # 按 | 分割表头，去除首尾空格
+    columns = [col.strip() for col in header_line.split('|') if col.strip()]
+    
+    # 解析数据行（分隔线之后的所有行）
+    data_rows = []
+    for line in lines[separator_idx + 1:]:
+        # 跳过空行和分隔线
+        if not line.strip() or re.match(r'^[-+\s]+$', line):
+            continue
+        
+        # 按 | 分割数据，注意处理尾部多余空格
+        parts = line.split('|')
+        row = []
+        for i, col in enumerate(parts):
+            if i < len(columns):
+                row.append(col.strip())
+        
+        # 只保留列数匹配的行
+        if len(row) == len(columns):
+            data_rows.append(row)
+    
+    # 创建 DataFrame
+    df = pd.DataFrame(data_rows, columns=columns)
+    df = df.fillna("")
+    
+    # 格式化时间字段
+    _format_time_columns(df)
+    
+    print(f"✅ [ES SQL 表格] 解析成功：{len(columns)} 个字段，{len(data_rows)} 条数据")
+    return df
+
+
+def _format_time_columns(df):
+    """格式化 DataFrame 中的时间字段（ISO 8601 -> 标准格式）"""
+    time_columns_count = 0
+    for col in df.columns:
+        col_dtype = str(df[col].dtype)
+        if col_dtype in ['object', 'str']:
+            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
+                try:
+                    def format_time(x):
+                        if not x or x == '':
+                            return x
+                        time_str = str(x).replace('T', ' ').replace('Z', '')
+                        if '.' in time_str:
+                            time_str = time_str.split('.')[0]
+                        return time_str
+                    
+                    df[col] = df[col].apply(format_time)
+                    time_columns_count += 1
+                except Exception:
+                    pass
+    
+    if time_columns_count > 0:
+        print(f"✅ 共处理 {time_columns_count} 个时间字段")
+
+
 def parse_vertical_txt(file_path):
     """解析竖线|分隔的告警文本，返回清洗后的DataFrame"""
     data_rows = []
@@ -369,6 +472,8 @@ def parse_es_result(file_path):
     
     if file_format == "json":
         return parse_json_format(file_path)
+    elif file_format == "es_sql_table":
+        return parse_es_sql_table(file_path)
     else:
         return parse_vertical_txt(file_path)
 

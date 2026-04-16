@@ -33,6 +33,7 @@ from routes.document_convert.markdown_upload_routes import markdown_upload_bp
 from routes.document_convert.word_to_md_routes import word_to_md_bp
 from routes.document_convert.cosmic_routes import cosmic_bp
 from routes.document_convert.es_to_excel_routes import es_to_excel_bp
+from routes.document_convert.es_field_mapping_routes import es_field_mapping_bp
 from routes.document_convert.clean_event_routes import clean_event_bp
 
 # 排班管理模块
@@ -208,6 +209,7 @@ def create_app(config_name='development'):
         word_to_md_bp,
         cosmic_bp,  # 表格转 COSMIC
         es_to_excel_bp,  # ES 查询结果转 Excel
+        es_field_mapping_bp,  # ES 字段映射管理
         clean_event_bp,  # 事件数据清洗
             
         # 排班管理模块（蓝图已定义前缀）
@@ -244,6 +246,16 @@ def create_app(config_name='development'):
         
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
+    
+    # ==========================================================================
+    # 初始化 ES 字段映射
+    # ==========================================================================
+    from routes.document_convert.es_to_excel_routes import init_field_mapping
+    try:
+        init_field_mapping(app)
+        app_logger.info("✅ ES 字段映射初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  ES 字段映射初始化失败: {e}")
     
     # ==========================================================================
     # 注册中间件

@@ -10,14 +10,14 @@
     <el-card class="tab-card" shadow="hover">
       <el-tabs v-model="activeTab" type="border-card" @tab-change="handleTabChange">
         <!-- 旧功能 Tab -->
-        <el-tab-pane label="数据格式化（旧版）" name="legacy-format">
+        <el-tab-pane label="数据格式化（单条）" name="legacy-format">
           <div class="tab-content">
             <CleanEventPage />
           </div>
         </el-tab-pane>
 
         <!-- 新功能 Tab -->
-        <el-tab-pane label="ES 数据处理" name="es-processing">
+        <el-tab-pane label="批量生成" name="es-processing">
           <div class="tab-content">
             <!-- 输入方式选择 -->
             <el-card class="input-card" shadow="never">

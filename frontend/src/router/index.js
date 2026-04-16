@@ -107,6 +107,12 @@ const routes = [
     meta: { title: 'ES 查询结果转 Excel', hidden: true }
   },
   {
+    path: '/es-field-mapping',
+    name: 'EsFieldMapping',
+    component: () => import('../views/tools/EsFieldMapping.vue'),
+    meta: { title: 'ES 字段映射配置', hidden: true }
+  },
+  {
     path: '/adjustment-calculator',
     name: 'AdjustmentCalculator',
     component: () => import('../views/tools/AdjustmentCalculator.vue'),
