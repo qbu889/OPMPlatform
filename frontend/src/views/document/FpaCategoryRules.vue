@@ -3,7 +3,12 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <span><el-icon><Document /></el-icon> FPA 类别规则管理</span>
+          <div class="header-left">
+            <el-button type="text" @click="goBack" class="back-btn">
+              <el-icon><ArrowLeft /></el-icon> 返回
+            </el-button>
+            <span class="title-text"><el-icon><Document /></el-icon> FPA 类别规则管理</span>
+          </div>
           <el-button type="primary" @click="showAddDialog">
             <el-icon><Plus /></el-icon> 添加规则
           </el-button>
@@ -13,7 +18,7 @@
       <!-- 筛选条件 -->
       <el-form :inline="true" class="filter-form">
         <el-form-item label="功能点类型">
-          <el-select v-model="filters.category" placeholder="全部" clearable @change="loadRules">
+          <el-select v-model="filters.category" placeholder="全部" clearable @change="loadRules" style="width: 150px;">
             <el-option label="全部" value="" />
             <el-option label="EI" value="EI" />
             <el-option label="EO" value="EO" />
@@ -26,10 +31,10 @@
           <el-input v-model="filters.keyword" placeholder="搜索关键词" clearable @keyup.enter="loadRules" />
         </el-form-item>
         <el-form-item label="启用状态">
-          <el-select v-model="filters.is_active" placeholder="全部" clearable @change="loadRules">
+          <el-select v-model="filters.is_active" placeholder="全部" clearable @change="loadRules" style="width: 120px;">
             <el-option label="全部" value="" />
-            <el-option label="启用" :value="true" />
-            <el-option label="禁用" :value="false" />
+            <el-option label="启用" value="true" />
+            <el-option label="禁用" value="false" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -134,8 +139,16 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, Search, Document } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Search, Document, ArrowLeft } from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+// 返回上一页
+const goBack = () => {
+  router.push('/fpa-generator')
+}
 
 const rules = ref([])
 const dialogVisible = ref(false)
@@ -177,13 +190,19 @@ const validateRules = {
 // 加载规则列表
 const loadRules = async () => {
   try {
-    const params = new URLSearchParams({
+    // 构建参数对象，只包含有值的筛选条件
+    const params = {
       page: pagination.page,
       per_page: pagination.per_page,
-      ...filters
-    })
+    }
     
-    const response = await fetch(`/fpa-rules/api/rules?${params}`)
+    // 只添加非空字符串的参数
+    if (filters.category) params.category = filters.category
+    if (filters.keyword) params.keyword = filters.keyword
+    if (filters.is_active !== '') params.is_active = filters.is_active === 'true' ? true : false
+    
+    const queryString = new URLSearchParams(params).toString()
+    const response = await fetch(`/fpa-rules/api/rules?${queryString}`)
     const result = await response.json()
     
     if (result.rules) {
@@ -200,11 +219,9 @@ const loadRules = async () => {
 
 // 重置筛选
 const resetFilters = () => {
-  Object.assign(filters, {
-    category: '',
-    keyword: '',
-    is_active: ''
-  })
+  filters.category = ''
+  filters.keyword = ''
+  filters.is_active = ''
   pagination.page = 1
   loadRules()
 }
@@ -364,6 +381,31 @@ onMounted(() => {
   align-items: center;
   font-size: 16px;
   font-weight: bold;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  padding: 4px 8px;
+  color: #606266;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-btn:hover {
+  color: #409eff;
+}
+
+.title-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-header .el-icon {

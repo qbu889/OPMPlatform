@@ -50,6 +50,12 @@ const routes = [
     component: () => import('../views/document/FpaGenerator.vue'),
     meta: { title: 'FPA 预估表', hidden: true }
   },
+  {
+    path: '/excel-to-cosmic',
+    name: 'ExcelToCosmic',
+    component: () => import('../views/document/ExcelToCosmic.vue'),
+    meta: { title: 'Excel 转 COSMIC', hidden: true }
+  },
   // 智能系统
   {
     path: '/spreadsheet',
@@ -129,7 +135,7 @@ const routes = [
     path: '/fpa-category-rules',
     name: 'FpaCategoryRules',
     component: () => import('../views/document/FpaCategoryRules.vue'),
-    meta: { title: 'FPA 类别规则管理', hidden: true }
+    meta: { title: 'FPA 类别规则管理' }
   },
   // 智能客服
   {

@@ -95,12 +95,51 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      // Clean Event API 接口
-      '/api/clean-event': {
+      // Clean Event API 接口（已由 /api 规则代理，无需单独配置）
+      // FPA Generator API 接口
+      '/fpa-generator/api': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      '/clean-event': {
+      '/fpa-generator/download': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/fpa-generator/task': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // FPA Rules (Category Rules)
+      '/fpa-rules': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // Adjustment Factor
+      '/adjustment': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/adjustment-calc': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // Chatbot
+      '/chatbot': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // Excel2Word
+      '/excel2word': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // Word to Excel
+      '/word-to-excel': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // Schedule Config
+      '/schedule-config': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
