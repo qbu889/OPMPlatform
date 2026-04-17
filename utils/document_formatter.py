@@ -58,7 +58,7 @@ def apply_format_to_document(source_doc_path, template_format, output_path):
         formatted_doc = Document()
 
         # 复制模板的基础样式
-        template_doc = Document('templates/功能需求_Demo模板.docx')
+        template_doc = Document('templates（弃用）/功能需求_Demo模板.docx')
         formatted_doc.styles = template_doc.styles
 
         # 处理每个段落
@@ -141,7 +141,7 @@ def enhanced_apply_format_to_document(source_doc_path, template_format, output_p
         formatted_doc = Document()
 
         # 复制模板样式
-        template_doc = Document('templates/功能需求_Demo模板.docx')
+        template_doc = Document('templates（弃用）/功能需求_Demo模板.docx')
         formatted_doc.styles = template_doc.styles
 
         # 记录处理统计信息

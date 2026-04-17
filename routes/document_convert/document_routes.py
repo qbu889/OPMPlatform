@@ -58,7 +58,7 @@ def inspect_document(doc_path):
 def download_demo_template():
     logger.info("开始处理下载Demo模板请求")
     # 修正路径为相对路径
-    template_path = 'templates/功能需求_Demo模板.docx'
+    template_path = 'templates（弃用）/功能需求_Demo模板.docx'
     if os.path.exists(template_path):
         logger.info(f"成功找到模板文件: {template_path}")
         return send_file(template_path, as_attachment=True, download_name='功能需求_Demo模板.docx')
@@ -233,7 +233,7 @@ def format_check():
     logger.info(f"临时文件已保存至: {temp_path}")
 
     # 标准模板路径
-    standard_template_path = 'templates/功能需求_Demo模板.docx'
+    standard_template_path = 'templates（弃用）/功能需求_Demo模板.docx'
     # 执行格式匹配
     match_result = match_document_format(temp_path, standard_template_path)
 
@@ -249,7 +249,7 @@ def format_document():
 
     try:
         # 检查模板是否存在
-        template_path = 'templates/功能需求_Demo模板.docx'
+        template_path = 'templates（弃用）/功能需求_Demo模板.docx'
         if not os.path.exists(template_path):
             logger.warning("Demo模板不存在")
             return render_template('document_formatter.html',
@@ -315,7 +315,7 @@ def download_formatted_doc():
 def document_formatter():
     """文档格式化页面"""
     logger.info("访问文档格式化页面")
-    template_exists = os.path.exists('templates/功能需求_Demo模板.docx')
+    template_exists = os.path.exists('templates（弃用）/功能需求_Demo模板.docx')
     logger.info(f"模板存在状态: {template_exists}")
     return render_template('document_formatter.html',
                            template_exists=template_exists,

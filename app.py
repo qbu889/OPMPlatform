@@ -166,7 +166,7 @@ def create_app(config_name='development'):
     app = Flask(
         __name__,
         static_folder='static',
-        template_folder='templates'
+        template_folder='templates（弃用）'
     )
     
     # 启用 CORS（允许跨域请求）
@@ -385,7 +385,7 @@ def handle_404(error):
     404 错误处理 - 如果是前端路由，返回 index.html
     """
     # 如果是 API 请求，返回 JSON 404
-    if request.path.startswith('/api/'):
+    if '/api/' in request.path:
         return jsonify({'error': 'Not found', 'path': request.path}), 404
     
     # 如果是静态资源请求（JS/CSS/图片等），不要返回 index.html

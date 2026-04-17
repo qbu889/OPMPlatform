@@ -13,7 +13,7 @@
 /offline_packages/click-8.1.8-py3-none-any.whl
 /.idea/easycode/codebase-v2.xml
 /offline_packages/distro-1.9.0-py3-none-any.whl
-/templates/Dockerfile
+/templates（弃用）/Dockerfile
 /.idea/easycode.ignore
 /offline_packages/exceptiongroup-1.3.1-py3-none-any.whl
 /offline_packages/flask-3.0.3-py3-none-any.whl
@@ -53,7 +53,7 @@
 /offline_packages/werkzeug-3.0.6-py3-none-any.whl
 /offline_packages/wtforms-3.1.2-py3-none-any.whl
 /offline_packages/zipp-3.20.2-py3-none-any.whl
-/templates/~$mplate.docx
+/templates（弃用）/~$mplate.docx
 /uploads/excel_input/工作簿2_1765247592647.xlsx
 /uploads/excel_input/工作簿2_1765247617163.xlsx
 /uploads/excel_input/总cosmic_1765247859169.xlsx

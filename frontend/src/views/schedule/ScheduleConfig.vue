@@ -12,6 +12,64 @@
     <!-- 主卡片 -->
     <el-card class="main-card" shadow="hover">
       <el-tabs v-model="activeTab">
+        <!-- 排班查询标签页 -->
+        <el-tab-pane label="排班查询" name="query">
+          <el-card shadow="hover">
+            <template #header>
+              <div class="flex justify-between items-center">
+                <span><el-icon><Search /></el-icon> 排班查询</span>
+                <div>
+                  <el-date-picker 
+                    v-model="scheduleQuery.startDate" 
+                    type="date" 
+                    placeholder="开始日期"
+                    size="small"
+                  />
+                  <span class="mx-2">至</span>
+                  <el-date-picker 
+                    v-model="scheduleQuery.endDate" 
+                    type="date" 
+                    placeholder="结束日期"
+                    size="small"
+                  />
+                  <el-button type="primary" size="small" @click="searchSchedule" class="ml-2">
+                    <el-icon><Search /></el-icon> 查询
+                  </el-button>
+                  <el-button type="success" size="small" @click="showExportDialog" class="ml-2">
+                    <el-icon><Download /></el-icon> 导出
+                  </el-button>
+                  <el-button type="primary" size="small" @click="showDingTalkDialog" class="ml-2">
+                    <el-icon><Promotion /></el-icon> 钉钉推送
+                  </el-button>
+                  <el-button type="warning" size="small" @click="importSchedule" class="ml-2">
+                    <el-icon><Upload /></el-icon> 导入 CSV
+                  </el-button>
+                </div>
+              </div>
+            </template>
+            <el-table 
+              :data="displayScheduleData" 
+              border 
+              v-loading="scheduleLoading"
+              class="schedule-table"
+              :row-class-name="getRowClassName"
+            >
+              <el-table-column prop="date" label="日期" width="120" />
+              <el-table-column prop="weekday" label="星期" width="80" />
+              <el-table-column prop="timeSlot" label="时段" width="150" />
+              <el-table-column prop="staffDisplay" label="人员安排" min-width="200">
+                <template #default="{ row }">
+                  <span class="font-medium">{{ row.staffDisplay }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="备注" min-width="150" />
+            </el-table>
+            <div v-if="scheduleRecords.length === 0 && !scheduleLoading" class="text-center text-gray-500 py-4 mt-3">
+              暂无排班记录
+            </div>
+          </el-card>
+        </el-tab-pane>
+
         <!-- 人员配置标签页 -->
         <el-tab-pane label="人员配置" name="staff">
           <el-row :gutter="20">
@@ -313,62 +371,178 @@
             </el-col>
           </el-row>
         </el-tab-pane>
-
-        <!-- 排班查询标签页 -->
-        <el-tab-pane label="排班查询" name="query">
-          <el-card shadow="hover">
-            <template #header>
-              <div class="flex justify-between items-center">
-                <span><el-icon><Search /></el-icon> 排班查询</span>
-                <div>
-                  <el-date-picker 
-                    v-model="scheduleQuery.startDate" 
-                    type="date" 
-                    placeholder="开始日期"
-                    size="small"
-                  />
-                  <span class="mx-2">至</span>
-                  <el-date-picker 
-                    v-model="scheduleQuery.endDate" 
-                    type="date" 
-                    placeholder="结束日期"
-                    size="small"
-                  />
-                  <el-button type="primary" size="small" @click="searchSchedule" class="ml-2">
-                    <el-icon><Search /></el-icon> 查询
-                  </el-button>
-                  <el-button type="success" size="small" @click="exportSchedule" class="ml-2">
-                    <el-icon><Download /></el-icon> 导出
-                  </el-button>
-                  <el-button type="warning" size="small" @click="importSchedule" class="ml-2">
-                    <el-icon><Upload /></el-icon> 导入 CSV
-                  </el-button>
-                </div>
-              </div>
-            </template>
-            <el-table 
-              :data="displayScheduleData" 
-              border 
-              v-loading="scheduleLoading"
-              class="schedule-table"
-              :row-class-name="getRowClassName"
-            >
-              <el-table-column prop="date" label="日期" width="120" />
-              <el-table-column prop="weekday" label="星期" width="80" />
-              <el-table-column prop="timeSlot" label="时段" width="150" />
-              <el-table-column prop="staffDisplay" label="人员安排" min-width="200">
-                <template #default="{ row }">
-                  <span class="font-medium">{{ row.staffDisplay }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="备注" min-width="150" />
-            </el-table>
-            <div v-if="scheduleRecords.length === 0 && !scheduleLoading" class="text-center text-gray-500 py-4 mt-3">
-              暂无排班记录
-            </div>
-          </el-card>
-        </el-tab-pane>
       </el-tabs>
+    </el-card>
+
+    <!-- 导出格式选择对话框 -->
+    <el-dialog
+      v-model="exportDialogVisible"
+      title="选择导出格式"
+      width="400px"
+    >
+      <el-radio-group v-model="exportFormat" size="large">
+        <el-radio label="excel">Excel (.xlsx)</el-radio>
+        <el-radio label="csv">CSV (.csv)</el-radio>
+      </el-radio-group>
+      <template #footer>
+        <el-button @click="exportDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">确定导出</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 钉钉推送对话框 -->
+    <el-dialog
+      v-model="dingtalkDialogVisible"
+      title="钉钉消息推送"
+      width="600px"
+    >
+      <el-form label-width="120px">
+        <el-form-item label="Webhook 地址">
+          <el-input 
+            v-model="dingtalkForm.webhook" 
+            placeholder="请输入钉钉机器人 Webhook 地址"
+            type="textarea"
+            :rows="2"
+          />
+        </el-form-item>
+        
+        <el-form-item label="推送时段">
+          <el-checkbox-group v-model="dingtalkForm.timeSlots">
+            <el-checkbox label="8:00～9:00">8:00～9:00</el-checkbox>
+            <el-checkbox label="8:00～12:00">8:00～12:00</el-checkbox>
+            <el-checkbox label="9:00～12:00">9:00～12:00</el-checkbox>
+            <el-checkbox label="13:30～17:30">13:30～17:30</el-checkbox>
+            <el-checkbox label="13:30～18:00">13:30～18:00</el-checkbox>
+            <el-checkbox label="17:30～21:30">17:30～21:30</el-checkbox>
+            <el-checkbox label="18:00～21:00">18:00～21:00</el-checkbox>
+          </el-checkbox-group>
+          <div class="text-sm text-gray-500 mt-2">不选则推送全部时段</div>
+        </el-form-item>
+        
+        <el-form-item label="推送日期范围">
+          <div>{{ formatDateValue(scheduleQuery.startDate) }} 至 {{ formatDateValue(scheduleQuery.endDate) }}</div>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="dingtalkDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmDingTalkPush" :loading="dingtalkLoading">
+          确认推送
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 定时推送配置对话框 -->
+    <el-dialog
+      v-model="scheduleConfigDialogVisible"
+      title="定时推送配置"
+      width="700px"
+    >
+      <el-form :model="scheduleConfigForm" label-width="120px">
+        <el-form-item label="Webhook 地址" required>
+          <el-input 
+            v-model="scheduleConfigForm.webhook" 
+            placeholder="请输入钉钉机器人 Webhook 地址"
+            type="textarea"
+            :rows="2"
+          />
+        </el-form-item>
+        
+        <el-form-item label="描述">
+          <el-input v-model="scheduleConfigForm.description" placeholder="例如：工作日早晚排班提醒" />
+        </el-form-item>
+        
+        <el-form-item label="推送时段">
+          <el-checkbox-group v-model="scheduleConfigForm.timeSlots">
+            <el-checkbox label="8:00～9:00">8:00～9:00</el-checkbox>
+            <el-checkbox label="8:00～12:00">8:00～12:00</el-checkbox>
+            <el-checkbox label="9:00～12:00">9:00～12:00</el-checkbox>
+            <el-checkbox label="13:30～17:30">13:30～17:30</el-checkbox>
+            <el-checkbox label="13:30～18:00">13:30～18:00</el-checkbox>
+            <el-checkbox label="17:30～21:30">17:30～21:30</el-checkbox>
+            <el-checkbox label="18:00～21:00">18:00～21:00</el-checkbox>
+          </el-checkbox-group>
+          <div class="text-sm text-gray-500 mt-2">不选则推送全部时段</div>
+        </el-form-item>
+        
+        <el-form-item label="推送时间" required>
+          <div class="mb-2">
+            <el-tag 
+              v-for="(time, index) in scheduleConfigForm.scheduleTimes" 
+              :key="index"
+              closable
+              @close="removeScheduleTime(index)"
+              class="mr-2 mb-2"
+            >
+              {{ time }}
+            </el-tag>
+          </div>
+          <el-time-picker
+            v-model="newScheduleTime"
+            format="HH:mm"
+            value-format="HH:mm"
+            placeholder="选择推送时间"
+            style="width: 150px;"
+          />
+          <el-button type="primary" size="small" @click="addScheduleTime" class="ml-2">
+            添加时间
+          </el-button>
+          <div class="text-sm text-gray-500 mt-2">例如：08:00、09:00、18:00，系统将每天在这些时间自动推送</div>
+        </el-form-item>
+        
+        <el-form-item label="启用状态">
+          <el-switch v-model="scheduleConfigForm.enabled" />
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="scheduleConfigDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveScheduleConfig" :loading="scheduleConfigLoading">
+          保存配置
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 定时推送配置列表 -->
+    <el-card shadow="hover" class="mt-4">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <span><el-icon><Clock /></el-icon> 定时推送配置</span>
+          <el-button type="primary" size="small" @click="showScheduleConfigDialog">
+            <el-icon><CirclePlus /></el-icon> 新增配置
+          </el-button>
+        </div>
+      </template>
+      
+      <el-table :data="scheduleConfigs" border v-loading="scheduleConfigsLoading">
+        <el-table-column prop="id" label="ID" width="60" />
+        <el-table-column prop="description" label="描述" min-width="150" />
+        <el-table-column prop="webhook_url" label="Webhook" min-width="200" show-overflow-tooltip />
+        <el-table-column label="推送时间" width="200">
+          <template #default="{ row }">
+            <el-tag v-for="time in parseJsonField(row.schedule_times)" :key="time" size="small" class="mr-1">
+              {{ time }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.enabled ? 'success' : 'info'" size="small">
+              {{ row.enabled ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" @click="editScheduleConfig(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click="deleteScheduleConfig(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <div v-if="scheduleConfigs.length === 0 && !scheduleConfigsLoading" class="text-center text-gray-500 py-4">
+        暂无定时推送配置
+      </div>
     </el-card>
   </div>
 </template>
@@ -379,10 +553,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Calendar, UserFilled, User, InfoFilled, Check, Refresh,
   CirclePlus, List, Search, Delete, Setting, Clock,
-  Download, Upload, Close
+  Download, Upload, Close, Promotion
 } from '@element-plus/icons-vue'
+import * as XLSX from 'xlsx'
 
-const activeTab = ref('staff')
+const activeTab = ref('query')
 
 // 人员配置
 const staffConfig = ref({
@@ -421,6 +596,33 @@ const scheduleQuery = ref({
 })
 const scheduleLoading = ref(false)
 const scheduleRecords = ref([])
+
+// 导出相关
+const exportDialogVisible = ref(false)
+const exportFormat = ref('excel') // 默认 Excel
+
+// 钉钉推送相关
+const dingtalkDialogVisible = ref(false)
+const dingtalkLoading = ref(false)
+const dingtalkForm = ref({
+  webhook: '',
+  timeSlots: []
+})
+
+// 定时推送配置相关
+const scheduleConfigDialogVisible = ref(false)
+const scheduleConfigLoading = ref(false)
+const scheduleConfigsLoading = ref(false)
+const scheduleConfigs = ref([])
+const newScheduleTime = ref('')
+const editingConfigId = ref(null)
+const scheduleConfigForm = ref({
+  webhook: '',
+  description: '',
+  timeSlots: [],
+  scheduleTimes: [],
+  enabled: true
+})
 
 // 计算属性
 const allStaffList = computed(() => {
@@ -793,13 +995,116 @@ async function searchSchedule() {
   }
 }
 
-// 导出排班数据
-async function exportSchedule() {
+// 显示导出对话框
+function showExportDialog() {
   if (!scheduleQuery.value.startDate || !scheduleQuery.value.endDate) {
     ElMessage.warning('请填写查询日期范围')
     return
   }
+  exportFormat.value = 'excel' // 默认 Excel
+  exportDialogVisible.value = true
+}
+
+// 确认导出
+async function confirmExport() {
+  exportDialogVisible.value = false
+  if (exportFormat.value === 'excel') {
+    await exportToExcel()
+  } else {
+    await exportToCsv()
+  }
+}
+
+// 构建导出数据（共享逻辑）
+function buildExportData(result) {
+  const groupedData = {}
+  result.data.forEach(record => {
+    const dateKey = record.date
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = {}
+    }
+    
+    if (!groupedData[dateKey][record.time_slot]) {
+      groupedData[dateKey][record.time_slot] = []
+    }
+    
+    groupedData[dateKey][record.time_slot].push(record)
+  })
   
+  const rows = []
+  const sortedDates = Object.keys(groupedData).sort()
+  
+  sortedDates.forEach(date => {
+    const dayRecords = groupedData[date]
+    const timeSlotOrder = [
+      '8:00～9:00',
+      '9:00～12:00',
+      '13:30～18:00',
+      '18:00～21:00'
+    ]
+    const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
+      const indexA = timeSlotOrder.indexOf(a)
+      const indexB = timeSlotOrder.indexOf(b)
+      return indexA - indexB
+    })
+    
+    sortedSlots.forEach(timeSlot => {
+      const slotRecords = dayRecords[timeSlot]
+      const uniqueStaffs = []
+      const staffNamesSet = new Set()
+      
+      slotRecords.filter(r => r.is_main).forEach(record => {
+        if (!staffNamesSet.has(record.staff_name)) {
+          uniqueStaffs.push(record)
+          staffNamesSet.add(record.staff_name)
+        }
+      })
+      
+      slotRecords.filter(r => !r.is_main).forEach(record => {
+        if (!staffNamesSet.has(record.staff_name)) {
+          uniqueStaffs.push(record)
+          staffNamesSet.add(record.staff_name)
+        }
+      })
+      
+      let staffDisplay = ''
+      if (uniqueStaffs.length > 0) {
+        staffDisplay = uniqueStaffs.map(r => r.staff_name).join('、')
+      } else {
+        staffDisplay = '空闲'
+      }
+      
+      const dateObj = new Date(date)
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      const weekday = weekdays[dateObj.getDay()]
+      
+      // 收集备注
+      let remarkDisplay = ''
+      const remarks = new Set()
+      slotRecords.forEach(r => {
+        if (r.remark) {
+          remarks.add(r.remark)
+        }
+      })
+      if (remarks.size > 0) {
+        remarkDisplay = Array.from(remarks).join('、')
+      }
+      
+      rows.push({
+        '日期': date,
+        '星期': weekday,
+        '时段': timeSlot,
+        '人员': staffDisplay,
+        '备注': remarkDisplay
+      })
+    })
+  })
+  
+  return rows
+}
+
+// 导出为 Excel
+async function exportToExcel() {
   try {
     const response = await fetch(
       `/schedule-config/api/schedule-records?start_date=${formatDateValue(scheduleQuery.value.startDate)}&end_date=${formatDateValue(scheduleQuery.value.endDate)}`
@@ -811,82 +1116,61 @@ async function exportSchedule() {
       return
     }
     
-    let csvContent = "日期,星期,时段,人员,备注\n"
+    const rows = buildExportData(result)
     
-    const groupedData = {}
-    result.data.forEach(record => {
-      const dateKey = record.date
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {}
-      }
-      
-      if (!groupedData[dateKey][record.time_slot]) {
-        groupedData[dateKey][record.time_slot] = []
-      }
-      
-      groupedData[dateKey][record.time_slot].push(record)
-    })
+    // 使用 XLSX 生成 Excel 文件
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, '排班表')
     
-    const sortedDates = Object.keys(groupedData).sort()
+    // 设置列宽
+    worksheet['!cols'] = [
+      { wch: 12 }, // 日期
+      { wch: 8 },  // 星期
+      { wch: 15 }, // 时段
+      { wch: 30 }, // 人员
+      { wch: 20 }  // 备注
+    ]
     
-    sortedDates.forEach(date => {
-      const dayRecords = groupedData[date]
-      const timeSlotOrder = [
-        '8:00～9:00',
-        '9:00～12:00',
-        '13:30～18:00',
-        '18:00～21:00'
-      ]
-      const sortedSlots = Object.keys(dayRecords).sort((a, b) => {
-        const indexA = timeSlotOrder.indexOf(a)
-        const indexB = timeSlotOrder.indexOf(b)
-        return indexA - indexB
-      })
-      
-      sortedSlots.forEach(timeSlot => {
-        const slotRecords = dayRecords[timeSlot]
-        const uniqueStaffs = []
-        const staffNamesSet = new Set()
-        
-        slotRecords.filter(r => r.is_main).forEach(record => {
-          if (!staffNamesSet.has(record.staff_name)) {
-            uniqueStaffs.push(record)
-            staffNamesSet.add(record.staff_name)
-          }
-        })
-        
-        slotRecords.filter(r => !r.is_main).forEach(record => {
-          if (!staffNamesSet.has(record.staff_name)) {
-            uniqueStaffs.push(record)
-            staffNamesSet.add(record.staff_name)
-          }
-        })
-        
-        let staffDisplay = ''
-        if (uniqueStaffs.length > 0) {
-          staffDisplay = uniqueStaffs.map(r => r.staff_name).join('、')
-        } else {
-          staffDisplay = '空闲'
+    // 生成并下载文件
+    const fileName = `排班表_${formatDateValue(scheduleQuery.value.startDate)}_to_${formatDateValue(scheduleQuery.value.endDate)}.xlsx`
+    XLSX.writeFile(workbook, fileName)
+    
+    ElMessage.success('Excel 导出成功')
+  } catch (error) {
+    ElMessage.error('Excel 导出失败: ' + error.message)
+  }
+}
+
+// 导出为 CSV
+async function exportToCsv() {
+  try {
+    const response = await fetch(
+      `/schedule-config/api/schedule-records?start_date=${formatDateValue(scheduleQuery.value.startDate)}&end_date=${formatDateValue(scheduleQuery.value.endDate)}`
+    )
+    const result = await response.json()
+    
+    if (!result.success || !result.data || result.data.length === 0) {
+      ElMessage.warning('没有数据可导出')
+      return
+    }
+    
+    const rows = buildExportData(result)
+    
+    // 生成 CSV 内容
+    const headers = ['日期', '星期', '时段', '人员', '备注']
+    let csvContent = headers.join(',') + '\n'
+    
+    rows.forEach(row => {
+      const values = headers.map(h => {
+        const val = row[h] || ''
+        // 如果包含逗号或引号，需要用引号包裹
+        if (val.includes(',') || val.includes('"')) {
+          return `"${val.replace(/"/g, '""')}"`
         }
-        
-        const dateObj = new Date(date)
-        const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-        const weekday = weekdays[dateObj.getDay()]
-        
-        // 收集备注
-        let remarkDisplay = ''
-        const remarks = new Set()
-        slotRecords.forEach(r => {
-          if (r.remark) {
-            remarks.add(r.remark)
-          }
-        })
-        if (remarks.size > 0) {
-          remarkDisplay = Array.from(remarks).join('、')
-        }
-        
-        csvContent += `"${date}","${weekday}","${timeSlot}","${staffDisplay}","${remarkDisplay}"\n`
+        return val
       })
+      csvContent += values.join(',') + '\n'
     })
     
     // 添加 UTF-8 BOM 头，确保 Excel 能正确识别中文
@@ -903,9 +1187,9 @@ async function exportSchedule() {
     link.click()
     document.body.removeChild(link)
     
-    ElMessage.success('导出成功')
+    ElMessage.success('CSV 导出成功')
   } catch (error) {
-    ElMessage.error('导出失败: ' + error.message)
+    ElMessage.error('CSV 导出失败: ' + error.message)
   }
 }
 
@@ -990,6 +1274,63 @@ async function importSchedule() {
   fileInput.click()
 }
 
+// 显示钉钉推送对话框
+function showDingTalkDialog() {
+  if (!scheduleQuery.value.startDate || !scheduleQuery.value.endDate) {
+    ElMessage.warning('请先选择查询日期范围')
+    return
+  }
+  
+  if (scheduleRecords.value.length === 0) {
+    ElMessage.warning('当前日期范围内没有排班数据')
+    return
+  }
+  
+  // 重置表单
+  dingtalkForm.value = {
+    webhook: '',
+    timeSlots: []
+  }
+  
+  dingtalkDialogVisible.value = true
+}
+
+// 确认钉钉推送
+async function confirmDingTalkPush() {
+  if (!dingtalkForm.value.webhook) {
+    ElMessage.warning('请输入钉钉 Webhook 地址')
+    return
+  }
+  
+  dingtalkLoading.value = true
+  
+  try {
+    const response = await fetch('/schedule-config/api/send-dingtalk-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        start_date: formatDateValue(scheduleQuery.value.startDate),
+        end_date: formatDateValue(scheduleQuery.value.endDate),
+        time_slots: dingtalkForm.value.timeSlots,
+        dingtalk_webhook: dingtalkForm.value.webhook
+      })
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      ElMessage.success(result.msg)
+      dingtalkDialogVisible.value = false
+    } else {
+      ElMessage.error(result.msg)
+    }
+  } catch (error) {
+    ElMessage.error('推送失败: ' + error.message)
+  } finally {
+    dingtalkLoading.value = false
+  }
+}
+
 // 辅助函数：格式化日期为 YYYY-MM-DD
 function formatDateValue(date) {
   if (!date) return ''
@@ -1004,6 +1345,160 @@ function formatDateValue(date) {
 function formatDate(dateString) {
   const date = new Date(dateString)
   return date.toLocaleDateString('zh-CN')
+}
+
+// 解析JSON字段
+function parseJsonField(jsonStr) {
+  if (!jsonStr) return []
+  try {
+    return JSON.parse(jsonStr)
+  } catch (e) {
+    return []
+  }
+}
+
+// ========== 定时推送配置相关函数 ==========
+
+// 加载定时推送配置
+async function loadScheduleConfigs() {
+  scheduleConfigsLoading.value = true
+  try {
+    const response = await fetch('/schedule-config/api/dingtalk-schedule-config')
+    const result = await response.json()
+    
+    if (result.success) {
+      scheduleConfigs.value = result.data || []
+    } else {
+      ElMessage.error(result.msg)
+    }
+  } catch (error) {
+    ElMessage.error('加载配置失败: ' + error.message)
+  } finally {
+    scheduleConfigsLoading.value = false
+  }
+}
+
+// 显示定时推送配置对话框
+function showScheduleConfigDialog() {
+  editingConfigId.value = null
+  scheduleConfigForm.value = {
+    webhook: '',
+    description: '',
+    timeSlots: [],
+    scheduleTimes: [],
+    enabled: true
+  }
+  newScheduleTime.value = ''
+  scheduleConfigDialogVisible.value = true
+}
+
+// 添加推送时间
+function addScheduleTime() {
+  if (!newScheduleTime.value) {
+    ElMessage.warning('请选择时间')
+    return
+  }
+  
+  if (scheduleConfigForm.value.scheduleTimes.includes(newScheduleTime.value)) {
+    ElMessage.warning('该时间已存在')
+    return
+  }
+  
+  scheduleConfigForm.value.scheduleTimes.push(newScheduleTime.value)
+  // 排序
+  scheduleConfigForm.value.scheduleTimes.sort()
+  newScheduleTime.value = ''
+}
+
+// 删除推送时间
+function removeScheduleTime(index) {
+  scheduleConfigForm.value.scheduleTimes.splice(index, 1)
+}
+
+// 编辑配置
+function editScheduleConfig(config) {
+  editingConfigId.value = config.id
+  scheduleConfigForm.value = {
+    webhook: config.webhook_url,
+    description: config.description || '',
+    timeSlots: parseJsonField(config.time_slots),
+    scheduleTimes: parseJsonField(config.schedule_times),
+    enabled: Boolean(config.enabled)
+  }
+  newScheduleTime.value = ''
+  scheduleConfigDialogVisible.value = true
+}
+
+// 保存配置
+async function saveScheduleConfig() {
+  if (!scheduleConfigForm.value.webhook) {
+    ElMessage.warning('请输入Webhook地址')
+    return
+  }
+  
+  if (scheduleConfigForm.value.scheduleTimes.length === 0) {
+    ElMessage.warning('请至少添加一个推送时间')
+    return
+  }
+  
+  scheduleConfigLoading.value = true
+  
+  try {
+    const response = await fetch('/schedule-config/api/dingtalk-schedule-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editingConfigId.value,
+        webhook_url: scheduleConfigForm.value.webhook,
+        description: scheduleConfigForm.value.description,
+        time_slots: scheduleConfigForm.value.timeSlots,
+        schedule_times: scheduleConfigForm.value.scheduleTimes,
+        enabled: scheduleConfigForm.value.enabled
+      })
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      ElMessage.success(result.msg)
+      scheduleConfigDialogVisible.value = false
+      loadScheduleConfigs()
+    } else {
+      ElMessage.error(result.msg)
+    }
+  } catch (error) {
+    ElMessage.error('保存失败: ' + error.message)
+  } finally {
+    scheduleConfigLoading.value = false
+  }
+}
+
+// 删除配置
+async function deleteScheduleConfig(configId) {
+  try {
+    await ElMessageBox.confirm('确定要删除该配置吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    const response = await fetch(`/schedule-config/api/dingtalk-schedule-config/${configId}`, {
+      method: 'DELETE'
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      ElMessage.success(result.msg)
+      loadScheduleConfigs()
+    } else {
+      ElMessage.error(result.msg)
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败: ' + error.message)
+    }
+  }
 }
 
 // 设置默认查询日期
@@ -1022,6 +1517,10 @@ function setDefaultQueryDates() {
 onMounted(() => {
   loadStaffConfig()
   setDefaultQueryDates()
+  // 进入页面自动查询排班数据
+  searchSchedule()
+  // 加载定时推送配置
+  loadScheduleConfigs()
 })
 </script>
 

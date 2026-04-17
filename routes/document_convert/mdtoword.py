@@ -125,7 +125,7 @@ def fill_template_with_blocks(template_path: str, md_path: str, output_path: str
 
 if __name__ == '__main__':
     fill_template_with_blocks(
-        template_path='/Users/linziwang/PycharmProjects/wordToWord/templates/template.docx',
+        template_path='/templates（弃用）/template.docx',
         md_path='/Users/linziwang/PycharmProjects/wordToWord/static/12091510集中故障管理系统-监控综合应用-关于集团事件工单省部接口数据上报保障的开发需求-15400_20250318.md',
         output_path='output.docx'
     )

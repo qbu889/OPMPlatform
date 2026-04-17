@@ -1,6 +1,6 @@
 -- Kafka Generator 字段元数据配置表
 -- 用途：配置「推送告警消息字段」<->「字段中文解释/匹配数据库中文」<->「对应ES字段」
--- 前端页面：templates/kafka_generator.html 会通过后端接口 /kafka-generator/field-meta 读取
+-- 前端页面：templates（弃用）/kafka_generator.html 会通过后端接口 /kafka-generator/field-meta 读取
 
 CREATE TABLE IF NOT EXISTS kafka_field_meta (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

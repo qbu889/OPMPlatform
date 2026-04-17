@@ -26,7 +26,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 
 KEYWORDS_FILE = os.path.join('config', 'keywords.json')
-TEMPLATE_DOCX = "templates/template.docx"
+TEMPLATE_DOCX = "templates（弃用）/template.docx"
 
 
 def get_db():

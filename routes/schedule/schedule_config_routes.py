@@ -9,6 +9,9 @@ from datetime import datetime, date, timedelta
 from typing import List, Dict
 import csv
 import io
+import requests
+import json
+import os
 
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
 
@@ -644,3 +647,262 @@ def update_schedule_api(schedule_id):
     """更新排班API - Vue前端使用"""
     # TODO: 实现更新排班逻辑
     return jsonify({"success": True, "msg": "更新成功"})
+
+
+@schedule_config_bp.route('/api/send-dingtalk-message', methods=['POST'])
+def send_dingtalk_message():
+    """发送钉钉消息API - 推送排班信息给群和人员"""
+    try:
+        data = request.get_json()
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        time_slots = data.get('time_slots', [])  # 要推送的时段列表
+        dingtalk_webhook = data.get('dingtalk_webhook')  # 钉钉机器人 webhook URL
+        
+        if not start_date or not end_date:
+            return jsonify({"success": False, "msg": "开始日期和结束日期不能为空"})
+        
+        if not dingtalk_webhook:
+            return jsonify({"success": False, "msg": "钉钉 Webhook 地址不能为空"})
+        
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+        
+        # 查询指定日期范围的排班数据
+        sql = """
+        SELECT r.*
+        FROM roster r
+        WHERE r.date BETWEEN %s AND %s
+        ORDER BY r.date, r.time_slot, r.is_main DESC
+        """
+        
+        results = db.query(sql, (start_date, end_date))
+        db.close()
+        
+        if not results:
+            return jsonify({"success": False, "msg": "没有找到排班数据"})
+        
+        # 按日期和时段分组
+        grouped_data = {}
+        for record in results:
+            date_key = record['date'].strftime('%Y-%m-%d') if hasattr(record['date'], 'strftime') else str(record['date'])
+            time_slot = record['time_slot']
+            
+            # 如果指定了时段过滤，则只推送指定的时段
+            if time_slots and time_slot not in time_slots:
+                continue
+            
+            if date_key not in grouped_data:
+                grouped_data[date_key] = {}
+            
+            if time_slot not in grouped_data[date_key]:
+                grouped_data[date_key][time_slot] = []
+            
+            grouped_data[date_key][time_slot].append(record)
+        
+        # 构建钉钉消息内容（优化后的Markdown格式）
+        today = datetime.now().date()
+        msg_content = "# 📅 排班信息推送\n\n"
+        
+        # 按日期排序
+        sorted_dates = sorted(grouped_data.keys())
+        
+        for date_str in sorted_dates:
+            day_data = grouped_data[date_str]
+            
+            # 计算星期和相对日期描述
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date_obj.weekday()]
+            
+            # 判断是今天、明天还是其他日期
+            delta = (date_obj - today).days
+            if delta == 0:
+                date_label = f"**今天** {date_str} ({weekday})"
+            elif delta == 1:
+                date_label = f"**明天** {date_str} ({weekday})"
+            elif delta == -1:
+                date_label = f"**昨天** {date_str} ({weekday})"
+            else:
+                date_label = f"**{date_str}** ({weekday})"
+            
+            msg_content += f"### {date_label}\n\n"
+            
+            # 按时段排序（按时间顺序）
+            time_slot_order = [
+                '8:00～9:00',
+                '8:00～12:00',
+                '9:00～12:00',
+                '13:30～17:30',
+                '13:30～18:00',
+                '17:30～21:30',
+                '18:00～21:00'
+            ]
+            
+            sorted_slots = sorted(day_data.keys(), 
+                                key=lambda x: time_slot_order.index(x) if x in time_slot_order else 999)
+            
+            for time_slot in sorted_slots:
+                staff_records = day_data[time_slot]
+                
+                # 提取主班和辅班
+                main_staff = [r['staff_name'] for r in staff_records if r['is_main']]
+                backup_staff = [r['staff_name'] for r in staff_records if not r['is_main']]
+                
+                staff_display = '、'.join(main_staff + backup_staff) if (main_staff + backup_staff) else '空闲'
+                
+                msg_content += f"- **{time_slot}**: {staff_display}\n"
+            
+            msg_content += "\n---\n\n"
+        
+        # 添加查看详情按钮（钉钉 ActionCard 类型）
+        detail_url = "http://localhost:5200/schedule-config"
+        msg_content += f"\n[查看详情]({detail_url})\n"
+        
+        # 发送钉钉消息（使用 ActionCard 类型以获得更好的按钮效果）
+        dingtalk_data = {
+            "msgtype": "actionCard",
+            "actionCard": {
+                "title": "排班信息推送",
+                "text": msg_content,
+                "btnOrientation": "0",  # 按钮排列方向：0-竖直，1-水平
+                "btns": [
+                    {
+                        "title": "查看详情",
+                        "actionURL": detail_url
+                    }
+                ]
+            }
+        }
+        
+        response = requests.post(
+            dingtalk_webhook,
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps(dingtalk_data),
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('errcode') == 0:
+                return jsonify({
+                    "success": True,
+                    "msg": "钉钉消息推送成功",
+                    "data": {
+                        "total_dates": len(sorted_dates),
+                        "time_slots": len(time_slots) if time_slots else '全部时段'
+                    }
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "msg": f"钉钉推送失败: {result.get('errmsg', '未知错误')}"
+                })
+        else:
+            return jsonify({
+                "success": False,
+                "msg": f"钉钉推送失败，HTTP状态码: {response.status_code}"
+            })
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "msg": "推送失败: " + str(e)})
+
+
+@schedule_config_bp.route('/api/dingtalk-schedule-config', methods=['GET', 'POST'])
+def dingtalk_schedule_config():
+    """钉钉定时推送配置API"""
+    if request.method == 'GET':
+        # 获取当前定时推送配置
+        try:
+            db = RosterDB(DB_CONFIG)
+            if not db.connect():
+                return jsonify({"success": False, "msg": "数据库连接失败"})
+            
+            sql = "SELECT * FROM dingtalk_schedule_config ORDER BY id"
+            results = db.query(sql)
+            db.close()
+            
+            # 处理时间字段
+            processed_results = serialize_datetime_objects(results)
+            
+            return jsonify({
+                "success": True,
+                "data": processed_results
+            })
+        except Exception as e:
+            return jsonify({"success": False, "msg": "获取配置失败: " + str(e)})
+    
+    elif request.method == 'POST':
+        # 保存或更新定时推送配置
+        try:
+            data = request.get_json()
+            config_id = data.get('id')
+            webhook_url = data.get('webhook_url')
+            time_slots = data.get('time_slots', [])  # 推送时段列表
+            schedule_times = data.get('schedule_times', [])  # 推送时间点，如 ["08:00", "09:00", "18:00"]
+            enabled = data.get('enabled', True)
+            description = data.get('description', '')
+            
+            if not webhook_url:
+                return jsonify({"success": False, "msg": "Webhook地址不能为空"})
+            
+            if not schedule_times:
+                return jsonify({"success": False, "msg": "至少需要配置一个推送时间"})
+            
+            db = RosterDB(DB_CONFIG)
+            if not db.connect():
+                return jsonify({"success": False, "msg": "数据库连接失败"})
+            
+            # 将时间列表转换为JSON字符串存储
+            import json as json_module
+            time_slots_json = json_module.dumps(time_slots, ensure_ascii=False)
+            schedule_times_json = json_module.dumps(schedule_times, ensure_ascii=False)
+            
+            if config_id:
+                # 更新现有配置
+                update_sql = """
+                UPDATE dingtalk_schedule_config 
+                SET webhook_url = %s, time_slots = %s, schedule_times = %s, 
+                    enabled = %s, description = %s, updated_at = NOW()
+                WHERE id = %s
+                """
+                db.execute(update_sql, (webhook_url, time_slots_json, schedule_times_json, 
+                                       enabled, description, config_id))
+                msg = "配置更新成功"
+            else:
+                # 新增配置
+                insert_sql = """
+                INSERT INTO dingtalk_schedule_config 
+                (webhook_url, time_slots, schedule_times, enabled, description, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+                """
+                db.execute(insert_sql, (webhook_url, time_slots_json, schedule_times_json, 
+                                       enabled, description))
+                msg = "配置添加成功"
+            
+            db.close()
+            
+            return jsonify({"success": True, "msg": msg})
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({"success": False, "msg": "保存配置失败: " + str(e)})
+
+
+@schedule_config_bp.route('/api/dingtalk-schedule-config/<int:config_id>', methods=['DELETE'])
+def delete_dingtalk_schedule_config(config_id):
+    """删除定时推送配置"""
+    try:
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+        
+        delete_sql = "DELETE FROM dingtalk_schedule_config WHERE id = %s"
+        db.execute(delete_sql, (config_id,))
+        db.close()
+        
+        return jsonify({"success": True, "msg": "配置删除成功"})
+    except Exception as e:
+        return jsonify({"success": False, "msg": "删除配置失败: " + str(e)})

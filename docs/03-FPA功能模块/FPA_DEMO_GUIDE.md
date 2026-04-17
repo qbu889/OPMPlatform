@@ -194,7 +194,7 @@ python app.py
 ```bash
 # 展示项目结构
 tree -L 2 routes/fpa_generator_routes.py
-tree -L 2 templates/fpa_generator.html
+tree -L 2 templates（弃用）/fpa_generator.html
 ```
 
 ### 2. 核心算法演示

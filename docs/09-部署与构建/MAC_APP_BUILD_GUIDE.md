@@ -143,7 +143,7 @@ OPTIONS = {
 如果需要包含其他文件或目录，在 `setup.py` 的 `DATA_FILES` 中添加：
 ```python
 DATA_FILES = [
-    'templates',
+    'templates（弃用）',
     'static',
     'config.py',
     '.env',

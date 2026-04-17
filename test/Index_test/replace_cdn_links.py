@@ -50,7 +50,7 @@ def replace_cdn_links_in_file(file_path):
 
 def main():
     """主函数"""
-    template_dir = '../../templates'
+    template_dir = '../../templates（弃用）'
     updated_count = 0
     error_count = 0
     
@@ -70,10 +70,10 @@ def main():
     
     # 验证关键文件
     key_files = [
-        'templates/base.html',
-        'templates/chat.html', 
-        'templates/es_to_kafka.html',
-        'templates/json_fixer.html'
+        'templates（弃用）/base.html',
+        'templates（弃用）/chat.html',
+        'templates（弃用）/es_to_kafka.html',
+        'templates（弃用）/json_fixer.html'
     ]
     
     print("\n验证关键文件:")
