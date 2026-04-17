@@ -125,68 +125,78 @@ def parse_json_format(file_path):
     return _process_json_data(data)
     
 def _process_json_data(data):
-    """处理已解析的 JSON 数据 - 动态导出传入的字段"""
+    """处理已解析的 JSON 数据 - 支持多种格式"""
+    # 验证数据结构
+    if not isinstance(data, dict):
+        raise ValueError(f"JSON 数据格式错误：期望字典类型，实际为 {type(data).__name__}")
+    
+    # 检测是否为 ES SQL 格式（columns + rows）
+    if 'columns' in data and 'rows' in data:
+        return _process_es_sql_json(data)
+    
+    # 检测是否为 ES _search 格式（hits.hits[]）
+    if 'hits' in data and isinstance(data['hits'], dict) and 'hits' in data['hits']:
+        return _process_es_search_json(data)
+    
+    # 其他格式报错
+    available_keys = list(data.keys())
+    error_msg = "不支持的 JSON 数据格式\n"
+    error_msg += f"可用字段: {', '.join(available_keys)}\n\n"
+    error_msg += "💡 支持的格式：\n"
+    error_msg += "1. ES SQL 查询结果：{\"columns\": [...], \"rows\": [...]}\n"
+    error_msg += "2. ES _search 查询结果：{\"hits\": {\"hits\": [{\"_source\": {...}}]}}\n\n"
+    error_msg += "✅ 建议使用 POST /_sql?format=json 或 POST /_search 接口获取数据"
+    raise ValueError(error_msg)
+
+
+def _process_es_sql_json(data):
+    """处理 ES SQL JSON 格式（columns + rows）"""
     # 提取列名和数据
     columns = [col['name'] for col in data['columns']]
     rows = data['rows']
     
-    # 创建DataFrame（直接使用原始字段名）
+    # 创建 DataFrame
     df_result = pd.DataFrame(rows, columns=columns)
-    
-    # 替换null值为空字符串
     df_result = df_result.fillna("")
     
-    # 格式化时间字段：将 ISO 8601 格式转换为标准格式
-    # 例如：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03（去掉毫秒）
-    time_columns_count = 0
+    # 格式化时间字段
+    _format_time_columns(df_result)
     
-    print(f"\n🔍 开始检查时间字段，共 {len(df_result.columns)} 列")
-    for col in df_result.columns:
-        col_dtype = str(df_result[col].dtype)
-        print(f"  - 列名: {col}, 数据类型: {col_dtype}")
-        
-        # 支持 object 和 str 类型
-        if col_dtype in ['object', 'str']:
-            # 获取第一个非空样本
-            sample = df_result[col].dropna().iloc[0] if len(df_result[col].dropna()) > 0 else None
-            
-            # 打印所有字符串列的样本值，用于调试
-            if sample and isinstance(sample, str):
-                print(f"    🔍 样本值: '{sample}' (长度: {len(sample)})")
-                
-                # 检测是否为时间格式（包含 T 和 Z）
-                if 'T' in sample and ('Z' in sample or '+' in sample):
-                    try:
-                        print(f"    ⏰ 检测到时间列，开始格式化...")
-                        
-                        def format_time(x):
-                            if not x or x == '':
-                                return x
-                            # 转换：2026-04-09T03:47:03.000Z -> 2026-04-09 03:47:03
-                            time_str = str(x).replace('T', ' ').replace('Z', '')
-                            # 去掉毫秒部分（如果有）
-                            if '.' in time_str:
-                                time_str = time_str.split('.')[0]
-                            return time_str
-                        
-                        df_result[col] = df_result[col].apply(format_time)
-                        time_columns_count += 1
-                        print(f"    ✅ 已格式化，新示例: {df_result[col].dropna().iloc[0] if len(df_result[col].dropna()) > 0 else 'N/A'}")
-                    except Exception as e:
-                        print(f"    ❌ 格式化失败: {e}")
-                        import traceback
-                        traceback.print_exc()
-                        pass  # 如果转换失败，保持原样
-        else:
-            print(f"    ⏭️  跳过非字符串类型")
+    print(f"✅ [ES SQL JSON] 动态导出 {len(columns)} 个字段: {', '.join(columns)}")
+    return df_result
+
+
+def _process_es_search_json(data):
+    """处理 ES _search JSON 格式（hits.hits[]）"""
+    hits = data['hits']['hits']
     
-    if time_columns_count > 0:
-        print(f"✅ [JSON] 共处理 {time_columns_count} 个时间字段\n")
-    else:
-        print("⚠️  [JSON] 未检测到需要格式化的时间字段\n")
+    if not hits:
+        raise ValueError("ES 查询结果为空，没有命中任何文档")
     
-    print(f"✅ 动态导出 {len(columns)} 个字段: {', '.join(columns)}")
+    # 从第一个命中的 _source 中提取所有字段
+    first_source = hits[0].get('_source', {})
+    if not first_source:
+        raise ValueError("ES 查询结果中缺少 _source 字段")
     
+    # 获取所有字段名（按第一个文档的字段顺序）
+    columns = list(first_source.keys())
+    
+    # 提取数据
+    rows = []
+    for hit in hits:
+        source = hit.get('_source', {})
+        row = [source.get(col, '') for col in columns]
+        rows.append(row)
+    
+    # 创建 DataFrame
+    df_result = pd.DataFrame(rows, columns=columns)
+    df_result = df_result.fillna("")
+    
+    # 格式化时间字段
+    _format_time_columns(df_result)
+    
+    print(f"✅ [ES _search JSON] 共 {len(hits)} 条记录，{len(columns)} 个字段")
+    print(f"   字段列表: {', '.join(columns[:10])}{'...' if len(columns) > 10 else ''}")
     return df_result
 
 

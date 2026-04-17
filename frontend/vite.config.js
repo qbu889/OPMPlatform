@@ -123,8 +123,28 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      // Chatbot
-      '/chatbot': {
+      // Chatbot API 接口(不包括 /chatbot 页面路由)
+      '/chatbot/upload_progress': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/chatbot/chat': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/chatbot/upload_document': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/chatbot/knowledge': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/chatbot/session': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/chatbot/feedback': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
@@ -133,13 +153,13 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      // Word to Excel
-      '/word-to-excel': {
+      // Word to Excel API 接口(不包括 /word-to-excel 页面路由)
+      '/word-to-excel/api': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      // Schedule Config
-      '/schedule-config': {
+      // Schedule Config API 接口(不包括 /schedule-config 页面路由)
+      '/schedule-config/api': {
         target: BACKEND_URL,
         changeOrigin: true,
       },

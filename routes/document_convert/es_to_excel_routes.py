@@ -395,6 +395,10 @@ def paste_text():
             'columns': list(df_result.columns)
         })
 
+    except ValueError as e:
+        # 数据格式错误，返回 400
+        logger.warning(f"粘贴文本格式错误：{e}")
+        return jsonify({'success': False, 'message': f'格式错误：{str(e)}'}), 400
     except Exception as e:
         logger.error(f"粘贴文本处理失败：{e}", exc_info=True)
         return jsonify({'success': False, 'message': f'处理失败：{str(e)}'}), 500

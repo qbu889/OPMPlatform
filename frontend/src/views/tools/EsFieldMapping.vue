@@ -30,6 +30,10 @@
           搜索
         </el-button>
         <el-button @click="handleReset">重置</el-button>
+        <el-button type="primary" @click="handleAdd" style="margin-left: auto;">
+          <el-icon><Plus /></el-icon>
+          新增映射
+        </el-button>
       </div>
 
       <!-- 数据表格 -->
@@ -70,14 +74,6 @@
         @current-change="handlePageChange"
         style="margin-top: 20px; justify-content: flex-end;"
       />
-
-      <!-- 新增按钮 -->
-      <div style="margin-top: 15px; text-align: right;">
-        <el-button type="primary" @click="handleAdd">
-          <el-icon><Plus /></el-icon>
-          新增映射
-        </el-button>
-      </div>
     </el-card>
 
     <!-- 编辑对话框 -->

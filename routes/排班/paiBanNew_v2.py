@@ -123,12 +123,42 @@ class RosterGenerator:
 
         for config_type, default_order in required_configs:
             if config_type not in config:
+                # 配置不存在，创建新的
                 sql_insert = "INSERT INTO rotation_config (time_slot_type, rotation_order, current_index) VALUES (%s, %s, %s)"
                 self.db.execute(sql_insert, (config_type, ",".join(default_order), 0))
                 config[config_type] = {
                     "order": default_order,
                     "index": 0
                 }
+            else:
+                # 配置已存在，检查人员列表是否需要更新
+                current_order = config[config_type]["order"]
+                current_index = config[config_type]["index"]
+                
+                # 如果人员列表发生变化，需要更新
+                if set(current_order) != set(default_order):
+                    # 保留原索引的相对位置，但使用新的人员列表
+                    # 找出原索引对应的人员在新列表中的位置
+                    old_staff = current_order[current_index] if current_index < len(current_order) else None
+                    
+                    # 更新 rotation_order
+                    sql_update = "UPDATE rotation_config SET rotation_order = %s WHERE time_slot_type = %s"
+                    self.db.execute(sql_update, (",".join(default_order), config_type))
+                    
+                    # 调整索引：尝试找到原人员在新的列表中的位置
+                    new_index = 0
+                    if old_staff and old_staff in default_order:
+                        new_index = default_order.index(old_staff)
+                    
+                    # 更新索引
+                    sql_update_index = "UPDATE rotation_config SET current_index = %s WHERE time_slot_type = %s"
+                    self.db.execute(sql_update_index, (new_index, config_type))
+                    
+                    # 更新内存配置
+                    config[config_type] = {
+                        "order": default_order,
+                        "index": new_index
+                    }
 
         return config
 
@@ -534,19 +564,13 @@ class RosterGenerator:
 
     def generate_roster(self, start_date: date, end_date: date):
         """生成指定日期范围的排班数据并入库"""
-        # 初始化轮换配置 (如果为空)
-        if not self.rotation_config:
-            all_staffs = self.test_staffs + [self.core_staff]
-            default_rotation = {
-                "日常 8-9": all_staffs,
-                "节假日": all_staffs
-            }
-            for config_type, order in default_rotation.items():
-                sql_check = "SELECT COUNT(*) as count FROM rotation_config WHERE time_slot_type = %s"
-                result = self.db.query(sql_check, (config_type,))
-                if result[0]['count'] == 0:
-                    sql_insert = "INSERT INTO rotation_config (time_slot_type, rotation_order, current_index) VALUES (%s, %s, %s)"
-                    self.db.execute(sql_insert, (config_type, ",".join(order), 0))
+        # 强制刷新人员配置，确保使用最新数据
+        self.core_staff = self._get_core_staff()
+        self.test_staffs = self._get_test_staffs()
+        self.all_staffs = self.test_staffs + [self.core_staff]
+        
+        # 强制刷新轮换配置，确保使用最新的人员列表
+        self.rotation_config = self._load_rotation_config()
 
         current_date = start_date
         while current_date <= end_date:
