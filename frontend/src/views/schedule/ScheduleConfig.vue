@@ -439,7 +439,16 @@
         </el-form-item>
         
         <el-form-item label="推送日期范围">
-          <div>{{ formatDateValue(scheduleQuery.startDate) }} 至 {{ formatDateValue(scheduleQuery.endDate) }}</div>
+          <el-date-picker
+            v-model="dingtalkForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%;"
+          />
         </el-form-item>
       </el-form>
       
@@ -626,7 +635,8 @@ const dingtalkLoading = ref(false)
 const selectedDingtalkConfigId = ref(null)
 const dingtalkForm = ref({
   webhook: '',
-  timeSlots: []
+  timeSlots: [],
+  dateRange: []  // 日期范围 [startDate, endDate]
 })
 
 // 选择定时推送配置时自动填充
@@ -1317,21 +1327,18 @@ async function importSchedule() {
 
 // 显示钉钉推送对话框
 function showDingTalkDialog() {
-  if (!scheduleQuery.value.startDate || !scheduleQuery.value.endDate) {
-    ElMessage.warning('请先选择查询日期范围')
-    return
-  }
-  
-  if (scheduleRecords.value.length === 0) {
-    ElMessage.warning('当前日期范围内没有排班数据')
-    return
-  }
+  // 设置默认日期范围：从昨天开始+6天，共7天
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const endDate = new Date()
+  endDate.setDate(endDate.getDate() + 5)  // 昨天 + 6天 = 共7天
   
   // 重置表单
   selectedDingtalkConfigId.value = null
   dingtalkForm.value = {
     webhook: '',
-    timeSlots: []
+    timeSlots: [],
+    dateRange: [formatDateValue(yesterday), formatDateValue(endDate)]
   }
   
   dingtalkDialogVisible.value = true
@@ -1344,6 +1351,11 @@ async function confirmDingTalkPush() {
     return
   }
   
+  if (!dingtalkForm.value.dateRange || dingtalkForm.value.dateRange.length !== 2) {
+    ElMessage.warning('请选择推送日期范围')
+    return
+  }
+  
   dingtalkLoading.value = true
   
   try {
@@ -1351,8 +1363,8 @@ async function confirmDingTalkPush() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        start_date: formatDateValue(scheduleQuery.value.startDate),
-        end_date: formatDateValue(scheduleQuery.value.endDate),
+        start_date: dingtalkForm.value.dateRange[0],
+        end_date: dingtalkForm.value.dateRange[1],
         time_slots: dingtalkForm.value.timeSlots,
         dingtalk_webhook: dingtalkForm.value.webhook
       })

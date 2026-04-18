@@ -755,22 +755,17 @@ def send_dingtalk_message():
             
             msg_content += "\n---\n\n"
         
-        # 添加查看详情按钮（钉钉 ActionCard 类型）
+        # 添加查看详情链接（Markdown格式，钉钉会自动渲染为按钮）
         schedule_view_url = "https://alidocs.dingtalk.com/i/nodes/20eMKjyp81LOavDgf46AORZwJxAZB1Gv?utm_scene=person_space&iframeQuery=viewId%3Drm8nwl6hqzo0v1952seh4%26sheetId%3Dhe1d5bovtjfxcies7i3fi"
+        msg_content += f"[查看完整排班]({schedule_view_url})\n"
         
-        # 发送钉钉消息（使用 ActionCard 类型以获得更好的按钮效果）
+        # 发送钉钉消息（使用 actionCard 类型）
         dingtalk_data = {
             "msgtype": "actionCard",
             "actionCard": {
                 "title": "排班信息推送",
                 "text": msg_content,
-                "btnOrientation": "0",  # 按钮排列方向：0-竖直，1-水平
-                "btns": [
-                    {
-                        "title": "查看排班",
-                        "actionURL": schedule_view_url
-                    }
-                ]
+                "btnOrientation": "0"
             }
         }
         

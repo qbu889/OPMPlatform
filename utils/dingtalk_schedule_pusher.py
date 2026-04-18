@@ -135,6 +135,10 @@ class DingTalkSchedulePusher:
                 
                 msg_content += "\n---\n\n"
             
+            # 添加查看详情链接（Markdown格式）
+            schedule_view_url = "https://alidocs.dingtalk.com/i/nodes/20eMKjyp81LOavDgf46AORZwJxAZB1Gv?utm_scene=person_space&iframeQuery=viewId%3Drm8nwl6hqzo0v1952seh4%26sheetId%3Dhe1d5bovtjfxcies7i3fi"
+            msg_content += f"[查看完整排班]({schedule_view_url})\n"
+            
             return msg_content
             
         except Exception as e:
@@ -144,21 +148,15 @@ class DingTalkSchedulePusher:
             return None
     
     def send_dingtalk_message(self, webhook_url, msg_content):
-        """发送钉钉消息（ActionCard格式，包含查看排班按钮）"""
+        """发送钉钉消息（ActionCard格式）"""
         try:
-            # 使用ActionCard格式，支持按钮
+            # 使用ActionCard格式，钉钉会自动在末尾渲染链接为按钮
             dingtalk_data = {
                 "msgtype": "actionCard",
                 "actionCard": {
                     "title": "排班信息推送",
                     "text": msg_content,
-                    "btnOrientation": "0",  # 按钮竖直排列
-                    "btns": [
-                        {
-                            "title": "查看排班",
-                            "actionURL": "https://alidocs.dingtalk.com/i/nodes/20eMKjyp81LOavDgf46AORZwJxAZB1Gv?utm_scene=person_space&iframeQuery=viewId%3Drm8nwl6hqzo0v1952seh4%26sheetId%3Dhe1d5bovtjfxcies7i3fi"
-                        }
-                    ]
+                    "btnOrientation": "0"
                 }
             }
             
