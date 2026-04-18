@@ -878,6 +878,24 @@ def dingtalk_schedule_config():
             
             db.close()
             
+            # 重新加载定时任务
+            try:
+                from flask import current_app
+                pusher = current_app.dingtalk_pusher
+                if pusher:
+                    pusher.load_and_schedule_tasks()
+                    # 获取当前任务列表并输出日志
+                    jobs = pusher.scheduler.get_jobs()
+                    dingtalk_jobs = [job for job in jobs if job.id.startswith('dingtalk_push_')]
+                    print(f"\n[INFO] 当前共有 {len(dingtalk_jobs)} 个定时任务:")
+                    for job in dingtalk_jobs:
+                        next_run = job.next_run_time
+                        if next_run:
+                            print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+            except Exception as reload_error:
+                import traceback
+                traceback.print_exc()
+            
             return jsonify({"success": True, "msg": msg})
         except Exception as e:
             import traceback
@@ -896,6 +914,24 @@ def delete_dingtalk_schedule_config(config_id):
         delete_sql = "DELETE FROM dingtalk_schedule_config WHERE id = %s"
         db.execute(delete_sql, (config_id,))
         db.close()
+        
+        # 重新加载定时任务
+        try:
+            from flask import current_app
+            pusher = current_app.dingtalk_pusher
+            if pusher:
+                pusher.load_and_schedule_tasks()
+                # 获取当前任务列表并输出日志
+                jobs = pusher.scheduler.get_jobs()
+                dingtalk_jobs = [job for job in jobs if job.id.startswith('dingtalk_push_')]
+                print(f"\n[INFO] 当前共有 {len(dingtalk_jobs)} 个定时任务:")
+                for job in dingtalk_jobs:
+                    next_run = job.next_run_time
+                    if next_run:
+                        print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+        except Exception as reload_error:
+            import traceback
+            traceback.print_exc()
         
         return jsonify({"success": True, "msg": "配置删除成功"})
     except Exception as e:

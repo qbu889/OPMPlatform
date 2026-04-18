@@ -249,47 +249,77 @@ class DingTalkSchedulePusher:
             return None
     
     def load_and_schedule_tasks(self):
-        """加载配置并创建定时任务"""
-        configs = self.get_schedule_configs()
-        
-        if not configs:
-            print("[INFO] 没有启用的定时推送配置")
-            return
-        
-        print(f"[INFO] 加载 {len(configs)} 个定时推送配置")
-        
-        for config in configs:
-            config_id = config['id']
-            schedule_times_json = config['schedule_times']
-            description = config.get('description', '')
+        """重新加载配置并创建定时任务（先清除所有旧任务再重建）"""
+        try:
+            # 第一步：清除所有现有的钉钉推送任务
+            existing_jobs = self.scheduler.get_jobs()
+            dingtalk_jobs = [job for job in existing_jobs if job.id.startswith('dingtalk_push_')]
+            for job in dingtalk_jobs:
+                self.scheduler.remove_job(job.id)
             
-            try:
-                schedule_times = json.loads(schedule_times_json)
+            print(f"[INFO] 已清除 {len(dingtalk_jobs)} 个旧的定时任务")
+            
+            # 第二步：从数据库加载所有启用的配置
+            configs = self.get_schedule_configs()
+            
+            if not configs:
+                print("[INFO] 没有启用的定时推送配置")
+                return
+            
+            print(f"[INFO] 重新加载 {len(configs)} 个定时推送配置")
+            
+            for config in configs:
+                config_id = config['id']
+                schedule_times_json = config.get('schedule_times')
+                description = config.get('description', '')
                 
-                for time_str in schedule_times:
-                    trigger = self.schedule_time_to_cron(time_str)
+                if not schedule_times_json:
+                    print(f"[WARNING] 配置 {config_id} 没有设置推送时间，跳过")
+                    continue
+                
+                try:
+                    schedule_times = json.loads(schedule_times_json)
                     
-                    if trigger:
-                        job_id = f"dingtalk_push_{config_id}_{time_str.replace(':', '_')}"
+                    if not schedule_times:
+                        print(f"[WARNING] 配置 {config_id} 的推送时间为空，跳过")
+                        continue
+                    
+                    for time_str in schedule_times:
+                        trigger = self.schedule_time_to_cron(time_str)
                         
-                        # 移除已存在的任务
-                        if self.scheduler.get_job(job_id):
-                            self.scheduler.remove_job(job_id)
-                        
-                        # 添加新任务
-                        self.scheduler.add_job(
-                            func=self.execute_push,
-                            trigger=trigger,
-                            args=[config_id],
-                            id=job_id,
-                            name=f"钉钉推送-{description}-{time_str}",
-                            replace_existing=True
-                        )
-                        
-                        print(f"[INFO] 已创建定时任务: {job_id} (每天 {time_str} 执行)")
-                        
-            except Exception as e:
-                print(f"[ERROR] 配置 {config_id} 的任务创建失败: {e}")
+                        if trigger:
+                            job_id = f"dingtalk_push_{config_id}_{time_str.replace(':', '_')}"
+                            
+                            # 添加新任务
+                            self.scheduler.add_job(
+                                func=self.execute_push,
+                                trigger=trigger,
+                                args=[config_id],
+                                id=job_id,
+                                name=f"钉钉推送-{description}-{time_str}",
+                                replace_existing=True
+                            )
+                            
+                            print(f"[INFO] 已创建定时任务: {job_id} (每天 {time_str} 执行)")
+                            
+                except json.JSONDecodeError as je:
+                    print(f"[ERROR] 配置 {config_id} 的时间解析失败: {je}")
+                except Exception as e:
+                    print(f"[ERROR] 配置 {config_id} 的任务创建失败: {e}")
+            
+            # 打印当前任务列表
+            current_jobs = self.scheduler.get_jobs()
+            dingtalk_jobs = [job for job in current_jobs if job.id.startswith('dingtalk_push_')]
+            print(f"\n[INFO] 当前共有 {len(dingtalk_jobs)} 个定时任务:")
+            for job in dingtalk_jobs:
+                next_run = job.next_run_time
+                if next_run:
+                    print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+                    
+        except Exception as e:
+            print(f"[ERROR] 重新加载定时任务失败: {e}")
+            import traceback
+            traceback.print_exc()
     
     def start(self):
         """启动调度器"""

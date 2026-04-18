@@ -325,11 +325,15 @@ def create_app(config_name='development'):
     # ==========================================================================
     # 启动钉钉定时推送服务
     # ==========================================================================
+    # 全局 pusher 实例，供 API 调用重载定时任务
+    app.dingtalk_pusher = None
+    
     def init_dingtalk_pusher():
         """在后台线程中启动钉钉定时推送服务"""
         try:
             from utils.dingtalk_schedule_pusher import DingTalkSchedulePusher
             pusher = DingTalkSchedulePusher()
+            app.dingtalk_pusher = pusher
             pusher.start()
             app_logger.info("✅ 钉钉定时推送服务已启动")
         except Exception as e:
