@@ -35,6 +35,7 @@ from routes.document_convert.cosmic_routes import cosmic_bp
 from routes.document_convert.es_to_excel_routes import es_to_excel_bp
 from routes.document_convert.es_field_mapping_routes import es_field_mapping_bp
 from routes.document_convert.clean_event_routes import clean_event_bp
+from routes.document_convert.watermark_routes import watermark_bp
 
 # 排班管理模块
 from routes.schedule.schedule_config_routes import schedule_config_bp
@@ -211,6 +212,7 @@ def create_app(config_name='development'):
         es_to_excel_bp,  # ES 查询结果转 Excel
         es_field_mapping_bp,  # ES 字段映射管理
         clean_event_bp,  # 事件数据清洗
+        watermark_bp,  # 图片水印清除
             
         # 排班管理模块（蓝图已定义前缀）
         schedule_config_bp,
@@ -319,6 +321,24 @@ def create_app(config_name='development'):
     # ==========================================================================
     cleanup_thread = CleanupThread(app)
     cleanup_thread.start()
+    
+    # ==========================================================================
+    # 启动钉钉定时推送服务
+    # ==========================================================================
+    def init_dingtalk_pusher():
+        """在后台线程中启动钉钉定时推送服务"""
+        try:
+            from utils.dingtalk_schedule_pusher import DingTalkSchedulePusher
+            pusher = DingTalkSchedulePusher()
+            pusher.start()
+            app_logger.info("✅ 钉钉定时推送服务已启动")
+        except Exception as e:
+            app_logger.error(f"❌ 钉钉定时推送服务启动失败: {e}")
+    
+    # 启动后台线程
+    dingtalk_thread = threading.Thread(target=init_dingtalk_pusher, daemon=True)
+    dingtalk_thread.start()
+    app_logger.info("📡 钉钉定时推送服务初始化线程已启动")
     
     return app
 

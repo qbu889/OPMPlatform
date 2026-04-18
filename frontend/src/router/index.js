@@ -130,6 +130,12 @@ const routes = [
     component: () => import('../views/tools/AdjustmentFactor.vue'),
     meta: { title: '调整因子管理', hidden: true }
   },
+  {
+    path: '/watermark-remover',
+    name: 'WatermarkRemover',
+    component: () => import('../views/tools/WatermarkRemover.vue'),
+    meta: { title: '图片水印清除', hidden: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',

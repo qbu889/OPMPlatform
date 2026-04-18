@@ -756,8 +756,7 @@ def send_dingtalk_message():
             msg_content += "\n---\n\n"
         
         # 添加查看详情按钮（钉钉 ActionCard 类型）
-        detail_url = "http://localhost:5200/schedule-config"
-        msg_content += f"\n[查看详情]({detail_url})\n"
+        schedule_view_url = "https://alidocs.dingtalk.com/i/nodes/20eMKjyp81LOavDgf46AORZwJxAZB1Gv?utm_scene=person_space&iframeQuery=viewId%3Drm8nwl6hqzo0v1952seh4%26sheetId%3Dhe1d5bovtjfxcies7i3fi"
         
         # 发送钉钉消息（使用 ActionCard 类型以获得更好的按钮效果）
         dingtalk_data = {
@@ -768,8 +767,8 @@ def send_dingtalk_message():
                 "btnOrientation": "0",  # 按钮排列方向：0-竖直，1-水平
                 "btns": [
                     {
-                        "title": "查看详情",
-                        "actionURL": detail_url
+                        "title": "查看排班",
+                        "actionURL": schedule_view_url
                     }
                 ]
             }

@@ -395,26 +395,45 @@
       v-model="dingtalkDialogVisible"
       title="钉钉消息推送"
       width="600px"
+      append-to-body
     >
       <el-form label-width="120px">
         <el-form-item label="Webhook 地址">
-          <el-input 
-            v-model="dingtalkForm.webhook" 
-            placeholder="请输入钉钉机器人 Webhook 地址"
-            type="textarea"
-            :rows="2"
-          />
+          <div class="webhook-selector">
+            <el-select 
+              v-model="selectedDingtalkConfigId" 
+              placeholder="选择定时推送配置（可选）" 
+              clearable
+              @change="onDingtalkConfigChange"
+              popper-class="dingtalk-select-dropdown"
+              style="width: 100%; margin-bottom: 12px;"
+            >
+              <el-option
+                v-for="config in scheduleConfigs"
+                :key="config.id"
+                :label="config.description || `配置 ${config.id}`"
+                :value="config.id"
+              />
+            </el-select>
+            <div class="divider-text">或手动输入 Webhook</div>
+            <el-input 
+              v-model="dingtalkForm.webhook" 
+              placeholder="请输入钉钉机器人 Webhook 地址"
+              type="textarea"
+              :rows="2"
+            />
+          </div>
         </el-form-item>
         
         <el-form-item label="推送时段">
           <el-checkbox-group v-model="dingtalkForm.timeSlots">
-            <el-checkbox label="8:00～9:00">8:00～9:00</el-checkbox>
-            <el-checkbox label="8:00～12:00">8:00～12:00</el-checkbox>
-            <el-checkbox label="9:00～12:00">9:00～12:00</el-checkbox>
-            <el-checkbox label="13:30～17:30">13:30～17:30</el-checkbox>
-            <el-checkbox label="13:30～18:00">13:30～18:00</el-checkbox>
-            <el-checkbox label="17:30～21:30">17:30～21:30</el-checkbox>
-            <el-checkbox label="18:00～21:00">18:00～21:00</el-checkbox>
+            <el-checkbox value="8:00～9:00">8:00～9:00</el-checkbox>
+            <el-checkbox value="8:00～12:00">8:00～12:00</el-checkbox>
+            <el-checkbox value="9:00～12:00">9:00～12:00</el-checkbox>
+            <el-checkbox value="13:30～17:30">13:30～17:30</el-checkbox>
+            <el-checkbox value="13:30～18:00">13:30～18:00</el-checkbox>
+            <el-checkbox value="17:30～21:30">17:30～21:30</el-checkbox>
+            <el-checkbox value="18:00～21:00">18:00～21:00</el-checkbox>
           </el-checkbox-group>
           <div class="text-sm text-gray-500 mt-2">不选则推送全部时段</div>
         </el-form-item>
@@ -454,13 +473,13 @@
         
         <el-form-item label="推送时段">
           <el-checkbox-group v-model="scheduleConfigForm.timeSlots">
-            <el-checkbox label="8:00～9:00">8:00～9:00</el-checkbox>
-            <el-checkbox label="8:00～12:00">8:00～12:00</el-checkbox>
-            <el-checkbox label="9:00～12:00">9:00～12:00</el-checkbox>
-            <el-checkbox label="13:30～17:30">13:30～17:30</el-checkbox>
-            <el-checkbox label="13:30～18:00">13:30～18:00</el-checkbox>
-            <el-checkbox label="17:30～21:30">17:30～21:30</el-checkbox>
-            <el-checkbox label="18:00～21:00">18:00～21:00</el-checkbox>
+            <el-checkbox value="8:00～9:00">8:00～9:00</el-checkbox>
+            <el-checkbox value="8:00～12:00">8:00～12:00</el-checkbox>
+            <el-checkbox value="9:00～12:00">9:00～12:00</el-checkbox>
+            <el-checkbox value="13:30～17:30">13:30～17:30</el-checkbox>
+            <el-checkbox value="13:30～18:00">13:30～18:00</el-checkbox>
+            <el-checkbox value="17:30～21:30">17:30～21:30</el-checkbox>
+            <el-checkbox value="18:00～21:00">18:00～21:00</el-checkbox>
           </el-checkbox-group>
           <div class="text-sm text-gray-500 mt-2">不选则推送全部时段</div>
         </el-form-item>
@@ -604,10 +623,32 @@ const exportFormat = ref('excel') // 默认 Excel
 // 钉钉推送相关
 const dingtalkDialogVisible = ref(false)
 const dingtalkLoading = ref(false)
+const selectedDingtalkConfigId = ref(null)
 const dingtalkForm = ref({
   webhook: '',
   timeSlots: []
 })
+
+// 选择定时推送配置时自动填充
+function onDingtalkConfigChange(configId) {
+  // 使用 nextTick 确保 DOM 更新
+  if (!configId || configId === '') {
+    // 清空选择时清空 webhook 和 timeSlots
+    dingtalkForm.value.webhook = ''
+    dingtalkForm.value.timeSlots = []
+    selectedDingtalkConfigId.value = null
+    return
+  }
+  
+  // 确保 configId 是数字类型（数据库中的 id 可能是数字）
+  const id = typeof configId === 'string' ? parseInt(configId) : configId
+  const config = scheduleConfigs.value.find(c => c.id === id)
+  if (config) {
+    dingtalkForm.value.webhook = config.webhook_url || ''
+    const timeSlots = parseJsonField(config.time_slots)
+    dingtalkForm.value.timeSlots = timeSlots.length > 0 ? timeSlots : []
+  }
+}
 
 // 定时推送配置相关
 const scheduleConfigDialogVisible = ref(false)
@@ -1287,6 +1328,7 @@ function showDingTalkDialog() {
   }
   
   // 重置表单
+  selectedDingtalkConfigId.value = null
   dingtalkForm.value = {
     webhook: '',
     timeSlots: []
@@ -1850,5 +1892,36 @@ onMounted(() => {
 
 .pl-5 {
   padding-left: 1.25rem;
+}
+
+/* Webhook 选择器样式 */
+.webhook-selector {
+  width: 100%;
+}
+
+.divider-text {
+  text-align: center;
+  color: #909399;
+  font-size: 13px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background-color: #e4e7ed;
+}
+
+.divider-text::before {
+  left: 0;
+}
+
+.divider-text::after {
+  right: 0;
 }
 </style>

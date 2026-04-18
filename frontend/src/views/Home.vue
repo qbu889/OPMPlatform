@@ -53,6 +53,15 @@
             <p>将 ES 查询结果转换为标准 Excel 格式</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/watermark-remover')">
+            <div class="feature-icon" style="background: #f3e5f5">
+              <el-icon size="40" color="#9c27b0"><Picture /></el-icon>
+            </div>
+            <h3>图片水印清除</h3>
+            <p>智能去除图片水印，支持手动框选和自动识别</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 
@@ -170,6 +179,7 @@ import {
   Download,
   Connection,
   Tools,
+  Picture,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
