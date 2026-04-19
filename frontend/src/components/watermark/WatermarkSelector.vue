@@ -59,9 +59,9 @@
         <h4>处理参数</h4>
         <el-form :inline="true" size="small">
           <el-form-item label="修复算法">
-            <el-select v-model="algorithm" style="width: 120px" :disabled="mode === 'ai'">
-              <el-option label="Telea" value="telea" />
-              <el-option label="Navier-Stokes" value="ns" />
+            <el-select v-model="algorithm" style="width: 150px" :disabled="mode === 'ai'">
+              <el-option label="Telea (快速)" value="telea" />
+              <el-option label="Navier-Stokes (精细)" value="ns" />
             </el-select>
           </el-form-item>
           <el-form-item label="修复半径">
@@ -122,7 +122,7 @@
     <div class="action-buttons">
       <el-button @click="handleCancel">取消</el-button>
       <el-button 
-        v-if="mode === 'manual'" 
+        v-if="mode === 'basic'" 
         type="warning" 
         @click="clearAll"
         :disabled="bboxes.length === 0"
@@ -133,7 +133,7 @@
         type="primary" 
         @click="handleProcess"
         :loading="processing"
-        :disabled="mode === 'manual' && bboxes.length === 0"
+        :disabled="mode === 'basic' && bboxes.length === 0"
       >
         {{ processing ? '处理中...' : '开始处理' }}
       </el-button>
@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { removeWatermark, autoRemoveWatermark } from '../../api/watermark'
 
@@ -160,7 +160,7 @@ const props = defineProps({
 const emit = defineEmits(['confirm-selection', 'cancel'])
 
 // 状态
-const mode = ref('manual')
+const mode = ref('basic')
 const algorithm = ref('telea')
 const radius = ref(3)
 const processing = ref(false)
@@ -186,15 +186,22 @@ onMounted(() => {
 /**
  * 监听图片URL变化，重新加载
  */
-watch(() => props.imageUrl, () => {
-  initCanvas()
-})
+watch(() => props.imageUrl, (newUrl) => {
+  if (newUrl) {
+    initCanvas()
+  }
+}, { immediate: true })
 
 /**
  * 初始化Canvas
  */
-const initCanvas = () => {
-  if (!canvas.value || !props.imageUrl) return
+const initCanvas = async () => {
+  if (!props.imageUrl) return
+  
+  // 等待canvas元素渲染完成
+  await nextTick()
+  
+  if (!canvas.value) return
   
   const canvasEl = canvas.value
   ctx = canvasEl.getContext('2d')
@@ -358,7 +365,7 @@ const clearAll = () => {
  * 处理水印
  */
 const handleProcess = async () => {
-  if (mode.value === 'manual' && bboxes.value.length === 0) {
+  if (mode.value === 'basic' && bboxes.value.length === 0) {
     ElMessage.warning('请至少选择一个水印区域')
     return
   }
@@ -368,7 +375,7 @@ const handleProcess = async () => {
   try {
     let response
     
-    if (mode.value === 'manual') {
+    if (mode.value === 'basic') {
       // 手动模式 - 将Canvas坐标转换为原始图片坐标
       const bboxData = bboxes.value.map(b => [
         Math.round(b.x * scaleRatio.value),

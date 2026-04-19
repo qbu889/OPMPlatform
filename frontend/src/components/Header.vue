@@ -105,6 +105,12 @@
               <span>Kafka 消息生成</span>
             </el-menu-item>
           </router-link>
+          <router-link to="/watermark-remover" custom v-slot="{ navigate }">
+            <el-menu-item index="/watermark-remover" @click="navigate" @contextmenu="(e) => handleContextMenu(e, '/watermark-remover')">
+              <el-icon><Picture /></el-icon>
+              <span>图片水印清除</span>
+            </el-menu-item>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 
@@ -198,6 +204,7 @@ import {
   Edit,
   Operation,
   ArrowLeft,
+  Picture,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'

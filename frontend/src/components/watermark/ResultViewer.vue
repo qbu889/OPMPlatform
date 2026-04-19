@@ -68,6 +68,10 @@ const props = defineProps({
     type: String,
     required: true
   },
+  outputFilename: {
+    type: String,
+    required: true
+  },
   processingTime: {
     type: Number,
     default: 0
@@ -80,10 +84,7 @@ const emit = defineEmits(['download', 'retry'])
  * 处理下载
  */
 const handleDownload = () => {
-  // 从base64中提取文件名或使用默认名
-  const timestamp = new Date().getTime()
-  const filename = `watermark_removed_${timestamp}.jpg`
-  emit('download', filename)
+  emit('download', props.outputFilename)
 }
 
 /**

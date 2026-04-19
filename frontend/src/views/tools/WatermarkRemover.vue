@@ -38,6 +38,7 @@
         <ResultViewer
           :original-image="uploadedImageUrl"
           :result-image="resultImageData"
+          :output-filename="resultFilename"
           :processing-time="processingTime"
           @download="handleDownload"
           @retry="handleRetry"
@@ -71,6 +72,7 @@ const currentStep = ref(0)
 const uploadedFilename = ref('')
 const uploadedImageUrl = ref('')
 const resultImageData = ref('')
+const resultFilename = ref('')
 const processingTime = ref(0)
 
 /**
@@ -94,6 +96,7 @@ const handleUploadError = (error) => {
  */
 const handleSelectionConfirm = (result) => {
   resultImageData.value = result.image_data
+  resultFilename.value = result.output_filename
   processingTime.value = result.processing_time
   currentStep.value = 2
   ElMessage.success('水印清除完成')
@@ -123,6 +126,7 @@ const handleDownload = (filename) => {
 const handleRetry = () => {
   currentStep.value = 1
   resultImageData.value = ''
+  resultFilename.value = ''
   processingTime.value = 0
 }
 
