@@ -14,7 +14,7 @@
       <el-tabs v-model="activeTab">
         <!-- 排班查询标签页 -->
         <el-tab-pane label="排班查询" name="query">
-          <el-card shadow="hover">
+          <el-card shadow="hover" class="schedule-query-card">
             <template #header>
               <div class="flex justify-between items-center">
                 <span><el-icon><Search /></el-icon> 排班查询</span>
@@ -53,6 +53,7 @@
               v-loading="scheduleLoading"
               class="schedule-table"
               :row-class-name="getRowClassName"
+              max-height="calc(100vh - 380px)"
             >
               <el-table-column prop="date" label="日期" width="120" />
               <el-table-column prop="weekday" label="星期" width="80" />
@@ -396,8 +397,10 @@
       title="钉钉消息推送"
       width="600px"
       append-to-body
+      top="10vh"
     >
-      <el-form label-width="120px">
+      <div class="dingtalk-dialog-body">
+        <el-form label-width="120px">
         <el-form-item label="Webhook 地址">
           <div class="webhook-selector">
             <el-select 
@@ -451,6 +454,7 @@
           />
         </el-form-item>
       </el-form>
+      </div>
       
       <template #footer>
         <el-button @click="dingtalkDialogVisible = false">取消</el-button>
@@ -1727,7 +1731,6 @@ onMounted(() => {
 /* 表格样式优化 */
 .schedule-table :deep(.el-table) {
   border-radius: 8px;
-  overflow: hidden;
 }
 
 .schedule-table :deep(.el-table__row) {
@@ -1935,5 +1938,12 @@ onMounted(() => {
 
 .divider-text::after {
   right: 0;
+}
+
+/* 钉钉推送对话框滚动样式 */
+.dingtalk-dialog-body {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 </style>
