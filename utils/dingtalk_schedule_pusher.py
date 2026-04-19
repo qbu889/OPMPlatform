@@ -11,11 +11,32 @@ from datetime import datetime, date, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import requests
+from cryptography.fernet import Fernet
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from routes.排班.paiBanNew_v2 import DB_CONFIG, RosterDB
+
+# ========== Webhook 解密配置 ==========
+ENCRYPTION_KEY = os.environ.get('WEBHOOK_ENCRYPTION_KEY')
+if not ENCRYPTION_KEY:
+    print("[WARNING] WEBHOOK_ENCRYPTION_KEY 未设置，Webhook 将无法解密")
+
+fernet = None
+if ENCRYPTION_KEY:
+    fernet = Fernet(ENCRYPTION_KEY if isinstance(ENCRYPTION_KEY, bytes) else ENCRYPTION_KEY.encode())
+
+def decrypt_webhook(encrypted_webhook):
+    """解密 Webhook URL（兼容明文和密文）"""
+    if not encrypted_webhook or not fernet:
+        return encrypted_webhook
+    try:
+        decrypted = fernet.decrypt(encrypted_webhook.encode())
+        return decrypted.decode()
+    except Exception as e:
+        # 解密失败，可能是明文数据，直接返回原值
+        return encrypted_webhook
 
 
 class DingTalkSchedulePusher:
@@ -203,8 +224,15 @@ class DingTalkSchedulePusher:
                 return
             
             config = results[0]
-            webhook_url = config['webhook_url']
+            encrypted_webhook = config['webhook_url']
             time_slots_json = config.get('time_slots')
+            
+            # 解密 Webhook URL
+            webhook_url = decrypt_webhook(encrypted_webhook)
+            if not webhook_url:
+                print(f"[ERROR] 无法解密 Webhook (配置ID: {config_id})")
+                db.close()
+                return
             
             # 解析时段列表
             time_slots = json.loads(time_slots_json) if time_slots_json else []

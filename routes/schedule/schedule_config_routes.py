@@ -12,8 +12,39 @@ import io
 import requests
 import json
 import os
+from cryptography.fernet import Fernet
 
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
+
+# ========== Webhook 加密/解密配置 ==========
+ENCRYPTION_KEY = os.environ.get('WEBHOOK_ENCRYPTION_KEY')
+if not ENCRYPTION_KEY:
+    ENCRYPTION_KEY = Fernet.generate_key().decode()
+    os.environ['WEBHOOK_ENCRYPTION_KEY'] = ENCRYPTION_KEY  # 存入环境变量供推送服务使用
+    print(f"[WARNING] WEBHOOK_ENCRYPTION_KEY 未设置，使用自动生成密钥")
+
+fernet = Fernet(ENCRYPTION_KEY if isinstance(ENCRYPTION_KEY, bytes) else ENCRYPTION_KEY.encode())
+
+def encrypt_webhook(webhook_url):
+    """加密 Webhook URL"""
+    if not webhook_url:
+        return None
+    encrypted = fernet.encrypt(webhook_url.encode())
+    return encrypted.decode()
+
+def decrypt_webhook(encrypted_webhook):
+    """解密 Webhook URL（兼容明文和密文）"""
+    if not encrypted_webhook:
+        return None
+    try:
+        decrypted = fernet.decrypt(encrypted_webhook.encode())
+        result = decrypted.decode()
+        print(f"[DEBUG] Webhook 解密成功: {result[:50]}...")
+        return result
+    except Exception as e:
+        # 解密失败，可能是明文数据，直接返回原值
+        print(f"[WARNING] Webhook 解密失败，尝试作为明文使用: {str(e)[:100]}")
+        return encrypted_webhook
 
 
 
@@ -665,6 +696,11 @@ def send_dingtalk_message():
         if not dingtalk_webhook:
             return jsonify({"success": False, "msg": "钉钉 Webhook 地址不能为空"})
         
+        # 解密 Webhook URL（兼容明文和密文）
+        webhook_url = decrypt_webhook(dingtalk_webhook)
+        if not webhook_url or not webhook_url.startswith('http'):
+            return jsonify({"success": False, "msg": "Webhook 地址格式不正确，请检查配置"})
+        
         db = RosterDB(DB_CONFIG)
         if not db.connect():
             return jsonify({"success": False, "msg": "数据库连接失败"})
@@ -770,7 +806,7 @@ def send_dingtalk_message():
         }
         
         response = requests.post(
-            dingtalk_webhook,
+            webhook_url,
             headers={'Content-Type': 'application/json'},
             data=json.dumps(dingtalk_data),
             timeout=10
@@ -798,10 +834,22 @@ def send_dingtalk_message():
                 "msg": f"钉钉推送失败，HTTP状态码: {response.status_code}"
             })
             
+    except requests.exceptions.RequestException as e:
+        # 网络请求异常，提供更友好的错误提示
+        error_msg = str(e)
+        if 'Connection refused' in error_msg:
+            friendly_msg = "无法连接到钉钉服务器，请检查网络连接"
+        elif 'timeout' in error_msg.lower():
+            friendly_msg = "连接钉钉服务器超时，请稍后重试"
+        elif 'Invalid URL' in error_msg:
+            friendly_msg = "Webhook 地址格式不正确，请重新配置"
+        else:
+            friendly_msg = f"网络请求失败: {error_msg}"
+        return jsonify({"success": False, "msg": friendly_msg})
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({"success": False, "msg": "推送失败: " + str(e)})
+        return jsonify({"success": False, "msg": f"推送失败: {str(e)}"})
 
 
 @schedule_config_bp.route('/api/dingtalk-schedule-config', methods=['GET', 'POST'])
@@ -818,7 +866,7 @@ def dingtalk_schedule_config():
             results = db.query(sql)
             db.close()
             
-            # 处理时间字段
+            # 处理时间字段（不解密 Webhook，保持加密状态）
             processed_results = serialize_datetime_objects(results)
             
             return jsonify({
@@ -854,6 +902,9 @@ def dingtalk_schedule_config():
             time_slots_json = json_module.dumps(time_slots, ensure_ascii=False)
             schedule_times_json = json_module.dumps(schedule_times, ensure_ascii=False)
             
+            # 加密 Webhook URL
+            encrypted_webhook = encrypt_webhook(webhook_url)
+            
             if config_id:
                 # 更新现有配置
                 update_sql = """
@@ -862,7 +913,7 @@ def dingtalk_schedule_config():
                     enabled = %s, description = %s, updated_at = NOW()
                 WHERE id = %s
                 """
-                db.execute(update_sql, (webhook_url, time_slots_json, schedule_times_json, 
+                db.execute(update_sql, (encrypted_webhook, time_slots_json, schedule_times_json, 
                                        enabled, description, config_id))
                 msg = "配置更新成功"
             else:
@@ -872,7 +923,7 @@ def dingtalk_schedule_config():
                 (webhook_url, time_slots, schedule_times, enabled, description, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
                 """
-                db.execute(insert_sql, (webhook_url, time_slots_json, schedule_times_json, 
+                db.execute(insert_sql, (encrypted_webhook, time_slots_json, schedule_times_json, 
                                        enabled, description))
                 msg = "配置添加成功"
             
