@@ -447,9 +447,15 @@ def auto_remove_watermark():
         # 如果仍然没有检测到，返回原图
         if np.sum(mask) == 0:
             logger.warning(f"未检测到水印区域: {filename}")
+            # 返回原图的Base64数据
+            _, buffer = cv2.imencode('.jpg', img)
+            import base64
+            image_data = base64.b64encode(buffer).decode('utf-8')
+            
             return jsonify({
                 'success': True,
                 'output_filename': filename,
+                'image_data': f"data:image/jpeg;base64,{image_data}",
                 'message': '未检测到水印区域，返回原图',
                 'detected_regions': 0
             }), 200

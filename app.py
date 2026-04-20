@@ -11,6 +11,7 @@ import os
 import sys
 import logging
 import threading
+import subprocess
 from http import client
 
 from flask import Flask, render_template, request, jsonify, session, send_file, send_from_directory
@@ -489,6 +490,50 @@ if __name__ == '__main__':
     tunnel_thread = threading.Thread(target=start_cloudflared_tunnel, daemon=True)
     tunnel_thread.start()
     app_logger.info("🔗 Cloudflare Tunnel 启动线程已启动（后台运行）")
+    
+    # 启动 IOPaint 服务（用于 AI 水印清除）
+    def start_iopaint_service():
+        """在后台线程中启动 IOPaint AI 图像修复服务"""
+        # 只在开发环境启动
+        if is_prod:
+            return
+        
+        try:
+            app_logger.info("=" * 80)
+            app_logger.info(" 正在启动 IOPaint AI 服务 (端口 8080)...")
+            app_logger.info("=" * 80)
+            
+            # IOPaint 启动命令
+            iopaint_command = [
+                'iopaint',
+                'start',
+                '--model=lama',
+                '--device=cpu',
+                '--port=8080'
+            ]
+            
+            # 启动子进程
+            process = subprocess.Popen(
+                iopaint_command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # 读取输出
+            for line in process.stderr:
+                app_logger.info(f"IOPaint: {line.strip()}")
+            
+        except FileNotFoundError:
+            app_logger.warning("⚠️ 未找到 iopaint 命令，AI 水印清除功能将不可用")
+            app_logger.warning("   安装方法：pip install iopaint")
+        except Exception as e:
+            app_logger.error(f"❌ IOPaint 服务启动失败：{e}")
+    
+    # 在后台线程中启动 IOPaint 服务
+    iopaint_thread = threading.Thread(target=start_iopaint_service, daemon=True)
+    iopaint_thread.start()
+    app_logger.info("🤖 IOPaint AI 服务启动线程已启动（后台运行）")
     
     # 延迟打开浏览器（等待服务器启动）
     def open_browser():
