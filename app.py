@@ -503,11 +503,11 @@ if __name__ == '__main__':
             app_logger.info(" 正在启动 IOPaint AI 服务 (端口 8080)...")
             app_logger.info("=" * 80)
             
-            # IOPaint 启动命令
+            # IOPaint 启动命令（使用 MAT 模型，适合复杂纹理修复）
             iopaint_command = [
                 'iopaint',
                 'start',
-                '--model=lama',
+                '--model=mat',
                 '--device=cpu',
                 '--port=8080'
             ]
@@ -535,19 +535,20 @@ if __name__ == '__main__':
     iopaint_thread.start()
     app_logger.info("🤖 IOPaint AI 服务启动线程已启动（后台运行）")
     
-    # 延迟打开浏览器（等待服务器启动）
-    def open_browser():
-        """在服务器启动后自动打开浏览器"""
-        import time
-        time.sleep(2)  # 等待 2 秒确保服务器已启动
-        try:
-            webbrowser.open(f'http://127.0.0.1:{port}')
-            app_logger.info(f"已在浏览器中打开 http://127.0.0.1:{port}")
-        except Exception as e:
-            app_logger.error(f"打开浏览器失败：{e}")
+    # 注释掉自动打开浏览器，用户应访问前端 Vite 服务器 (localhost:5200)
+    # def open_browser():
+    #     """在服务器启动后自动打开浏览器"""
+    #     import time
+    #     time.sleep(2)  # 等待 2 秒确保服务器已启动
+    #     try:
+    #         webbrowser.open(f'http://127.0.0.1:{port}')
+    #         app_logger.info(f"已在浏览器中打开 http://127.0.0.1:{port}")
+    #     except Exception as e:
+    #         app_logger.error(f"打开浏览器失败：{e}")
     
-    # 在后台线程中打开浏览器
-    threading.Thread(target=open_browser, daemon=True).start()
+    # 在后台线程中打开浏览器（已禁用）
+    # threading.Thread(target=open_browser, daemon=True).start()
+    app_logger.info("请访问前端地址: http://localhost:5200")
     
     # 禁用 debug 模式以确保模块正确重新加载
     app.run(

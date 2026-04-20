@@ -18,7 +18,7 @@ else
 fi
 
 # 检查端口是否被占用
-PORT=${PORT:-5001}
+PORT=${PORT:-5002}
 echo "🔍 检查端口 $PORT..."
 lsof -ti:$PORT > /dev/null 2>&1
 if [ $? -eq 0 ]; then
