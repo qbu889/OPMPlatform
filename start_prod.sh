@@ -35,4 +35,5 @@ echo "按 Ctrl+C 停止应用"
 echo "======================================"
 echo ""
 
-python -m flask run --port=$PORT
+# 直接运行 app.py 以确保 Cloudflare Tunnel 和 IOPaint 服务正常启动
+python app.py
