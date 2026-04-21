@@ -4,7 +4,8 @@ import { resolve } from 'path'
 
 // 后端 API 地址配置
 const isProd = process.env.NODE_ENV === 'production'
-const BACKEND_PORT = isProd ? 5004 : 5001
+// 开发环境: 5002, 生产环境: 5004 (可通过 BACKEND_PORT 环境变量覆盖)
+const BACKEND_PORT = process.env.BACKEND_PORT || (isProd ? 5004 : 5002)
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 
 // https://vite.dev/config/

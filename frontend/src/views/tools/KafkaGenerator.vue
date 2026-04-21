@@ -203,10 +203,10 @@
               <el-button 
                 size="small" 
                 type="primary"
-                @click="subtractEventTime(15)"
+                @click="adjustAllTimeFields"
                 style="margin-left: 5px"
               >
-                -15分钟
+                调整时间
               </el-button>
             </div>
           </div>
@@ -219,6 +219,7 @@
         :rows="15"
         readonly
         class="result-textarea"
+        :class="{ 'time-adjusted': timeFieldsAdjusted }"
       />
 
       <div class="button-group mt-3">
@@ -690,8 +691,9 @@ const resultData = ref(null)
 const resultJson = ref('')
 const eventTime = ref('')  // 事件时间
 const delayTime = ref(15)
-const addTestPrefix = ref(false)
+const addTestPrefix = ref(true)
 const esQuery = ref('')
+const timeFieldsAdjusted = ref(false)  // 标记时间字段是否已调整
 
 // 字典弹窗
 const dictDialogVisible = ref(false)
@@ -938,6 +940,7 @@ const generateMessage = async () => {
       resultJson.value = JSON.stringify(resultData.value, null, 2)
       delayTime.value = result.delay_time || 15
       esQuery.value = result.es_query || ''
+      timeFieldsAdjusted.value = false  // 重置调整标记
       
       ElMessage.success('Kafka 消息生成成功')
     } else {
@@ -1641,52 +1644,91 @@ const copyEsQuery = async () => {
   }
 }
 
-// 事件时间减指定分钟数
-const subtractEventTime = (minutes) => {
-  if (!eventTime.value) {
-    ElMessage.warning('请先输入事件时间')
+// 调整所有时间字段（eventTime、EVENT_ARRIVAL_TIME、CREATION_EVENT_TIME）
+const adjustAllTimeFields = () => {
+  const minutes = delayTime.value
+  if (!minutes || minutes <= 0) {
+    ElMessage.warning('请先设置延迟时间（分钟）')
     return
   }
 
   try {
-    // 解析时间字符串
-    let date = new Date(eventTime.value)
-    
-    // 如果解析失败，尝试其他格式
-    if (isNaN(date.getTime())) {
-      // 尝试 YYYY-MM-DD HH:mm:ss 格式
-      const parts = eventTime.value.split(/[- :]/)
-      if (parts.length >= 6) {
-        date = new Date(
-          parseInt(parts[0]),
-          parseInt(parts[1]) - 1,
-          parseInt(parts[2]),
-          parseInt(parts[3]),
-          parseInt(parts[4]),
-          parseInt(parts[5])
-        )
-      } else {
-        ElMessage.error('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式')
-        return
+    // 1. 调整 eventTime 输入框
+    if (eventTime.value) {
+      let date = new Date(eventTime.value)
+      
+      if (isNaN(date.getTime())) {
+        const parts = eventTime.value.split(/[- :]/)
+        if (parts.length >= 6) {
+          date = new Date(
+            parseInt(parts[0]),
+            parseInt(parts[1]) - 1,
+            parseInt(parts[2]),
+            parseInt(parts[3]),
+            parseInt(parts[4]),
+            parseInt(parts[5])
+          )
+        } else {
+          ElMessage.error('事件时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式')
+          return
+        }
       }
+      
+      date.setMinutes(date.getMinutes() - minutes)
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const mins = String(date.getMinutes()).padStart(2, '0')
+      const secs = String(date.getSeconds()).padStart(2, '0')
+      
+      eventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
     }
-    
-    // 减去指定分钟数
-    date.setMinutes(date.getMinutes() - minutes)
-    
-    // 格式化为 YYYY-MM-DD HH:mm:ss
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const mins = String(date.getMinutes()).padStart(2, '0')
-    const secs = String(date.getSeconds()).padStart(2, '0')
-    
-    eventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
-    
-    ElMessage.success(`事件时间已减${minutes}分钟`)
+
+    // 2. 调整 JSON 结果中的时间字段
+    if (resultJson.value) {
+      const jsonData = JSON.parse(resultJson.value)
+      
+      // 需要调整的时间字段
+      const timeFields = ['EVENT_ARRIVAL_TIME', 'CREATION_EVENT_TIME']
+      let adjustedCount = 0
+      
+      timeFields.forEach(fieldName => {
+        if (jsonData[fieldName]) {
+          let date = new Date(jsonData[fieldName])
+          
+          if (!isNaN(date.getTime())) {
+            date.setMinutes(date.getMinutes() - minutes)
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            const hours = String(date.getHours()).padStart(2, '0')
+            const mins = String(date.getMinutes()).padStart(2, '0')
+            const secs = String(date.getSeconds()).padStart(2, '0')
+            
+            jsonData[fieldName] = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
+            adjustedCount++
+          }
+        }
+      })
+      
+      // 更新 JSON 显示
+      resultJson.value = JSON.stringify(jsonData, null, 2)
+      
+      // 标记已调整，触发高亮效果
+      timeFieldsAdjusted.value = true
+      
+      // 3 秒后移除高亮
+      setTimeout(() => {
+        timeFieldsAdjusted.value = false
+      }, 3000)
+      
+      ElMessage.success(`已调整 ${adjustedCount + (eventTime.value ? 1 : 0)} 个时间字段（-${minutes}分钟）`)
+    } else {
+      ElMessage.warning('请先生成结果')
+    }
   } catch (error) {
-    console.error('时间计算错误:', error)
+    console.error('时间调整错误:', error)
     ElMessage.error('时间格式错误，请检查输入')
   }
 }
@@ -1887,6 +1929,25 @@ onMounted(() => {
 .result-textarea {
   font-family: 'Courier New', monospace;
   font-size: 13px;
+  transition: background-color 0.3s ease;
+}
+
+/* 时间调整高亮效果 */
+.result-textarea.time-adjusted {
+  background-color: #fff9e6 !important;
+  animation: highlightFade 3s ease-in-out;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #fff9e6;
+  }
+  70% {
+    background-color: #fff9e6;
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .result-actions {
