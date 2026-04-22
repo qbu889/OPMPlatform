@@ -43,6 +43,9 @@
         <el-button type="primary" @click="convertFile" :loading="loading" :disabled="!selectedFile">
           <el-icon><Upload /></el-icon> 上传并转换
         </el-button>
+        <el-button type="warning" @click="debugStyles" :loading="debugLoading">
+          <el-icon><InfoFilled /></el-icon> 调试样式
+        </el-button>
       </div>
     </el-card>
 
@@ -53,6 +56,40 @@
         <p>正在转换中，请稍候...</p>
       </div>
     </el-card>
+
+    <!-- 调试结果对话框 -->
+    <el-dialog v-model="debugDialogVisible" title="Word 文档样式分析" width="80%" top="5vh">
+      <div v-if="debugData" class="debug-content">
+        <el-descriptions :column="3" border>
+          <el-descriptions-item label="总段落数">{{ debugData.total_paragraphs }}</el-descriptions-item>
+          <el-descriptions-item label="表格数量">{{ debugData.total_tables }}</el-descriptions-item>
+          <el-descriptions-item label="唯一样式数">{{ debugData.unique_styles.length }}</el-descriptions-item>
+        </el-descriptions>
+
+        <h4 style="margin-top: 20px;">所有样式列表：</h4>
+        <el-tag v-for="style in debugData.unique_styles" :key="style" style="margin: 5px;">
+          {{ style }}
+        </el-tag>
+
+        <h4 style="margin-top: 20px;">前 50 个段落详情：</h4>
+        <el-table :data="debugData.paragraphs" border stripe max-height="400">
+          <el-table-column prop="index" label="#" width="60" />
+          <el-table-column prop="style" label="样式" width="200" />
+          <el-table-column prop="text" label="文本预览" show-overflow-tooltip />
+          <el-table-column label="格式特征" width="150">
+            <template #default="{ row }">
+              <el-tag v-if="row.is_bold" size="small" type="danger" style="margin-right: 5px;">加粗</el-tag>
+              <el-tag v-if="row.is_italic" size="small" type="warning" style="margin-right: 5px;">斜体</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="run_count" label="Run数" width="80" />
+          <el-table-column prop="length" label="长度" width="80" />
+        </el-table>
+      </div>
+      <template #footer>
+        <el-button @click="debugDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 转换结果 -->
     <el-card v-if="markdown" class="result-card" shadow="hover">
@@ -89,11 +126,14 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Document, UploadFilled, Loading, DocumentCopy, Download, Upload, CircleCheck } from '@element-plus/icons-vue'
+import { Document, UploadFilled, Loading, DocumentCopy, Download, Upload, CircleCheck, InfoFilled } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const markdown = ref('')
 const selectedFile = ref(null)
+const debugLoading = ref(false)
+const debugDialogVisible = ref(false)
+const debugData = ref(null)
 
 // 上传前验证
 const beforeUpload = (file) => {
@@ -178,6 +218,40 @@ const downloadMarkdown = () => {
   a.click()
   URL.revokeObjectURL(url)
   ElMessage.success('下载成功')
+}
+
+const debugStyles = () => {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+
+  debugLoading.value = true
+
+  const formData = new FormData()
+  formData.append('file', selectedFile.value.raw)
+
+  fetch('/api/word-to-md/debug-styles', {
+    method: 'POST',
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        debugData.value = data.analysis
+        debugDialogVisible.value = true
+        ElMessage.success('样式分析完成')
+      } else {
+        ElMessage.error(data.message || '分析失败')
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+      ElMessage.error('分析失败')
+    })
+    .finally(() => {
+      debugLoading.value = false
+    })
 }
 </script>
 
