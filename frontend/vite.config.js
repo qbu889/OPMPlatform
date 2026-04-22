@@ -51,6 +51,12 @@ export default defineConfig({
     },
     // 移除 HMR 的 wss 配置，使用默认 WebSocket
     proxy: {
+      // DingTalk Push API (参考 kafka-generator 配置方式)
+      '/dingtalk-push': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      // 通用 API 代理
       '/api': {
         target: BACKEND_URL,
         changeOrigin: true,
@@ -93,6 +99,10 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/kafka-generator/history': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/field-history': {
         target: BACKEND_URL,
         changeOrigin: true,
       },

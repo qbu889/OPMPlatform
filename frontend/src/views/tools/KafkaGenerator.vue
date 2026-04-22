@@ -176,39 +176,16 @@
             />
             
             <!-- 延迟时间设置 -->
+            <span class="delay-label">延迟时间</span>
             <el-input-number
               v-model="delayTime"
               :min="0"
               :max="1440"
               size="small"
-              style="width: 150px; margin-left: 15px"
+              style="width: 120px; margin-left: 8px"
             >
-              <template #prepend>
-                <el-icon><Clock /></el-icon>
-                延迟时间
-              </template>
               <template #append>分钟</template>
             </el-input-number>
-            
-            <!-- 事件时间设置 -->
-            <div class="event-time-control">
-              <el-input
-                v-model="eventTime"
-                placeholder="事件时间"
-                size="small"
-                style="width: 200px; margin-left: 15px"
-              >
-                <template #prepend>事件时间</template>
-              </el-input>
-              <el-button 
-                size="small" 
-                type="primary"
-                @click="adjustAllTimeFields"
-                style="margin-left: 5px"
-              >
-                调整时间
-              </el-button>
-            </div>
           </div>
         </div>
       </template>
@@ -291,7 +268,7 @@
     >
       <el-form label-width="100px">
         <el-form-item label="FP值">
-          <el-input v-model="pushMessageFp" readonly />
+          <el-input v-model="pushMessageFp" />
         </el-form-item>
         
         <el-form-item label="事件时间">
@@ -303,7 +280,7 @@
         </el-form-item>
         
         <el-form-item label="激活状态">
-          <el-input v-model="pushMessageActiveStatus" readonly />
+          <el-input v-model="pushMessageActiveStatus" />
         </el-form-item>
         
         <el-divider>推送消息 JSON</el-divider>
@@ -318,6 +295,10 @@
       </el-form>
 
       <template #footer>
+        <el-button type="primary" @click="updatePushMessageJson">
+          <el-icon><Refresh /></el-icon>
+          生成
+        </el-button>
         <el-button type="success" @click="copyPushMessage">
           <el-icon><CopyDocument /></el-icon>
           复制推送消息
@@ -703,8 +684,10 @@ const currentDictField = ref('')
 // 推送消息弹窗
 const pushMessageDialogVisible = ref(false)
 const pushMessageFp = ref('')
+const pushMessageFpEditable = ref(false)
 const pushMessageEventTime = ref('')
 const pushMessageActiveStatus = ref('3')
+const pushMessageActiveStatusEditable = ref(false)
 const pushMessageJson = ref('')
 
 // 历史记录弹窗
@@ -715,6 +698,7 @@ const historyCurrentPage = ref(1)
 const historyPageSize = 20
 const historyKeyword = ref('')
 const currentHistoryField = ref('')
+const currentHistoryRequest = ref(0)  // 追踪当前最新的历史记录请求ID
 
 // ES 源数据历史记录弹窗
 const esSourceHistoryDialogVisible = ref(false)
@@ -723,6 +707,7 @@ const esSourceHistoryTotal = ref(0)
 const esSourceHistoryPage = ref(1)
 const esSourceHistoryPageSize = 10
 const esSourceHistoryKeyword = ref('')
+const currentEsHistoryRequest = ref(0)  // 追踪当前最新的 ES 历史记录请求ID
 
 // 当前筛选的字段名（用于动态标题）
 const esHistoryFilterField = ref('')
@@ -929,10 +914,10 @@ const generateMessage = async () => {
       
       // 处理测试前缀
       if (addTestPrefix.value) {
-        if (resultData.value.EQP_LABEL) {
+        if (resultData.value.EQP_LABEL && !resultData.value.EQP_LABEL.includes('【测试】')) {
           resultData.value.EQP_LABEL = '【测试】' + resultData.value.EQP_LABEL
         }
-        if (resultData.value.NE_LABEL) {
+        if (resultData.value.NE_LABEL && !resultData.value.NE_LABEL.includes('【测试】')) {
           resultData.value.NE_LABEL = '【测试】' + resultData.value.NE_LABEL
         }
       }
@@ -1085,6 +1070,17 @@ const updatePushMessageJson = () => {
     FP0_FP1_FP2_FP3: pushMessageFp.value,
   }
   pushMessageJson.value = JSON.stringify(pushMessage, null, 2)
+  ElMessage.success('推送消息已更新')
+}
+
+// 切换 FP 值编辑状态
+const toggleFpEditable = () => {
+  pushMessageFpEditable.value = !pushMessageFpEditable.value
+}
+
+// 切换激活状态编辑状态
+const toggleActiveStatusEditable = () => {
+  pushMessageActiveStatusEditable.value = !pushMessageActiveStatusEditable.value
 }
 
 // 推送消息事件时间减指定分钟数
@@ -1188,6 +1184,10 @@ const openHistoryModal = (field) => {
 
 // 加载历史记录数据
 const loadHistoryData = async () => {
+  // 生成请求ID，用于防止旧请求覆盖新请求
+  const requestId = Date.now()
+  currentHistoryRequest.value = requestId
+  
   try {
     const params = new URLSearchParams({
       page: historyCurrentPage.value,
@@ -1206,6 +1206,11 @@ const loadHistoryData = async () => {
     const response = await fetch(`/kafka-generator/history?${params.toString()}`)
     const result = await response.json()
     
+    // 检查是否是最新的请求
+    if (requestId !== currentHistoryRequest.value) {
+      return // 旧请求，忽略结果
+    }
+    
     if (result.success) {
       historyData.value = result.data.list || []
       historyTotal.value = result.data.total || 0
@@ -1213,6 +1218,10 @@ const loadHistoryData = async () => {
       ElMessage.error(result.message || '加载历史记录失败')
     }
   } catch (error) {
+    // 检查是否是最新的请求
+    if (requestId !== currentHistoryRequest.value) {
+      return // 旧请求，忽略错误
+    }
     console.error('加载历史记录错误:', error)
     ElMessage.error('网络错误，请稍后重试')
   }
@@ -1261,6 +1270,10 @@ const showEsSourceHistory = (fieldName = '') => {
 
 // 加载 ES 源数据历史记录
 const loadEsSourceHistoryData = async () => {
+  // 生成请求ID，用于防止旧请求覆盖新请求
+  const requestId = Date.now()
+  currentEsHistoryRequest.value = requestId
+  
   try {
     const params = new URLSearchParams({
       page: esSourceHistoryPage.value,
@@ -1279,6 +1292,11 @@ const loadEsSourceHistoryData = async () => {
     const response = await fetch(`/kafka-generator/history?${params.toString()}`)
     const result = await response.json()
     
+    // 检查是否是最新的请求
+    if (requestId !== currentEsHistoryRequest.value) {
+      return // 旧请求，忽略结果
+    }
+    
     if (result.success) {
       esSourceHistoryData.value = result.data.list || []
       esSourceHistoryTotal.value = result.data.total || 0
@@ -1286,6 +1304,10 @@ const loadEsSourceHistoryData = async () => {
       ElMessage.error(result.message || '加载历史记录失败')
     }
   } catch (error) {
+    // 检查是否是最新的请求
+    if (requestId !== currentEsHistoryRequest.value) {
+      return // 旧请求，忽略错误
+    }
     console.error('加载 ES 源数据历史记录错误:', error)
     ElMessage.error('网络错误，请稍后重试')
   }
@@ -1349,7 +1371,11 @@ const useEsSourceHistory = (record) => {
       : JSON.stringify(record.es_source_raw, null, 2)
     esSourceHistoryDialogVisible.value = false
   }).catch((action) => {
-    // 用户选择"否"或取消 - 清空自定义字段
+    // action === 'close' 表示点击了 X 关闭按钮，不做任何操作
+    if (action === 'close') {
+      return
+    }
+    // 用户选择"否" - 清空自定义字段
     Object.keys(fieldValues).forEach(key => {
       fieldValues[key] = ''
     })
@@ -1955,6 +1981,27 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.delay-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
+  white-space: nowrap;
+}
+
+.delay-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
+  white-space: nowrap;
+}
+
+.delay-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
+  white-space: nowrap;
 }
 
 .event-time-control {

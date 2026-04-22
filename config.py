@@ -13,12 +13,14 @@ class Config:
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '12345678')
     MYSQL_CHARSET = os.getenv('MYSQL_CHARSET', 'utf8mb4')
+    MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'schedule_system')
     
     # 各业务数据库名称
     KNOWLEDGE_BASE_DB = os.getenv('KNOWLEDGE_BASE_DB', 'knowledge_base')
     AUTH_DB = os.getenv('AUTH_DB', 'auth_system')
     SCHEDULE_DB = os.getenv('SCHEDULE_DB', 'schedule_system')
     FPA_RULES_DB = os.getenv('FPA_RULES_DB', 'fpa_rules')
+    DINGTALK_PUSH_DB = os.getenv('DINGTALK_PUSH_DB', 'dingtalk_push')
     
     # SQLAlchemy 配置（用于 ORM）
     SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{FPA_RULES_DB}?charset={MYSQL_CHARSET}"

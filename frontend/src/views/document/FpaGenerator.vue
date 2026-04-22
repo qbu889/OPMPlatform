@@ -144,6 +144,7 @@
         drag
         :auto-upload="false"
         :before-upload="beforeUpload"
+        :on-change="handleFileChange"
         :on-remove="handleRemove"
         :limit="1"
         accept=".md,.docx"
@@ -761,6 +762,16 @@ const cancelTask = async () => {
   }
 }
 
+// 文件变化处理（可靠地跟踪文件状态）
+const handleFileChange = (file, fileList) => {
+  if (fileList.length > 0) {
+    selectedFile.value = fileList[fileList.length - 1].raw
+    ElMessage.success(`已选择文件: ${file.name}`)
+  } else {
+    selectedFile.value = null
+  }
+}
+
 // 上传前确认（用于文件替换逻辑）
 const beforeUpload = (file) => {
   if (selectedFile.value) {
@@ -776,7 +787,8 @@ const beforeUpload = (file) => {
         }
       )
         .then(() => {
-          selectedFile.value = file
+          // file 是 Element Plus 的 File 包装对象，需要取 .raw
+          selectedFile.value = file.raw || file
           ElMessage.success(`已替换为：${file.name}`)
           resolve(true) // 允许文件加入上传列表
         })
@@ -787,7 +799,7 @@ const beforeUpload = (file) => {
     })
   } else {
     // 首次上传，直接保存
-    selectedFile.value = file
+    selectedFile.value = file.raw || file
     return true
   }
 }
@@ -806,7 +818,8 @@ const handleGenerate = async () => {
 
   loading.value = true
   const formData = new FormData()
-  formData.append('requirement_file', selectedFile.value.raw)
+  // selectedFile.value 已经是原生 File 对象，直接使用
+  formData.append('requirement_file', selectedFile.value)
 
   try {
     const response = await fetch('/fpa-generator/api/generate-async', {

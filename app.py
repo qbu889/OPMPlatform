@@ -68,6 +68,9 @@ from routes.word_to_excel.word_to_excel_routes import word_to_excel_bp
 # 在线表格模块
 from routes.spreadsheet.spreadsheet_routes import spreadsheet_bp
 
+# 钉钉推送模块
+from routes.dingtalk_push import dingtalk_push_bp
+
 # Swagger API 文档
 from routes.swagger_config import swagger_bp
 
@@ -243,6 +246,9 @@ def create_app(config_name='development'):
         # 在线表格模块（蓝图已定义前缀）
         spreadsheet_bp,
         
+        # 钉钉推送模块（蓝图已定义前缀）
+        dingtalk_push_bp,
+        
         # Swagger API 文档
         swagger_bp,
     ]
@@ -344,6 +350,14 @@ def create_app(config_name='development'):
     dingtalk_thread = threading.Thread(target=init_dingtalk_pusher, daemon=True)
     dingtalk_thread.start()
     app_logger.info("📡 钉钉定时推送服务初始化线程已启动")
+    
+    # ==========================================================================
+    # 启动钉钉智能推送系统调度器
+    # ==========================================================================
+    from utils.dingtalk_push_scheduler import push_scheduler
+    push_scheduler.init_app(app)
+    app.push_scheduler = push_scheduler
+    app_logger.info("✅ 钉钉智能推送系统调度器已启动")
     
     return app
 

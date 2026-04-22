@@ -432,7 +432,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         "SEND_JT_FLAG": "0",  # 默认值
         "TITLE_TEXT": "_source.ALARM_NAME",
         "STANDARD_ALARM_NAME": "_source.ALARM_STANDARD_NAME",
-        "STANDARD_ALARM_ID": "0500-009-006-10-800007",  # 固定值
+        "STANDARD_ALARM_ID": lambda: str(get_nested_value(es_data, "STANDARD_ALARM_ID") or "0500-009-006-10-800007"),  # 优先从 ES 读取，否则使用默认值
         "STANDARD_FLAG": lambda: get_nested_value(es_data, "ALARM_STANDARD_FLAG"),  # 保持 int 类型
         "VENDOR_SEVERITY": lambda: get_nested_value(es_data, "VENDOR_SEVERITY"),  # 从 ES 获取，保持 string 类型
         "PROBABLE_CAUSE": lambda: get_nested_value(es_data, "PROBABLE_CAUSE"),  # 厂家告警号
@@ -1243,10 +1243,27 @@ def generate_kafka_message():
         # 生成基础 Kafka 消息
         kafka_message = generate_es_to_kafka_mapping(es_source_data, delay_time)
 
+        # 记录输入输出对比日志（方便排查字段映射问题）
+        source_data = es_source_data.get('_source', es_source_data) if isinstance(es_source_data, dict) else {}
+        fields_to_check = [
+            'STANDARD_ALARM_ID', 'REDEFINE_SEVERITY', 'EQUIPMENT_NAME', 'ALARM_NAME',
+            'ALARM_STANDARD_NAME', 'VENDOR_SEVERITY', 'PROBABLE_CAUSE', 'EVENT_ID',
+            'ORG_TYPE', 'FULL_REGION_NAME', 'CITY_NAME', 'IS_TEST', 'DELAY_TIME'
+        ]
+        logger.info("[FIELD_COMPARISON] ====== 输入输出字段对比 ======")
+        for field in fields_to_check:
+            input_val = source_data.get(field)
+            output_val = kafka_message.get(field)
+            match = "✓" if str(input_val) == str(output_val) else "✗ 不一致!"
+            logger.info(f"[FIELD_COMPARISON] {field}: 输入={input_val} -> 输出={output_val} {match}")
+        logger.info("[FIELD_COMPARISON] ====================================")
+
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
             if field in kafka_message and value:
+                old_val = kafka_message[field]
                 kafka_message[field] = value
+                logger.info(f"[CUSTOM_FIELD] 字段覆盖: {field} = {old_val} -> {value}")
 
         # 强制设置某些字段的固定值（不受前端custom_fields影响）
         kafka_message["TOPIC_PARTITION"] = 7  # 固定分区值

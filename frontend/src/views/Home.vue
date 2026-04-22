@@ -153,7 +153,16 @@
               <el-icon size="40" color="#f44336"><Calendar /></el-icon>
             </div>
             <h3>排班配置管理</h3>
-            <p>智能排班系统，自动化人员调度</p>
+            <p>智能排班系统,自动化人员调度</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/dingtalk-push')">
+            <div class="feature-icon" style="background: #e1f5fe">
+              <el-icon size="40" color="#03a9f4"><Bell /></el-icon>
+            </div>
+            <h3>钉钉推送管理</h3>
+            <p>智能推送平台,支持定时调度和实时预览</p>
           </el-card>
         </el-col>
       </el-row>
@@ -180,6 +189,7 @@ import {
   Connection,
   Tools,
   Picture,
+  Bell,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
