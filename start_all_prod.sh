@@ -39,6 +39,34 @@ echo ""
 # 进入项目目录
 cd "$(dirname "$0")"
 
+# 获取本机局域网 IP 地址
+get_local_ip() {
+    # macOS 使用 ifconfig 获取 en0（通常是 WiFi）或 en1 的 IP
+    if command -v ifconfig &> /dev/null; then
+        local ip=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | head -n 1)
+        if [ -n "$ip" ]; then
+            echo "$ip"
+            return
+        fi
+    fi
+    
+    # Linux 使用 ip 命令
+    if command -v ip &> /dev/null; then
+        local ip=$(ip route get 1 | awk '{print $7; exit}')
+        if [ -n "$ip" ]; then
+            echo "$ip"
+            return
+        fi
+    fi
+    
+    echo "localhost"
+}
+
+LOCAL_IP=$(get_local_ip)
+
+echo " 本机局域网 IP: $LOCAL_IP"
+echo ""
+
 # ============================================================================
 # 1. 启动后端服务
 # ============================================================================
@@ -66,8 +94,8 @@ fi
 echo "🚀 启动 Flask 后端应用（端口：$BACKEND_PORT）..."
 echo ""
 
-# 在后台启动后端服务
-PORT=$BACKEND_PORT python app.py &
+# 在后台启动后端服务（绑定 0.0.0.0 以支持局域网访问）
+PORT=$BACKEND_PORT python app.py --host 0.0.0.0 &
 BACKEND_PID=$!
 
 # 等待后端启动
@@ -77,7 +105,8 @@ sleep 3
 # 检查后端是否成功启动
 if lsof -ti:$BACKEND_PORT > /dev/null 2>&1; then
     echo "✅ 后端服务启动成功（PID: $BACKEND_PID）"
-    echo "   访问地址: http://localhost:$BACKEND_PORT"
+    echo "   本机访问: http://localhost:$BACKEND_PORT"
+    echo "   局域网访问: http://$LOCAL_IP:$BACKEND_PORT"
 else
     echo "❌ 后端服务启动失败！"
     echo "   请检查日志或手动运行: PORT=$BACKEND_PORT python app.py"
@@ -163,8 +192,14 @@ echo "=========================================="
 echo "  ✅ 所有服务已启动成功！"
 echo "=========================================="
 echo ""
-echo "  🌐 前端地址: http://localhost:$FRONTEND_PORT"
-echo "  🔧 后端地址: http://localhost:$BACKEND_PORT"
+echo "  🌐 前端服务:"
+echo "     - 本机访问: http://localhost:$FRONTEND_PORT"
+echo "     - 局域网访问: http://$LOCAL_IP:$FRONTEND_PORT"
+echo ""
+echo "  🔧 后端服务:"
+echo "     - 本机访问: http://localhost:$BACKEND_PORT"
+echo "     - 局域网访问: http://$LOCAL_IP:$BACKEND_PORT"
+echo ""
 echo "  📡 Cloudflare Tunnel: 已自动启动"
 echo ""
 echo "  按 Ctrl+C 停止所有服务"
