@@ -11,6 +11,7 @@ const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  base: '/', // 确保静态资源从根路径加载，解决 SPA 路由刷新 404 问题
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -51,8 +52,24 @@ export default defineConfig({
     },
     // 移除 HMR 的 wss 配置，使用默认 WebSocket
     proxy: {
-      // DingTalk Push API (参考 kafka-generator 配置方式)
-      '/dingtalk-push': {
+      // DingTalk Push API 接口（注意：不包括 /dingtalk-push 页面路由）
+      '/dingtalk-push/configs': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/dingtalk-push/test-webhook': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/dingtalk-push/history': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/dingtalk-push/statistics': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/dingtalk-push/preview': {
         target: BACKEND_URL,
         changeOrigin: true,
       },

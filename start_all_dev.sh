@@ -150,6 +150,12 @@ cd frontend || {
     exit 1
 }
 
+# 清理 Vite 缓存（避免旧缓存导致的路由和资源加载问题）
+echo "🧹 清理 Vite 缓存..."
+rm -rf node_modules/.vite 2>/dev/null
+echo "✅ Vite 缓存已清理"
+echo ""
+
 # 检查 node_modules
 if [ ! -d "node_modules" ]; then
     echo "📦 首次运行，正在安装依赖..."
@@ -189,6 +195,11 @@ echo "     - 局域网访问: http://$LOCAL_IP:$BACKEND_PORT"
 echo ""
 echo "  📡 Cloudflare Tunnel: 已自动启动"
 echo "  🤖 IOPaint AI 服务: 已自动启动（端口 8080）"
+echo ""
+echo "  ⚠️  重要提示："
+echo "     如果页面显示异常或资源加载失败，请："
+echo "     1. 按 Cmd+Shift+R (Mac) 或 Ctrl+Shift+R (Windows) 强制刷新"
+echo "     2. 或在开发者工具中右键刷新按钮，选择'清空缓存并硬性重新加载'"
 echo ""
 echo "  按 Ctrl+C 停止所有服务"
 echo "=========================================="

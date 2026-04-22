@@ -112,31 +112,6 @@ const routes = [
     component: () => import('../views/dingtalk-push/DingTalkPushHistory.vue'),
     meta: { title: '推送历史', hidden: true }
   },
-  // 钉钉推送模块
-  {
-    path: '/dingtalk-push',
-    name: 'DingTalkPushList',
-    component: () => import('../views/dingtalk-push/DingTalkPushList.vue'),
-    meta: { title: '钉钉推送管理', hidden: true }
-  },
-  {
-    path: '/dingtalk-push/config/new',
-    name: 'DingTalkPushConfigNew',
-    component: () => import('../views/dingtalk-push/DingTalkPushConfig.vue'),
-    meta: { title: '新建推送任务', hidden: true }
-  },
-  {
-    path: '/dingtalk-push/config/:id',
-    name: 'DingTalkPushConfigEdit',
-    component: () => import('../views/dingtalk-push/DingTalkPushConfig.vue'),
-    meta: { title: '编辑推送任务', hidden: true }
-  },
-  {
-    path: '/dingtalk-push/history',
-    name: 'DingTalkPushHistory',
-    component: () => import('../views/dingtalk-push/DingTalkPushHistory.vue'),
-    meta: { title: '推送历史', hidden: true }
-  },
   // 高效工具
   {
     path: '/clean-event-page',
