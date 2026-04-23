@@ -412,7 +412,7 @@
             </div>
           </template>
         </el-table-column>
-        
+
         <!-- 如果筛选了特定字段，显示该字段的值 -->
         <el-table-column 
           v-if="esHistoryFilterField" 
@@ -980,7 +980,7 @@ const generateMessage = async () => {
       if (result.history_id) {
         lastGeneratedHistoryId.value = result.history_id
       }
-      
+
       // 处理测试前缀
       if (addTestPrefix.value) {
         if (resultData.value.EQP_LABEL && !resultData.value.EQP_LABEL.includes('【测试】')) {
@@ -1215,7 +1215,7 @@ const subtractPushMessageEventYear = (years) => {
   try {
     // 解析时间字符串
     let date = new Date(pushMessageEventTime.value)
-    
+
     // 如果解析失败，尝试其他格式
     if (isNaN(date.getTime())) {
       // 尝试 YYYY-MM-DD HH:mm:ss 格式
@@ -1234,10 +1234,10 @@ const subtractPushMessageEventYear = (years) => {
         return
       }
     }
-    
+
     // 减去指定年份
     date.setFullYear(date.getFullYear() - years)
-    
+
     // 格式化为 YYYY-MM-DD HH:mm:ss
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -1245,12 +1245,12 @@ const subtractPushMessageEventYear = (years) => {
     const hours = String(date.getHours()).padStart(2, '0')
     const mins = String(date.getMinutes()).padStart(2, '0')
     const secs = String(date.getSeconds()).padStart(2, '0')
-    
+
     pushMessageEventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
-    
+
     // 同时更新推送消息 JSON
     updatePushMessageJson()
-    
+
     ElMessage.success(`事件时间已减${years}年`)
   } catch (error) {
     console.error('时间计算错误:', error)
@@ -1520,14 +1520,14 @@ const startEditRemark = (row) => {
 // 保存备注
 const saveRemark = async (historyId) => {
   if (editingRemarkId.value !== historyId) return
-  
+
   try {
     const response = await fetch(`/kafka-generator/history/${historyId}/remark`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ remark: editingRemarkValue.value })
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('备注已保存')
@@ -1570,12 +1570,12 @@ const saveRemarkFromResult = async () => {
     ElMessage.warning('未找到历史记录ID')
     return
   }
-  
+
   if (!remarkContent.value.trim()) {
     ElMessage.warning('请输入备注内容')
     return
   }
-  
+
   savingRemark.value = true
   try {
     const response = await fetch(`/kafka-generator/history/${lastGeneratedHistoryId.value}/remark`, {
@@ -1583,7 +1583,7 @@ const saveRemarkFromResult = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ remark: remarkContent.value })
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('备注已保存')
@@ -2311,16 +2311,23 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  
+
   &:hover {
     background-color: #f5f7fa;
     color: #409eff;
   }
-  
+
   &:empty::before {
     content: '点击添加备注';
     color: #c0c4cc;
     font-style: italic;
+  }
+}
+
+/* 隐藏同步确认弹窗的关闭按钮 */
+:deep(.sync-confirm-dialog) {
+  .el-message-box__headerbtn {
+    display: none !important;
   }
 }
 </style>
