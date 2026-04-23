@@ -1341,6 +1341,11 @@ const useEsSourceHistory = (record) => {
       confirmButtonText: '是，同步',
       cancelButtonText: '否，清空',
       type: 'warning',
+      // 禁用点击遮罩层关闭，强制用户点击按钮
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      // 添加自定义类名以便区分
+      customClass: 'sync-confirm-dialog'
     }
   ).then(() => {
     // 用户选择"是" - 同步自定义字段
@@ -1371,11 +1376,8 @@ const useEsSourceHistory = (record) => {
       : JSON.stringify(record.es_source_raw, null, 2)
     esSourceHistoryDialogVisible.value = false
   }).catch((action) => {
-    // action === 'close' 表示点击了 X 关闭按钮，不做任何操作
-    if (action === 'close') {
-      return
-    }
-    // 用户选择"否" - 清空自定义字段
+    // 用户选择"否" - 清空自定义字段并加载数据
+    console.log('用户选择"否"（action:', action, '），清空自定义字段并加载数据')
     Object.keys(fieldValues).forEach(key => {
       fieldValues[key] = ''
     })
@@ -2071,5 +2073,12 @@ onMounted(() => {
 
 :deep(.el-card__body) {
   padding: 20px;
+}
+
+/* 隐藏同步确认弹窗的关闭按钮 */
+:deep(.sync-confirm-dialog) {
+  .el-message-box__headerbtn {
+    display: none !important;
+  }
 }
 </style>
