@@ -1292,13 +1292,14 @@ def generate_kafka_message():
             delay_time_value = 15
 
         # 保存历史记录到数据库
-        save_generation_history_with_custom_fields(es_source_data, ordered_data, custom_fields)
+        history_id = save_generation_history_with_custom_fields(es_source_data, ordered_data, custom_fields)
         
         # 使用自定义 JSON 序列化确保字段顺序
         import json as json_lib
         response_data = {
             "success": True,
             "data": ordered_data,
+            "history_id": history_id,  # 返回历史记录ID
             "delay_time": delay_time_value,  # 返回 DELAY_TIME 值
             "message": "Kafka 消息生成成功",
             "debug_info": {
@@ -1403,11 +1404,14 @@ def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fi
                     custom_fields_json
                 ))
                 conn.commit()
-                logger.info(f"历史记录已保存：FP={fp_value}, 告警={alarm_name}, 自定义字段={len(custom_fields) if custom_fields else 0}个")
+                history_id = cur.lastrowid  # 获取新插入记录的ID
+                logger.info(f"历史记录已保存：FP={fp_value}, 告警={alarm_name}, 自定义字段={len(custom_fields) if custom_fields else 0}个, ID={history_id}")
+                return history_id
         finally:
             conn.close()
     except Exception as e:
         logger.error(f"保存历史记录失败：{e}")
+        return None
 
 
 @kafka_generator_bp.route('/history', methods=['GET'])
@@ -1455,15 +1459,16 @@ def get_generation_history():
                             OR region_name LIKE %s 
                             OR es_source_raw LIKE %s 
                             OR kafka_message LIKE %s
+                            OR remark LIKE %s
                         )
                     """
                     keyword_pattern = f"%{keyword}%"
                     params.extend([
                         keyword_pattern, keyword_pattern, keyword_pattern, 
-                        keyword_pattern, keyword_pattern
+                        keyword_pattern, keyword_pattern, keyword_pattern
                     ])
                     
-                    logger.info(f"[HISTORY SEARCH] 关键字: {keyword}, 将搜索 alarm_name, fp_value, region_name, es_source_raw, kafka_message")
+                    logger.info(f"[HISTORY SEARCH] 关键字: {keyword}, 将搜索 alarm_name, fp_value, region_name, es_source_raw, kafka_message, remark")
                 
                 # 查询总数
                 count_query = f"SELECT COUNT(*) as total FROM knowledge_base.kafka_generation_history {where_clause}"
@@ -1474,7 +1479,7 @@ def get_generation_history():
                 offset = (page - 1) * per_page
                 data_query = f"""
                     SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, 
-                           es_source_raw, kafka_message, custom_fields
+                           es_source_raw, kafka_message, custom_fields, remark
                     FROM knowledge_base.kafka_generation_history 
                     {where_clause}
                     ORDER BY created_at DESC
@@ -1526,7 +1531,8 @@ def get_generation_history():
                         'region_name': row['region_name'] or '',
                         'es_source_raw': es_raw_str,  # 格式化后的 JSON 字符串
                         'kafka_message': kafka_msg_str,  # 格式化后的 JSON 字符串
-                        'custom_fields': row.get('custom_fields')  # 自定义字段数据
+                        'custom_fields': row.get('custom_fields'),  # 自定义字段数据
+                        'remark': row.get('remark') or ''  # 备注信息
                     })
                 
                 return jsonify({
@@ -1561,7 +1567,7 @@ def get_generation_history_detail(history_id):
         try:
             with conn.cursor() as cur:
                 query = """
-                    SELECT id, created_at, es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name
+                    SELECT id, created_at, es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name, remark
                     FROM knowledge_base.kafka_generation_history
                     WHERE id = %s
                 """
@@ -1597,13 +1603,54 @@ def get_generation_history_detail(history_id):
                         'alarm_level': row['alarm_level'] or '',
                         'region_name': row['region_name'] or '',
                         'es_source_raw': es_raw,
-                        'kafka_message': kafka_msg
+                        'kafka_message': kafka_msg,
+                        'remark': row.get('remark') or ''
                     }
                 })
         finally:
             conn.close()
     except Exception as e:
         logger.error(f"获取历史记录详情失败：{e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/history/<int:history_id>/remark', methods=['PUT'])
+def update_history_remark(history_id):
+    """更新历史记录的备注"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        data = request.get_json()
+        remark = data.get('remark', '')
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 先检查记录是否存在
+                cur.execute("SELECT id FROM knowledge_base.kafka_generation_history WHERE id = %s", (history_id,))
+                if not cur.fetchone():
+                    return jsonify({"success": False, "message": "记录不存在"}), 404
+                
+                # 更新备注
+                cur.execute(
+                    "UPDATE knowledge_base.kafka_generation_history SET remark = %s WHERE id = %s",
+                    (remark, history_id)
+                )
+                conn.commit()
+                
+                logger.info(f"[HISTORY_REMARK] 更新备注成功: history_id={history_id}, remark={remark[:50]}...")
+                
+                return jsonify({
+                    "success": True,
+                    "message": "备注更新成功"
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"更新备注失败：{e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 

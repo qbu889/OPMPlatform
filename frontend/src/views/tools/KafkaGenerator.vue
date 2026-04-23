@@ -216,6 +216,10 @@
           <el-icon><Refresh /></el-icon>
           重新生成
         </el-button>
+        <el-button type="primary" @click="openRemarkDialog">
+          <el-icon><Edit /></el-icon>
+          添加备注
+        </el-button>
       </div>
 
       <!-- ES 查询区域 -->
@@ -259,6 +263,35 @@
       </template>
     </el-dialog>
 
+    <!-- 备注编辑弹窗 -->
+    <el-dialog
+      v-model="remarkDialogVisible"
+      title="添加备注"
+      width="50%"
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="备注内容">
+          <el-input
+            v-model="remarkContent"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入备注信息..."
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="remarkDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveRemarkFromResult" :loading="savingRemark">
+          <el-icon><Check /></el-icon>
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 推送消息弹窗 -->
     <el-dialog
       v-model="pushMessageDialogVisible"
@@ -275,6 +308,7 @@
           <el-input v-model="pushMessageEventTime" placeholder="请输入事件时间 (YYYY-MM-DD HH:mm:ss)">
             <template #append>
               <el-button @click="subtractPushMessageEventTime(15)">-15分钟</el-button>
+              <el-button @click="subtractPushMessageEventYear(1)" type="warning">-1年</el-button>
             </template>
           </el-input>
         </el-form-item>
@@ -317,7 +351,7 @@
       <div class="mb-3">
         <el-input
           v-model="esSourceHistoryKeyword"
-          placeholder="搜索 FP 值、生成时间..."
+          placeholder="搜索 FP 值、备注、生成时间..."
           clearable
           @keyup.enter="searchEsSourceHistory"
           @blur="esSourceHistoryKeyword = esSourceHistoryKeyword?.trim()"
@@ -359,6 +393,25 @@
         </el-table-column>
         <el-table-column prop="created_at" label="生成时间" width="180" />
         <el-table-column prop="fp_value" label="FP 值" width="250" show-overflow-tooltip />
+        <el-table-column label="备注" min-width="200">
+          <template #default="{ row }">
+            <div class="remark-cell">
+              <el-input
+                v-if="editingRemarkId === row.id"
+                v-model="editingRemarkValue"
+                size="small"
+                @blur="saveRemark(row.id)"
+                @keyup.enter="saveRemark(row.id)"
+                @keyup.esc="cancelEditRemark()"
+                placeholder="输入备注..."
+                clearable
+              />
+              <span v-else class="remark-text" @click="startEditRemark(row)" :title="row.remark || '点击编辑备注'">
+                {{ row.remark || '点击添加备注' }}
+              </span>
+            </div>
+          </template>
+        </el-table-column>
         
         <!-- 如果筛选了特定字段，显示该字段的值 -->
         <el-table-column 
@@ -549,6 +602,7 @@ import {
   Check,
   Upload,
   MagicStick,
+  Edit,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -708,6 +762,16 @@ const esSourceHistoryPage = ref(1)
 const esSourceHistoryPageSize = 10
 const esSourceHistoryKeyword = ref('')
 const currentEsHistoryRequest = ref(0)  // 追踪当前最新的 ES 历史记录请求ID
+
+// 备注编辑相关
+const editingRemarkId = ref(null)
+const editingRemarkValue = ref('')
+
+// 备注弹窗相关
+const remarkDialogVisible = ref(false)
+const remarkContent = ref('')
+const savingRemark = ref(false)
+const lastGeneratedHistoryId = ref(null)  // 保存最近一次生成的历史记录ID
 
 // 当前筛选的字段名（用于动态标题）
 const esHistoryFilterField = ref('')
@@ -911,6 +975,11 @@ const generateMessage = async () => {
 
     if (result.success) {
       resultData.value = result.data
+      
+      // 保存历史记录ID
+      if (result.history_id) {
+        lastGeneratedHistoryId.value = result.history_id
+      }
       
       // 处理测试前缀
       if (addTestPrefix.value) {
@@ -1136,6 +1205,59 @@ const subtractPushMessageEventTime = (minutes) => {
   }
 }
 
+// 推送消息事件时间减一年
+const subtractPushMessageEventYear = (years) => {
+  if (!pushMessageEventTime.value) {
+    ElMessage.warning('请先输入事件时间')
+    return
+  }
+
+  try {
+    // 解析时间字符串
+    let date = new Date(pushMessageEventTime.value)
+    
+    // 如果解析失败，尝试其他格式
+    if (isNaN(date.getTime())) {
+      // 尝试 YYYY-MM-DD HH:mm:ss 格式
+      const parts = pushMessageEventTime.value.split(/[- :]/)
+      if (parts.length >= 6) {
+        date = new Date(
+          parseInt(parts[0]),
+          parseInt(parts[1]) - 1,
+          parseInt(parts[2]),
+          parseInt(parts[3]),
+          parseInt(parts[4]),
+          parseInt(parts[5])
+        )
+      } else {
+        ElMessage.error('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 格式')
+        return
+      }
+    }
+    
+    // 减去指定年份
+    date.setFullYear(date.getFullYear() - years)
+    
+    // 格式化为 YYYY-MM-DD HH:mm:ss
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const mins = String(date.getMinutes()).padStart(2, '0')
+    const secs = String(date.getSeconds()).padStart(2, '0')
+    
+    pushMessageEventTime.value = `${year}-${month}-${day} ${hours}:${mins}:${secs}`
+    
+    // 同时更新推送消息 JSON
+    updatePushMessageJson()
+    
+    ElMessage.success(`事件时间已减${years}年`)
+  } catch (error) {
+    console.error('时间计算错误:', error)
+    ElMessage.error('时间格式错误，请检查输入')
+  }
+}
+
 // 复制推送消息
 const copyPushMessage = async () => {
   if (!pushMessageJson.value) {
@@ -1341,6 +1463,11 @@ const useEsSourceHistory = (record) => {
       confirmButtonText: '是，同步',
       cancelButtonText: '否，清空',
       type: 'warning',
+      // 禁用点击遮罩层关闭，强制用户点击按钮
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      // 添加自定义类名以便区分
+      customClass: 'sync-confirm-dialog'
     }
   ).then(() => {
     // 用户选择"是" - 同步自定义字段
@@ -1371,11 +1498,8 @@ const useEsSourceHistory = (record) => {
       : JSON.stringify(record.es_source_raw, null, 2)
     esSourceHistoryDialogVisible.value = false
   }).catch((action) => {
-    // action === 'close' 表示点击了 X 关闭按钮，不做任何操作
-    if (action === 'close') {
-      return
-    }
-    // 用户选择"否" - 清空自定义字段
+    // 用户选择"否" - 清空自定义字段并加载数据
+    console.log('用户选择"否"（action:', action, '），清空自定义字段并加载数据')
     Object.keys(fieldValues).forEach(key => {
       fieldValues[key] = ''
     })
@@ -1385,6 +1509,95 @@ const useEsSourceHistory = (record) => {
     ElMessage.success('已加载 ES 源数据，自定义字段已清空')
     esSourceHistoryDialogVisible.value = false
   })
+}
+
+// 开始编辑备注
+const startEditRemark = (row) => {
+  editingRemarkId.value = row.id
+  editingRemarkValue.value = row.remark || ''
+}
+
+// 保存备注
+const saveRemark = async (historyId) => {
+  if (editingRemarkId.value !== historyId) return
+  
+  try {
+    const response = await fetch(`/kafka-generator/history/${historyId}/remark`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ remark: editingRemarkValue.value })
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('备注已保存')
+      // 更新本地数据
+      const record = esSourceHistoryData.value.find(r => r.id === historyId)
+      if (record) {
+        record.remark = editingRemarkValue.value
+      }
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存备注失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    editingRemarkId.value = null
+    editingRemarkValue.value = ''
+  }
+}
+
+// 取消编辑备注
+const cancelEditRemark = () => {
+  editingRemarkId.value = null
+  editingRemarkValue.value = ''
+}
+
+// 打开备注弹窗
+const openRemarkDialog = () => {
+  if (!lastGeneratedHistoryId.value) {
+    ElMessage.warning('请先生成 Kafka 消息')
+    return
+  }
+  remarkContent.value = ''
+  remarkDialogVisible.value = true
+}
+
+// 从生成结果保存备注
+const saveRemarkFromResult = async () => {
+  if (!lastGeneratedHistoryId.value) {
+    ElMessage.warning('未找到历史记录ID')
+    return
+  }
+  
+  if (!remarkContent.value.trim()) {
+    ElMessage.warning('请输入备注内容')
+    return
+  }
+  
+  savingRemark.value = true
+  try {
+    const response = await fetch(`/kafka-generator/history/${lastGeneratedHistoryId.value}/remark`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ remark: remarkContent.value })
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('备注已保存')
+      remarkDialogVisible.value = false
+      remarkContent.value = ''
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存备注失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    savingRemark.value = false
+  }
 }
 
 // 格式化 JSON 字符串
@@ -2071,5 +2284,43 @@ onMounted(() => {
 
 :deep(.el-card__body) {
   padding: 20px;
+}
+
+/* 隐藏同步确认弹窗的关闭按钮 */
+:deep(.sync-confirm-dialog) {
+  .el-message-box__headerbtn {
+    display: none !important;
+  }
+}
+
+/* 备注列样式 */
+.remark-cell {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.remark-text {
+  cursor: pointer;
+  color: #606266;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+  &:hover {
+    background-color: #f5f7fa;
+    color: #409eff;
+  }
+  
+  &:empty::before {
+    content: '点击添加备注';
+    color: #c0c4cc;
+    font-style: italic;
+  }
 }
 </style>
