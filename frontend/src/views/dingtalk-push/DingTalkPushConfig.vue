@@ -413,34 +413,33 @@ const removeCronTime = (index) => {
   cronTimes.value.splice(index, 1)
 }
 
-// 自动生成 Cron 表达式
+// 自动生成 Cron 表达式（仅用于展示，后端不再使用）
 const generateCronExpression = () => {
   if (cronTimes.value.length === 0) {
     cronExpression.value = ''
     return
   }
   
-  // 格式：秒 分 时 日 月 周（Quartz 规范）
-  // 关键：日字段和周字段不能同时指定值，必须有一个是 ?
-  const hours = cronTimes.value.map(t => t.split(':')[0]).join(',')
-  
-  // 如果所有分钟都相同，可以简化表达式
-  const uniqueMinutes = [...new Set(cronTimes.value.map(t => t.split(':')[1]))]
-  const minutes = uniqueMinutes.length === 1 ? uniqueMinutes[0] : '0'
+  // 仅展示第一个时间点的 Cron 格式（实际后端会为每个时间点创建独立任务）
+  const firstTime = cronTimes.value[0]
+  const [hour, minute] = firstTime.split(':')
   
   let dayStr, weekStr
   
   if (cronWeekdays.value.length === 0 || cronWeekdays.value.length === 7) {
-    // 每天执行：日=*，周=?
+    // 每天执行
     dayStr = '*'
     weekStr = '?'
   } else {
-    // 指定周几：日=?，周=具体值
+    // 指定周几
     dayStr = '?'
     weekStr = cronWeekdays.value.sort().join(',')
   }
   
-  cronExpression.value = `0 ${minutes} ${hours} ${dayStr} * ${weekStr}`
+  cronExpression.value = `0 ${minute} ${hour} ${dayStr} * ${weekStr}`
+  if (cronTimes.value.length > 1) {
+    cronExpression.value += ` (共${cronTimes.value.length}个时间点)`
+  }
 }
 
 // 监听 cronTimes 和 cronWeekdays 变化，自动生成表达式

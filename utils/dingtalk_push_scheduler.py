@@ -134,25 +134,43 @@ class DingTalkPushScheduler:
                 )
             
             elif schedule_type == 'cron':
-                # Cron 表达式
-                expression = config.get('expression')
-                if not expression:
-                    raise ValueError("Cron 表达式不能为空")
+                # Cron 表达式（支持多时间点，每个时间点创建独立任务）
+                times = config.get('times', [])
+                weekdays = config.get('weekdays', [1, 2, 3, 4, 5, 6, 7])
                 
-                # 解析 Cron 表达式 (分 时 日 月 周)
-                parts = expression.split()
-                if len(parts) == 5:
-                    minute, hour, day, month, weekday = parts
-                    trigger = CronTrigger(
-                        minute=minute,
-                        hour=hour,
-                        day=day,
-                        month=month,
-                        day_of_week=weekday,
-                        timezone=schedule_config.get('timezone', 'Asia/Shanghai')
-                    )
-                else:
-                    raise ValueError(f"无效的 Cron 表达式: {expression}")
+                if not times:
+                    raise ValueError("推送时间不能为空")
+                
+                # 为每个时间点创建独立任务
+                for time_str in times:
+                    try:
+                        hour, minute = map(int, time_str.split(':'))
+                        
+                        trigger = CronTrigger(
+                            hour=hour,
+                            minute=minute,
+                            day_of_week=','.join(map(str, weekdays)),
+                            timezone=schedule_config.get('timezone', 'Asia/Shanghai')
+                        )
+                        
+                        # 生成唯一 job_id：config_id_时间
+                        job_id = f"{config_id}_{time_str.replace(':', '')}"
+                        self.scheduler.add_job(
+                            func=self._execute_push_task,
+                            trigger=trigger,
+                            args=[config_id],
+                            id=job_id,
+                            name=f"钉钉推送-{config_id}-{time_str}",
+                            replace_existing=True
+                        )
+                        
+                        self._job_map[job_id] = config_id
+                        logger.debug(f"已注册时间点任务: {job_id} ({time_str})")
+                    except Exception as e:
+                        logger.error(f"注册时间点 {time_str} 失败: {e}")
+                
+                logger.info(f"✅ 已注册 Cron 推送任务 (ID: {config_id}, 时间点: {times})")
+                return  # 重要：cron 类型在这里返回，不再执行后面的通用任务注册
             
             else:
                 raise ValueError(f"不支持的调度类型: {schedule_type}")
