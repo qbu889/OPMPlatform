@@ -200,25 +200,27 @@
       />
 
       <div class="button-group mt-3">
-        <el-button type="success" @click="copyResult">
-          <el-icon><CopyDocument /></el-icon>
-          复制结果
-        </el-button>
-        <el-button type="primary" @click="copyFPValue">
-          <el-icon><CopyDocument /></el-icon>
-          复制 FP 值
-        </el-button>
-        <el-button type="warning" @click="generatePushMessage">
-          <el-icon><ChatDotRound /></el-icon>
-          生成推送消息
-        </el-button>
-        <el-button type="info" @click="regenerateMessage">
+        <div class="left-buttons">
+          <el-button type="success" @click="copyResult">
+            <el-icon><CopyDocument /></el-icon>
+            复制结果
+          </el-button>
+          <el-button type="primary" @click="copyFPValue">
+            <el-icon><CopyDocument /></el-icon>
+            复制 FP 值
+          </el-button>
+          <el-button type="warning" @click="generatePushMessage">
+            <el-icon><ChatDotRound /></el-icon>
+            生成推送消息
+          </el-button>
+          <el-button type="primary" @click="openRemarkDialog">
+            <el-icon><Edit /></el-icon>
+            添加备注
+          </el-button>
+        </div>
+        <el-button type="danger" @click="regenerateMessage">
           <el-icon><Refresh /></el-icon>
           重新生成
-        </el-button>
-        <el-button type="primary" @click="openRemarkDialog">
-          <el-icon><Edit /></el-icon>
-          添加备注
         </el-button>
       </div>
 
@@ -2311,12 +2313,12 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
+  
   &:hover {
     background-color: #f5f7fa;
     color: #409eff;
   }
-
+  
   &:empty::before {
     content: '点击添加备注';
     color: #c0c4cc;
@@ -2324,10 +2326,15 @@ onMounted(() => {
   }
 }
 
-/* 隐藏同步确认弹窗的关闭按钮 */
-:deep(.sync-confirm-dialog) {
-  .el-message-box__headerbtn {
-    display: none !important;
+/* 按钮组左右分布 - 只作用于生成结果区域 */
+.result-card .button-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .left-buttons {
+    display: flex;
+    gap: 10px;
   }
 }
 </style>
