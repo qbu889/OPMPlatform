@@ -1007,6 +1007,8 @@ def preprocess_json_data(raw_data):
             original = content
             # 修复过度转义 - 按正确顺序：先处理四重反斜杠
             content = content.replace('\\\\\\\\', '\\\\')  # 四重 -> 双重
+            # 处理三重反斜杠的情况（如 \\: -> \\）
+            content = content.replace('\\\\\\', '\\\\')  # 三重 -> 双重
             # 然后处理其他过度转义 (这些是在字符串值内部的)
             content = content.replace('\\\\\\n', '\\n')  # \\n -> \n
             content = content.replace('\\\\\\r', '\\r')  # \\r -> \r
@@ -1227,7 +1229,29 @@ def generate_kafka_message():
             # 记录错误日志（生产环境可以改为 logger.error）
             import sys
             logger.error(f"\n❌【JSON_ERROR】JSON 解析失败！")
-            logger.error(f"完整错误：{error_msg}\n", file=sys.stderr)
+            logger.error(f"完整错误：{error_msg}")
+            
+            # 输出错误位置附近的內容，帮助定位问题
+            try:
+                error_match = re.search(r'line (\d+) column (\d+)', error_msg)
+                if error_match:
+                    line_num = int(error_match.group(1))
+                    col_num = int(error_match.group(2))
+                    lines = processed_data.split('\n')
+                    if line_num <= len(lines):
+                        error_line = lines[line_num - 1]
+                        # 显示错误位置前后 100 个字符
+                        start = max(0, col_num - 50)
+                        end = min(len(error_line), col_num + 50)
+                        context = error_line[start:end]
+                        logger.error(f"错误位置：第 {line_num} 行，第 {col_num} 列")
+                        logger.error(f"行内容：{error_line}")
+                        logger.error(f"错误位置附近：...{context}...")
+                        # 标记错误位置
+                        pointer = ' ' * (col_num - start - 1) + '^'
+                        logger.error(f"错误标记：{pointer}")
+            except Exception as debug_err:
+                logger.error(f"调试信息输出失败：{debug_err}")
 
             return jsonify({
                 "success": False,
