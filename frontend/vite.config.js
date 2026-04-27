@@ -51,6 +51,8 @@ export default defineConfig({
       overlay: true,
     },
     // 移除 HMR 的 wss 配置，使用默认 WebSocket
+    // 启用 history fallback，支持 SPA 路由
+    historyApiFallback: true,
     proxy: {
       // DingTalk Push API 接口（注意：不包括 /dingtalk-push 页面路由）
       '/dingtalk-push/configs': {
@@ -209,11 +211,7 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
-      // SQL Generator 页面和 API
-      '/sql-generator': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
+      // SQL Generator API（只代理 API 接口，不代理页面路由）
       '/api/generate-sql': {
         target: BACKEND_URL,
         changeOrigin: true,

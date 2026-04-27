@@ -171,7 +171,7 @@ const routes = [
     path: '/sql-generator',
     name: 'SqlGenerator',
     component: () => import('../views/tools/SqlGenerator.vue'),
-    meta: { title: 'SQL 智能生成器', hidden: true, hideHeader: true }
+    meta: { title: 'SQL 智能生成器', hidden: true }
   },
   // 文档模块
   {
