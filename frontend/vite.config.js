@@ -209,6 +209,23 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      // SQL Generator 页面和 API
+      '/sql-generator': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/api/generate-sql': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/api/optimize-sql': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/api/explain-sql': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
     },
   },
 })

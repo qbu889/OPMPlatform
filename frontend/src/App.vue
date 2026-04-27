@@ -1,12 +1,17 @@
 <template>
   <div id="app">
-    <Header />
+    <Header v-if="!hideHeader" />
     <router-view />
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Header from './components/Header.vue'
+
+const route = useRoute()
+const hideHeader = computed(() => route.meta.hideHeader)
 </script>
 
 <style>

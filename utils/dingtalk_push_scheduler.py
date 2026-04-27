@@ -21,15 +21,21 @@ class DingTalkPushScheduler:
         self.scheduler = BackgroundScheduler(
             timezone='Asia/Shanghai',
             job_defaults={
-                'max_instances': 3,  # 同一任务最多3个实例
+                'max_instances': 1,  # 同一任务最多1个实例，避免重复执行
                 'coalesce': True,     # 错过的任务合并执行
                 'misfire_grace_time': 60  # 错过60秒内仍执行
             }
         )
         self._job_map = {}  # config_id -> job_id 映射
+        self._initialized = False  # 防止重复初始化
     
     def init_app(self, app):
         """初始化应用"""
+        # 防止重复初始化
+        if self._initialized:
+            logger.warning("⚠️  调度器已经初始化，跳过重复初始化")
+            return
+        
         self.app = app
         
         # 启动调度器
@@ -39,6 +45,9 @@ class DingTalkPushScheduler:
         
         # 加载已启用的配置
         self._load_enabled_configs()
+        
+        # 标记为已初始化
+        self._initialized = True
     
     def _load_enabled_configs(self):
         """加载所有已启用的配置并注册定时任务"""
@@ -197,35 +206,55 @@ class DingTalkPushScheduler:
         """移除定时任务"""
         try:
             # 查找并移除所有相关任务
-            jobs_to_remove = [
-                job_id for job_id, cid in self._job_map.items() 
-                if cid == config_id or job_id == str(config_id)
-            ]
-            
+            jobs_to_remove = []
+                
+            # 从 job_map 中查找
+            for job_id, cid in list(self._job_map.items()):
+                if cid == config_id or job_id == str(config_id):
+                    jobs_to_remove.append(job_id)
+                
             # 同时检查 APScheduler 中是否存在以 config_id 开头的任务
             for job in self.scheduler.get_jobs():
                 if job.id.startswith(f"{config_id}_") or job.id == str(config_id):
                     if job.id not in jobs_to_remove:
                         jobs_to_remove.append(job.id)
-            
+                
+            # 执行移除
+            removed_count = 0
             for job_id in jobs_to_remove:
                 try:
                     self.scheduler.remove_job(job_id)
                     if job_id in self._job_map:
                         del self._job_map[job_id]
+                    removed_count += 1
                     logger.debug(f"已移除任务: {job_id}")
                 except Exception as e:
                     logger.warning(f"移除任务失败 {job_id}: {e}")
+                
+            if removed_count > 0:
+                logger.info(f"✅ 已移除 {removed_count} 个定时任务 (ID: {config_id})")
             
-            if jobs_to_remove:
-                logger.info(f"✅ 已移除 {len(jobs_to_remove)} 个定时任务 (ID: {config_id})")
-        
         except Exception as e:
             logger.error(f"❌ 移除定时任务失败 (ID: {config_id}): {e}")
     
     def _execute_push_task(self, config_id):
         """执行推送任务（由调度器调用）"""
         try:
+            # 防止同一配置在同一分钟内重复执行
+            import time
+            current_minute = int(time.time() // 60)
+            task_key = f"{config_id}_{current_minute}"
+            
+            if hasattr(self, '_last_execution') and task_key in self._last_execution:
+                last_time = self._last_execution[task_key]
+                if current_minute - last_time < 1:  # 1分钟内不重复执行
+                    logger.warning(f"⚠️  跳过重复执行 (ID: {config_id}, 上次执行: {last_time})")
+                    return
+            
+            if not hasattr(self, '_last_execution'):
+                self._last_execution = {}
+            self._last_execution[task_key] = current_minute
+            
             logger.info(f"⏰ 触发定时推送任务 (ID: {config_id})")
             
             if not self.app:

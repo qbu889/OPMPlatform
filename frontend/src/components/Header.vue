@@ -137,6 +137,14 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/sql-generator" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/sql-generator">
+                <el-icon><Cpu /></el-icon>
+                <span>SQL 智能生成</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 
@@ -231,6 +239,7 @@ import {
   Operation,
   ArrowLeft,
   Picture,
+  Cpu,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'

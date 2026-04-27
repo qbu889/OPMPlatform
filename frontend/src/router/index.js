@@ -167,6 +167,12 @@ const routes = [
     component: () => import('../views/tools/WatermarkRemover.vue'),
     meta: { title: '图片水印清除', hidden: true }
   },
+  {
+    path: '/sql-generator',
+    name: 'SqlGenerator',
+    component: () => import('../views/tools/SqlGenerator.vue'),
+    meta: { title: 'SQL 智能生成器', hidden: true, hideHeader: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',

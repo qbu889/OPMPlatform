@@ -62,6 +62,15 @@
             <p>智能去除图片水印，支持手动框选和自动识别</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/sql-generator')">
+            <div class="feature-icon" style="background: #e8eaf6">
+              <el-icon size="40" color="#3f51b5"><Cpu /></el-icon>
+            </div>
+            <h3>SQL 智能生成</h3>
+            <p>AI 驱动的智能 SQL 生成器，支持复杂查询和多表关联</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 
@@ -190,6 +199,7 @@ import {
   Tools,
   Picture,
   Bell,
+  Cpu,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()

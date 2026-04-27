@@ -74,6 +74,9 @@ from routes.dingtalk_push import dingtalk_push_bp
 # Swagger API 文档
 from routes.swagger_config import swagger_bp
 
+# SQL 智能生成器
+from routes.tools.sql_generator_routes import sql_generator_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -252,6 +255,9 @@ def create_app(config_name='development'):
         # 钉钉推送模块（蓝图已定义前缀）
         dingtalk_push_bp,
         
+        # SQL 智能生成器
+        sql_generator_bp,
+        
         # Swagger API 文档
         swagger_bp,
     ]
@@ -372,25 +378,25 @@ app = create_app('development')
 
 
 # ============================================================================
-# 主路由
+# 主路由 - 已禁用，项目使用 Vue 前端 (localhost:5200)
 # ============================================================================
-@app.route('/')
-def index():
-    """
-    系统首页：提供步骤导航
-    """
-    app_logger.info("访问系统首页")
-    demo_exists = os.path.exists(app.config['DEMO_TEMPLATE_PATH'])
-    app_logger.info(f"Demo 模板存在状态：{demo_exists}")
-    
-    # 检查用户登录状态
-    user_info = {
-        'logged_in': 'user_id' in session,
-        'username': session.get('username', ''),
-        'role': session.get('role', 'user')
-    }
-    
-    return render_template('index.html', demo_exists=demo_exists, user=user_info)
+# @app.route('/')
+# def index():
+#     """
+#     系统首页：提供步骤导航（已迁移到 Vue 前端）
+#     """
+#     app_logger.info("访问系统首页")
+#     demo_exists = os.path.exists(app.config['DEMO_TEMPLATE_PATH'])
+#     app_logger.info(f"Demo 模板存在状态：{demo_exists}")
+#     
+#     # 检查用户登录状态
+#     user_info = {
+#         'logged_in': 'user_id' in session,
+#         'username': session.get('username', ''),
+#         'role': session.get('role', 'user')
+#     }
+#     
+#     return render_template('index.html', demo_exists=demo_exists, user=user_info)
 
 
 # ============================================================================

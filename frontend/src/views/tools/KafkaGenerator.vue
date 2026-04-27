@@ -398,19 +398,52 @@
         <el-table-column label="备注" min-width="200">
           <template #default="{ row }">
             <div class="remark-cell">
-              <el-input
-                v-if="editingRemarkId === row.id"
-                v-model="editingRemarkValue"
-                size="small"
-                @blur="saveRemark(row.id)"
-                @keyup.enter="saveRemark(row.id)"
-                @keyup.esc="cancelEditRemark()"
-                placeholder="输入备注..."
-                clearable
-              />
-              <span v-else class="remark-text" @click="startEditRemark(row)" :title="row.remark || '点击编辑备注'">
-                {{ row.remark || '点击添加备注' }}
-              </span>
+              <div v-if="editingRemarkId === row.id" class="remark-edit-mode">
+                <el-input
+                  v-model="editingRemarkValue"
+                  size="small"
+                  placeholder="输入备注..."
+                  clearable
+                  @keyup.enter="saveRemark(row.id)"
+                  @keyup.esc="cancelEditRemark()"
+                />
+                <div class="remark-actions">
+                  <el-button size="small" type="primary" @click="saveRemark(row.id)">
+                    <el-icon><Check /></el-icon>
+                    确认
+                  </el-button>
+                  <el-button size="small" @click="cancelEditRemark()">
+                    <el-icon><Close /></el-icon>
+                    取消
+                  </el-button>
+                </div>
+              </div>
+              <div v-else class="remark-view-mode">
+                <span class="remark-text" :title="row.remark || '点击编辑备注'">
+                  {{ row.remark || '点击添加备注' }}
+                </span>
+                <el-button
+                  v-if="row.remark"
+                  size="small"
+                  type="primary"
+                  link
+                  @click="showContentDialog('备注', row.remark)"
+                  class="view-btn"
+                  title="查看完整备注"
+                >
+                  <el-icon><View /></el-icon>
+                </el-button>
+                <el-button
+                  size="small"
+                  type="primary"
+                  link
+                  @click="startEditRemark(row)"
+                  class="edit-btn"
+                  title="修改备注"
+                >
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -436,48 +469,28 @@
         
         <!-- 如果没有筛选字段，显示原来的列 -->
         <template v-else>
-          <el-table-column label="ES 源数据" min-width="300">
+          <el-table-column label="ES 源数据" min-width="150" align="center">
             <template #default="{ row }">
-              <div class="json-preview">
-                <el-input
-                  :model-value="formatJsonString(row.es_source_raw)"
-                  type="textarea"
-                  :rows="3"
-                  readonly
-                  class="json-textarea"
-                />
-                <el-button
-                  size="small"
-                  type="info"
-                  @click="copyText(row.es_source_raw, 'ES 源数据')"
-                  class="mt-2"
-                >
-                  <el-icon><CopyDocument /></el-icon>
-                  复制
-                </el-button>
-              </div>
+              <el-button
+                type="primary"
+                link
+                @click="showContentDialog('ES 源数据', formatJsonString(row.es_source_raw))"
+              >
+                <el-icon><View /></el-icon>
+                查看内容
+              </el-button>
             </template>
           </el-table-column>
-          <el-table-column label="Kafka 消息" min-width="300">
+          <el-table-column label="Kafka 消息" min-width="150" align="center">
             <template #default="{ row }">
-              <div class="json-preview">
-                <el-input
-                  :model-value="formatJsonString(row.kafka_message)"
-                  type="textarea"
-                  :rows="3"
-                  readonly
-                  class="json-textarea"
-                />
-                <el-button
-                  size="small"
-                  type="info"
-                  @click="copyText(row.kafka_message, 'Kafka 消息')"
-                  class="mt-2"
-                >
-                  <el-icon><CopyDocument /></el-icon>
-                  复制
-                </el-button>
-              </div>
+              <el-button
+                type="primary"
+                link
+                @click="showContentDialog('Kafka 消息', formatJsonString(row.kafka_message))"
+              >
+                <el-icon><View /></el-icon>
+                查看内容
+              </el-button>
             </template>
           </el-table-column>
         </template>
@@ -577,6 +590,37 @@
           @current-change="changeHistoryPage"
         />
         <el-button @click="historyDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 内容查看弹窗 -->
+    <el-dialog
+      v-model="contentDialogVisible"
+      :title="contentDialogTitle"
+      width="70%"
+      :close-on-click-modal="false"
+    >
+      <div class="content-viewer">
+        <div class="content-header">
+          <el-button
+            type="primary"
+            size="small"
+            @click="copyText(contentData, contentDialogTitle)"
+          >
+            <el-icon><CopyDocument /></el-icon>
+            复制内容
+          </el-button>
+        </div>
+        <el-input
+          v-model="contentData"
+          type="textarea"
+          :rows="20"
+          readonly
+          class="content-textarea"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="contentDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -774,6 +818,18 @@ const remarkDialogVisible = ref(false)
 const remarkContent = ref('')
 const savingRemark = ref(false)
 const lastGeneratedHistoryId = ref(null)  // 保存最近一次生成的历史记录ID
+
+// 内容查看弹窗相关
+const contentDialogVisible = ref(false)
+const contentDialogTitle = ref('')
+const contentData = ref('')
+
+// 显示内容弹窗
+const showContentDialog = (title, data) => {
+  contentDialogTitle.value = title
+  contentData.value = data || ''
+  contentDialogVisible.value = true
+}
 
 // 当前筛选的字段名（用于动态标题）
 const esHistoryFilterField = ref('')
@@ -2302,8 +2358,27 @@ onMounted(() => {
   min-height: 32px;
 }
 
+.remark-edit-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.remark-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.remark-view-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
 .remark-text {
-  cursor: pointer;
+  flex: 1;
   color: #606266;
   padding: 4px 8px;
   border-radius: 4px;
@@ -2324,6 +2399,33 @@ onMounted(() => {
     color: #c0c4cc;
     font-style: italic;
   }
+}
+
+.edit-btn,
+.view-btn {
+  flex-shrink: 0;
+  padding: 4px;
+  min-width: auto;
+}
+
+/* 内容查看弹窗样式 */
+.content-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content-header {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.content-textarea {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* 按钮组左右分布 - 只作用于生成结果区域 */
