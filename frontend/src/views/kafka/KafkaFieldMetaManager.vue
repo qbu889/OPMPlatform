@@ -27,6 +27,7 @@
             placeholder="搜索 Kafka 字段、ES 字段、中文说明"
             clearable
             @clear="loadData"
+            @keyup.enter="handleSearch"
             style="width: 300px"
           />
         </el-form-item>
@@ -329,6 +330,11 @@ const resetForm = () => {
   })
 }
 
+// 返回上一页
+const goBack = () => {
+  window.history.back()
+}
+
 // 初始化
 onMounted(() => {
   loadData()
@@ -343,6 +349,11 @@ onMounted(() => {
 .card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
   align-items: center;
 }
 
