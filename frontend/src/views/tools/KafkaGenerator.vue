@@ -2,8 +2,16 @@
   <div class="kafka-container">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
-      <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
+      <div class="header-content">
+        <div>
+          <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
+          <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
+        </div>
+        <el-button type="primary" @click="goToFieldMetaManager">
+          <el-icon><Setting /></el-icon>
+          字段映射管理
+        </el-button>
+      </div>
     </div>
 
     <!-- ES 源数据输入 -->
@@ -57,6 +65,14 @@
           <el-icon><Delete /></el-icon>
           清除所有字段
         </el-button>
+        <!-- 【测试】前缀开关（与下方结果区域同步） -->
+        <el-switch
+          v-model="addTestPrefix"
+          active-text="【测试】前缀"
+          inline-prompt
+          style="margin-left: 12px;"
+          @change="handleTestPrefixChange"
+        />
       </div>
     </el-card>
 
@@ -173,6 +189,7 @@
               v-model="addTestPrefix"
               active-text="【测试】前缀"
               inline-prompt
+              @change="handleTestPrefixChange"
             />
             
             <!-- 延迟时间设置 -->
@@ -627,7 +644,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Operation,
@@ -649,6 +666,7 @@ import {
   Upload,
   MagicStick,
   Edit,
+  Setting,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -775,6 +793,41 @@ const delayTime = ref(15)
 const addTestPrefix = ref(true)
 const esQuery = ref('')
 const timeFieldsAdjusted = ref(false)  // 标记时间字段是否已调整
+
+// 监听 NETWORK_TYPE_TOP 字段值变化
+watch(
+  () => fieldValues.NETWORK_TYPE_TOP,
+  (newVal) => {
+    console.log('NETWORK_TYPE_TOP 变化:', newVal, '类型:', typeof newVal)
+    if (newVal === '20' || newVal === 20) {
+      if (addTestPrefix.value) {
+        ElMessage.warning({
+          message: '提示：因为当前是虚拟化的一级专业 ID（NETWORK_TYPE_TOP=20），网元名称（EQP_LABEL）不能添加【测试】前缀。已自动关闭。',
+          duration: 6000,
+        })
+        addTestPrefix.value = false
+      }
+    }
+  }
+)
+
+// 处理【测试】前缀开关变化
+const handleTestPrefixChange = (value) => {
+  // 如果用户尝试打开开关
+  if (value) {
+    const networkTypeTop = fieldValues.NETWORK_TYPE_TOP
+    console.log('handleTestPrefixChange - NETWORK_TYPE_TOP:', networkTypeTop)
+    
+    if (networkTypeTop === '20' || networkTypeTop === 20) {
+      ElMessage.warning({
+        message: '提示：因为当前是虚拟化的一级专业 ID（NETWORK_TYPE_TOP=20），网元名称（EQP_LABEL）不能添加【测试】前缀。',
+        duration: 6000,
+      })
+      // 关闭开关
+      addTestPrefix.value = false
+    }
+  }
+}
 
 // 字典弹窗
 const dictDialogVisible = ref(false)
@@ -1017,6 +1070,20 @@ const generateMessage = async () => {
         customFields[field.name] = fieldValues[field.name]
       }
     })
+
+    // 校验：如果 NETWORK_TYPE_TOP 为 20，禁止开启测试前缀
+    const networkTypeTop = customFields.NETWORK_TYPE_TOP
+    console.log('校验 NETWORK_TYPE_TOP:', networkTypeTop, '类型:', typeof networkTypeTop)
+    
+    if (networkTypeTop === '20' || networkTypeTop === 20) {
+      if (addTestPrefix.value) {
+        ElMessage.warning({
+          message: '提示：因为当前是虚拟化的一级专业 ID（NETWORK_TYPE_TOP=20），网元名称（EQP_LABEL）不能添加【测试】前缀。已自动关闭。',
+          duration: 6000,
+        })
+        addTestPrefix.value = false
+      }
+    }
 
     const response = await fetch('/kafka-generator/generate', {
       method: 'POST',
@@ -1904,6 +1971,11 @@ const loadSampleData = () => {
   ElMessage.success('示例数据已加载')
 }
 
+// 跳转到字段映射管理页面
+const goToFieldMetaManager = () => {
+  window.location.href = '/kafka-field-meta'
+}
+
 // 复制 ES 查询
 const copyEsQuery = async () => {
   if (!esQuery.value) {
@@ -2107,12 +2179,19 @@ onMounted(() => {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .page-header h2 {
   font-size: 32px;
   margin: 0 0 10px 0;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 15px;
   color: #333;
 }

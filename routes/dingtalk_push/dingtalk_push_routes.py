@@ -16,6 +16,81 @@ logger = logging.getLogger(__name__)
 
 dingtalk_push_bp = Blueprint('dingtalk_push', __name__, url_prefix='/dingtalk-push')
 
+# ==================== 打卡确认 API ====================
+
+@dingtalk_push_bp.route('/confirm-checkin', methods=['GET'])
+def confirm_checkin():
+    """处理 ActionCard 按钮点击的打卡确认请求
+    
+    URL 参数：
+    - phone: 推送对象的手机号（由后端动态替换）
+    - time: 打卡时间戳（由后端动态生成）
+    
+    示例 URL：
+    http://localhost:5200/dingtalk-push/confirm-checkin?phone=18659196149&time=2026-04-28 11:00:00
+    """
+    try:
+        phone = request.args.get('phone', '')
+        timestamp = request.args.get('time', '')
+        
+        logger.info(f"收到打卡确认请求 - 手机号: {phone}, 时间: {timestamp}")
+        
+        # TODO: 这里可以根据需要存储到数据库
+        # 示例：存储到 checkin_records 表
+        # INSERT INTO checkin_records (phone, checkin_time, status) VALUES (%s, %s, 'confirmed')
+        
+        return jsonify({
+            'success': True,
+            'message': f'打卡确认成功！\n手机号: {phone}\n时间: {timestamp}',
+            'data': {
+                'phone': phone,
+                'checkin_time': timestamp,
+                'status': 'confirmed'
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"处理打卡确认失败: {e}")
+        return jsonify({'success': False, 'msg': str(e)}), 500
+
+@dingtalk_push_bp.route('/view-checkin', methods=['GET'])
+def view_checkin():
+    """查看打卡信息
+    
+    URL 参数：
+    - phone: 推送对象的手机号
+    
+    示例 URL：
+    http://localhost:5200/dingtalk-push/view-checkin?phone=18659196149
+    """
+    try:
+        phone = request.args.get('phone', '')
+        
+        logger.info(f"收到查看打卡信息请求 - 手机号: {phone}")
+        
+        # TODO: 从数据库查询打卡记录
+        # 示例：
+        # cursor.execute('SELECT * FROM checkin_records WHERE phone = %s ORDER BY checkin_time DESC', (phone,))
+        # records = cursor.fetchall()
+        
+        # 模拟返回数据
+        checkin_info = {
+            'phone': phone,
+            'total_checkins': 0,
+            'today_checkin': None,
+            'records': []
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': f'查询打卡信息成功',
+            'data': checkin_info
+        })
+    
+    except Exception as e:
+        logger.error(f"查看打卡信息失败: {e}")
+        return jsonify({'success': False, 'msg': str(e)}), 500
+
 # ==================== 工具函数 ====================
 
 def get_fernet():
@@ -601,16 +676,27 @@ def execute_push_task(config):
         # 获取数据源
         data = fetch_data_source(config)
         
+        # 添加 phone 变量到模板数据中（用于 text 消息中的 @手机号）
+        at_mobiles_for_template = json.loads(config['at_mobiles']) if config['at_mobiles'] else []
+        if at_mobiles_for_template:
+            data['phone'] = at_mobiles_for_template[0]  # 使用第一个手机号
+        
         # 渲染模板
         rendered_content = render_template(config['template_content'], data)
         
         # 构建消息
         at_mobiles = json.loads(config['at_mobiles']) if config['at_mobiles'] else []
+        at_all = bool(config['at_all']) if config['at_all'] is not None else False
+        
+        # 调试日志：记录推送对象信息
+        logger.info(f"配置ID={config_id}, at_mobiles={at_mobiles}, at_all={at_all}")
+        
         message_json = build_dingtalk_message(
             message_type=config['message_type'],
             content=rendered_content,
             at_mobiles=at_mobiles,
-            at_all=config['at_all']
+            at_all=at_all,
+            config=config  # 传递 config 以支持 ActionCard 按钮
         )
         
         # 发送消息
@@ -1010,14 +1096,23 @@ def render_template(template_content, data):
     template = env.from_string(template_content)
     return template.render(**data)
 
-def build_dingtalk_message(message_type, content, at_mobiles=None, at_all=False):
+def build_dingtalk_message(message_type, content, at_mobiles=None, at_all=False, config=None):
     """构建钉钉消息"""
     if at_mobiles is None:
         at_mobiles = []
     
+    # 确保 isAtAll 是布尔值（钉钉 API要求）
+    is_at_all = bool(at_all) if at_all is not None else False
+    
+    # Markdown 消息类型特殊处理：需要在文本中添加 @手机号 语法
+    if message_type == 'markdown' and at_mobiles and not is_at_all:
+        # 在消息开头添加 @手机号
+        at_text = ' '.join([f'@{mobile}' for mobile in at_mobiles])
+        content = f"{at_text}\n\n{content}"
+    
     base_at = {
         "atMobiles": at_mobiles,
-        "isAtAll": at_all
+        "isAtAll": is_at_all
     }
     
     if message_type == 'markdown':
@@ -1031,13 +1126,34 @@ def build_dingtalk_message(message_type, content, at_mobiles=None, at_all=False)
         }
     
     elif message_type == 'actionCard':
+        # 解析 ActionCard 按钮配置
+        btns = []
+        if config and 'data_source_config' in config:
+            try:
+                data_source_config = json.loads(config['data_source_config']) if isinstance(config['data_source_config'], str) else config['data_source_config']
+                if 'actionCard' in data_source_config and 'btns' in data_source_config['actionCard']:
+                    btns = data_source_config['actionCard']['btns']
+                    
+                    # 替换按钮 URL 中的模板变量
+                    # 如果有 at_mobiles，使用第一个手机号；否则使用空字符串
+                    phone_value = at_mobiles[0] if at_mobiles else ''
+                    timestamp_value = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    
+                    for btn in btns:
+                        if 'actionURL' in btn:
+                            btn['actionURL'] = btn['actionURL'].replace('{{ phone }}', phone_value)
+                            btn['actionURL'] = btn['actionURL'].replace('{{ timestamp }}', timestamp_value)
+            except Exception as e:
+                logger.warning(f"解析 ActionCard 按钮配置失败: {e}")
+                pass
+        
         return {
             "msgtype": "actionCard",
             "actionCard": {
                 "title": "推送消息",
                 "text": content,
                 "btnOrientation": "0",
-                "btns": []
+                "btns": btns
             },
             "at": base_at
         }

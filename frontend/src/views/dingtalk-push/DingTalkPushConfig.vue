@@ -98,6 +98,37 @@
             <el-option label="SQL查询" value="sql" />
           </el-select>
         </el-form-item>
+        
+        <!-- ActionCard 按钮配置 -->
+        <div v-if="form.message_type === 'actionCard'" style="margin-top: 20px; padding: 15px; background: #f5f7fa; border-radius: 4px;">
+          <h4 style="margin: 0 0 15px 0;">ActionCard 按钮配置</h4>
+          
+          <el-form-item label="按钮列表">
+            <div v-for="(btn, index) in actionCardButtons" :key="index" style="margin-bottom: 10px; padding: 10px; background: white; border: 1px solid #e4e7ed; border-radius: 4px;">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <el-input v-model="btn.title" placeholder="按钮标题" style="flex: 1;" size="small" />
+                <el-input v-model="btn.actionURL" placeholder="点击跳转链接 (支持 {{ phone }} {{ timestamp }} 变量)" style="flex: 2;" size="small" />
+                <el-button type="danger" size="small" @click="removeActionButton(index)">删除</el-button>
+              </div>
+              <div style="margin-top: 5px; font-size: 12px; color: #909399;">
+                支持变量：<code>{{ phone }}</code>（手机号）、<code>{{ timestamp }}</code>（时间戳）
+              </div>
+            </div>
+            
+            <el-button type="primary" size="small" @click="addActionButton" style="margin-top: 10px;">
+              + 添加按钮
+            </el-button>
+            
+            <div style="margin-top: 10px; padding: 10px; background: #ecf5ff; border-radius: 4px; font-size: 12px; color: #409eff;">
+              <strong>提示：</strong>
+              <ul style="margin: 5px 0 0 0; padding-left: 20px;">
+                <li>按钮 URL 中的 <code>{{ phone }}</code> 会自动替换为推送对象的手机号</li>
+                <li>按钮 URL 中的 <code>{{ timestamp }}</code> 会自动替换为当前时间</li>
+                <li>如果不配置按钮，将只显示消息内容</li>
+              </ul>
+            </div>
+          </el-form-item>
+        </div>
 
         <!-- 步骤3: 调度配置 -->
         <h3 style="margin-top: 30px">步骤 3/4: 调度配置</h3>
@@ -368,6 +399,22 @@ const newCronTime = ref('')
 const cronExpression = ref('')
 const cronWeekdays = ref([1, 2, 3, 4, 5, 6, 7]) // 默认每天
 
+// ActionCard 按钮配置
+const actionCardButtons = ref([])
+
+// 添加按钮
+const addActionButton = () => {
+  actionCardButtons.value.push({
+    title: '',
+    actionURL: ''
+  })
+}
+
+// 删除按钮
+const removeActionButton = (index) => {
+  actionCardButtons.value.splice(index, 1)
+}
+
 // 示例对话框
 const demoVisible = ref(false)
 const activeDemoTab = ref('markdown')
@@ -490,7 +537,13 @@ const handleSubmit = async () => {
         schedule_config: scheduleConfig,
         data_source_config: {
           type: dataSourceType.value,
-          config: {}
+          config: {},
+          // ActionCard 按钮配置
+          ...(form.value.message_type === 'actionCard' && actionCardButtons.value.length > 0 && {
+            actionCard: {
+              btns: actionCardButtons.value.filter(btn => btn.title && btn.actionURL)
+            }
+          })
         }
       }
       
@@ -595,6 +648,15 @@ const loadConfig = async () => {
           cronWeekdays.value = scheduleConfig.config?.weekdays || [1, 2, 3, 4, 5, 6, 7]
         }
         // once 类型不需要额外配置
+      }
+      
+      // 加载 ActionCard 按钮配置
+      const dataSourceConfig = typeof config.data_source_config === 'string'
+        ? JSON.parse(config.data_source_config)
+        : config.data_source_config
+      
+      if (dataSourceConfig && dataSourceConfig.actionCard && dataSourceConfig.actionCard.btns) {
+        actionCardButtons.value = dataSourceConfig.actionCard.btns
       }
     }
   } catch (error) {

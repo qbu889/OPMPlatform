@@ -138,6 +138,12 @@ const routes = [
     meta: { title: 'Kafka 消息生成', hidden: true }
   },
   {
+    path: '/kafka-field-meta',
+    name: 'KafkaFieldMetaManager',
+    component: () => import('../views/kafka/KafkaFieldMetaManager.vue'),
+    meta: { title: 'Kafka 字段映射管理', hidden: true }
+  },
+  {
     path: '/es-to-excel',
     name: 'EsToExcel',
     component: () => import('../views/tools/EsToExcel.vue'),

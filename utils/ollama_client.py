@@ -130,7 +130,7 @@ class OllamaClient:
                  system: Optional[str] = None,
                  stream: bool = False,
                  options: Optional[Dict] = None,
-                 retry: int = 3) -> str:
+                 retry: int = None) -> str:
         """
         生成文本回复（支持 Ollama 和 OMLX 两种 API）
         
@@ -140,11 +140,15 @@ class OllamaClient:
             system: 系统提示
             stream: 是否流式输出
             options: 其他配置选项
-            retry: 重试次数（默认 3 次）
+            retry: 重试次数（默认从环境变量 OLLAMA_MAX_RETRIES 读取，默认 3 次）
             
         Returns:
             生成的文本内容
         """
+        # 从环境变量读取重试次数，如果未传入
+        if retry is None:
+            retry = int(os.getenv("OLLAMA_MAX_RETRIES", "3"))
+        
         attempt = 0
         last_error = None
         
@@ -292,7 +296,7 @@ class OllamaClient:
              model: Optional[str] = None,
              stream: bool = False,
              options: Optional[Dict] = None,
-             retry: int = 2) -> str:
+             retry: int = None) -> str:
         """
         聊天对话（支持多轮对话）
         
@@ -302,11 +306,15 @@ class OllamaClient:
             model: 模型名称
             stream: 是否流式输出
             options: 其他配置选项
-            retry: 重试次数
+            retry: 重试次数（默认从环境变量 OLLAMA_MAX_RETRIES 读取，默认 3 次）
             
         Returns:
             AI 助手的回复内容
         """
+        # 从环境变量读取重试次数，如果未传入
+        if retry is None:
+            retry = int(os.getenv("OLLAMA_MAX_RETRIES", "3"))
+        
         payload = {
             "model": model or self.model,
             "messages": messages,

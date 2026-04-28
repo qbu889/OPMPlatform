@@ -75,6 +75,14 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      '/dingtalk-push/confirm-checkin': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/dingtalk-push/view-checkin': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
       // 通用 API 代理
       '/api': {
         target: BACKEND_URL,
@@ -98,6 +106,10 @@ export default defineConfig({
       },
       // Kafka Generator API 接口（注意：不包括 /kafka-generator 页面路由）
       '/kafka-generator/field-meta': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
+      '/kafka-generator/field-meta/list': {
         target: BACKEND_URL,
         changeOrigin: true,
       },
