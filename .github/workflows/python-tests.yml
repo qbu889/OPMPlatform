@@ -2,7 +2,7 @@ name: Python Automated Tests
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master, develop, 'q/*' ]
   pull_request:
     branches: [ main, master, develop ]
 
@@ -78,7 +78,23 @@ jobs:
         LOG_TO_FILE=false
         EOF
     
-    - name: Run tests with pytest
+    - name: Run Kafka Generator tests
+      run: |
+        echo "========== Running Kafka Generator Tests =========="
+        pytest test/kafka/test_kafka_complete.py -v \
+          --cov=routes.kafka.kafka_generator_routes \
+          --cov-report=term-missing \
+          --tb=short \
+          --disable-warnings
+        
+        echo "========== Running Kafka API Tests =========="
+        pytest test/kafka/test_kafka_api.py -v \
+          --cov=routes.kafka.kafka_generator_routes \
+          --cov-report=term-missing \
+          --tb=short \
+          --disable-warnings
+    
+    - name: Run all tests with pytest
       run: |
         # 运行所有测试并生成覆盖率报告
         pytest test/ -v \
