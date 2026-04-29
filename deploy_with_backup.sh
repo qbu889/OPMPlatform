@@ -203,18 +203,20 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << EOF
     
     # 启动后端
     echo "🚀 启动后端服务..."
+    export PORT=5004
     nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
-    BACKEND_PID=\$!
-    echo "   后端 PID: \$BACKEND_PID"
+    BACKEND_PID=$!
+    echo "   后端 PID: $BACKEND_PID"
     
     sleep 3
     
     # 启动前端
     echo "🚀 启动前端预览服务..."
     cd frontend
-    nohup npx vite preview --port 5173 --host 0.0.0.0 > ../logs/frontend.log 2>&1 &
-    FRONTEND_PID=\$!
-    echo "   前端 PID: \$FRONTEND_PID"
+    export BACKEND_PORT=5004
+    nohup npm run preview > ../logs/frontend.log 2>&1 &
+    FRONTEND_PID=$!
+    echo "   前端 PID: $FRONTEND_PID"
     
     cd ..
     
