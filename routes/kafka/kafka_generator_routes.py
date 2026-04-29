@@ -419,6 +419,13 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
     # 构建动态字段映射规则
     field_mapping = build_dynamic_field_mapping(es_data, field_meta, user_delay_time)
 
+    # 需要保持数字类型的字段列表（仅这些字段需要是int类型）
+    NUMERIC_FIELDS = {
+        'STANDARD_FLAG',
+        'REDEFINE_SEVERITY',
+        'OBJECT_CLASS',
+    }
+    
     # 按照标准字段顺序处理每个字段
     for kafka_field in STANDARD_FIELD_ORDER:
         try:
@@ -426,19 +433,44 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
                 mapping_rule = field_mapping[kafka_field]
                 if callable(mapping_rule):
                     # 如果是函数，直接调用
-                    kafka_message[kafka_field] = mapping_rule()
+                    value = mapping_rule()
+                    # 对于需要保持数字类型的字段，尝试转换为整数
+                    if kafka_field in NUMERIC_FIELDS and value is not None and value != "":
+                        try:
+                            kafka_message[kafka_field] = int(value)
+                        except (ValueError, TypeError):
+                            kafka_message[kafka_field] = value
+                    else:
+                        kafka_message[kafka_field] = value
                 elif isinstance(mapping_rule, str) and mapping_rule.startswith("_source."):
                     # 如果是 ES 字段路径
                     es_path = mapping_rule.replace("_source.", "")
                     value = get_nested_value(es_data, es_path)
-                    # 关键修改：确保所有值都转换为字符串类型
+                    # 关键修改：根据字段类型决定是否转换为字符串
                     if value is not None:
-                        kafka_message[kafka_field] = str(value)
+                        if kafka_field in NUMERIC_FIELDS:
+                            # 对于数字类型字段，尝试转换为整数
+                            try:
+                                kafka_message[kafka_field] = int(value)
+                            except (ValueError, TypeError):
+                                kafka_message[kafka_field] = value
+                        else:
+                            # 其他字段转换为字符串
+                            kafka_message[kafka_field] = str(value)
                     else:
                         kafka_message[kafka_field] = ""
                 else:
-                    # 如果是默认值，也转换为字符串
-                    kafka_message[kafka_field] = str(mapping_rule) if mapping_rule is not None else ""
+                    # 如果是默认值，根据字段类型处理
+                    if mapping_rule is not None:
+                        if kafka_field in NUMERIC_FIELDS:
+                            try:
+                                kafka_message[kafka_field] = int(mapping_rule)
+                            except (ValueError, TypeError):
+                                kafka_message[kafka_field] = mapping_rule
+                        else:
+                            kafka_message[kafka_field] = str(mapping_rule)
+                    else:
+                        kafka_message[kafka_field] = ""
             else:
                 # 如果不在映射中，设置默认空值
                 kafka_message[kafka_field] = ""
@@ -472,7 +504,11 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
         'SRC_ORG_ID',
         'EVENT_TIME',
         'CREATION_EVENT_TIME',
-        'EVENT_ARRIVAL_TIME'
+        'EVENT_ARRIVAL_TIME',
+        'TIME_STAMP',
+        'CITY_ID',
+        'BUSINESS_TYPE',
+        'ACTIVE_STATUS',
     }
     
     field_mapping = {}
@@ -536,7 +572,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",
         "EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time),
-        "TIME_STAMP": lambda: str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
+        "TIME_STAMP": lambda: str(int(datetime.strptime(get_nested_value(es_data, "EVENT_TIME"), "%Y-%m-%d %H:%M:%S").timestamp())) if get_nested_value(es_data, "EVENT_TIME") else str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
         "FP0_FP1_FP2_FP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "MACHINE_ROOM_INFO": "_source.NE_TAG.MACHINE_ROOM_INFO",
