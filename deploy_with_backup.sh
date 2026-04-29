@@ -221,7 +221,18 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo ""
     echo "📋 后端日志（最后15行）："
     echo "---"
-    tail -15 logs/backend.log
+    # 动态获取当天的日志文件
+    TODAY_LOG=$(ls -t logs/app_*.log 2>/dev/null | head -1)
+    if [ -n "$TODAY_LOG" ] && [ -f "$TODAY_LOG" ]; then
+        tail -15 "$TODAY_LOG"
+    else
+        # 如果没有按天分割的日志，尝试 backend.log
+        if [ -f "logs/backend.log" ]; then
+            tail -15 logs/backend.log
+        else
+            echo "   ⚠️  未找到日志文件"
+        fi
+    fi
     echo "---"
     
     echo ""
@@ -243,8 +254,10 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo "   ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz"
     echo ""
     echo "📝 查看日志命令:"
-    echo "   tail -f ${REMOTE_PATH}/logs/backend.log"
-    echo "   tail -f ${REMOTE_PATH}/logs/frontend.log"
+    echo "   # 查看当天日志（自动识别）"
+    echo "   ssh root@8.146.228.47 'cd /project/wordToWord && ls -t logs/app_*.log 2>/dev/null | head -1 | xargs tail -f'"
+    echo "   # 或直接查看 backend.log"
+    echo "   ssh root@8.146.228.47 'tail -f /project/wordToWord/logs/backend.log'"
     echo "=========================================="
 EOF
 
