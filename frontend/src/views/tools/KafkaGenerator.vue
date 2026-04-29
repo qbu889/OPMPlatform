@@ -793,6 +793,7 @@ const delayTime = ref(15)
 const addTestPrefix = ref(true)
 const esQuery = ref('')
 const timeFieldsAdjusted = ref(false)  // 标记时间字段是否已调整
+const originalFpValue = ref('')  // 保存原始 FP 值
 
 // 监听 NETWORK_TYPE_TOP 字段值变化
 watch(
@@ -1101,6 +1102,9 @@ const generateMessage = async () => {
     if (result.success) {
       resultData.value = result.data
       
+      // 保存原始 FP 值（在添加测试前缀之前）
+      originalFpValue.value = resultData.value.FP0_FP1_FP2_FP3 || ''
+      
       // 保存历史记录ID
       if (result.history_id) {
         lastGeneratedHistoryId.value = result.history_id
@@ -1180,7 +1184,8 @@ const copyFPValue = async () => {
     return
   }
 
-  const fpValue = resultData.value.FP0_FP1_FP2_FP3
+  // 使用保存的原始 FP 值，而不是可能被修改后的值
+  const fpValue = originalFpValue.value || resultData.value.FP0_FP1_FP2_FP3
   if (!fpValue) {
     ElMessage.warning('结果中没有找到 FP 值')
     return

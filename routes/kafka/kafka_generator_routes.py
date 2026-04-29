@@ -463,14 +463,29 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
     Returns:
         dict: 字段映射规则字典
     """
+    # 特殊字段列表：这些字段必须使用默认规则生成，不能使用数据库配置
+    SPECIAL_FIELDS = {
+        'FP0_FP1_FP2_FP3',
+        'CFP0_CFP1_CFP2_CFP3', 
+        'ORIG_ALARM_FP',
+        'ORIG_ALARM_CLEAR_FP',
+        'SRC_ORG_ID',
+        'EVENT_TIME',
+        'CREATION_EVENT_TIME',
+        'EVENT_ARRIVAL_TIME'
+    }
+    
     field_mapping = {}
     
     for kafka_field in STANDARD_FIELD_ORDER:
         meta = field_meta.get(kafka_field, {})
         es_field = meta.get('es_field', '')
         
-        # 如果数据库中配置了 es_field，优先使用
-        if es_field:
+        # 特殊字段强制使用默认规则，忽略数据库配置
+        if kafka_field in SPECIAL_FIELDS:
+            field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+        elif es_field:
+            # 如果数据库中配置了 es_field，优先使用
             field_mapping[kafka_field] = f"_source.{es_field}"
         else:
             # 否则使用内置的默认映射规则
@@ -520,7 +535,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "NMS_ALARM_ID": "_source.NMS_ALARM_ID",
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",
-        "EVENT_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
+        "EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time),
         "TIME_STAMP": lambda: str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
         "FP0_FP1_FP2_FP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
@@ -611,7 +626,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "EVENT_SOURCE": "_source.EVENT_SOURCE",
         "ORIG_ALARM_CLEAR_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "ORIG_ALARM_FP": lambda: generate_es_to_kafka_mapping.consistent_fp,
-        "EVENT_ARRIVAL_TIME": lambda: (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
+        "EVENT_ARRIVAL_TIME": lambda: generate_creation_event_time(es_data, user_delay_time),
         "CREATION_EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time)
     }
     

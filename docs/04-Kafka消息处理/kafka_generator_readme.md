@@ -27,8 +27,8 @@ Content-Type: application/json
 ## 字段映射规则
 
 ### 自动生成规则
-- **时间字段**：`EVENT_TIME`、`CREATION_EVENT_TIME`、`EVENT_ARRIVAL_TIME` 自动设置为当前时间减15分钟
-- **唯一标识**：`FP0_FP1_FP2_FP3`、`CFP0_CFP1_CFP2_CFP3`、`ORIG_ALARM_FP`、`ORIG_ALARM_CLEAR_FP` 自动生成唯一值
+- **时间字段**：`EVENT_TIME`、`CREATION_EVENT_TIME`、`EVENT_ARRIVAL_TIME` 根据 ES 数据中的 `DELAY_TIME` 字段自动计算（当前时间 - DELAY_TIME小时），默认延迟15小时
+- **唯一标识**：`FP0_FP1_FP2_FP3`、`CFP0_CFP1_CFP2_CFP3`、`ORIG_ALARM_FP`、`ORIG_ALARM_CLEAR_FP`、`SRC_ORG_ID` 自动生成相同的唯一值，确保一致性
 - **默认值**：部分字段有预设的默认值
 
 ### 字段映射示例
@@ -75,6 +75,6 @@ python test_kafka_generator.py
 
 ## 注意事项
 1. 输入的ES数据必须是有效的JSON格式
-2. 时间字段会自动调整为当前时间减15分钟
-3. FP字段每次都会生成新的唯一值
+2. 时间字段会根据 ES 数据中的 `DELAY_TIME` 自动计算，如果没有则默认使用15小时延迟
+3. FP相关字段（FP0_FP1_FP2_FP3、CFP0_CFP1_CFP2_CFP3、ORIG_ALARM_FP、ORIG_ALARM_CLEAR_FP、SRC_ORG_ID）每次都会生成相同的唯一值，确保数据一致性
 4. 自定义字段优先级高于自动映射值
