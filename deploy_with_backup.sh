@@ -143,22 +143,33 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << EOF
     # 创建备份目录
     mkdir -p ${BACKUP_DIR}
     
-    # 压缩备份当前项目
-    echo "📦 正在备份项目到 ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz ..."
-    cd /project
-    tar -czf ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz \
-        --exclude='node_modules' \
-        --exclude='.venv' \
-        --exclude='__pycache__' \
-        --exclude='*.pyc' \
-        --exclude='logs/*.log' \
-        wordToWord/
+    # 检查今天是否已经有备份
+    TODAY=$(date '+%Y%m%d')
+    EXISTING_BACKUP=$(ls ${BACKUP_DIR}/wordToWord_backup_${TODAY}_*.tar.gz 2>/dev/null | head -1)
     
-    if [ \$? -eq 0 ]; then
-        BACKUP_SIZE=\$(du -h ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz | cut -f1)
-        echo "✅ 备份完成！大小: \$BACKUP_SIZE"
+    if [ -n "$EXISTING_BACKUP" ]; then
+        BACKUP_SIZE=$(du -h "$EXISTING_BACKUP" | cut -f1)
+        echo "⚠️  检测到今天已有备份："
+        echo "   $(basename $EXISTING_BACKUP) (大小: $BACKUP_SIZE)"
+        echo "ℹ️  跳过备份，直接重启服务..."
     else
-        echo "⚠️  备份失败，继续部署..."
+        # 压缩备份当前项目
+        echo "📦 正在备份项目到 ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz ..."
+        cd /project
+        tar -czf ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.venv' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='logs/*.log' \
+            wordToWord/
+        
+        if [ \$? -eq 0 ]; then
+            BACKUP_SIZE=\$(du -h ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz | cut -f1)
+            echo "✅ 备份完成！大小: \$BACKUP_SIZE"
+        else
+            echo "⚠️  备份失败，继续部署..."
+        fi
     fi
     
     # 保留最近5个备份，删除旧的
@@ -267,7 +278,7 @@ echo "  ✅ 本地部署脚本执行完成！"
 echo "=========================================="
 echo ""
 echo "提示："
-echo "  1. 如果看到密码提示，请输入: nokia@123"
+echo "  1. ✅ 已配置 SSH 免密登录，无需输入密码"
 echo "  2. 等待远程服务器完成备份和重启（约10-15秒）"
 echo "  3. 查看上方输出的日志确认服务是否正常"
 echo "=========================================="
