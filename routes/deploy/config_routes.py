@@ -5,6 +5,8 @@ from flask import Blueprint, jsonify, request
 # from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity  # 暂时禁用JWT
 from models.deploy_config import DeployConfig
 from models import db
+import os
+import subprocess
 
 config_bp = Blueprint('deploy_config', __name__, url_prefix='/api/deploy/config')
 
@@ -287,5 +289,218 @@ def test_connection():
             'message': 'SSH 连接超时',
             'error': '连接超时，请检查网络或防火墙设置'
         }), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==================== 备份管理 API ====================
+
+@config_bp.route('/backup/history', methods=['GET'])
+def get_backup_history():
+    """
+    获取备份历史列表
+    
+    Response:
+    {
+        "success": true,
+        "backups": [
+            {
+                "filename": "wordToWord_backup_20260430_120000.tar.gz",
+                "size": "15.2 MB",
+                "size_bytes": 15938355,
+                "created_at": "2026-04-30 12:00:00",
+                "path": "/project/backups/wordToWord_backup_20260430_120000.tar.gz"
+            }
+        ],
+        "total_count": 5
+    }
+    """
+    try:
+        # 从配置获取备份目录
+        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        
+        # 检查目录是否存在
+        if not os.path.exists(backup_dir):
+            return jsonify({
+                'success': False,
+                'error': '备份目录不存在',
+                'backup_dir': backup_dir
+            }), 404
+        
+        # 获取所有备份文件
+        backup_files = []
+        for filename in os.listdir(backup_dir):
+            if filename.startswith('wordToWord_backup_') and filename.endswith('.tar.gz'):
+                filepath = os.path.join(backup_dir, filename)
+                
+                # 获取文件信息
+                stat = os.stat(filepath)
+                size_bytes = stat.st_size
+                
+                # 格式化文件大小
+                if size_bytes < 1024:
+                    size_str = f"{size_bytes} B"
+                elif size_bytes < 1024 * 1024:
+                    size_str = f"{size_bytes / 1024:.1f} KB"
+                elif size_bytes < 1024 * 1024 * 1024:
+                    size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+                else:
+                    size_str = f"{size_bytes / (1024 * 1024 * 1024):.1f} GB"
+                
+                # 从文件名解析时间戳
+                # 格式：wordToWord_backup_20260430_120000.tar.gz
+                try:
+                    timestamp_str = filename.replace('wordToWord_backup_', '').replace('.tar.gz', '')
+                    created_at = f"{timestamp_str[:4]}-{timestamp_str[4:6]}-{timestamp_str[6:8]} {timestamp_str[9:11]}:{timestamp_str[11:13]}:{timestamp_str[13:15]}"
+                except:
+                    created_at = "Unknown"
+                
+                backup_files.append({
+                    'filename': filename,
+                    'size': size_str,
+                    'size_bytes': size_bytes,
+                    'created_at': created_at,
+                    'path': filepath
+                })
+        
+        # 按时间排序（最新的在前）
+        backup_files.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'backups': backup_files,
+            'total_count': len(backup_files)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@config_bp.route('/backup/delete', methods=['POST'])
+def delete_backup():
+    """
+    删除指定备份文件
+    
+    Request Body:
+    {
+        "filename": "wordToWord_backup_20260430_120000.tar.gz"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "备份文件已删除"
+    }
+    """
+    try:
+        data = request.json
+        filename = data.get('filename')
+        
+        if not filename:
+            return jsonify({'success': False, 'error': '缺少文件名参数'}), 400
+        
+        # 安全检查：防止路径穿越
+        if '..' in filename or filename.startswith('/'):
+            return jsonify({'success': False, 'error': '非法的文件名'}), 400
+        
+        # 从配置获取备份目录
+        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        filepath = os.path.join(backup_dir, filename)
+        
+        # 检查文件是否存在
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'error': '备份文件不存在'}), 404
+        
+        # 删除文件
+        os.remove(filepath)
+        
+        return jsonify({
+            'success': True,
+            'message': f'备份文件 {filename} 已删除'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@config_bp.route('/backup/restore', methods=['POST'])
+def restore_backup():
+    """
+    从备份恢复项目
+    
+    Request Body:
+    {
+        "filename": "wordToWord_backup_20260430_120000.tar.gz"
+    }
+    
+    Response:
+    {
+        "success": true,
+        "message": "正在恢复备份，请稍候..."
+    }
+    """
+    try:
+        data = request.json
+        filename = data.get('filename')
+        
+        if not filename:
+            return jsonify({'success': False, 'error': '缺少文件名参数'}), 400
+        
+        # 安全检查
+        if '..' in filename or filename.startswith('/'):
+            return jsonify({'success': False, 'error': '非法的文件名'}), 400
+        
+        # 从配置获取路径
+        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        remote_path = DeployConfig.get_config('remote_path', '/project/wordToWord')
+        
+        backup_file = os.path.join(backup_dir, filename)
+        
+        # 检查备份文件是否存在
+        if not os.path.exists(backup_file):
+            return jsonify({'success': False, 'error': '备份文件不存在'}), 404
+        
+        # 异步恢复操作（在后台执行）
+        def do_restore():
+            try:
+                # 1. 停止当前服务
+                subprocess.run('pkill -f "python app.py"', shell=True, timeout=10)
+                subprocess.run('pkill -f "vite"', shell=True, timeout=10)
+                
+                # 2. 解压备份文件
+                # 备份到临时目录
+                restore_dir = f"{remote_path}_restore_{os.getpid()}"
+                os.makedirs(restore_dir, exist_ok=True)
+                
+                subprocess.run(
+                    f"cd {restore_dir} && tar -xzf {backup_file}",
+                    shell=True,
+                    timeout=300
+                )
+                
+                # 3. 替换当前项目
+                subprocess.run(f"rm -rf {remote_path}/*", shell=True)
+                subprocess.run(f"mv {restore_dir}/wordToWord/* {remote_path}/", shell=True)
+                subprocess.run(f"rm -rf {restore_dir}", shell=True)
+                
+                # 4. 重启服务
+                subprocess.run(
+                    f"cd {remote_path} && source .venv/bin/activate && "
+                    f"export PORT=5004 && nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &",
+                    shell=True
+                )
+            except Exception as e:
+                print(f"恢复失败: {e}")
+        
+        import threading
+        thread = threading.Thread(target=do_restore)
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            'success': True,
+            'message': '正在恢复备份，请稍候...'
+        })
+        
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -10,7 +10,7 @@
     <el-card class="deploy-actions-card" shadow="hover">
       <template #header>
         <div class="card-header">
-          <el-icon :size="20" color="#67c23a"><Rocket /></el-icon>
+          <el-icon :size="20" color="#67c23a"><Promotion /></el-icon>
           <span>部署操作</span>
         </div>
       </template>
@@ -162,12 +162,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Setting, Check, Refresh, RefreshRight, Rocket, Upload, RefreshLeft, Document, SwitchButton, CopyDocument, Delete } from '@element-plus/icons-vue'
+import { Setting, Check, Refresh, RefreshRight, Promotion, Upload, RefreshLeft, Document, SwitchButton, CopyDocument, Delete } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ConfigTable from './components/ConfigTable.vue'
 
 const activeCategory = ref('server')
 const allConfigs = ref([])
+
+// 备份历史对话框
+const backupHistoryDialogVisible = ref(false)
+const backupHistoryList = ref([])
+const backupLoading = ref(false)
 
 // 按分类过滤配置
 const serverConfigs = computed(() => 
