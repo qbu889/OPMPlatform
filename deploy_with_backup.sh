@@ -14,6 +14,9 @@ REMOTE_PATH="/project/wordToWord"
 BACKUP_DIR="/project/backups"
 TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
 
+# SSH选项：抑制警告信息
+SSH_OPTS="-o LogLevel=ERROR -o StrictHostKeyChecking=no"
+
 # 检查是否有文件需要提交
 if git status --porcelain | grep -q .; then
     echo "📝 检测到未提交的更改，正在提交..."
@@ -33,7 +36,11 @@ fi
 echo "✅ Git 推送成功"
 echo ""
 
-# 动态检测变更文件并上传
+# 高效部署策略：
+# - 后端文件：打包成tar.gz一次性上传
+# - 前端文件：直接上传整个dist目录
+# - 使用rsync进行增量同步（如果可用）
+
 echo "🔍 检测变更文件..."
 
 # 获取 Git 变更的文件列表
@@ -46,14 +53,20 @@ if [ -z "$CHANGED_FILES" ]; then
 fi
 
 echo "📦 检测到以下变更文件："
-echo "$CHANGED_FILES" | while read file; do
+echo "$CHANGED_FILES" | head -20 | while read file; do
     echo "   - $file"
 done
+TOTAL_FILES=$(echo "$CHANGED_FILES" | wc -l | tr -d ' ')
+if [ "$TOTAL_FILES" -gt 20 ]; then
+    echo "   ... 还有 $((TOTAL_FILES - 20)) 个文件"
+fi
+echo "   总计: $TOTAL_FILES 个文件"
 echo ""
 
-# 分类上传文件
+# 分类文件
 BACKEND_FILES=()
-FRONTEND_FILES=()
+FRONTEND_SOURCE_FILES=()
+NEED_FRONTEND_BUILD=false
 
 while IFS= read -r file; do
     if [ -z "$file" ]; then
@@ -62,68 +75,95 @@ while IFS= read -r file; do
     
     # 判断是前端还是后端文件
     if [[ "$file" == frontend/* ]]; then
-        FRONTEND_FILES+=("$file")
+        # 如果是前端源码（非dist），需要重新构建
+        if [[ "$file" != frontend/dist/* ]] && [[ "$file" != frontend/node_modules/* ]]; then
+            FRONTEND_SOURCE_FILES+=("$file")
+            NEED_FRONTEND_BUILD=true
+        fi
     else
         BACKEND_FILES+=("$file")
     fi
 done <<< "$CHANGED_FILES"
 
-# 上传后端文件
+# 上传后端文件（高效方式：打包后一次性上传）
 if [ ${#BACKEND_FILES[@]} -gt 0 ]; then
     echo "📤 上传后端文件 (${#BACKEND_FILES[@]} 个)..."
+    
+    # 创建临时目录存放要上传的文件
+    TEMP_DIR=$(mktemp -d)
+    BACKEND_TAR="$TEMP_DIR/backend_update.tar.gz"
+    
+    echo "   📦 正在打包后端文件..."
+    cd /Users/linziwang/PycharmProjects/wordToWord
+    
+    # 复制文件到临时目录，保持目录结构
     for file in "${BACKEND_FILES[@]}"; do
         if [ -f "$file" ]; then
-            # 确保远程目录存在
-            REMOTE_DIR="${REMOTE_PATH}/$(dirname $file)"
-            ssh ${REMOTE_USER}@${REMOTE_HOST} "mkdir -p ${REMOTE_DIR}" 2>/dev/null
-            
-            echo "   📄 $file"
-            scp "$file" ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/"$file"
+            DEST_DIR="$TEMP_DIR/$(dirname $file)"
+            mkdir -p "$DEST_DIR"
+            cp "$file" "$DEST_DIR/"
         fi
     done
-    echo "✅ 后端文件上传完成"
+    
+    # 打包
+    cd "$TEMP_DIR"
+    tar -czf "$BACKEND_TAR" --remove-files $(find . -type f | sed 's|^\./||')
+    
+    # 上传压缩包
+    echo "   🚀 上传压缩包..."
+    scp $SSH_OPTS "$BACKEND_TAR" ${REMOTE_USER}@${REMOTE_HOST}:/tmp/backend_update.tar.gz
+    
+    # 远程解压
+    echo "   📂 远程解压..."
+    ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << REMOTE_EOF
+        cd ${REMOTE_PATH}
+        tar -xzf /tmp/backend_update.tar.gz
+        rm -f /tmp/backend_update.tar.gz
+        echo "   ✅ 已解压 \$(tar -tzf /tmp/backend_update.tar.gz 2>/dev/null | wc -l || echo '${#BACKEND_FILES[@]}') 个文件"
+REMOTE_EOF
+    
+    # 清理临时文件
+    rm -rf "$TEMP_DIR"
+    
+    echo "✅ 后端文件上传完成（使用打包方式）"
 else
     echo "ℹ️  无后端文件变更"
 fi
 
 echo ""
 
-# 上传前端文件
-if [ ${#FRONTEND_FILES[@]} -gt 0 ]; then
-    echo "📤 上传前端文件 (${#FRONTEND_FILES[@]} 个)..."
+# 上传前端文件（高效方式：直接上传dist目录）
+if [ "$NEED_FRONTEND_BUILD" = true ] || [ ${#FRONTEND_SOURCE_FILES[@]} -gt 0 ]; then
+    echo "📤 处理前端文件..."
     
-    # 如果有前端源码变更，需要重新构建
-    NEED_REBUILD=false
-    for file in "${FRONTEND_FILES[@]}"; do
-        if [[ "$file" != frontend/dist/* ]] && [[ "$file" != frontend/node_modules/* ]]; then
-            NEED_REBUILD=true
-            break
-        fi
-    done
-    
-    if [ "$NEED_REBUILD" = true ]; then
-        echo "🔨 检测到前端源码变更，正在重新构建..."
-        cd frontend
-        npm run build
-        if [ $? -eq 0 ]; then
-            echo "✅ 前端构建成功"
-            # 上传整个 dist 目录
-            scp -r dist/* ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
+    # 重新构建前端
+    echo "🔨 正在重新构建前端..."
+    cd frontend
+    npm run build
+    if [ $? -eq 0 ]; then
+        echo "✅ 前端构建成功"
+        
+        # 使用rsync或直接scp上传整个dist目录
+        echo "🚀 上传前端构建产物..."
+        
+        # 检查是否可用rsync（更高效，支持增量传输）
+        if command -v rsync &> /dev/null; then
+            echo "   📡 使用rsync进行增量同步..."
+            rsync -avz --delete -e "ssh $SSH_OPTS" dist/ ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
         else
-            echo "❌ 前端构建失败"
-            exit 1
+            echo "   📡 使用scp上传整个dist目录..."
+            scp -r $SSH_OPTS dist/* ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
         fi
-        cd ..
+        
+        echo "✅ 前端文件上传完成"
     else
-        # 只上传 dist 文件的变更
-        for file in "${FRONTEND_FILES[@]}"; do
-            if [ -f "$file" ]; then
-                echo "   📄 $file"
-                scp "$file" ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/"$file"
-            fi
-        done
+        echo "❌ 前端构建失败"
+        exit 1
     fi
-    echo "✅ 前端文件上传完成"
+    cd ..
+elif [ -d "frontend/dist" ]; then
+    # 如果前端dist已存在且无需重新构建，可以选择性上传
+    echo "ℹ️  前端无需重新构建，如需更新请手动执行: cd frontend && npm run build"
 else
     echo "ℹ️  无前端文件变更"
 fi
@@ -133,7 +173,7 @@ echo ""
 
 # SSH 执行远程备份和重启
 echo "🔄 远程备份并重启服务..."
-ssh ${REMOTE_USER}@${REMOTE_HOST} << EOF
+ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     cd /project/wordToWord
     
     echo "=========================================="

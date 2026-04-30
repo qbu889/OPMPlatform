@@ -156,13 +156,105 @@
         恢复默认配置
       </el-button>
     </div>
+
+    <!-- 备份历史对话框 -->
+    <el-dialog
+      v-model="backupHistoryDialogVisible"
+      title="备份历史"
+      width="900px"
+      :close-on-click-modal="false"
+    >
+      <el-table
+        v-loading="backupLoading"
+        :data="backupHistoryList"
+        stripe
+        style="width: 100%"
+        max-height="500px"
+      >
+        <el-table-column prop="filename" label="备份文件" min-width="250" />
+        <el-table-column prop="size" label="大小" width="100" />
+        <el-table-column prop="created_at" label="备份时间" width="180" />
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              type="success"
+              size="small"
+              @click="handleRestoreBackup(row)"
+            >
+              <el-icon><RefreshLeft /></el-icon>
+              恢复
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click="handleDeleteBackup(row)"
+            >
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <template #footer>
+        <el-button @click="backupHistoryDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 日志查看对话框 -->
+    <el-dialog
+      v-model="logDialogVisible"
+      title="查看日志"
+      width="1000px"
+      :close-on-click-modal="false"
+    >
+      <div class="log-dialog-header">
+        <el-radio-group v-model="logType" @change="loadLogs">
+          <el-radio-button label="backend">后端日志</el-radio-button>
+          <el-radio-button label="frontend">前端日志</el-radio-button>
+        </el-radio-group>
+        
+        <div class="log-controls">
+          <el-input-number
+            v-model="logLines"
+            :min="10"
+            :max="500"
+            :step="10"
+            size="small"
+            @change="loadLogs"
+          />
+          <span class="log-lines-label">行</span>
+          <el-button size="small" @click="loadLogs">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+          <el-button size="small" type="primary" @click="downloadLog">
+            <el-icon><Download /></el-icon>
+            下载
+          </el-button>
+        </div>
+      </div>
+
+      <el-divider />
+
+      <div
+        v-loading="logLoading"
+        class="log-content"
+      >
+        <pre>{{ logContent }}</pre>
+      </div>
+
+      <template #footer>
+        <el-button @click="logDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Setting, Check, Refresh, RefreshRight, Promotion, Upload, RefreshLeft, Document, SwitchButton, CopyDocument, Delete } from '@element-plus/icons-vue'
+import { Setting, Check, Refresh, RefreshRight, Promotion, Upload, RefreshLeft, Document, SwitchButton, CopyDocument, Delete, Download } from '@element-plus/icons-vue'
 import axios from 'axios'
 import ConfigTable from './components/ConfigTable.vue'
 
@@ -173,6 +265,13 @@ const allConfigs = ref([])
 const backupHistoryDialogVisible = ref(false)
 const backupHistoryList = ref([])
 const backupLoading = ref(false)
+
+// 日志查看对话框
+const logDialogVisible = ref(false)
+const logType = ref('backend')
+const logLines = ref(50)
+const logContent = ref('')
+const logLoading = ref(false)
 
 // 按分类过滤配置
 const serverConfigs = computed(() => 
@@ -356,8 +455,58 @@ const handleRollback = async () => {
 
 // 查看日志
 const handleViewLogs = () => {
-  ElMessage.info('日志查看功能开发中...')
-  // TODO: 打开日志查看对话框或跳转到日志页面
+  logDialogVisible.value = true
+  loadLogs()
+}
+
+// 加载日志
+const loadLogs = async () => {
+  try {
+    logLoading.value = true
+    
+    const response = await axios.get('/api/deploy/config/logs', {
+      params: {
+        type: logType.value,
+        lines: logLines.value
+      }
+    })
+    
+    if (response.data.success) {
+      logContent.value = response.data.content
+    } else {
+      logContent.value = '加载失败：' + response.data.error
+    }
+  } catch (error) {
+    logContent.value = '加载失败：' + error.message
+  } finally {
+    logLoading.value = false
+  }
+}
+
+// 下载日志
+const downloadLog = async () => {
+  try {
+    const response = await axios.get('/api/deploy/config/logs/download', {
+      params: {
+        type: logType.value
+      },
+      responseType: 'blob'
+    })
+    
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${logType.value}.log`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success('日志下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败：' + error.message)
+  }
 }
 
 // 重启服务
@@ -411,10 +560,82 @@ const handleBackupNow = async () => {
 }
 
 // 查看备份历史
-const handleViewBackupHistory = () => {
-  ElMessage.info('备份历史查看功能开发中...')
-  // TODO: 打开备份历史对话框或跳转到备份历史页面
-  // 显示：备份时间、备份大小、备份类型、操作按钮（恢复、删除）
+const handleViewBackupHistory = async () => {
+  try {
+    backupLoading.value = true
+    backupHistoryDialogVisible.value = true
+    
+    const response = await axios.get('/api/deploy/config/backup/history')
+    
+    if (response.data.success) {
+      backupHistoryList.value = response.data.backups
+    } else {
+      ElMessage.error('获取备份历史失败：' + response.data.error)
+    }
+  } catch (error) {
+    ElMessage.error('网络错误：' + error.message)
+  } finally {
+    backupLoading.value = false
+  }
+}
+
+// 删除备份
+const handleDeleteBackup = async (backup) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除备份文件 ${backup.filename} 吗？此操作不可撤销！`,
+      '确认删除',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    const response = await axios.post('/api/deploy/config/backup/delete', {
+      filename: backup.filename
+    })
+    
+    if (response.data.success) {
+      ElMessage.success('备份文件已删除')
+      // 刷新备份历史
+      handleViewBackupHistory()
+    } else {
+      ElMessage.error('删除失败：' + response.data.error)
+    }
+  } catch {
+    // 用户取消
+  }
+}
+
+// 恢复备份
+const handleRestoreBackup = async (backup) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要从备份 ${backup.filename} 恢复吗？\n\n⚠️ 警告：这将覆盖当前项目的所有文件！\n恢复过程需要约2-3分钟，期间服务将暂时不可用。`,
+      '确认恢复',
+      {
+        confirmButtonText: '确定恢复',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false
+      }
+    )
+    
+    const response = await axios.post('/api/deploy/config/backup/restore', {
+      filename: backup.filename
+    })
+    
+    if (response.data.success) {
+      ElMessage.success(response.data.message)
+      // 关闭对话框
+      backupHistoryDialogVisible.value = false
+    } else {
+      ElMessage.error('恢复失败：' + response.data.error)
+    }
+  } catch {
+    // 用户取消
+  }
 }
 
 // 清理过期备份
@@ -506,6 +727,42 @@ onMounted(() => {
   flex-wrap: wrap;
   justify-content: center;
   padding: 10px 0;
+}
+
+.log-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.log-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.log-lines-label {
+  color: #606266;
+  font-size: 14px;
+}
+
+.log-content {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 15px;
+  border-radius: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.log-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .mt-3 {

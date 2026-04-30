@@ -1,7 +1,7 @@
 """
 部署配置管理 API
 """
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 # from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity  # 暂时禁用JWT
 from models.deploy_config import DeployConfig
 from models import db
@@ -501,6 +501,128 @@ def restore_backup():
             'success': True,
             'message': '正在恢复备份，请稍候...'
         })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==================== 日志管理 API ====================
+
+@config_bp.route('/logs', methods=['GET'])
+def get_logs():
+    """
+    获取日志内容
+    
+    Query Parameters:
+    - type: 日志类型（backend 或 frontend）
+    - lines: 获取行数（默认50）
+    
+    Response:
+    {
+        "success": true,
+        "content": "日志内容...",
+        "lines": 50
+    }
+    """
+    try:
+        log_type = request.args.get('type', 'backend')
+        lines = int(request.args.get('lines', 50))
+        
+        # 确定日志文件路径
+        if log_type == 'backend':
+            # 尝试获取当天的日志文件
+            log_dir = 'logs'
+            today = datetime.now().strftime('%Y%m%d')
+            log_files = [
+                f'logs/app_{today}.log',
+                'logs/backend.log'
+            ]
+        elif log_type == 'frontend':
+            log_files = ['logs/frontend.log']
+        else:
+            return jsonify({
+                'success': False,
+                'error': '不支持的日志类型'
+            }), 400
+        
+        # 查找存在的日志文件
+        log_file = None
+        for file in log_files:
+            if os.path.exists(file):
+                log_file = file
+                break
+        
+        if not log_file:
+            return jsonify({
+                'success': False,
+                'error': '日志文件不存在'
+            }), 404
+        
+        # 读取日志内容（最后N行）
+        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+            all_lines = f.readlines()
+            recent_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
+            content = ''.join(recent_lines)
+        
+        return jsonify({
+            'success': True,
+            'content': content,
+            'lines': len(recent_lines),
+            'total_lines': len(all_lines)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@config_bp.route('/logs/download', methods=['GET'])
+def download_logs():
+    """
+    下载日志文件
+    
+    Query Parameters:
+    - type: 日志类型（backend 或 frontend）
+    
+    Response:
+    文件下载
+    """
+    try:
+        log_type = request.args.get('type', 'backend')
+        
+        # 确定日志文件路径
+        if log_type == 'backend':
+            today = datetime.now().strftime('%Y%m%d')
+            log_files = [
+                f'logs/app_{today}.log',
+                'logs/backend.log'
+            ]
+        elif log_type == 'frontend':
+            log_files = ['logs/frontend.log']
+        else:
+            return jsonify({
+                'success': False,
+                'error': '不支持的日志类型'
+            }), 400
+        
+        # 查找存在的日志文件
+        log_file = None
+        for file in log_files:
+            if os.path.exists(file):
+                log_file = file
+                break
+        
+        if not log_file:
+            return jsonify({
+                'success': False,
+                'error': '日志文件不存在'
+            }), 404
+        
+        # 发送文件
+        return send_file(
+            log_file,
+            as_attachment=True,
+            download_name=f'{log_type}.log'
+        )
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
