@@ -1,4 +1,5 @@
 <template>
+
   <div class="sql-formatter-container">
     <!-- 页面标题 -->
     <div class="page-header">
@@ -127,8 +128,56 @@ const handleCopy = () => {
     ElMessage.warning('没有可复制的内容')
     return
   }
-  navigator.clipboard.writeText(sqlResult.value)
-  ElMessage.success('已复制到剪贴板')
+  
+  // 兼容 HTTP 环境和旧版浏览器
+  try {
+    // 检查 navigator.clipboard 和 writeText 是否都存在且可用
+    if (typeof navigator !== 'undefined' && 
+        navigator.clipboard && 
+        typeof navigator.clipboard.writeText === 'function') {
+      // 现代浏览器（HTTPS）
+      navigator.clipboard.writeText(sqlResult.value)
+        .then(() => {
+          ElMessage.success('已复制到剪贴板')
+        })
+        .catch(err => {
+          console.error('复制失败:', err)
+          fallbackCopy()
+        })
+    } else {
+      // 降级方案：使用传统方法（HTTP 环境或旧版浏览器）
+      console.log('使用降级复制方案')
+      fallbackCopy()
+    }
+  } catch (error) {
+    // 任何异常都使用降级方案
+    console.error('复制异常:', error)
+    fallbackCopy()
+  }
+}
+
+const fallbackCopy = () => {
+  // 创建临时 textarea 元素进行复制
+  const textarea = document.createElement('textarea')
+  textarea.value = sqlResult.value
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      ElMessage.success('已复制到剪贴板')
+    } else {
+      ElMessage.error('复制失败，请手动复制')
+    }
+  } catch (err) {
+    console.error('复制失败:', err)
+    ElMessage.error('复制失败，请手动复制')
+  } finally {
+    document.body.removeChild(textarea)
+  }
 }
 
 const handleClear = () => {

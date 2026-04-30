@@ -77,6 +77,9 @@ from routes.swagger_config import swagger_bp
 # SQL 智能生成器
 from routes.tools.sql_generator_routes import sql_generator_bp
 
+# 部署配置管理
+from routes.deploy.config_routes import config_bp as deploy_config_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -257,6 +260,9 @@ def create_app(config_name='development'):
         
         # SQL 智能生成器
         sql_generator_bp,
+        
+        # 部署配置管理
+        deploy_config_bp,
         
         # Swagger API 文档
         swagger_bp,

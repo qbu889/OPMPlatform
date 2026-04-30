@@ -112,6 +112,13 @@ const routes = [
     component: () => import('../views/dingtalk-push/DingTalkPushHistory.vue'),
     meta: { title: '推送历史', hidden: true }
   },
+  // 部署配置管理
+  {
+    path: '/deploy-config',
+    name: 'DeployConfig',
+    component: () => import('../views/deploy/DeployConfig.vue'),
+    meta: { title: '部署配置管理', hidden: true }
+  },
   // 高效工具
   {
     path: '/clean-event-page',

@@ -174,6 +174,15 @@
             <p>智能推送平台,支持定时调度和实时预览</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/deploy-config')">
+            <div class="feature-icon" style="background: #f3e5f5">
+              <el-icon size="40" color="#673ab7"><Setting /></el-icon>
+            </div>
+            <h3>部署配置管理</h3>
+            <p>动态配置部署参数，无需改代码即可修改服务器、备份等设置</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
   </div>
@@ -200,6 +209,7 @@ import {
   Picture,
   Bell,
   Cpu,
+  Setting,
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
