@@ -107,7 +107,7 @@ if [ ${#BACKEND_FILES[@]} -gt 0 ]; then
     
     # 打包
     cd "$TEMP_DIR"
-    tar -czf "$BACKEND_TAR" --remove-files $(find . -type f | sed 's|^\./||')
+    tar -czf "$BACKEND_TAR" .
     
     # 上传压缩包
     echo "   🚀 上传压缩包..."
@@ -138,9 +138,12 @@ if [ "$NEED_FRONTEND_BUILD" = true ] || [ ${#FRONTEND_SOURCE_FILES[@]} -gt 0 ]; 
     
     # 重新构建前端
     echo "🔨 正在重新构建前端..."
-    cd frontend
+    cd /Users/linziwang/PycharmProjects/wordToWord/frontend
     npm run build
-    if [ $? -eq 0 ]; then
+    BUILD_RESULT=$?
+    cd /Users/linziwang/PycharmProjects/wordToWord
+    
+    if [ $BUILD_RESULT -eq 0 ]; then
         echo "✅ 前端构建成功"
         
         # 使用rsync或直接scp上传整个dist目录
@@ -160,7 +163,6 @@ if [ "$NEED_FRONTEND_BUILD" = true ] || [ ${#FRONTEND_SOURCE_FILES[@]} -gt 0 ]; 
         echo "❌ 前端构建失败"
         exit 1
     fi
-    cd ..
 elif [ -d "frontend/dist" ]; then
     # 如果前端dist已存在且无需重新构建，可以选择性上传
     echo "ℹ️  前端无需重新构建，如需更新请手动执行: cd frontend && npm run build"
