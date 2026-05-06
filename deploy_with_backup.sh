@@ -227,10 +227,20 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo "=========================================="
     
     cd ${REMOTE_PATH}
-    pkill -f "python app.py" || true
-    pkill -f "vite" || true
-    pkill -f "npm run" || true
-    sleep 2
+    echo "   正在清理旧进程..."
+    pkill -f "python app.py" 2>/dev/null || true
+    pkill -f "vite" 2>/dev/null || true
+    pkill -f "npm run" 2>/dev/null || true
+    
+    # 等待端口释放
+    sleep 3
+    
+    # 如果端口仍被占用，强制清理
+    if lsof -ti:5004 > /dev/null 2>&1; then
+        echo "   端口 5004 仍被占用，强制清理..."
+        lsof -ti:5004 | xargs kill -9 2>/dev/null || true
+        sleep 2
+    fi
     
     echo "✅ 进程已停止"
     ps -ef | grep -E "python|vite|node" | grep wordToWord | grep -v grep || echo "   确认：所有进程已清理"

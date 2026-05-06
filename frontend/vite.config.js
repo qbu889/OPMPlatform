@@ -45,7 +45,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: isProd ? 5173 : 5200,
-    allowedHosts: ['opmvue.nokiafz.asia'],
+    allowedHosts: true,
     // 强制禁用 HMR 缓存
     hmr: {
       overlay: true,
