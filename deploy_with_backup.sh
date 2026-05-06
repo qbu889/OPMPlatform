@@ -268,6 +268,20 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
         echo "   ⚠️  前端未构建，请在本地执行: cd frontend && npm run build"
     else
         echo "   ✅ 前端构建产物已存在（由 Nginx 提供）"
+        
+        # 修复 Nginx 访问权限
+        echo "   🔧 修复 Nginx 访问权限..."
+        chmod 755 /project/wordToWord/
+        chmod 755 /project/wordToWord/frontend/
+        chmod -R 755 frontend/dist/
+        chown -R www:www frontend/dist/
+    fi
+    
+    # 确保 Nginx 配置允许公网 IP 访问
+    if grep -q "server_name localhost;" /www/server/panel/vhost/nginx/sql-formatter-5173.conf 2>/dev/null; then
+        echo "   🔧 更新 Nginx 配置以支持公网 IP 访问..."
+        sed -i 's/server_name localhost;/server_name 8.146.228.47 localhost opmvue.nokiafz.asia;/' /www/server/panel/vhost/nginx/sql-formatter-5173.conf
+        nginx -t && nginx -s reload
     fi
     
     echo ""
