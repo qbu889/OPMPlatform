@@ -271,18 +271,129 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
         
         # 修复 Nginx 访问权限
         echo "   🔧 修复 Nginx 访问权限..."
+        chown -R root:root /project/wordToWord
         chmod 755 /project/wordToWord/
         chmod 755 /project/wordToWord/frontend/
         chmod -R 755 frontend/dist/
         chown -R www:www frontend/dist/
     fi
     
-    # 确保 Nginx 配置允许公网 IP 访问
-    if grep -q "server_name localhost;" /www/server/panel/vhost/nginx/sql-formatter-5173.conf 2>/dev/null; then
-        echo "   🔧 更新 Nginx 配置以支持公网 IP 访问..."
-        sed -i 's/server_name localhost;/server_name 8.146.228.47 localhost opmvue.nokiafz.asia;/' /www/server/panel/vhost/nginx/sql-formatter-5173.conf
-        nginx -t && nginx -s reload
-    fi
+    # 确保 Nginx 配置正确（支持公网 IP + 完整的 API 代理）
+    echo "   🔧 检查并更新 Nginx 配置..."
+    cat > /tmp/nginx_5173.conf << 'NGINX'
+server {
+    listen 5173;
+    server_name 8.146.228.47 localhost opmvue.nokiafz.asia;
+    
+    root /project/wordToWord/frontend/dist;
+    index index.html;
+    
+    access_log /project/wordToWord/logs/nginx_5173_access.log;
+    error_log /project/wordToWord/logs/nginx_5173_error.log;
+    
+    # 静态资源缓存控制
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires 0;
+        try_files $uri =404;
+    }
+    
+    # 通用 API 代理
+    location /api/ {
+        proxy_pass http://127.0.0.1:5004;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # 认证 API
+    location = /login { proxy_pass http://127.0.0.1:5004; }
+    location = /register { proxy_pass http://127.0.0.1:5004; }
+    location = /forgot-password { proxy_pass http://127.0.0.1:5004; }
+    
+    # DingTalk Push API
+    location = /dingtalk-push/configs { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/test-webhook { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/history { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/statistics { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/preview { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/confirm-checkin { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/view-checkin { proxy_pass http://127.0.0.1:5004; }
+    
+    # Kafka Generator API
+    location = /kafka-generator/field-meta { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-meta/list { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-cache { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-order { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-options { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/generate { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/history { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-history { proxy_pass http://127.0.0.1:5004; }
+    
+    # Schedule Config API
+    location /schedule-config/api/ {
+        proxy_pass http://127.0.0.1:5004;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # FPA Generator API
+    location = /fpa-generator/upload { proxy_pass http://127.0.0.1:5004; }
+    location /fpa-generator/download/ { proxy_pass http://127.0.0.1:5004; }
+    location /fpa-generator/api/ { proxy_pass http://127.0.0.1:5004; }
+    
+    # FPA Rules API
+    location /fpa-rules { proxy_pass http://127.0.0.1:5004; }
+    
+    # Adjustment API
+    location /adjustment { proxy_pass http://127.0.0.1:5004; }
+    location /adjustment-calc { proxy_pass http://127.0.0.1:5004; }
+    
+    # Chatbot API
+    location /chatbot/upload_progress/ { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/chat { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/upload_document/preview { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/upload_document/confirm { proxy_pass http://127.0.0.1:5004; }
+    location /chatbot/knowledge { proxy_pass http://127.0.0.1:5004; }
+    location /chatbot/session { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/feedback { proxy_pass http://127.0.0.1:5004; }
+    
+    # Excel2Word API
+    location /excel2word { proxy_pass http://127.0.0.1:5004; }
+    
+    # Word to Excel API
+    location /word-to-excel/api { proxy_pass http://127.0.0.1:5004; }
+    
+    # Markdown Upload API
+    location = /markdown-upload/upload { proxy_pass http://127.0.0.1:5004; }
+    location = /markdown-upload/convert { proxy_pass http://127.0.0.1:5004; }
+    location = /markdown-upload/download { proxy_pass http://127.0.0.1:5004; }
+    
+    # Spreadsheet API
+    location /spreadsheet { proxy_pass http://127.0.0.1:5004; }
+    
+    # Swagger API
+    location /swagger { proxy_pass http://127.0.0.1:5004; }
+    
+    # SPA 路由 - 所有非文件请求返回 index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # 禁止访问隐藏文件
+    location ~ /\. {
+        deny all;
+    }
+}
+NGINX
+    
+    cp /tmp/nginx_5173.conf /www/server/panel/vhost/nginx/sql-formatter-5173.conf
+    nginx -t && nginx -s reload
+    echo "   ✅ Nginx 配置已更新"
     
     echo ""
     echo "=========================================="
@@ -317,7 +428,7 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo ""
     echo "📍 访问地址:"
     echo "   后端: http://8.146.228.47:5004"
-    echo "   前端: http://127.0.0.1:5173 或 http://localhost:5173"
+    echo "   前端: http://8.146.228.47:5173 或 http://localhost:5173"
     echo ""
     echo "💾 备份位置:"
     echo "   ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz"
