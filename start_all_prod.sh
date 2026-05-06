@@ -118,100 +118,66 @@ echo "=========================================="
 echo ""
 
 # ============================================================================
-# 2. 启动前端服务
+# 2. 验证前端构建产物
 # ============================================================================
-echo "📌 步骤 2/2: 启动前端服务..."
+echo "📌 步骤 2/2: 验证前端构建产物..."
 echo ""
 
-# 检查 Node.js 环境
-if ! command -v node &> /dev/null; then
-    echo "❌ 错误: 未找到 Node.js，请先安装 Node.js"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-fi
-
-echo "✅ Node.js 版本: $(node --version)"
-
-# 检查 npm
-if ! command -v npm &> /dev/null; then
-    echo "❌ 错误: 未找到 npm"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-fi
-
-echo "✅ npm 版本: $(npm --version)"
-echo ""
-
-# 进入前端目录
-cd frontend || {
-    echo "❌ 错误: 找不到 frontend 目录"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-}
-
-# 检查 node_modules
-if [ ! -d "node_modules" ]; then
-    echo "📦 首次运行，正在安装依赖..."
-    npm install
-    echo ""
-fi
-
-# 设置环境变量
-export NODE_ENV=production
-export BACKEND_PORT=$BACKEND_PORT
-
-# 构建生产版本
-echo "🔨 正在构建前端生产版本..."
-npm run build
-
-if [ $? -ne 0 ]; then
-    echo "❌ 前端构建失败"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
+# 检查前端构建产物是否存在
+if [ ! -d "frontend/dist" ] || [ ! -f "frontend/dist/index.html" ]; then
+    echo "⚠️  前端未构建，正在构建..."
+    cd frontend || {
+        echo "❌ 错误: 找不到 frontend 目录"
+        kill $BACKEND_PID 2>/dev/null
+        exit 1
+    }
+    
+    # 检查 node_modules
+    if [ ! -d "node_modules" ]; then
+        echo "📦 首次运行，正在安装依赖..."
+        npm install
+        echo ""
+    fi
+    
+    # 设置环境变量
+    export NODE_ENV=production
+    export BACKEND_PORT=$BACKEND_PORT
+    
+    # 构建生产版本
+    echo "🔨 正在构建前端生产版本..."
+    npm run build
+    
+    if [ $? -ne 0 ]; then
+        echo "❌ 前端构建失败"
+        kill $BACKEND_PID 2>/dev/null
+        exit 1
+    fi
+    
+    echo "✅ 前端构建完成"
+    cd ..
+else
+    echo "✅ 前端构建产物已存在"
 fi
 
 echo ""
-echo "✅ 前端构建完成"
-echo ""
-
-# 检查前端端口是否被占用
-FRONTEND_PORT=5173
-echo "🔍 检查前端端口 $FRONTEND_PORT..."
-lsof -ti:$FRONTEND_PORT > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo "⚠️  端口 $FRONTEND_PORT 被占用，正在释放..."
-    lsof -ti:$FRONTEND_PORT | xargs kill -9 2>/dev/null
-    sleep 1
-fi
-
-echo "🚀 启动前端预览服务器（端口：$FRONTEND_PORT）..."
-echo ""
-
-# 在前台启动前端服务（这样 Ctrl+C 可以同时停止前后端）
 echo "=========================================="
 echo "  ✅ 所有服务已启动成功！"
 echo "=========================================="
 echo ""
-echo "  🌐 前端服务:"
-echo "     - 本机访问: http://localhost:$FRONTEND_PORT"
-echo "     - 局域网访问: http://$LOCAL_IP:$FRONTEND_PORT"
+echo "  🌐 前端服务 (由 Nginx 提供):"
+echo "     - 本机访问: http://localhost:5173"
+echo "     - 局域网访问: http://$LOCAL_IP:5173"
 echo ""
 echo "  🔧 后端服务:"
 echo "     - 本机访问: http://localhost:$BACKEND_PORT"
 echo "     - 局域网访问: http://$LOCAL_IP:$BACKEND_PORT"
 echo ""
-echo "  📡 Cloudflare Tunnel: 已自动启动"
+echo "  ⚠️  注意: 前端由 Nginx 提供静态文件服务"
+echo "  📝 如需重启 Nginx: sudo nginx -s reload"
 echo ""
-echo "  按 Ctrl+C 停止所有服务"
+echo "  按 Ctrl+C 停止后端服务"
 echo "=========================================="
 echo ""
 
-# 启动前端（前台运行，便于 Ctrl+C 统一停止）
-npx vite preview --port $FRONTEND_PORT --host 0.0.0.0
-
-# 如果前端退出，清理后端进程
-echo ""
-echo "🛑 前端服务已停止，正在清理后端服务..."
-kill $BACKEND_PID 2>/dev/null
-wait $BACKEND_PID 2>/dev/null
-echo "✅ 所有服务已停止"
+# 等待后端进程
+wait $BACKEND_PID

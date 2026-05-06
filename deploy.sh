@@ -74,28 +74,20 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
     echo "5️⃣ 等待后端启动..."
     sleep 3
     
-    echo "6️⃣ 启动前端预览服务..."
-    cd frontend
-    nohup npx vite preview --port 5173 --host 0.0.0.0 > ../logs/frontend.log 2>&1 &
-    FRONTEND_PID=$!
-    echo "   前端 PID: $FRONTEND_PID"
-    
-    cd ..
-    
-    echo "7️⃣ 等待服务完全启动..."
-    sleep 3
+    echo "6️⃣ 验证前端构建产物..."
+    if [ ! -f "frontend/dist/index.html" ]; then
+        echo "   ⚠️  前端未构建，请在本地执行: cd frontend && npm run build"
+    else
+        echo "   ✅ 前端构建产物已存在（由 Nginx 提供）"
+    fi
     
     echo ""
-    echo "8️⃣ 检查服务状态..."
-    ps -ef | grep -E "python app.py|vite preview" | grep -v grep
+    echo "7️⃣ 检查服务状态..."
+    ps -ef | grep "python app.py" | grep -v grep
     
     echo ""
-    echo "9️⃣ 查看后端日志（最后20行）..."
+    echo "8️⃣ 查看后端日志（最后20行）..."
     tail -20 logs/backend.log
-    
-    echo ""
-    echo "🔟 查看前端日志（最后20行）..."
-    tail -20 logs/frontend.log
     
     echo ""
     echo "✅ 部署完成！"
@@ -114,5 +106,4 @@ echo "  前端: http://8.146.228.47:5173"
 echo ""
 echo "查看日志:"
 echo "  ssh root@8.146.228.47 'tail -f /project/wordToWord/logs/backend.log'"
-echo "  ssh root@8.146.228.47 'tail -f /project/wordToWord/logs/frontend.log'"
 echo "=========================================="

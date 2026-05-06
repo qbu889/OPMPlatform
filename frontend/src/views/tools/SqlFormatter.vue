@@ -79,6 +79,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+// 修复HTTP环境剪贴板API兼容性 - 2024-05-06 v2
 import {
   DataBoard,
   EditPen,
@@ -123,60 +124,38 @@ const handleFormat = () => {
   ElMessage.success(`已格式化 ${ids.length} 个 ID`)
 }
 
-const handleCopy = () => {
+const handleCopy = async () => {
   if (!sqlResult.value) {
     ElMessage.warning('没有可复制的内容')
     return
   }
   
-  // 兼容 HTTP 环境和旧版浏览器
   try {
-    // 检查 navigator.clipboard 和 writeText 是否都存在且可用
-    if (typeof navigator !== 'undefined' && 
-        navigator.clipboard && 
-        typeof navigator.clipboard.writeText === 'function') {
-      // 现代浏览器（HTTPS）
-      navigator.clipboard.writeText(sqlResult.value)
-        .then(() => {
-          ElMessage.success('已复制到剪贴板')
-        })
-        .catch(err => {
-          console.error('复制失败:', err)
-          fallbackCopy()
-        })
+    // 方法1：使用现代 Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(sqlResult.value)
     } else {
-      // 降级方案：使用传统方法（HTTP 环境或旧版浏览器）
-      console.log('使用降级复制方案')
-      fallbackCopy()
+      // 方法2：降级方案 - 使用传统的 execCommand
+      const textarea = document.createElement('textarea')
+      textarea.value = sqlResult.value
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-999999px'
+      textarea.style.top = '-999999px'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+      } finally {
+        document.body.removeChild(textarea)
+      }
     }
+    
+    ElMessage.success('已复制到剪贴板')
   } catch (error) {
-    // 任何异常都使用降级方案
-    console.error('复制异常:', error)
-    fallbackCopy()
-  }
-}
-
-const fallbackCopy = () => {
-  // 创建临时 textarea 元素进行复制
-  const textarea = document.createElement('textarea')
-  textarea.value = sqlResult.value
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  document.body.appendChild(textarea)
-  textarea.select()
-  
-  try {
-    const successful = document.execCommand('copy')
-    if (successful) {
-      ElMessage.success('已复制到剪贴板')
-    } else {
-      ElMessage.error('复制失败，请手动复制')
-    }
-  } catch (err) {
-    console.error('复制失败:', err)
-    ElMessage.error('复制失败，请手动复制')
-  } finally {
-    document.body.removeChild(textarea)
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动选择文本复制')
   }
 }
 

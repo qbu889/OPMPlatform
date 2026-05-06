@@ -408,11 +408,22 @@ app = create_app('development')
 # ============================================================================
 # Vue 应用路由 - Catch-all for SPA
 # ============================================================================
+@app.route('/')
+def index():
+    """
+    前端应用入口（SPA）
+    """
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
 @app.route('/vue')
 @app.route('/vue/<path:path>')
 def vue_app(path=None):
     """
-    Vue 应用入口（SPA）
+    Vue 应用入口（SPA）- 兼容旧路径
     """
     return render_template('vue-app.html')
 
@@ -428,6 +439,21 @@ def uploaded_file(filename):
     return send_from_directory(upload_dir, filename)
 
 
+@app.after_request
+def add_cache_control_headers(response):
+    """
+    为静态资源添加缓存控制头，防止浏览器缓存构建产物
+    """
+    # 对 JS/CSS 等构建产物禁用缓存
+    if request.path.startswith('/assets/') or \
+       request.path.endswith('.js') or \
+       request.path.endswith('.css'):
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
+
 # ============================================================================
 # Vue SPA Fallback - 必须在最后注册
 # ============================================================================
@@ -439,10 +465,25 @@ def handle_404(error):
     404 错误处理 - 如果是前端路由，返回 index.html
     """
     # 如果是 API 请求，返回 JSON 404
-    if '/api/' in request.path:
+    if '/api/' in request.path or \
+       request.path.startswith('/dingtalk-push/') or \
+       request.path.startswith('/kafka-generator/') or \
+       request.path.startswith('/fpa-generator/') or \
+       request.path.startswith('/fpa-rules') or \
+       request.path.startswith('/adjustment') or \
+       request.path.startswith('/chatbot/') or \
+       request.path.startswith('/excel2word/') or \
+       request.path.startswith('/word-to-excel/') or \
+       request.path.startswith('/schedule-config/') or \
+       request.path.startswith('/markdown-upload/') or \
+       request.path.startswith('/spreadsheet/') or \
+       request.path.startswith('/login') or \
+       request.path.startswith('/register') or \
+       request.path.startswith('/forgot-password') or \
+       request.path.startswith('/swagger'):
         return jsonify({'error': 'Not found', 'path': request.path}), 404
     
-    # 如果是静态资源请求（JS/CSS/图片等），不要返回 index.html
+    # 如果是静态资源请求（JS/CSS/图片等），尝试从前端构建目录提供
     if request.path.startswith('/assets/') or \
        request.path.endswith('.js') or \
        request.path.endswith('.css') or \
@@ -451,6 +492,11 @@ def handle_404(error):
        request.path.endswith('.jpg') or \
        request.path.endswith('.svg') or \
        request.path.endswith('.ico'):
+        # 尝试从前端构建目录提供静态文件
+        if os.path.exists(FRONTEND_DIST):
+            file_path = os.path.join(FRONTEND_DIST, request.path.lstrip('/'))
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                return send_from_directory(FRONTEND_DIST, request.path.lstrip('/'))
         return jsonify({'error': 'Static file not found', 'path': request.path}), 404
     
     # 如果是前端路由，返回 index.html（让 Vue Router 处理）

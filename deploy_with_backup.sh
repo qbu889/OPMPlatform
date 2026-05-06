@@ -252,17 +252,13 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     
     sleep 3
     
-    # 启动前端
-    echo "🚀 启动前端预览服务..."
-    cd frontend
-    export BACKEND_PORT=5004
-    nohup npm run preview > ../logs/frontend.log 2>&1 &
-    FRONTEND_PID=$!
-    echo "   前端 PID: $FRONTEND_PID"
-    
-    cd ..
-    
-    sleep 3
+    # 验证前端构建产物
+    echo "🚀 验证前端构建产物..."
+    if [ ! -f "frontend/dist/index.html" ]; then
+        echo "   ⚠️  前端未构建，请在本地执行: cd frontend && npm run build"
+    else
+        echo "   ✅ 前端构建产物已存在（由 Nginx 提供）"
+    fi
     
     echo ""
     echo "=========================================="
@@ -271,7 +267,7 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     
     echo ""
     echo "📊 运行中的进程："
-    ps -ef | grep -E "python app.py|vite preview" | grep -v grep
+    ps -ef | grep "python app.py" | grep -v grep
     
     echo ""
     echo "📋 后端日志（最后15行）："
@@ -288,12 +284,6 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
             echo "   ⚠️  未找到日志文件"
         fi
     fi
-    echo "---"
-    
-    echo ""
-    echo "📋 前端日志（最后15行）："
-    echo "---"
-    tail -15 logs/frontend.log
     echo "---"
     
     echo ""
