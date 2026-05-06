@@ -1,0 +1,25 @@
+{
+  "name": "数据库和Kafka工具关闭提醒",
+  "description": "每天提醒确认关闭20.13的数据库、kafka tools等软件",
+  "category": "alert",
+  "webhook_url": "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN",
+  "at_mobiles": [],
+  "at_all": true,
+  "message_type": "markdown",
+  "template_content": "# ⚠️ 重要提醒\n\n### 请确认以下软件已关闭\n\n**服务器**: 20.13\n\n---\n\n## 需要关闭的软件\n\n- ✅ **数据库客户端** (Navicat/DBeaver等)\n- ✅ **Kafka Tools** (Kafka Tool/AKHQ等)\n- ✅ **其他连接工具**\n\n---\n\n## 检查清单\n\n请在下班前确认：\n1. 所有数据库连接已断开\n2. Kafka监控工具已关闭\n3. 没有未保存的工作\n\n---\n\n> 📅 提醒时间：{{ now }}\n> 💡 温馨提示：及时关闭工具可以避免资源占用和数据安全问题",
+  "data_source_config": {
+    "type": "static"
+  },
+  "schedule_config": {
+    "type": "daily",
+    "config": {
+      "times": ["17:30"],
+      "weekdays": [1, 2, 3, 4, 5],
+      "exclude_holidays": true
+    }
+  },
+  "timezone": "Asia/Shanghai",
+  "enabled": true,
+  "max_retries": 3,
+  "timeout_seconds": 10
+}

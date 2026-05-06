@@ -340,7 +340,7 @@ class DingTalkSchedulePusher:
             dingtalk_jobs = [job for job in current_jobs if job.id.startswith('dingtalk_push_')]
             print(f"\n[INFO] 当前共有 {len(dingtalk_jobs)} 个定时任务:")
             for job in dingtalk_jobs:
-                next_run = job.next_run_time
+                next_run = getattr(job, 'next_run_time', None)
                 if next_run:
                     print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
                     
@@ -363,7 +363,7 @@ class DingTalkSchedulePusher:
         if jobs:
             print(f"\n[INFO] 当前共有 {len(jobs)} 个定时任务:")
             for job in jobs:
-                next_run = job.next_run_time
+                next_run = getattr(job, 'next_run_time', None)
                 if next_run:
                     print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
     
