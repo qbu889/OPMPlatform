@@ -293,7 +293,7 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo ""
     echo "📍 访问地址:"
     echo "   后端: http://8.146.228.47:5004"
-    echo "   前端: http://8.146.228.47:5173"
+    echo "   前端: http://127.0.0.1:5173 或 http://localhost:5173"
     echo ""
     echo "💾 备份位置:"
     echo "   ${BACKUP_DIR}/wordToWord_backup_${TIMESTAMP}.tar.gz"
