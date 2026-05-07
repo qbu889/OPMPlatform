@@ -1,6 +1,7 @@
 # routes/event_routes.py
 from flask import Blueprint, request, render_template, jsonify
 import re
+import json
 import logging
 
 event_bp = Blueprint('event', __name__)
@@ -92,6 +93,8 @@ def process_es_data():
         
         # 提取 EVENT_FP 字段（支持单个对象或数组）
         push_messages = []
+        main_count = 0
+        sub_count = 0
         
         # 如果是列表，遍历处理每个对象
         if isinstance(data, list):
@@ -106,11 +109,25 @@ def process_es_data():
                     else:
                         event_time = item.get('EVENT_TIME', '')
                     
+                    # 判断主单还是子单
+                    dispatch_info = item.get('DISPATCH_INFO', {})
+                    dispatch_reason = dispatch_info.get('DISPATCH_REASON', '')
+                    is_main_order = (dispatch_reason == '工单派发成功')
+                    order_type = '主单' if is_main_order else '子单'
+                    
+                    if is_main_order:
+                        main_count += 1
+                    else:
+                        sub_count += 1
+                    
                     push_message = {
                         'ACTIVE_STATUS': '3',
                         'CFP0_CFP1_CFP2_CFP3': event_fp,
                         'EVENT_TIME': event_time,
-                        'FP0_FP1_FP2_FP3': event_fp
+                        'FP0_FP1_FP2_FP3': event_fp,
+                        'ORDER_TYPE': order_type,  # 添加订单类型标识
+                        'IS_MAIN_ORDER': is_main_order,  # 添加是否主单标识
+                        'DISPATCH_REASON': dispatch_reason  # 添加派发原因
                     }
                     push_messages.append(push_message)
         else:
@@ -125,27 +142,103 @@ def process_es_data():
             else:
                 event_time = data.get('EVENT_TIME', '')
             
+            # 判断主单还是子单
+            dispatch_info = data.get('DISPATCH_INFO', {})
+            dispatch_reason = dispatch_info.get('DISPATCH_REASON', '')
+            is_main_order = (dispatch_reason == '工单派发成功')
+            order_type = '主单' if is_main_order else '子单'
+            
+            if is_main_order:
+                main_count += 1
+            else:
+                sub_count += 1
+            
             push_message = {
                 'ACTIVE_STATUS': '3',
                 'CFP0_CFP1_CFP2_CFP3': event_fp,
                 'EVENT_TIME': event_time,
-                'FP0_FP1_FP2_FP3': event_fp
+                'FP0_FP1_FP2_FP3': event_fp,
+                'ORDER_TYPE': order_type,
+                'IS_MAIN_ORDER': is_main_order,
+                'DISPATCH_REASON': dispatch_reason
             }
             push_messages.append(push_message)
         
         if not push_messages:
             return jsonify({'success': False, 'message': '未找到有效的 EVENT_FP 字段'}), 400
         
-        logger.info(f'成功生成 {len(push_messages)} 条消息')
+        logger.info(f'成功生成 {len(push_messages)} 条消息（主单: {main_count}, 子单: {sub_count}）')
         
         return jsonify({
             'success': True,
-            'message': f'处理成功，共生成 {len(push_messages)} 条消息',
-            'data': push_messages
+            'message': f'处理成功，共生成 {len(push_messages)} 条消息（{main_count} 主单，{sub_count} 子单）',
+            'data': push_messages,
+            'main_count': main_count,
+            'sub_count': sub_count
         })
         
     except Exception as e:
         logger.error(f'处理 ES 数据失败: {str(e)}', exc_info=True)
+        return jsonify({'success': False, 'message': f'处理失败: {str(e)}'}), 500
+
+@event_bp.route('/api/clean-event/parse-es', methods=['POST'])
+def parse_es_json():
+    """解析 ES JSON 数据，识别主单/子单并格式化"""
+    try:
+        request_data = request.get_json()
+        
+        if not request_data or 'json_data' not in request_data:
+            return jsonify({'success': False, 'message': '缺少 JSON 数据'}), 400
+        
+        json_str = request_data['json_data']
+        es_data = json.loads(json_str)
+        
+        # 提取 hits
+        hits = es_data.get('hits', {}).get('hits', [])
+        
+        if not hits:
+            return jsonify({'success': False, 'message': '未找到事件数据'}), 400
+        
+        result_list = []
+        
+        for hit in hits:
+            source = hit.get('_source', {})
+            dispatch_info = source.get('DISPATCH_INFO', {})
+            dispatch_reason = dispatch_info.get('DISPATCH_REASON', '')
+            
+            # 判断主单还是子单
+            is_main_order = (dispatch_reason == '工单派发成功')
+            order_type = '主单' if is_main_order else '子单'
+            
+            # 提取关键字段
+            event_data = {
+                'order_type': order_type,
+                'is_main_order': is_main_order,
+                'dispatch_reason': dispatch_reason,
+                'event_id': source.get('EVENT_ID'),
+                'event_name': source.get('EVENT_NAME'),
+                'equipment_name': source.get('EQUIPMENT_NAME'),
+                'alarm_name': source.get('ALARM_NAME'),
+                'event_time': source.get('EVENT_TIME'),
+                'order_id': source.get('ORDER_ID'),
+                'full_source': source  # 保留完整数据用于复制
+            }
+            
+            result_list.append(event_data)
+        
+        return jsonify({
+            'success': True,
+            'data': result_list,
+            'total': len(result_list),
+            'main_count': sum(1 for item in result_list if item['is_main_order']),
+            'sub_count': sum(1 for item in result_list if not item['is_main_order'])
+        })
+        
+    except json.JSONDecodeError as e:
+        logger.error(f'JSON 解析失败: {str(e)}')
+        return jsonify({'success': False, 'message': f'JSON 格式错误: {str(e)}'}), 400
+    except Exception as e:
+        logger.error(f'解析 ES 数据失败: {str(e)}', exc_info=True)
         return jsonify({'success': False, 'message': f'处理失败: {str(e)}'}), 500
 
 # 修改 clean_event_data 函数以支持多种时间格式

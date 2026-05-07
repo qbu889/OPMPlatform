@@ -25,6 +25,7 @@
       <!-- 历史列表 -->
       <el-table :data="historyList" v-loading="loading" stripe>
         <el-table-column prop="triggered_at" label="触发时间" width="180" />
+        <el-table-column prop="config_name" label="配置名称" width="200" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 'success' ? 'success' : 'danger'">
@@ -34,9 +35,17 @@
         </el-table-column>
         <el-table-column prop="execution_duration_ms" label="耗时(ms)" width="100" />
         <el-table-column prop="retry_count" label="重试次数" width="100" />
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作" width="200">
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">查看详情</el-button>
+            <el-button 
+              v-if="row.config_is_deleted === 1" 
+              size="small" 
+              type="warning"
+              @click="restoreConfig(row.config_id, row.config_name)"
+            >
+              恢复配置
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -102,6 +111,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -186,6 +196,36 @@ const formatJson = (data) => {
 // 返回
 const goBack = () => {
   router.push('/dingtalk-push')
+}
+
+// 恢复配置
+const restoreConfig = async (configId, configName) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要恢复配置 "${configName}" 吗？`,
+      '恢复配置',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    const res = await axios.post(`/dingtalk-push/configs/${configId}/restore`)
+    
+    if (res.data.success) {
+      ElMessage.success(res.data.msg || '配置已恢复')
+      // 刷新历史列表
+      loadHistory()
+    } else {
+      ElMessage.error(res.data.msg || '恢复失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error(error)
+      ElMessage.error('恢复配置失败')
+    }
+  }
 }
 
 onMounted(() => {

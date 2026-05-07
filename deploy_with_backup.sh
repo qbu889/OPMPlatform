@@ -329,7 +329,7 @@ server {
     location = /kafka-generator/field-order { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/field-options { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/generate { proxy_pass http://127.0.0.1:5004; }
-    location = /kafka-generator/history { proxy_pass http://127.0.0.1:5004; }
+    location /kafka-generator/history { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/field-history { proxy_pass http://127.0.0.1:5004; }
     
     # Schedule Config API

@@ -175,6 +175,8 @@ def get_configs():
             params.append(enabled == 'true')
         
         where_clause = " AND ".join(conditions) if conditions else "1=1"
+        # 过滤已删除的配置
+        where_clause += " AND is_deleted = 0"
         
         # 获取总数
         count_query = f"SELECT COUNT(*) as total FROM dingtalk_push_config WHERE {where_clause}"
@@ -215,13 +217,13 @@ def get_config(config_id):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        cursor.execute("SELECT * FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        cursor.execute("SELECT * FROM dingtalk_push_config WHERE id = %s AND is_deleted = 0", (config_id,))
         config = cursor.fetchone()
         
         if not config:
             cursor.close()
             conn.close()
-            return jsonify({'success': False, 'msg': '配置不存在'}), 404
+            return jsonify({'success': False, 'msg': '配置不存在或已被删除'}), 404
         
         # 获取统计数据
         cursor.execute("""
@@ -347,12 +349,19 @@ def update_config(config_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 检查配置是否存在
-        cursor.execute("SELECT id FROM dingtalk_push_config WHERE id = %s", (config_id,))
-        if not cursor.fetchone():
+        # 检查配置是否存在（包括已删除的）
+        cursor.execute("SELECT id, is_deleted FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        existing = cursor.fetchone()
+        
+        if not existing:
             cursor.close()
             conn.close()
             return jsonify({'success': False, 'msg': '配置不存在'}), 404
+        
+        if existing[1] == 1:  # is_deleted = 1
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'msg': '配置已被删除，请先恢复'}), 400
         
         # 构建更新语句
         update_fields = []
@@ -440,28 +449,91 @@ def update_config(config_id):
 
 @dingtalk_push_bp.route('/configs/<int:config_id>', methods=['DELETE'])
 def delete_config(config_id):
-    """删除配置"""
+    """软删除配置（标记为已删除）"""
     try:
+        from datetime import datetime
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("DELETE FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        # 检查配置是否存在且未被删除
+        cursor.execute("SELECT id, is_deleted FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        existing = cursor.fetchone()
         
-        if cursor.rowcount == 0:
+        if not existing:
             cursor.close()
             conn.close()
             return jsonify({'success': False, 'msg': '配置不存在'}), 404
+        
+        if existing[1] == 1:  # is_deleted = 1
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'msg': '配置已被删除'}), 400
+        
+        # 软删除：标记为已删除
+        deleted_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute(
+            "UPDATE dingtalk_push_config SET is_deleted = 1, deleted_at = %s WHERE id = %s",
+            (deleted_at, config_id)
+        )
         
         conn.commit()
         cursor.close()
         conn.close()
         
-        logger.info(f"删除推送配置成功: ID={config_id}")
+        logger.info(f"软删除推送配置成功: ID={config_id}, 删除时间={deleted_at}")
         
-        return jsonify({'success': True, 'msg': '配置删除成功'})
+        return jsonify({'success': True, 'msg': '配置已删除（可在历史记录中恢复）'})
     
     except Exception as e:
         logger.error(f"删除配置失败: {e}")
+        return jsonify({'success': False, 'msg': str(e)}), 500
+
+@dingtalk_push_bp.route('/configs/<int:config_id>/restore', methods=['POST'])
+def restore_config(config_id):
+    """从软删除状态恢复配置"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查配置是否存在且已被删除
+        cursor.execute("SELECT id, is_deleted, name FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        existing = cursor.fetchone()
+        
+        if not existing:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'msg': '配置不存在'}), 404
+        
+        if existing[1] == 0:  # is_deleted = 0
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'msg': '配置未被删除，无需恢复'}), 400
+        
+        # 恢复配置
+        cursor.execute(
+            "UPDATE dingtalk_push_config SET is_deleted = 0, deleted_at = NULL, deleted_by = NULL WHERE id = %s",
+            (config_id,)
+        )
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        logger.info(f"恢复推送配置成功: ID={config_id}, 名称={existing[2]}")
+        
+        # 重新加载定时任务
+        try:
+            from flask import current_app
+            scheduler = current_app.push_scheduler
+            scheduler.reload_config(config_id)
+        except Exception as e:
+            logger.warning(f"重新加载定时任务失败: {e}")
+        
+        return jsonify({'success': True, 'msg': f'配置 "{existing[2]}" 已恢复'})
+    
+    except Exception as e:
+        logger.error(f"恢复配置失败: {e}")
         return jsonify({'success': False, 'msg': str(e)}), 500
 
 @dingtalk_push_bp.route('/configs/<int:config_id>/toggle', methods=['PATCH'])
@@ -624,14 +696,14 @@ def execute_push(config_id):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # 获取配置
-        cursor.execute("SELECT * FROM dingtalk_push_config WHERE id = %s", (config_id,))
+        # 获取配置（排除已删除的）
+        cursor.execute("SELECT * FROM dingtalk_push_config WHERE id = %s AND is_deleted = 0", (config_id,))
         config = cursor.fetchone()
         
         if not config:
             cursor.close()
             conn.close()
-            return jsonify({'success': False, 'msg': '配置不存在'}), 404
+            return jsonify({'success': False, 'msg': '配置不存在或已被删除'}), 404
         
         if not config['enabled']:
             cursor.close()
@@ -792,8 +864,30 @@ def get_push_history():
         cursor.execute(count_query, params)
         total = cursor.fetchone()['total']
         
+        # 分页查询（关联配置表获取配置名称和删除状态）
+        query = """
+            SELECT h.*, c.name as config_name, c.is_deleted as config_is_deleted
+            FROM dingtalk_push_history h
+            LEFT JOIN dingtalk_push_config c ON h.config_id = c.id
+            WHERE 1=1
+        """
+        params = []
+        
+        if config_id:
+            query += " AND h.config_id = %s"
+            params.append(config_id)
+        
+        if status:
+            query += " AND h.status = %s"
+            params.append(status)
+        
+        # 获取总数
+        count_query = f"SELECT COUNT(*) as total FROM ({query}) as t"
+        cursor.execute(count_query, params)
+        total = cursor.fetchone()['total']
+        
         # 分页查询
-        query += " ORDER BY triggered_at DESC LIMIT %s OFFSET %s"
+        query += " ORDER BY h.triggered_at DESC LIMIT %s OFFSET %s"
         params.extend([size, (page - 1) * size])
         cursor.execute(query, params)
         history_list = cursor.fetchall()

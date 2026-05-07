@@ -203,24 +203,26 @@ const handleCopy = async () => {
   }
   
   try {
-    // 方法1：使用现代 Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    // 方法1：尝试使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       await navigator.clipboard.writeText(cleanedData.value)
     } else {
-      // 方法2：降级方案 - 使用传统的 execCommand
+      // 方法2：降级方案 - 使用传统的 execCommand（适用于 HTTP 环境）
       const textarea = document.createElement('textarea')
       textarea.value = cleanedData.value
       textarea.style.position = 'fixed'
       textarea.style.left = '-999999px'
       textarea.style.top = '-999999px'
+      textarea.style.opacity = '0'
       document.body.appendChild(textarea)
       textarea.focus()
       textarea.select()
       
-      try {
-        document.execCommand('copy')
-      } finally {
-        document.body.removeChild(textarea)
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      
+      if (!successful) {
+        throw new Error('execCommand 复制失败')
       }
     }
     
@@ -231,7 +233,7 @@ const handleCopy = async () => {
     }, 2000)
   } catch (error) {
     console.error('复制失败:', error)
-    ElMessage.error('复制失败，请手动选择文本复制')
+    ElMessage.error('复制失败，请手动选择文本复制（Ctrl+C）')
   }
 }
 </script>
@@ -242,14 +244,6 @@ const handleCopy = async () => {
   max-width: 100%;
   margin: 0;
   min-height: auto;
-}
-
-/* 当作为独立页面时保持原有样式 */
-.clean-event-container.standalone {
-  padding: 40px 20px;
-  max-width: 900px;
-  margin: 0 auto;
-  min-height: calc(100vh - 60px);
 }
 
 .page-header {
@@ -332,13 +326,6 @@ const handleCopy = async () => {
   margin-top: 8px;
   padding-left: 5px;
   line-height: 1.5;
-}
-
-.button-group {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 10px;
 }
 
 .clean-button {

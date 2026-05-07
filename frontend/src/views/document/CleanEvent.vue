@@ -229,6 +229,8 @@ const jsonText = ref('')
 const loading = ref(false)
 const pushMessages = ref([])
 const customEventTime = ref('')
+const mainCount = ref(0)
+const subCount = ref(0)
 
 // Tab 切换处理
 const handleTabChange = (tabName) => {
@@ -346,6 +348,8 @@ const uploadAndProcess = async () => {
 
     if (result.success) {
       pushMessages.value = result.data || []
+      mainCount.value = result.main_count || 0
+      subCount.value = result.sub_count || 0
       ElMessage.success(result.message)
     } else {
       ElMessage.error(result.message)
@@ -415,6 +419,8 @@ const processJsonText = async () => {
 
     if (result.success) {
       pushMessages.value = result.data || []
+      mainCount.value = result.main_count || 0
+      subCount.value = result.sub_count || 0
       ElMessage.success(result.message)
     } else {
       ElMessage.error(result.message)
@@ -432,24 +438,77 @@ const clearText = () => {
   jsonText.value = ''
 }
 
+// 复制到剪贴板的通用函数
+const copyToClipboard = async (text, successMsg) => {
+  try {
+    // 方法1：使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text)
+      ElMessage.success(successMsg || '已复制到剪贴板')
+      return
+    }
+    
+    // 方法2：降级方案 - 使用传统的 execCommand（适用于 HTTP 环境）
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.left = '-999999px'
+    textarea.style.top = '-999999px'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    
+    const successful = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    
+    if (successful) {
+      ElMessage.success(successMsg || '已复制到剪贴板')
+    } else {
+      throw new Error('execCommand 复制失败')
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动选择文本复制（Ctrl+C）')
+  }
+}
+
 // 复制单条消息
 const copyMessage = (msg) => {
   const text = JSON.stringify(msg)
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('已复制到剪贴板')
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
+  copyToClipboard(text, '已复制到剪贴板')
 }
 
 // 复制所有消息
 const copyAllMessages = () => {
   const text = pushMessages.value.map(msg => JSON.stringify(msg)).join('\n')
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('所有消息已复制到剪贴板')
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
+  copyToClipboard(text, '所有消息已复制到剪贴板')
+}
+
+// 复制所有主单
+const copyMainOrders = () => {
+  const mainOrders = pushMessages.value.filter(msg => msg.IS_MAIN_ORDER)
+  
+  if (mainOrders.length === 0) {
+    ElMessage.warning('没有主单数据')
+    return
+  }
+  
+  const text = mainOrders.map(msg => JSON.stringify(msg)).join('\n')
+  copyToClipboard(text, `已复制 ${mainOrders.length} 条主单`)
+}
+
+// 复制所有子单
+const copySubOrders = () => {
+  const subOrders = pushMessages.value.filter(msg => !msg.IS_MAIN_ORDER)
+  
+  if (subOrders.length === 0) {
+    ElMessage.warning('没有子单数据')
+    return
+  }
+  
+  const text = subOrders.map(msg => JSON.stringify(msg)).join('\n')
+  copyToClipboard(text, `已复制 ${subOrders.length} 条子单`)
 }
 
 // 下载所有消息为 JSON 文件
@@ -468,6 +527,8 @@ const downloadAllMessages = () => {
 // 清空结果
 const clearResults = () => {
   pushMessages.value = []
+  mainCount.value = 0
+  subCount.value = 0
 }
 </script>
 
