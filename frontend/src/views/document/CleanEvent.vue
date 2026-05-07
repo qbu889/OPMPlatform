@@ -156,7 +156,7 @@
               <div class="stats-info">
                 <el-alert
                   title="处理成功"
-                  :description="`共提取 ${pushMessages.length} 个唯一的 EVENT_FP，已生成 ${pushMessages.length} 条推送消息`"
+                  :description="`共提取 ${pushMessages.length} 个唯一的 EVENT_FP，已生成 ${pushMessages.length} 条推送消息（${mainCount} 主单，${subCount} 子单）`"
                   type="success"
                   :closable="false"
                   show-icon
@@ -167,7 +167,15 @@
               <div class="messages-container">
                 <div v-for="(msg, index) in pushMessages" :key="index" class="message-item">
                   <div class="message-header">
-                    <el-tag type="primary">消息 {{ index + 1 }}</el-tag>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <el-tag type="primary">消息 {{ index + 1 }}</el-tag>
+                      <el-tag :type="msg.IS_MAIN_ORDER ? 'success' : 'warning'" size="large">
+                        {{ msg.ORDER_TYPE }}
+                      </el-tag>
+                      <el-tag v-if="msg.DISPATCH_REASON" type="info" size="small">
+                        {{ msg.DISPATCH_REASON }}
+                      </el-tag>
+                    </div>
                     <el-button 
                       type="primary" 
                       size="small" 
@@ -187,6 +195,22 @@
               <div class="batch-actions">
                 <el-button type="success" @click="copyAllMessages" :icon="CopyDocument">
                   复制所有消息
+                </el-button>
+                <el-button 
+                  v-if="mainCount > 0" 
+                  type="primary" 
+                  @click="copyMainOrders" 
+                  :icon="CopyDocument"
+                >
+                  复制所有主单 ({{ mainCount }})
+                </el-button>
+                <el-button 
+                  v-if="subCount > 0" 
+                  type="warning" 
+                  @click="copySubOrders" 
+                  :icon="CopyDocument"
+                >
+                  复制所有子单 ({{ subCount }})
                 </el-button>
                 <el-button type="warning" @click="downloadAllMessages" :icon="Download">
                   下载为 JSON 文件

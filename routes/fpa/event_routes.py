@@ -76,19 +76,24 @@ def process_es_data():
     try:
         request_data = request.get_json()
         
-        logger.info(f'接收到请求数据: {request_data}')
+        logger.info('='*80)
+        logger.info('🔍 [DEBUG] /api/clean-event/process 接口被调用')
+        logger.info(f'📥 接收到请求数据: {request_data}')
+        logger.info('='*80)
         
         if not request_data:
+            logger.error('❌ 请求数据为空')
             return jsonify({'success': False, 'message': '缺少数据'}), 400
         
         # 提取自定义事件时间和实际数据
         custom_event_time = request_data.get('custom_event_time')
         data = request_data.get('data')
         
-        logger.info(f'custom_event_time: {custom_event_time}')
-        logger.info(f'data 类型: {type(data)}, 是否为列表: {isinstance(data, list)}')
+        logger.info(f'⏰ custom_event_time: {custom_event_time}')
+        logger.info(f'📊 data 类型: {type(data).__name__}, 是否为列表: {isinstance(data, list)}')
         
         if not data:
+            logger.error('❌ 数据内容为空')
             return jsonify({'success': False, 'message': '缺少数据内容'}), 400
         
         # 提取 EVENT_FP 字段（支持单个对象或数组）
@@ -98,27 +103,41 @@ def process_es_data():
         
         # 如果是列表，遍历处理每个对象
         if isinstance(data, list):
-            logger.info(f'处理列表，共 {len(data)} 个对象')
+            logger.info(f'📋 处理列表，共 {len(data)} 个对象')
             for idx, item in enumerate(data):
+                logger.info(f'\n--- 处理第 {idx+1} 条数据 ---')
+                logger.info(f'🔑 完整数据键: {list(item.keys())}')
+                
                 event_fp = item.get('EVENT_FP')
-                logger.info(f'对象 {idx}: EVENT_FP = {event_fp}')
+                logger.info(f'🆔 EVENT_FP: {event_fp}')
+                
                 if event_fp:
                     # 优先使用自定义事件时间，否则使用数据中的 EVENT_TIME
                     if custom_event_time:
                         event_time = custom_event_time
+                        logger.info(f'⏱️  使用自定义事件时间: {event_time}')
                     else:
                         event_time = item.get('EVENT_TIME', '')
+                        logger.info(f'⏱️  使用数据中的 EVENT_TIME: {event_time}')
                     
                     # 判断主单还是子单
                     dispatch_info = item.get('DISPATCH_INFO', {})
+                    logger.info(f'📦 DISPATCH_INFO: {dispatch_info}')
+                    
                     dispatch_reason = dispatch_info.get('DISPATCH_REASON', '')
+                    logger.info(f'📝 DISPATCH_REASON: "{dispatch_reason}"')
+                    
                     is_main_order = (dispatch_reason == '工单派发成功')
                     order_type = '主单' if is_main_order else '子单'
                     
+                    logger.info(f'✅ 判断结果: is_main_order={is_main_order}, order_type="{order_type}"')
+                    
                     if is_main_order:
                         main_count += 1
+                        logger.info(f'📈 主单计数 +1 = {main_count}')
                     else:
                         sub_count += 1
+                        logger.info(f'📉 子单计数 +1 = {sub_count}')
                     
                     push_message = {
                         'ACTIVE_STATUS': '3',
@@ -129,29 +148,48 @@ def process_es_data():
                         'IS_MAIN_ORDER': is_main_order,  # 添加是否主单标识
                         'DISPATCH_REASON': dispatch_reason  # 添加派发原因
                     }
+                    logger.info(f'💾 生成的推送消息: {push_message}')
                     push_messages.append(push_message)
+                else:
+                    logger.warning(f'⚠️  跳过第 {idx+1} 条数据：未找到 EVENT_FP 字段')
         else:
             # 单个对象
+            logger.info(f'🔹 处理单个对象')
+            logger.info(f'🔑 完整数据键: {list(data.keys())}')
+            
             event_fp = data.get('EVENT_FP')
+            logger.info(f'🆔 EVENT_FP: {event_fp}')
+            
             if not event_fp:
+                logger.error('❌ 未找到 EVENT_FP 字段')
                 return jsonify({'success': False, 'message': '未找到 EVENT_FP 字段'}), 400
             
             # 优先使用自定义事件时间，否则使用数据中的 EVENT_TIME
             if custom_event_time:
                 event_time = custom_event_time
+                logger.info(f'⏱️  使用自定义事件时间: {event_time}')
             else:
                 event_time = data.get('EVENT_TIME', '')
+                logger.info(f'⏱️  使用数据中的 EVENT_TIME: {event_time}')
             
             # 判断主单还是子单
             dispatch_info = data.get('DISPATCH_INFO', {})
+            logger.info(f'📦 DISPATCH_INFO: {dispatch_info}')
+            
             dispatch_reason = dispatch_info.get('DISPATCH_REASON', '')
+            logger.info(f'📝 DISPATCH_REASON: "{dispatch_reason}"')
+            
             is_main_order = (dispatch_reason == '工单派发成功')
             order_type = '主单' if is_main_order else '子单'
             
+            logger.info(f'✅ 判断结果: is_main_order={is_main_order}, order_type="{order_type}"')
+            
             if is_main_order:
                 main_count += 1
+                logger.info(f'📈 主单计数 +1 = {main_count}')
             else:
                 sub_count += 1
+                logger.info(f'📉 子单计数 +1 = {sub_count}')
             
             push_message = {
                 'ACTIVE_STATUS': '3',
@@ -162,12 +200,20 @@ def process_es_data():
                 'IS_MAIN_ORDER': is_main_order,
                 'DISPATCH_REASON': dispatch_reason
             }
+            logger.info(f'💾 生成的推送消息: {push_message}')
             push_messages.append(push_message)
         
         if not push_messages:
+            logger.error('❌ 未找到有效的 EVENT_FP 字段')
             return jsonify({'success': False, 'message': '未找到有效的 EVENT_FP 字段'}), 400
         
-        logger.info(f'成功生成 {len(push_messages)} 条消息（主单: {main_count}, 子单: {sub_count}）')
+        logger.info('\n' + '='*80)
+        logger.info(f'✅ 处理完成！')
+        logger.info(f'   - 总消息数: {len(push_messages)}')
+        logger.info(f'   - 主单数量: {main_count}')
+        logger.info(f'   - 子单数量: {sub_count}')
+        logger.info(f'   - 返回数据结构: {list(push_messages[0].keys()) if push_messages else []}')
+        logger.info('='*80)
         
         return jsonify({
             'success': True,
