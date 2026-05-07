@@ -133,42 +133,41 @@ fi
 echo ""
 
 # 上传前端文件（高效方式：直接上传dist目录）
-if [ "$NEED_FRONTEND_BUILD" = true ] || [ ${#FRONTEND_SOURCE_FILES[@]} -gt 0 ]; then
-    echo "📤 处理前端文件..."
-    
-    # 重新构建前端
-    echo "🔨 正在重新构建前端..."
+# 策略：始终检查并上传前端dist，确保线上与本地一致
+echo " 处理前端文件..."
+
+# 检查前端dist是否存在
+if [ ! -d "frontend/dist" ] || [ ! -f "frontend/dist/index.html" ]; then
+    echo "⚠️  前端未构建，正在构建..."
     cd /Users/linziwang/PycharmProjects/wordToWord/frontend
     npm run build
     BUILD_RESULT=$?
     cd /Users/linziwang/PycharmProjects/wordToWord
     
-    if [ $BUILD_RESULT -eq 0 ]; then
-        echo "✅ 前端构建成功"
-        
-        # 使用rsync或直接scp上传整个dist目录
-        echo "🚀 上传前端构建产物..."
-        
-        # 检查是否可用rsync（更高效，支持增量传输）
-        if command -v rsync &> /dev/null; then
-            echo "   📡 使用rsync进行增量同步..."
-            rsync -avz --delete -e "ssh $SSH_OPTS" dist/ ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
-        else
-            echo "   📡 使用scp上传整个dist目录..."
-            scp -r $SSH_OPTS dist/* ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
-        fi
-        
-        echo "✅ 前端文件上传完成"
-    else
+    if [ $BUILD_RESULT -ne 0 ]; then
         echo "❌ 前端构建失败"
         exit 1
     fi
-elif [ -d "frontend/dist" ]; then
-    # 如果前端dist已存在且无需重新构建，可以选择性上传
-    echo "ℹ️  前端无需重新构建，如需更新请手动执行: cd frontend && npm run build"
+    echo "✅ 前端构建成功"
 else
-    echo "ℹ️  无前端文件变更"
+    echo "✅ 前端构建产物已存在"
 fi
+
+# 总是上传前端dist目录（确保线上与本地一致）
+echo "🚀 上传前端构建产物..."
+
+# 检查是否可用rsync（更高效，支持增量传输）
+if command -v rsync &> /dev/null; then
+    echo "   📡 使用rsync进行增量同步..."
+    rsync -avz --delete -e "ssh $SSH_OPTS" /Users/linziwang/PycharmProjects/wordToWord/frontend/dist/ ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
+else
+    echo "   📡 使用scp上传整个dist目录..."
+    # 先删除远程旧文件，再上传新文件（确保一致性）
+    ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} "rm -rf ${REMOTE_PATH}/frontend/dist/*"
+    scp -r $SSH_OPTS /Users/linziwang/PycharmProjects/wordToWord/frontend/dist/* ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}/frontend/dist/
+fi
+
+echo "✅ 前端文件上传完成"
 
 echo "✅ 文件上传完成"
 echo ""
