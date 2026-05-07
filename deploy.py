@@ -455,9 +455,15 @@ def update_nginx_config():
         ssh_command("nginx -s reload")
         print_success("Nginx配置已更新")
         
-        # 4. 修复权限
-        ssh_command(f"chmod -R 755 {REMOTE_PATH}/frontend/dist/")
-        ssh_command(f"chown -R www:www {REMOTE_PATH}/frontend/dist/")
+        # 4. 修复权限（关键：确保所有父目录都有执行权限）
+        print_info("修复文件权限...")
+        ssh_command("chmod 755 /project")
+        ssh_command("chown -R root:root /project/wordToWord")
+        ssh_command("chmod 755 /project/wordToWord")
+        ssh_command("chmod 755 /project/wordToWord/frontend")
+        ssh_command("chmod -R 755 /project/wordToWord/frontend/dist/")
+        ssh_command("chown -R www:www /project/wordToWord/frontend/dist/")
+        print_success("权限修复完成")
         
         return True
         
