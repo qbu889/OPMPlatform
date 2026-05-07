@@ -50,7 +50,7 @@ def print_header(title):
     print(f"{Colors.BOLD}  {title}{Colors.END}")
     print(f"{Colors.BOLD}{'='*50}{Colors.END}\n")
 
-def run_command(cmd, cwd=None, check=True):
+def run_command(cmd, cwd=None, check=True, timeout=None):
     """执行命令并返回结果"""
     try:
         result = subprocess.run(
@@ -59,11 +59,14 @@ def run_command(cmd, cwd=None, check=True):
             cwd=cwd, 
             capture_output=True, 
             text=True,
-            check=check
+            check=check,
+            timeout=timeout
         )
         return result.returncode == 0, result.stdout.strip(), result.stderr.strip()
     except subprocess.CalledProcessError as e:
         return False, "", str(e)
+    except subprocess.TimeoutExpired:
+        return False, "", "Command timed out"
 
 def ssh_command(cmd, timeout=60):
     """执行SSH远程命令"""
