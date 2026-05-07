@@ -43,12 +43,29 @@ echo ""
 
 echo "🔍 检测变更文件..."
 
-# 获取 Git 变更的文件列表
-CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files --modified)
+# 获取 Git 变更的文件列表（更可靠的检测方式）
+echo "   📋 检查 Git 状态..."
+LAST_COMMIT=$(git log -1 --oneline 2>/dev/null)
+echo "   最新提交: $LAST_COMMIT"
 
+# 方法1: 获取最近一次提交变更的文件
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+
+# 方法2: 如果方法1失败，尝试其他方法
 if [ -z "$CHANGED_FILES" ]; then
-    echo "⚠️  未检测到变更文件，将上传核心文件..."
-    # 默认上传核心文件
+    echo "   ⚠️  git diff-tree 未检测到变更，尝试其他方式..."
+    CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null)
+fi
+
+# 方法3: 如果还是为空，检查是否有未提交的修改
+if [ -z "$CHANGED_FILES" ]; then
+    echo "   ⚠️  未检测到已提交的变更，检查未提交文件..."
+    CHANGED_FILES=$(git ls-files --modified 2>/dev/null)
+fi
+
+# 方法4: 如果仍然为空，使用默认核心文件
+if [ -z "$CHANGED_FILES" ]; then
+    echo "   ⚠️  未检测到任何变更，将上传核心文件..."
     CHANGED_FILES="app.py config.py requirements.txt routes/kafka/kafka_generator_routes.py"
 fi
 
@@ -97,17 +114,25 @@ if [ ${#BACKEND_FILES[@]} -gt 0 ]; then
     cd /Users/linziwang/PycharmProjects/wordToWord
     
     # 复制文件到临时目录，保持目录结构
+    echo "   📋 准备上传的文件列表:"
     for file in "${BACKEND_FILES[@]}"; do
         if [ -f "$file" ]; then
             DEST_DIR="$TEMP_DIR/$(dirname $file)"
             mkdir -p "$DEST_DIR"
             cp "$file" "$DEST_DIR/"
+            echo "      + $file"
+        else
+            echo "      ⚠️ $file (文件不存在，跳过)"
         fi
     done
     
     # 打包
     cd "$TEMP_DIR"
+    echo "   📦 压缩包内容预览:"
+    tar -tzf <(tar -czf - .) | head -20
     tar -czf "$BACKEND_TAR" .
+    BACKEND_TAR_SIZE=$(du -h "$BACKEND_TAR" | cut -f1)
+    echo "   📦 压缩包大小: $BACKEND_TAR_SIZE"
     
     # 上传压缩包
     echo "   🚀 上传压缩包..."
@@ -117,9 +142,38 @@ if [ ${#BACKEND_FILES[@]} -gt 0 ]; then
     echo "   📂 远程解压..."
     ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << REMOTE_EOF
         cd ${REMOTE_PATH}
+        echo "   📋 当前工作目录: \$(pwd)"
+        echo "   📋 检查压缩包:"
+        ls -lh /tmp/backend_update.tar.gz 2>/dev/null || echo "   ⚠️ 压缩包不存在!"
+        
+        echo "   📦 开始解压..."
         tar -xzf /tmp/backend_update.tar.gz
-        rm -f /tmp/backend_update.tar.gz
-        echo "   ✅ 已解压 \$(tar -tzf /tmp/backend_update.tar.gz 2>/dev/null | wc -l || echo '${#BACKEND_FILES[@]}') 个文件"
+        TAR_EXIT=\$?
+        
+        if [ \$TAR_EXIT -eq 0 ]; then
+            EXTRACTED_COUNT=\$(tar -tzf /tmp/backend_update.tar.gz | wc -l)
+            rm -f /tmp/backend_update.tar.gz
+            echo "   ✅ 解压成功！共 \$EXTRACTED_COUNT 个文件/目录"
+            
+            echo "   📋 验证关键文件是否已更新:"
+            VERIFIED=0
+            FAILED=0
+            for file in $(echo "${BACKEND_FILES[@]}" | tr ' ' '\n' | head -10); do
+                if [ -f "$file" ]; then
+                    FILE_TIME=\$(stat -c '%y' "$file" 2>/dev/null || stat -f '%Sm' "$file" 2>/dev/null)
+                    echo "      ✓ $file (更新时间: \$FILE_TIME)"
+                    VERIFIED=\$((VERIFIED + 1))
+                else
+                    echo "      ✗ $file (缺失!)"
+                    FAILED=\$((FAILED + 1))
+                fi
+            done
+            echo "   📊 验证结果: \$VERIFIED 个成功, \$FAILED 个失败"
+        else
+            echo "   ❌ 解压失败！退出码: \$TAR_EXIT"
+            echo "   📋 尝试查看压缩包内容:"
+            tar -tzf /tmp/backend_update.tar.gz 2>&1 | head -20
+        fi
 REMOTE_EOF
     
     # 清理临时文件
