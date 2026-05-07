@@ -417,8 +417,57 @@ def generate_nginx_config():
 """
     return nginx_config
 
+def update_nginx_config():
+    """更新Nginx配置"""
+    print_info("上传并应用Nginx配置...")
+    
+    # 生成Nginx配置
+    nginx_config = generate_nginx_config()
+    
+    # 写入本地临时文件
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.conf', delete=False) as f:
+        f.write(nginx_config)
+        local_nginx_conf = f.name
+    
+    try:
+        # 上传Nginx配置
+        remote_nginx_conf = "/tmp/nginx_deploy.conf"
+        success = scp_upload(local_nginx_conf, remote_nginx_conf)
+        
+        if not success:
+            print_warning("Nginx配置上传失败，跳过更新")
+            return False
+        
+        # 分步执行远程命令（避免长命令超时）
+        # 1. 复制配置文件
+        ssh_command(f"cp {remote_nginx_conf} /www/server/panel/vhost/nginx/sql-formatter-{NGINX_PORT}.conf")
+        
+        # 2. 测试配置
+        success, stdout, stderr = ssh_command("nginx -t")
+        if success:
+            print_success("Nginx配置测试通过")
+        else:
+            print_error(f"Nginx配置测试失败: {stderr[:200]}")
+            return False
+        
+        # 3. 重载Nginx
+        ssh_command("nginx -s reload")
+        print_success("Nginx配置已更新")
+        
+        # 4. 修复权限
+        ssh_command(f"chmod -R 755 {REMOTE_PATH}/frontend/dist/")
+        ssh_command(f"chown -R www:www {REMOTE_PATH}/frontend/dist/")
+        
+        return True
+        
+    finally:
+        # 清理临时文件
+        os.unlink(local_nginx_conf)
+        ssh_command(f"rm -f {remote_nginx_conf}")
+
 def restart_services():
-    """重启服务并更新Nginx配置"""
+    """重启服务"""
     print_header("步骤 5: 远程备份并重启服务")
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -457,59 +506,20 @@ def restart_services():
     # 3. 启动新服务
     print_info("步骤 5.3: 启动新服务")
     
-    # 生成Nginx配置
-    nginx_config = generate_nginx_config()
-    nginx_conf_path = "/tmp/nginx_5173_new.conf"
-    
-    # 写入Nginx配置到临时文件
-    import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.conf', delete=False) as f:
-        f.write(nginx_config)
-        local_nginx_conf = f.name
-    
-    # 上传Nginx配置
-    print_info("上传Nginx配置...")
-    scp_upload(local_nginx_conf, nginx_conf_path)
-    
-    # 应用Nginx配置并启动后端
-    start_cmd = f"""
-    cd {REMOTE_PATH}
-    
-    # 应用Nginx配置
-    cp {nginx_conf_path} /www/server/panel/vhost/nginx/sql-formatter-{NGINX_PORT}.conf
-    nginx -t && nginx -s reload
-    
-    # 修复权限
-    chmod -R 755 {REMOTE_PATH}/frontend/dist/
-    chown -R www:www {REMOTE_PATH}/frontend/dist/
+    # 更新Nginx配置
+    update_nginx_config()
     
     # 启动后端
+    start_cmd = f"""
+    cd {REMOTE_PATH}
     source .venv/bin/activate
     export PORT={LOCAL_PORT}
     nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
     echo "后端已启动 (PID: $!)"
-    
-    sleep 3
-    
-    # 验证服务
-    if lsof -i:{LOCAL_PORT} > /dev/null 2>&1; then
-        echo "✅ 后端服务正常运行在端口 {LOCAL_PORT}"
-    else
-        echo "❌ 后端服务启动失败"
-        tail -20 logs/backend.log
-    fi
     """
     
-    success, stdout, stderr = ssh_command(start_cmd, timeout=30)
-    
-    if success:
-        print_success("服务启动完成")
-        print_info(stdout[-500:])  # 显示最后500字符
-    else:
-        print_error(f"服务启动可能有问题: {stderr[:200]}")
-    
-    # 清理临时文件
-    os.unlink(local_nginx_conf)
+    success, stdout, stderr = ssh_command(start_cmd)
+    print_success("后端服务已启动")
     
     # 4. 验证服务状态
     print_info("步骤 5.4: 验证服务状态")
