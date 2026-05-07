@@ -37,7 +37,7 @@ class OllamaClient:
         if use_omlx:
             # 使用 OMLX 模型配置
             self.base_url = (base_url or os.getenv("OMLX_BASE_URL", "https://omlx.cn")).rstrip('/')
-            self.model = (model or os.getenv("OMLX_MODEL", "Qwen3.5-4B-OptiQ-4bit"))
+            self.model = (model or os.getenv("OMLX_MODEL", "gpt-oss-20b-MXFP4-Q8"))
             logger.info(f"[OLLAMA_INIT] 使用 OMLX 配置 - URL: {self.base_url}, Model: {self.model}")
         else:
             # 使用本地 Ollama 配置
