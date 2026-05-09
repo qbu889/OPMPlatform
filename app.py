@@ -195,6 +195,9 @@ def create_app(config_name='development'):
     # 加载配置
     app.config.from_object(config[config_name])
     
+    # 设置 JSON 响应中的中文正常显示（避免 Unicode 转义）
+    app.config['JSON_AS_ASCII'] = False
+    
     # 设置 secret key
     app.config['SECRET_KEY'] = 'your-temporary-secret-key-for-development'
     

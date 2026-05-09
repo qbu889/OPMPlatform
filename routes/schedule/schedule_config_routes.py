@@ -12,7 +12,11 @@ import io
 import requests
 import json
 import os
+import logging
 from cryptography.fernet import Fernet
+
+# 初始化日志器
+logger = logging.getLogger(__name__)
 
 schedule_config_bp = Blueprint('schedule_config_bp', __name__, url_prefix='/schedule-config')
 
@@ -866,6 +870,11 @@ def dingtalk_schedule_config():
             results = db.query(sql)
             db.close()
             
+            logger.info(f"[SCHEDULE_CONFIG] GET请求 - 查询到 {len(results)} 条配置")
+            if results:
+                for r in results:
+                    logger.info(f"[SCHEDULE_CONFIG] ID={r.get('id')}, schedule_times={r.get('schedule_times')}")
+            
             # 处理时间字段（不解密 Webhook，保持加密状态）
             processed_results = serialize_datetime_objects(results)
             
@@ -887,6 +896,11 @@ def dingtalk_schedule_config():
             enabled = data.get('enabled', True)
             description = data.get('description', '')
             
+            logger.info(f"[SCHEDULE_CONFIG] 收到更新请求 - ID={config_id}")
+            logger.info(f"[SCHEDULE_CONFIG] 接收到的 schedule_times: {schedule_times} (类型: {type(schedule_times)}, 长度: {len(schedule_times)})")
+            logger.info(f"[SCHEDULE_CONFIG] 接收到的 time_slots: {time_slots}")
+            logger.info(f"[SCHEDULE_CONFIG] enabled={enabled}, description={description}")
+            
             if not webhook_url:
                 return jsonify({"success": False, "msg": "Webhook地址不能为空"})
             
@@ -902,20 +916,60 @@ def dingtalk_schedule_config():
             time_slots_json = json_module.dumps(time_slots, ensure_ascii=False)
             schedule_times_json = json_module.dumps(schedule_times, ensure_ascii=False)
             
-            # 加密 Webhook URL
-            encrypted_webhook = encrypt_webhook(webhook_url)
+            logger.info(f"[SCHEDULE_CONFIG] 转换后的 schedule_times_json: {schedule_times_json}")
+            logger.info(f"[SCHEDULE_CONFIG] 转换后的 time_slots_json: {time_slots_json}")
+            
+            # 处理 Webhook URL - 如果已经是加密的,则不重新加密
+            if webhook_url.startswith('gAAAAA'):
+                # 已经是加密的,直接使用
+                encrypted_webhook = webhook_url
+                logger.info(f"[SCHEDULE_CONFIG] Webhook URL 已是加密状态")
+            else:
+                # 未加密,需要加密
+                encrypted_webhook = encrypt_webhook(webhook_url)
+                logger.info(f"[SCHEDULE_CONFIG] Webhook URL 已加密")
             
             if config_id:
-                # 更新现有配置
+                # 更新现有配置 - 先查询旧值,确保即使数据相同也强制更新
+                check_sql = "SELECT schedule_times FROM dingtalk_schedule_config WHERE id = %s"
+                old_result = db.query(check_sql, (config_id,))
+                old_schedule_times = old_result[0]['schedule_times'] if old_result else None
+                
+                logger.info(f"[SCHEDULE_CONFIG] 旧值: {old_schedule_times}")
+                logger.info(f"[SCHEDULE_CONFIG] 新值: {schedule_times_json}")
+                logger.info(f"[SCHEDULE_CONFIG] 是否相同: {old_schedule_times == schedule_times_json}")
+                
                 update_sql = """
                 UPDATE dingtalk_schedule_config 
                 SET webhook_url = %s, time_slots = %s, schedule_times = %s, 
                     enabled = %s, description = %s, updated_at = NOW()
                 WHERE id = %s
                 """
-                db.execute(update_sql, (encrypted_webhook, time_slots_json, schedule_times_json, 
-                                       enabled, description, config_id))
+                logger.info(f"[SCHEDULE_CONFIG] 执行UPDATE - SQL参数: webhook_url(encrypted), time_slots_json长度={len(time_slots_json)}, schedule_times_json长度={len(schedule_times_json)}, enabled={enabled}, description={description}, config_id={config_id}")
+                
+                # 手动执行UPDATE,捕获详细错误
+                try:
+                    db.cursor.execute(update_sql, (encrypted_webhook, time_slots_json, schedule_times_json, 
+                                           enabled, description, config_id))
+                    db.conn.commit()
+                    update_success = True
+                    logger.info(f"[SCHEDULE_CONFIG] UPDATE执行成功, 影响行数: {db.cursor.rowcount}")
+                except Exception as e:
+                    db.conn.rollback()
+                    update_success = False
+                    logger.error(f"[SCHEDULE_CONFIG] UPDATE执行失败: {e}")
+                    logger.error(f"[SCHEDULE_CONFIG] SQL: {update_sql}")
+                    logger.error(f"[SCHEDULE_CONFIG] 参数: encrypted_webhook, time_slots_json={time_slots_json}, schedule_times_json={schedule_times_json}, enabled={enabled}, description={description}, config_id={config_id}")
+                
                 msg = "配置更新成功"
+                
+                # 验证更新结果
+                verify_sql = "SELECT schedule_times FROM dingtalk_schedule_config WHERE id = %s"
+                verify_result = db.query(verify_sql, (config_id,))
+                if verify_result:
+                    verified_value = verify_result[0]['schedule_times']
+                    logger.info(f"[SCHEDULE_CONFIG] 验证结果: {verified_value}")
+                    logger.info(f"[SCHEDULE_CONFIG] 是否与预期一致: {verified_value == schedule_times_json}")
             else:
                 # 新增配置
                 insert_sql = """
