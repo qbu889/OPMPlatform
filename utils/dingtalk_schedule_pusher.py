@@ -22,24 +22,45 @@ from routes.排班.paiBanNew_v2 import DB_CONFIG, RosterDB
 # 配置日志
 logger = logging.getLogger(__name__)
 
-# ========== Webhook 解密配置 ==========
-ENCRYPTION_KEY = os.environ.get('WEBHOOK_ENCRYPTION_KEY')
-if not ENCRYPTION_KEY:
-    logger.warning("WEBHOOK_ENCRYPTION_KEY 未设置，Webhook 将无法解密")
+# 延迟加载加密密钥，避免在模块导入时环境变量未加载
+_fernet = None
 
-fernet = None
-if ENCRYPTION_KEY:
-    fernet = Fernet(ENCRYPTION_KEY if isinstance(ENCRYPTION_KEY, bytes) else ENCRYPTION_KEY.encode())
+def _get_fernet():
+    """获取 Fernet 实例（延迟加载，确保环境变量已加载）"""
+    global _fernet
+    if _fernet is not None:
+        return _fernet
+    
+    # 尝试加载 .env 文件
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+    
+    ENCRYPTION_KEY = os.environ.get('WEBHOOK_ENCRYPTION_KEY')
+    if not ENCRYPTION_KEY:
+        logger.warning("WEBHOOK_ENCRYPTION_KEY 未设置，Webhook 将无法解密")
+        return None
+    
+    _fernet = Fernet(ENCRYPTION_KEY if isinstance(ENCRYPTION_KEY, bytes) else ENCRYPTION_KEY.encode())
+    return _fernet
 
 def decrypt_webhook(encrypted_webhook):
     """解密 Webhook URL（兼容明文和密文）"""
-    if not encrypted_webhook or not fernet:
+    if not encrypted_webhook:
         return encrypted_webhook
+    
+    fernet = _get_fernet()
+    if not fernet:
+        return encrypted_webhook
+    
     try:
         decrypted = fernet.decrypt(encrypted_webhook.encode())
         return decrypted.decode()
     except Exception as e:
         # 解密失败，可能是明文数据，直接返回原值
+        logger.debug(f"Webhook 解密失败（可能是明文）: {e}")
         return encrypted_webhook
 
 
