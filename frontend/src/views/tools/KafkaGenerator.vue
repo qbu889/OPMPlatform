@@ -65,6 +65,14 @@
           <el-icon><Delete /></el-icon>
           清除所有字段
         </el-button>
+        <!-- 自动检测缺失字段 -->
+        <el-switch
+          v-model="autoDetectMissing"
+          active-text="自动检测新字段"
+          inline-prompt
+          style="margin-left: 12px;"
+          title="开启后，将自动检测并添加未配置的字段映射"
+        />
         <!-- 【测试】前缀开关（与下方结果区域同步） -->
         <el-switch
           v-model="addTestPrefix"
@@ -791,6 +799,7 @@ const resultJson = ref('')
 const eventTime = ref('')  // 事件时间
 const delayTime = ref(15)
 const addTestPrefix = ref(true)
+const autoDetectMissing = ref(false)  // 自动检测缺失字段
 const esQuery = ref('')
 const timeFieldsAdjusted = ref(false)  // 标记时间字段是否已调整
 const originalFpValue = ref('')  // 保存原始 FP 值
@@ -1094,6 +1103,7 @@ const generateMessage = async () => {
         custom_fields: customFields,
         delay_time: delayTime.value,
         add_test_prefix: addTestPrefix.value,
+        auto_detect_missing: autoDetectMissing.value,  // 添加自动检测参数
       }),
     })
     
@@ -1125,7 +1135,17 @@ const generateMessage = async () => {
       esQuery.value = result.es_query || ''
       timeFieldsAdjusted.value = false  // 重置调整标记
       
-      ElMessage.success('Kafka 消息生成成功')
+      // 处理缺失字段提示
+      if (result.missing_fields && result.missing_fields.length > 0) {
+        const fieldNames = result.missing_fields.map(f => f.kafka_field).join(', ')
+        ElMessage.success({
+          message: `Kafka 消息生成成功！发现 ${result.missing_fields.length} 个新字段并已自动添加映射：${fieldNames}`,
+          duration: 8000,
+          showClose: true,
+        })
+      } else {
+        ElMessage.success('Kafka 消息生成成功')
+      }
     } else {
       ElMessage.error(result.message || '生成失败')
     }

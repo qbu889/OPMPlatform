@@ -1509,6 +1509,7 @@ def generate_kafka_message():
         es_source_raw = request.json.get('es_source_raw')
         custom_fields = request.json.get('custom_fields', {})
         delay_time = request.json.get('delay_time')  # 获取用户手动输入的 DELAY_TIME 值
+        auto_detect_missing = request.json.get('auto_detect_missing', False)  # 是否自动检测缺失字段
 
         # 必须提供原始数据
         if not es_source_raw:
@@ -1642,6 +1643,11 @@ def generate_kafka_message():
         if delay_time_value is None:
             delay_time_value = 15
 
+        # 检测并自动补充缺失的字段映射
+        missing_fields_info = []
+        if auto_detect_missing:
+            missing_fields_info = detect_and_add_missing_fields(es_source_data, ordered_data)
+
         # 保存历史记录到数据库
         history_id = save_generation_history_with_custom_fields(es_source_data, ordered_data, custom_fields)
 
@@ -1658,6 +1664,11 @@ def generate_kafka_message():
                 "processed_length": len(processed_data)
             }
         }
+        
+        # 如果有缺失字段，添加到响应中
+        if missing_fields_info:
+            response_data["missing_fields"] = missing_fields_info
+            response_data["message"] = f"Kafka 消息生成成功，发现 {len(missing_fields_info)} 个新字段并已自动添加映射"
 
         # 手动序列化JSON并保持顺序
         json_response = json_lib.dumps(response_data, ensure_ascii=False, separators=(',', ':'))
@@ -2367,3 +2378,97 @@ def delete_field_history():
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         conn.close()
+
+
+def detect_and_add_missing_fields(es_source_data, kafka_message):
+    """
+    检测 ES 数据中存在但 Kafka 消息中缺失的字段，并自动添加到数据库
+    
+    Args:
+        es_source_data: ES 源数据（包含 _source）
+        kafka_message: 生成的 Kafka 消息
+    
+    Returns:
+        list: 新增字段的详细信息列表
+    """
+    try:
+        from utils.mysql_helper import get_mysql_conn_dict_cursor
+        
+        # 提取 ES 源数据中的所有字段
+        source_data = es_source_data.get('_source', es_source_data) if isinstance(es_source_data, dict) else {}
+        
+        if not isinstance(source_data, dict):
+            return []
+        
+        # 获取所有已配置的 Kafka 字段
+        field_meta = load_field_meta_from_mysql() or FIELD_META
+        configured_kafka_fields = set(field_meta.keys())
+        
+        # 获取当前 Kafka 消息中的所有字段
+        kafka_fields = set(kafka_message.keys())
+        
+        # 获取 ES 源数据中的所有字段（排除嵌套对象）
+        es_fields = set()
+        for key, value in source_data.items():
+            # 只处理基本类型字段，跳过嵌套对象和数组
+            if not isinstance(value, (dict, list)):
+                es_fields.add(key)
+        
+        # 找出 ES 中有但 Kafka 中没有的字段
+        missing_es_fields = es_fields - configured_kafka_fields
+        
+        if not missing_es_fields:
+            logger.info("✅ 没有发现缺失的字段映射")
+            return []
+        
+        logger.info(f"⚠️  发现 {len(missing_es_fields)} 个未配置的字段: {missing_es_fields}")
+        
+        # 连接数据库并批量添加
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            logger.warning("MySQL 未配置，无法自动添加字段映射")
+            return []
+        
+        added_fields = []
+        try:
+            with conn.cursor() as cur:
+                insert_sql = """
+                    INSERT INTO kafka_field_meta 
+                    (kafka_field, es_field, db_cn, label_cn, remark, is_enabled)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP
+                """
+                
+                values = []
+                for field_name in sorted(missing_es_fields):  # 排序以保证一致性
+                    # 默认使用同名映射
+                    kafka_field = field_name
+                    es_field = field_name
+                    label_cn = field_name  # 默认使用英文作为中文标签
+                    db_cn = ""  # 空字符串，后续手动补充
+                    remark = "自动生成 - 待完善"  # 标记为自动生成
+                    is_enabled = 1
+                    
+                    values.append((kafka_field, es_field, db_cn, label_cn, remark, is_enabled))
+                    added_fields.append({
+                        "kafka_field": kafka_field,
+                        "es_field": es_field,
+                        "label_cn": label_cn,
+                        "db_cn": db_cn,
+                        "remark": remark
+                    })
+                
+                if values:
+                    cur.executemany(insert_sql, values)
+                    conn.commit()
+                    logger.info(f"✅ 成功添加 {len(values)} 个新字段映射到数据库")
+        finally:
+            conn.close()
+        
+        return added_fields
+        
+    except Exception as e:
+        logger.error(f"检测并添加缺失字段失败: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
