@@ -290,6 +290,63 @@
       </template>
     </el-dialog>
 
+    <!-- 缺失字段确认对话框 -->
+    <el-dialog
+      v-model="showMissingFieldsDialog"
+      title="发现新字段，请确认是否导入"
+      width="70%"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        :title="`检测到 ${missingFieldsForImport.length} 个未配置的字段，请选择需要导入的字段：`"
+        type="warning"
+        :closable="false"
+        class="mb-3"
+      />
+
+      <div class="field-selection-controls mb-3">
+        <el-button 
+          size="small" 
+          @click="toggleSelectAllFields"
+        >
+          {{ selectedFieldsForImport.length === missingFieldsForImport.length ? '取消全选' : '全选' }}
+        </el-button>
+        <span class="selection-count">
+          已选择 {{ selectedFieldsForImport.length }} / {{ missingFieldsForImport.length }} 个字段
+        </span>
+      </div>
+
+      <el-table
+        :data="missingFieldsForImport"
+        border
+        stripe
+        max-height="400"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column
+          type="selection"
+          width="55"
+          :reserve-selection="true"
+        />
+        <el-table-column prop="kafka_field" label="Kafka 字段名" width="200" />
+        <el-table-column prop="es_field" label="ES 字段名" width="200" />
+        <el-table-column prop="label_cn" label="中文标签" min-width="150" />
+        <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
+      </el-table>
+
+      <template #footer>
+        <el-button @click="cancelImportFields">取消</el-button>
+        <el-button 
+          type="primary" 
+          @click="confirmImportFields"
+          :disabled="selectedFieldsForImport.length === 0"
+        >
+          <el-icon><Check /></el-icon>
+          导入选中字段 ({{ selectedFieldsForImport.length }})
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 备注编辑弹窗 -->
     <el-dialog
       v-model="remarkDialogVisible"
@@ -804,6 +861,11 @@ const esQuery = ref('')
 const timeFieldsAdjusted = ref(false)  // 标记时间字段是否已调整
 const originalFpValue = ref('')  // 保存原始 FP 值
 
+// 缺失字段确认相关
+const missingFieldsForImport = ref([])  // 待导入的缺失字段列表
+const showMissingFieldsDialog = ref(false)  // 显示缺失字段确认对话框
+const selectedFieldsForImport = ref([])  // 用户选中的字段
+
 // 监听 NETWORK_TYPE_TOP 字段值变化
 watch(
   () => fieldValues.NETWORK_TYPE_TOP,
@@ -1137,12 +1199,9 @@ const generateMessage = async () => {
       
       // 处理缺失字段提示
       if (result.missing_fields && result.missing_fields.length > 0) {
-        const fieldNames = result.missing_fields.map(f => f.kafka_field).join(', ')
-        ElMessage.success({
-          message: `Kafka 消息生成成功！发现 ${result.missing_fields.length} 个新字段并已自动添加映射：${fieldNames}`,
-          duration: 8000,
-          showClose: true,
-        })
+        // 存储缺失字段，等待用户确认
+        missingFieldsForImport.value = result.missing_fields
+        showMissingFieldsDialog.value = true
       } else {
         ElMessage.success('Kafka 消息生成成功')
       }
@@ -2177,6 +2236,79 @@ const loadFieldCache = async () => {
   } catch (error) {
     console.warn('加载缓存失败:', error)
   }
+}
+
+// 全选/取消全选缺失字段
+const toggleSelectAllFields = () => {
+  if (selectedFieldsForImport.value.length === missingFieldsForImport.value.length) {
+    // 如果已经全选，则取消全选
+    selectedFieldsForImport.value = []
+  } else {
+    // 否则全选
+    selectedFieldsForImport.value = missingFieldsForImport.value.map(f => f.kafka_field)
+  }
+}
+
+// 处理表格选择变化
+const handleSelectionChange = (selection) => {
+  selectedFieldsForImport.value = selection.map(item => item.kafka_field)
+}
+
+// 切换单个字段选择
+const toggleFieldSelection = (fieldName) => {
+  const index = selectedFieldsForImport.value.indexOf(fieldName)
+  if (index > -1) {
+    selectedFieldsForImport.value.splice(index, 1)
+  } else {
+    selectedFieldsForImport.value.push(fieldName)
+  }
+}
+
+// 确认导入选中的字段
+const confirmImportFields = async () => {
+  if (selectedFieldsForImport.value.length === 0) {
+    ElMessage.warning('请至少选择一个字段')
+    return
+  }
+  
+  try {
+    // 筛选出用户选中的字段
+    const fieldsToImport = missingFieldsForImport.value.filter(
+      field => selectedFieldsForImport.value.includes(field.kafka_field)
+    )
+    
+    const response = await fetch('/kafka-generator/batch-import-fields', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: fieldsToImport
+      }),
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      ElMessage.success(result.message || `成功导入 ${fieldsToImport.length} 个字段`)
+      showMissingFieldsDialog.value = false
+      missingFieldsForImport.value = []
+      selectedFieldsForImport.value = []
+      
+      // 重新加载字段元数据
+      await loadFieldMeta()
+    } else {
+      ElMessage.error(result.message || '导入失败')
+    }
+  } catch (error) {
+    console.error('导入失败:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  }
+}
+
+// 取消导入
+const cancelImportFields = () => {
+  showMissingFieldsDialog.value = false
+  missingFieldsForImport.value = []
+  selectedFieldsForImport.value = []
 }
 
 // 初始化
