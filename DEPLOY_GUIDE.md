@@ -7,7 +7,7 @@
 ### ✅ 解决的问题
 
 1. **Shell转义问题** - Nginx配置中的`$host`、`$remote_addr`等变量不会被错误解析
-2. **端口配置错误** - 统一管理后端端口(5002)和Nginx端口(5173)
+2. **端口配置错误** - 统一管理后端端口(5004)和Nginx端口(5173)
 3. **Nginx配置生成** - 使用Python字符串模板，避免heredoc语法问题
 4. **超时处理** - SSH命令支持timeout参数，避免长时间等待
 5. **错误处理** - 更完善的异常捕获和错误提示
@@ -38,7 +38,7 @@ REMOTE_USER = "root"           # 远程服务器用户
 REMOTE_HOST = "8.146.228.47"   # 远程服务器IP
 REMOTE_PATH = "/project/wordToWord"  # 远程项目路径
 BACKUP_DIR = "/project/backups"      # 备份目录
-LOCAL_PORT = 5002              # 后端运行端口
+LOCAL_PORT = 5004              # 后端运行端口
 NGINX_PORT = 5173              # Nginx监听端口
 ```
 
@@ -72,7 +72,7 @@ NGINX_PORT = 5173              # Nginx监听端口
   - 测试Nginx配置
   - 重载Nginx
   - 修复文件权限
-  - 启动后端服务（PORT=5002）
+  - 启动后端服务（PORT=5004）
 - **5.4 验证**: 检查进程状态和端口监听
 
 ### 步骤 6: 测试API接口
@@ -160,7 +160,7 @@ nginx -s reload
 脚本会自动清理旧进程。如果仍有问题：
 ```bash
 ssh root@8.146.228.47
-lsof -i:5002  # 查看占用进程
+lsof -i:5004  # 查看占用进程
 kill -9 <PID>  # 强制终止
 ```
 
@@ -185,7 +185,7 @@ kill -9 <PID>  # 强制终止
    tar -xzf wordToWord_backup_YYYYMMDD_HHMMSS.tar.gz -C /project/
    cd /project/wordToWord
    source .venv/bin/activate
-   export PORT=5002
+   export PORT=5004
    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
    ```
 

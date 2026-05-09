@@ -101,7 +101,7 @@ kill -9 <进程 ID>
    - 如果端口被占用，应用可能无法启动
    - 可以通过设置环境变量修改端口：
      ```bash
-     export PORT=5002
+     export PORT=5004
      open dist/OPM\ 综合业务系统.app
      ```
 

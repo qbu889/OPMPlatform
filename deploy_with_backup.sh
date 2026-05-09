@@ -314,7 +314,7 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     
     # 启动后端
     echo "🚀 启动后端服务..."
-    export PORT=5002
+    export PORT=5004
     nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
     BACKEND_PID=$!
     echo "   后端 PID: $BACKEND_PID"
@@ -360,7 +360,7 @@ server {
     
     # 通用 API 代理（捕获所有 /api/ 开头的请求）
     location /api/ {
-        proxy_pass http://127.0.0.1:5002;
+        proxy_pass http://127.0.0.1:5004;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -368,32 +368,32 @@ server {
     }
     
     # 认证 API
-    location = /login { proxy_pass http://127.0.0.1:5002; }
-    location = /register { proxy_pass http://127.0.0.1:5002; }
-    location = /forgot-password { proxy_pass http://127.0.0.1:5002; }
+    location = /login { proxy_pass http://127.0.0.1:5004; }
+    location = /register { proxy_pass http://127.0.0.1:5004; }
+    location = /forgot-password { proxy_pass http://127.0.0.1:5004; }
     
     # DingTalk Push API
-    location = /dingtalk-push/configs { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/test-webhook { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/history { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/statistics { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/preview { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/confirm-checkin { proxy_pass http://127.0.0.1:5002; }
-    location = /dingtalk-push/view-checkin { proxy_pass http://127.0.0.1:5002; }
+    location = /dingtalk-push/configs { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/test-webhook { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/history { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/statistics { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/preview { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/confirm-checkin { proxy_pass http://127.0.0.1:5004; }
+    location = /dingtalk-push/view-checkin { proxy_pass http://127.0.0.1:5004; }
     
     # Kafka Generator API
-    location = /kafka-generator/field-meta { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/field-meta/list { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/field-cache { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/field-order { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/field-options { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/generate { proxy_pass http://127.0.0.1:5002; }
-    location /kafka-generator/history { proxy_pass http://127.0.0.1:5002; }
-    location = /kafka-generator/field-history { proxy_pass http://127.0.0.1:5002; }
+    location = /kafka-generator/field-meta { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-meta/list { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-cache { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-order { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-options { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/generate { proxy_pass http://127.0.0.1:5004; }
+    location /kafka-generator/history { proxy_pass http://127.0.0.1:5004; }
+    location = /kafka-generator/field-history { proxy_pass http://127.0.0.1:5004; }
     
     # Schedule Config API
     location /schedule-config/api/ {
-        proxy_pass http://127.0.0.1:5002;
+        proxy_pass http://127.0.0.1:5004;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -401,42 +401,42 @@ server {
     }
     
     # FPA Generator API
-    location = /fpa-generator/upload { proxy_pass http://127.0.0.1:5002; }
-    location /fpa-generator/download/ { proxy_pass http://127.0.0.1:5002; }
-    location /fpa-generator/api/ { proxy_pass http://127.0.0.1:5002; }
+    location = /fpa-generator/upload { proxy_pass http://127.0.0.1:5004; }
+    location /fpa-generator/download/ { proxy_pass http://127.0.0.1:5004; }
+    location /fpa-generator/api/ { proxy_pass http://127.0.0.1:5004; }
     
     # FPA Rules API
-    location /fpa-rules { proxy_pass http://127.0.0.1:5002; }
+    location /fpa-rules { proxy_pass http://127.0.0.1:5004; }
     
     # Adjustment API
-    location /adjustment { proxy_pass http://127.0.0.1:5002; }
-    location /adjustment-calc { proxy_pass http://127.0.0.1:5002; }
+    location /adjustment { proxy_pass http://127.0.0.1:5004; }
+    location /adjustment-calc { proxy_pass http://127.0.0.1:5004; }
     
     # Chatbot API
-    location /chatbot/upload_progress/ { proxy_pass http://127.0.0.1:5002; }
-    location = /chatbot/chat { proxy_pass http://127.0.0.1:5002; }
-    location = /chatbot/upload_document/preview { proxy_pass http://127.0.0.1:5002; }
-    location = /chatbot/upload_document/confirm { proxy_pass http://127.0.0.1:5002; }
-    location /chatbot/knowledge { proxy_pass http://127.0.0.1:5002; }
-    location /chatbot/session { proxy_pass http://127.0.0.1:5002; }
-    location = /chatbot/feedback { proxy_pass http://127.0.0.1:5002; }
+    location /chatbot/upload_progress/ { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/chat { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/upload_document/preview { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/upload_document/confirm { proxy_pass http://127.0.0.1:5004; }
+    location /chatbot/knowledge { proxy_pass http://127.0.0.1:5004; }
+    location /chatbot/session { proxy_pass http://127.0.0.1:5004; }
+    location = /chatbot/feedback { proxy_pass http://127.0.0.1:5004; }
     
     # Excel2Word API
-    location /excel2word { proxy_pass http://127.0.0.1:5002; }
+    location /excel2word { proxy_pass http://127.0.0.1:5004; }
     
     # Word to Excel API
-    location /word-to-excel/api { proxy_pass http://127.0.0.1:5002; }
+    location /word-to-excel/api { proxy_pass http://127.0.0.1:5004; }
     
     # Markdown Upload API
-    location = /markdown-upload/upload { proxy_pass http://127.0.0.1:5002; }
-    location = /markdown-upload/convert { proxy_pass http://127.0.0.1:5002; }
-    location = /markdown-upload/download { proxy_pass http://127.0.0.1:5002; }
+    location = /markdown-upload/upload { proxy_pass http://127.0.0.1:5004; }
+    location = /markdown-upload/convert { proxy_pass http://127.0.0.1:5004; }
+    location = /markdown-upload/download { proxy_pass http://127.0.0.1:5004; }
     
     # Spreadsheet API
-    location /spreadsheet { proxy_pass http://127.0.0.1:5002; }
+    location /spreadsheet { proxy_pass http://127.0.0.1:5004; }
     
     # Swagger API
-    location /swagger { proxy_pass http://127.0.0.1:5002; }
+    location /swagger { proxy_pass http://127.0.0.1:5004; }
     
     # SPA 路由 - 所有非文件请求返回 index.html
     location / {
@@ -486,7 +486,7 @@ NGINX
     echo "=========================================="
     echo ""
     echo "📍 访问地址:"
-    echo "   后端: http://8.146.228.47:5002"
+    echo "   后端: http://8.146.228.47:5004"
     echo "   前端: http://8.146.228.47:5173 或 http://localhost:5173"
     echo ""
     echo "💾 备份位置:"

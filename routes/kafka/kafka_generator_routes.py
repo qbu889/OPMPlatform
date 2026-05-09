@@ -477,6 +477,31 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         except Exception as e:
             logger.debug(f"处理字段 {kafka_field} 时出错：{e}")
             kafka_message[kafka_field] = ""
+    
+    # 处理动态字段（数据库中配置但不在 STANDARD_FIELD_ORDER 中的字段）
+    logger.info(f"[DYNAMIC_FIELD] 开始处理 {len(field_mapping)} 个映射字段")
+    for kafka_field, mapping_rule in field_mapping.items():
+        # 跳过已经处理过的标准字段
+        if kafka_field in STANDARD_FIELD_ORDER:
+            continue
+        
+        try:
+            if isinstance(mapping_rule, str) and mapping_rule.startswith("_source."):
+                # 如果是 ES 字段路径
+                es_path = mapping_rule.replace("_source.", "")
+                value = get_nested_value(es_data, es_path)
+                if value is not None:
+                    kafka_message[kafka_field] = str(value)
+                    logger.info(f"[DYNAMIC_FIELD] 生成动态字段: {kafka_field} = {value}")
+                else:
+                    kafka_message[kafka_field] = ""
+                    logger.warning(f"[DYNAMIC_FIELD] 动态字段 {kafka_field} 在ES中不存在，设为空")
+            else:
+                kafka_message[kafka_field] = ""
+                logger.warning(f"[DYNAMIC_FIELD] 动态字段 {kafka_field} 的mapping_rule不是_source.开头: {type(mapping_rule)}={mapping_rule}")
+        except Exception as e:
+            logger.debug(f"处理动态字段 {kafka_field} 时出错：{e}")
+            kafka_message[kafka_field] = ""
 
     # 重新生成ORG_TEXT字段（使用已按顺序排列的所有字段）
     kafka_message["ORG_TEXT"] = generate_org_text(dict(kafka_message))
@@ -513,6 +538,14 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
     
     field_mapping = {}
     
+    # 记录加载的字段元数据数量
+    logger.info(f"[DYNAMIC_FIELD] 加载字段元数据: {len(field_meta)} 个字段")
+    if 'ASSIGN_TENANCE_GROUP' in field_meta:
+        logger.info(f"[DYNAMIC_FIELD] ASSIGN_TENANCE_GROUP 配置: {field_meta['ASSIGN_TENANCE_GROUP']}")
+    else:
+        logger.warning("[DYNAMIC_FIELD] ASSIGN_TENANCE_GROUP 不在 field_meta 中!")
+    
+    # 1. 先处理 STANDARD_FIELD_ORDER 中的标准字段
     for kafka_field in STANDARD_FIELD_ORDER:
         meta = field_meta.get(kafka_field, {})
         es_field = meta.get('es_field', '')
@@ -526,6 +559,26 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
         else:
             # 否则使用内置的默认映射规则
             field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+    
+    # 2. 再处理数据库中配置但不在 STANDARD_FIELD_ORDER 中的额外字段
+    for kafka_field, meta in field_meta.items():
+        # 跳过已经处理过的字段
+        if kafka_field in field_mapping:
+            continue
+        
+        # 跳过特殊字段
+        if kafka_field in SPECIAL_FIELDS:
+            continue
+        
+        es_field = meta.get('es_field', '')
+        is_enabled = meta.get('is_enabled', 1)
+        
+        # 只处理已启用且有 es_field 配置的字段
+        if is_enabled and es_field:
+            field_mapping[kafka_field] = f"_source.{es_field}"
+            logger.info(f"[DYNAMIC_FIELD] 添加动态字段: {kafka_field} -> {es_field}")
+        else:
+            logger.debug(f"[DYNAMIC_FIELD] 跳过字段: {kafka_field}, is_enabled={is_enabled}, es_field={es_field}")
     
     return field_mapping
 
@@ -1510,6 +1563,7 @@ def generate_kafka_message():
         custom_fields = request.json.get('custom_fields', {})
         delay_time = request.json.get('delay_time')  # 获取用户手动输入的 DELAY_TIME 值
         auto_detect_missing = request.json.get('auto_detect_missing', False)  # 是否自动检测缺失字段
+        selected_fields = request.json.get('selected_fields', [])  # 用户选中的字段列表
 
         # 必须提供原始数据
         if not es_source_raw:
@@ -1624,6 +1678,12 @@ def generate_kafka_message():
         for field in STANDARD_FIELD_ORDER:
             if field in kafka_message:
                 ordered_data[field] = kafka_message[field]
+        
+        # 添加动态字段（不在 STANDARD_FIELD_ORDER 中的字段）
+        for field, value in kafka_message.items():
+            if field not in ordered_data:
+                ordered_data[field] = value
+                logger.debug(f"[DYNAMIC_FIELD] 添加动态字段到返回结果: {field}")
 
         # 添加 DELAY_TIME 信息到返回数据
         delay_time_value = delay_time  # 优先使用用户输入的值
@@ -1649,7 +1709,12 @@ def generate_kafka_message():
             missing_fields_info = detect_missing_fields(es_source_data, ordered_data)
 
         # 保存历史记录到数据库
-        history_id = save_generation_history_with_custom_fields(es_source_data, ordered_data, custom_fields)
+        history_id = save_generation_history_with_custom_fields(
+            es_source_data, 
+            ordered_data, 
+            custom_fields,
+            selected_fields  # 传递选中的字段列表
+        )
 
         # 使用自定义 JSON 序列化确保字段顺序
         import json as json_lib
@@ -1724,13 +1789,14 @@ def save_generation_history(es_data, kafka_message):
         logger.error(f"保存历史记录失败：{e}")
 
 
-def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fields=None):
-    """保存生成历史记录到数据库（包含自定义字段）
+def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fields=None, selected_fields=None):
+    """保存生成历史记录到数据库（包含自定义字段和选中字段）
 
     Args:
         es_data: ES 源数据
         kafka_message: 生成的 Kafka 消息
         custom_fields: 自定义字段数据（可选）
+        selected_fields: 用户选中的字段列表（可选）
     """
     try:
         from utils.mysql_helper import get_mysql_conn_dict_cursor
@@ -1747,14 +1813,15 @@ def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fi
             alarm_level = kafka_message.get('ORG_SEVERITY', '')
             region_name = kafka_message.get('REGION_NAME', '')
 
-            # 序列化自定义字段
+            # 序列化自定义字段和选中字段
             custom_fields_json = json.dumps(custom_fields, ensure_ascii=False) if custom_fields else None
+            selected_fields_json = json.dumps(selected_fields, ensure_ascii=False) if selected_fields else None
 
             with conn.cursor() as cur:
                 query = """
                     INSERT INTO knowledge_base.kafka_generation_history 
-                    (es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name, custom_fields)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    (es_source_raw, kafka_message, fp_value, alarm_name, alarm_level, region_name, custom_fields, selected_fields)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cur.execute(query, (
                     json.dumps(es_data, ensure_ascii=False),
@@ -1763,12 +1830,15 @@ def save_generation_history_with_custom_fields(es_data, kafka_message, custom_fi
                     alarm_name,
                     alarm_level,
                     region_name,
-                    custom_fields_json
+                    custom_fields_json,
+                    selected_fields_json
                 ))
                 conn.commit()
                 history_id = cur.lastrowid  # 获取新插入记录的ID
                 logger.info(
-                    f"历史记录已保存：FP={fp_value}, 告警={alarm_name}, 自定义字段={len(custom_fields) if custom_fields else 0}个, ID={history_id}")
+                    f"历史记录已保存：FP={fp_value}, 告警={alarm_name}, "
+                    f"自定义字段={len(custom_fields) if custom_fields else 0}个, "
+                    f"选中字段={len(selected_fields) if selected_fields else 0}个, ID={history_id}")
                 return history_id
         finally:
             conn.close()
@@ -1843,7 +1913,7 @@ def get_generation_history():
                 offset = (page - 1) * per_page
                 data_query = f"""
                     SELECT id, created_at, fp_value, alarm_name, alarm_level, region_name, 
-                           es_source_raw, kafka_message, custom_fields, remark
+                           es_source_raw, kafka_message, custom_fields, selected_fields, remark
                     FROM knowledge_base.kafka_generation_history 
                     {where_clause}
                     ORDER BY created_at DESC
@@ -1896,6 +1966,7 @@ def get_generation_history():
                         'es_source_raw': es_raw_str,  # 格式化后的 JSON 字符串
                         'kafka_message': kafka_msg_str,  # 格式化后的 JSON 字符串
                         'custom_fields': row.get('custom_fields'),  # 自定义字段数据
+                        'selected_fields': row.get('selected_fields'),  # 选中的字段列表
                         'remark': row.get('remark') or ''  # 备注信息
                     })
 

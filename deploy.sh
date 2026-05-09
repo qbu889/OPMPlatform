@@ -74,23 +74,30 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
     echo "5️⃣ 等待后端启动..."
     sleep 3
     
-    echo "6️⃣ 验证前端构建产物..."
+    echo "6️⃣  验证前端构建产物..."
     if [ ! -f "frontend/dist/index.html" ]; then
-        echo "   ⚠️  前端未构建，请在本地执行: cd frontend && npm run build"
+        echo "   ⚠️  前端未构建,请在本地执行: cd frontend && npm run build"
     else
-        echo "   ✅ 前端构建产物已存在（由 Nginx 提供）"
+        echo "   ✅ 前端构建产物已存在(由 Nginx 提供)"
+    fi
         
-        # 修复 Nginx 访问权限
-        echo "   🔧 修复 Nginx 访问权限..."
-        chown -R root:root /project/wordToWord
-        chmod 755 /project/wordToWord/
-        chmod 755 /project/wordToWord/frontend/
-        chmod -R 755 frontend/dist/
-        chown -R www:www frontend/dist/
+    echo ""
+    echo "7️⃣  统一修复项目权限(根本解决方案)..."
+    # 使用统一的权限修复脚本,避免反复出现权限问题
+    if [ -f "scripts/fix_permissions.sh" ]; then
+        bash scripts/fix_permissions.sh
+    else
+        # 降级方案:直接修复权限
+        echo "   🔧 执行权限修复..."
+        chown -R www:www /project/wordToWord
+        find /project/wordToWord -type d -exec chmod 755 {} \;
+        find /project/wordToWord -type f -exec chmod 644 {} \;
+        chmod +x /project/wordToWord/*.sh 2>/dev/null || true
+        echo "   ✅ 权限修复完成"
     fi
     
     echo ""
-    echo "7️⃣ 检查并更新 Nginx 配置..."
+    echo "8️⃣  检查并更新 Nginx 配置..."
     NGINX_CONF="/www/server/panel/vhost/nginx/sql-formatter-5173.conf"
     if [ -f "$NGINX_CONF" ]; then
         # 检查是否包含关键的 API 代理规则
@@ -204,11 +211,11 @@ NGINX
     fi
     
     echo ""
-    echo "8️⃣ 检查服务状态..."
+    echo "9️⃣  检查服务状态..."
     ps -ef | grep "python app.py" | grep -v grep
     
     echo ""
-    echo "9️⃣ 查看后端日志（最后20行）..."
+    echo "🔟  查看后端日志(最后20行)..."
     tail -20 logs/backend.log
     
     echo ""

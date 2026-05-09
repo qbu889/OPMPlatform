@@ -19,7 +19,7 @@ REMOTE_USER = "root"
 REMOTE_HOST = "8.146.228.47"
 REMOTE_PATH = "/project/wordToWord"
 BACKUP_DIR = "/project/backups"
-LOCAL_PORT = 5002  # 后端实际运行端口
+LOCAL_PORT = 5004  # 后端实际运行端口
 NGINX_PORT = 5173  # Nginx监听端口
 PROJECT_ROOT = Path(__file__).parent
 
