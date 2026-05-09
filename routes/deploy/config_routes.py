@@ -317,8 +317,8 @@ def get_backup_history():
     }
     """
     try:
-        # 从配置获取备份目录
-        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        # 从配置获取备份目录（本地环境使用项目下的 backups 目录）
+        backup_dir = DeployConfig.get_config('backup_dir', os.path.join(os.getcwd(), 'backups'))
         
         # 检查目录是否存在
         if not os.path.exists(backup_dir):
@@ -404,8 +404,8 @@ def delete_backup():
         if '..' in filename or filename.startswith('/'):
             return jsonify({'success': False, 'error': '非法的文件名'}), 400
         
-        # 从配置获取备份目录
-        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        # 从配置获取备份目录（本地环境使用项目下的 backups 目录）
+        backup_dir = DeployConfig.get_config('backup_dir', os.path.join(os.getcwd(), 'backups'))
         filepath = os.path.join(backup_dir, filename)
         
         # 检查文件是否存在
@@ -451,8 +451,8 @@ def restore_backup():
         if '..' in filename or filename.startswith('/'):
             return jsonify({'success': False, 'error': '非法的文件名'}), 400
         
-        # 从配置获取路径
-        backup_dir = DeployConfig.get_config('backup_dir', '/project/backups')
+        # 从配置获取路径（本地环境使用项目下的 backups 目录）
+        backup_dir = DeployConfig.get_config('backup_dir', os.path.join(os.getcwd(), 'backups'))
         remote_path = DeployConfig.get_config('remote_path', '/project/wordToWord')
         
         backup_file = os.path.join(backup_dir, filename)

@@ -150,6 +150,17 @@ class DingTalkPushScheduler:
                 if not times:
                     raise ValueError("推送时间不能为空")
                 
+                # 转换星期几：前端使用 1-7（1=周一，7=周日），APScheduler 使用 0-6（0=周一，6=周日）
+                # 所以需要将 7 转换为 6（如果 APScheduler 使用 0=周一的标准）
+                # 或者将 7 转换为 0（如果 APScheduler 使用 0=周日的标准）
+                # APScheduler 默认：0=周一, 6=周日，所以 7 需要转换为 6
+                converted_weekdays = []
+                for day in weekdays:
+                    if day == 7:  # 前端 7=周日 -> APScheduler 6=周日
+                        converted_weekdays.append(6)
+                    else:  # 1-6 保持不变（1=周一 ~ 6=周六）
+                        converted_weekdays.append(day - 1)  # 前端 1=周一 -> APScheduler 0=周一
+                
                 # 为每个时间点创建独立任务
                 for time_str in times:
                     try:
@@ -158,7 +169,7 @@ class DingTalkPushScheduler:
                         trigger = CronTrigger(
                             hour=hour,
                             minute=minute,
-                            day_of_week=','.join(map(str, weekdays)),
+                            day_of_week=','.join(map(str, converted_weekdays)),
                             timezone=schedule_config.get('timezone', 'Asia/Shanghai')
                         )
                         

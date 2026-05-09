@@ -23,6 +23,11 @@ LOCAL_PORT = 5002  # 后端实际运行端口
 NGINX_PORT = 5173  # Nginx监听端口
 PROJECT_ROOT = Path(__file__).parent
 
+# 本地 nginx 配置文件路径（与服务器相同文件名）
+LOCAL_NGINX_CONF = os.path.join(PROJECT_ROOT, 'nginx_5173.conf')
+# 远程 nginx 配置文件全路径
+REMOTE_NGINX_CONF = os.path.join(REMOTE_PATH, 'nginx_5173.conf')
+
 class Colors:
     """终端颜色"""
     GREEN = '\033[92m'

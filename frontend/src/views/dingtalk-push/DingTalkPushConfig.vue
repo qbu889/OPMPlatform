@@ -625,6 +625,9 @@ const loadConfig = async () => {
         timeout_seconds: config.timeout_seconds
       })
       
+      // 同步设置 atType，确保 UI 显示正确
+      atType.value = config.at_all ? 'all' : 'specific'
+      
       // 解析调度配置
       const scheduleConfig = typeof config.schedule_config === 'string'
         ? JSON.parse(config.schedule_config)
