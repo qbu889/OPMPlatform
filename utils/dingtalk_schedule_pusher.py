@@ -34,7 +34,11 @@ def _get_fernet():
     # 尝试加载 .env 文件
     try:
         from dotenv import load_dotenv
-        load_dotenv()
+        # 获取项目根目录（utils的父目录）
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        dotenv_path = os.path.join(project_root, '.env')
+        if os.path.exists(dotenv_path):
+            load_dotenv(dotenv_path=dotenv_path)
     except ImportError:
         pass
     
