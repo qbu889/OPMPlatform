@@ -7,6 +7,7 @@
 import os
 import sys
 import json
+import logging
 from datetime import datetime, date, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -18,10 +19,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from routes.排班.paiBanNew_v2 import DB_CONFIG, RosterDB
 
+# 配置日志
+logger = logging.getLogger(__name__)
+
 # ========== Webhook 解密配置 ==========
 ENCRYPTION_KEY = os.environ.get('WEBHOOK_ENCRYPTION_KEY')
 if not ENCRYPTION_KEY:
-    print("[WARNING] WEBHOOK_ENCRYPTION_KEY 未设置，Webhook 将无法解密")
+    logger.warning("WEBHOOK_ENCRYPTION_KEY 未设置，Webhook 将无法解密")
 
 fernet = None
 if ENCRYPTION_KEY:
@@ -51,7 +55,7 @@ class DingTalkSchedulePusher:
         try:
             db = RosterDB(self.db_config)
             if not db.connect():
-                print("[ERROR] 数据库连接失败")
+                logger.error("数据库连接失败")
                 return []
             
             sql = "SELECT * FROM dingtalk_schedule_config WHERE enabled = 1"
@@ -60,7 +64,7 @@ class DingTalkSchedulePusher:
             
             return results if results else []
         except Exception as e:
-            print(f"[ERROR] 获取配置失败: {e}")
+            logger.error(f"获取配置失败: {e}")
             return []
     
     def build_markdown_message(self, start_date, end_date, time_slots=None):
@@ -163,9 +167,7 @@ class DingTalkSchedulePusher:
             return msg_content
             
         except Exception as e:
-            print(f"[ERROR] 构建消息失败: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"构建消息失败: {e}", exc_info=True)
             return None
     
     def send_dingtalk_message(self, webhook_url, msg_content):
@@ -191,35 +193,35 @@ class DingTalkSchedulePusher:
             if response.status_code == 200:
                 result = response.json()
                 if result.get('errcode') == 0:
-                    print(f"[SUCCESS] 钉钉消息推送成功")
+                    logger.info("钉钉消息推送成功")
                     return True
                 else:
-                    print(f"[ERROR] 钉钉推送失败: {result.get('errmsg', '未知错误')}")
+                    logger.error(f"钉钉推送失败: {result.get('errmsg', '未知错误')}")
                     return False
             else:
-                print(f"[ERROR] 钉钉推送失败，HTTP状态码: {response.status_code}")
+                logger.error(f"钉钉推送失败，HTTP状态码: {response.status_code}")
                 return False
                 
         except Exception as e:
-            print(f"[ERROR] 发送消息异常: {e}")
+            logger.error(f"发送消息异常: {e}", exc_info=True)
             return False
     
     def execute_push(self, config_id):
         """执行推送任务"""
         try:
-            print(f"\n[{datetime.now()}] 开始执行推送任务 (配置ID: {config_id})")
+            logger.info(f"开始执行推送任务 (配置ID: {config_id})")
             
             # 获取配置
             db = RosterDB(self.db_config)
             if not db.connect():
-                print("[ERROR] 数据库连接失败")
+                logger.error("数据库连接失败")
                 return
             
             sql = "SELECT * FROM dingtalk_schedule_config WHERE id = %s AND enabled = 1"
             results = db.query(sql, (config_id,))
             
             if not results:
-                print(f"[WARNING] 未找到配置或配置已禁用 (ID: {config_id})")
+                logger.warning(f"未找到配置或配置已禁用 (ID: {config_id})")
                 db.close()
                 return
             
@@ -230,7 +232,7 @@ class DingTalkSchedulePusher:
             # 解密 Webhook URL
             webhook_url = decrypt_webhook(encrypted_webhook)
             if not webhook_url:
-                print(f"[ERROR] 无法解密 Webhook (配置ID: {config_id})")
+                logger.error(f"无法解密 Webhook (配置ID: {config_id})")
                 db.close()
                 return
             
@@ -249,21 +251,19 @@ class DingTalkSchedulePusher:
             msg_content = self.build_markdown_message(start_date, end_date, time_slots if time_slots else None)
             
             if not msg_content:
-                print("[WARNING] 没有可推送的排班数据")
+                logger.warning("没有可推送的排班数据")
                 return
             
             # 发送消息
             success = self.send_dingtalk_message(webhook_url, msg_content)
             
             if success:
-                print(f"[SUCCESS] 推送任务完成 (配置ID: {config_id})")
+                logger.info(f"推送任务完成 (配置ID: {config_id})")
             else:
-                print(f"[ERROR] 推送任务失败 (配置ID: {config_id})")
+                logger.error(f"推送任务失败 (配置ID: {config_id})")
                 
         except Exception as e:
-            print(f"[ERROR] 执行推送任务异常: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"执行推送任务异常: {e}", exc_info=True)
     
     def schedule_time_to_cron(self, time_str):
         """将时间字符串转换为cron表达式
@@ -273,7 +273,7 @@ class DingTalkSchedulePusher:
             hour, minute = map(int, time_str.split(':'))
             return CronTrigger(hour=hour, minute=minute)
         except Exception as e:
-            print(f"[ERROR] 时间格式转换失败: {time_str}, 错误: {e}")
+            logger.error(f"时间格式转换失败: {time_str}, 错误: {e}")
             return None
     
     def load_and_schedule_tasks(self):
@@ -285,16 +285,16 @@ class DingTalkSchedulePusher:
             for job in dingtalk_jobs:
                 self.scheduler.remove_job(job.id)
             
-            print(f"[INFO] 已清除 {len(dingtalk_jobs)} 个旧的定时任务")
+            logger.info(f"已清除 {len(dingtalk_jobs)} 个旧的定时任务")
             
             # 第二步：从数据库加载所有启用的配置
             configs = self.get_schedule_configs()
             
             if not configs:
-                print("[INFO] 没有启用的定时推送配置")
+                logger.info("没有启用的定时推送配置")
                 return
             
-            print(f"[INFO] 重新加载 {len(configs)} 个定时推送配置")
+            logger.info(f"重新加载 {len(configs)} 个定时推送配置")
             
             for config in configs:
                 config_id = config['id']
@@ -302,14 +302,14 @@ class DingTalkSchedulePusher:
                 description = config.get('description', '')
                 
                 if not schedule_times_json:
-                    print(f"[WARNING] 配置 {config_id} 没有设置推送时间，跳过")
+                    logger.warning(f"配置 {config_id} 没有设置推送时间，跳过")
                     continue
                 
                 try:
                     schedule_times = json.loads(schedule_times_json)
                     
                     if not schedule_times:
-                        print(f"[WARNING] 配置 {config_id} 的推送时间为空，跳过")
+                        logger.warning(f"配置 {config_id} 的推送时间为空，跳过")
                         continue
                     
                     for time_str in schedule_times:
@@ -328,26 +328,24 @@ class DingTalkSchedulePusher:
                                 replace_existing=True
                             )
                             
-                            print(f"[INFO] 已创建定时任务: {job_id} (每天 {time_str} 执行)")
+                            logger.info(f"已创建定时任务: {job_id} (每天 {time_str} 执行)")
                             
                 except json.JSONDecodeError as je:
-                    print(f"[ERROR] 配置 {config_id} 的时间解析失败: {je}")
+                    logger.error(f"配置 {config_id} 的时间解析失败: {je}")
                 except Exception as e:
-                    print(f"[ERROR] 配置 {config_id} 的任务创建失败: {e}")
+                    logger.error(f"配置 {config_id} 的任务创建失败: {e}")
             
             # 打印当前任务列表
             current_jobs = self.scheduler.get_jobs()
             dingtalk_jobs = [job for job in current_jobs if job.id.startswith('dingtalk_push_')]
-            print(f"\n[INFO] 当前共有 {len(dingtalk_jobs)} 个定时任务:")
+            logger.info(f"当前共有 {len(dingtalk_jobs)} 个定时任务:")
             for job in dingtalk_jobs:
                 next_run = getattr(job, 'next_run_time', None)
                 if next_run:
-                    print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+                    logger.info(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
                     
         except Exception as e:
-            print(f"[ERROR] 重新加载定时任务失败: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"重新加载定时任务失败: {e}", exc_info=True)
     
     def start(self):
         """启动调度器"""
@@ -356,21 +354,21 @@ class DingTalkSchedulePusher:
         
         # 启动调度器
         self.scheduler.start()
-        print("[INFO] 钉钉定时推送服务已启动")
+        logger.info("钉钉定时推送服务已启动")
         
         # 打印下次执行时间
         jobs = self.scheduler.get_jobs()
         if jobs:
-            print(f"\n[INFO] 当前共有 {len(jobs)} 个定时任务:")
+            logger.info(f"当前共有 {len(jobs)} 个定时任务:")
             for job in jobs:
                 next_run = getattr(job, 'next_run_time', None)
                 if next_run:
-                    print(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+                    logger.info(f"  - {job.name}: 下次执行时间 {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
     
     def stop(self):
         """停止调度器"""
         self.scheduler.shutdown()
-        print("[INFO] 钉钉定时推送服务已停止")
+        logger.info("钉钉定时推送服务已停止")
 
 
 def main():
