@@ -118,7 +118,7 @@ const handleRegister = async () => {
 
     loading.value = true
     try {
-      const result = await register(form.username, form.email, form.password)
+      const result = await register(form.username, form.email, form.password, form.confirmPassword)
 
       if (result.success) {
         ElMessage.success(result.message || '注册成功！请登录')

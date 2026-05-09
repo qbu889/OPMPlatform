@@ -160,6 +160,15 @@ def setup_logging():
 # 确保项目根目录在 Python 路径中
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# 加载 .env 环境变量
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+    logging.info(f"已加载环境变量文件: {env_path}")
+else:
+    load_dotenv()
+    logging.info("已加载默认 .env 文件")
+
 # 初始化日志系统
 app_logger = setup_logging()
 

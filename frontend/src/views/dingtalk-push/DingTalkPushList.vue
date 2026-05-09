@@ -55,6 +55,13 @@
             />
           </template>
         </el-table-column>
+        <el-table-column label="推送对象" width="120">
+          <template #default="{ row }">
+            <el-tag :type="row.at_all ? 'danger' : 'info'" size="small">
+              {{ row.at_all ? '@所有人' : '@指定人员' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="调度" min-width="180">
           <template #default="{ row }">
             {{ formatSchedule(row.schedule_config) }}

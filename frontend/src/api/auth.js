@@ -11,13 +11,13 @@ export const login = async (username, password) => {
   return response.json()
 }
 
-export const register = async (username, email, password) => {
+export const register = async (username, email, password, confirmPassword) => {
   const response = await fetch('/api/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, email, password }),
+    body: JSON.stringify({ username, email, password, confirm_password: confirmPassword }),
   })
   return response.json()
 }
