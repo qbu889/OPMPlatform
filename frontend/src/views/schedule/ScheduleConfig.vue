@@ -564,8 +564,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="250" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" type="success" @click="executeSchedulePushNow(row.id)">立即推送</el-button>
             <el-button size="small" @click="editScheduleConfig(row)">编辑</el-button>
             <el-button size="small" type="danger" @click="deleteScheduleConfig(row.id)">删除</el-button>
           </template>
@@ -1555,6 +1556,33 @@ async function deleteScheduleConfig(configId) {
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('删除失败: ' + error.message)
+    }
+  }
+}
+
+// 立即执行一次推送
+async function executeSchedulePushNow(configId) {
+  try {
+    await ElMessageBox.confirm('确定要立即执行一次排班推送吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
+    })
+    
+    const response = await fetch(`/schedule-config/api/dingtalk-schedule-config/${configId}/execute`, {
+      method: 'POST'
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      ElMessage.success('推送成功')
+    } else {
+      ElMessage.error(result.msg || '推送失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('执行推送失败: ' + error.message)
     }
   }
 }

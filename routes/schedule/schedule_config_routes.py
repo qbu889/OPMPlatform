@@ -987,3 +987,162 @@ def delete_dingtalk_schedule_config(config_id):
         return jsonify({"success": True, "msg": "配置删除成功"})
     except Exception as e:
         return jsonify({"success": False, "msg": "删除配置失败: " + str(e)})
+
+@schedule_config_bp.route('/api/dingtalk-schedule-config/<int:config_id>/execute', methods=['POST'])
+def execute_dingtalk_schedule_now(config_id):
+    """立即执行一次排班推送"""
+    try:
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return jsonify({"success": False, "msg": "数据库连接失败"})
+        
+        sql = "SELECT * FROM dingtalk_schedule_config WHERE id = %s"
+        results = db.query(sql, (config_id,))
+        
+        if not results:
+            db.close()
+            return jsonify({"success": False, "msg": "配置不存在"})
+        
+        config = results[0]
+        encrypted_webhook = config['webhook_url']
+        time_slots_json = config.get('time_slots')
+        
+        # 解密 Webhook URL
+        webhook_url = decrypt_webhook(encrypted_webhook)
+        if not webhook_url or not webhook_url.startswith('http'):
+            db.close()
+            return jsonify({"success": False, "msg": "Webhook 地址格式不正确或解密失败"})
+        
+        # 解析时段列表
+        time_slots = json.loads(time_slots_json) if time_slots_json else []
+        
+        db.close()
+        
+        # 构建消息（推送今天和明天的排班）
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
+        
+        start_date = today.strftime('%Y-%m-%d')
+        end_date = tomorrow.strftime('%Y-%m-%d')
+        
+        # 使用 RosterDB 的实例方法来构建和发送消息
+        # 这里我们复用 schedule_config_routes 中已有的逻辑，或者手动构建
+        # 为了代码复用，我们可以调用 send_dingtalk_message 的逻辑，但它需要 roster 数据
+        # 让我们直接在这里实现构建和发送逻辑
+        
+        msg_content = build_roster_markdown(start_date, end_date, time_slots)
+        
+        if not msg_content:
+            return jsonify({"success": False, "msg": "没有找到可推送的排班数据"})
+        
+        # 发送钉钉消息
+        dingtalk_data = {
+            "msgtype": "actionCard",
+            "actionCard": {
+                "title": "排班信息推送",
+                "text": msg_content,
+                "btnOrientation": "0"
+            }
+        }
+        
+        response = requests.post(
+            webhook_url,
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps(dingtalk_data),
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('errcode') == 0:
+                return jsonify({"success": True, "msg": "推送成功"})
+            else:
+                return jsonify({"success": False, "msg": f"钉钉返回错误: {result.get('errmsg')}"})
+        else:
+            return jsonify({"success": False, "msg": f"HTTP 错误: {response.status_code}"})
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "msg": "执行推送失败: " + str(e)})
+
+def build_roster_markdown(start_date, end_date, time_slots=None):
+    """构建排班 Markdown 消息"""
+    try:
+        db = RosterDB(DB_CONFIG)
+        if not db.connect():
+            return None
+        
+        sql = """
+        SELECT r.*
+        FROM roster r
+        WHERE r.date BETWEEN %s AND %s
+        ORDER BY r.date, r.time_slot, r.is_main DESC
+        """
+        
+        results = db.query(sql, (start_date, end_date))
+        db.close()
+        
+        if not results:
+            return None
+        
+        grouped_data = {}
+        for record in results:
+            date_key = record['date'].strftime('%Y-%m-%d') if hasattr(record['date'], 'strftime') else str(record['date'])
+            time_slot = record['time_slot']
+            
+            if time_slots and time_slot not in time_slots:
+                continue
+            
+            if date_key not in grouped_data:
+                grouped_data[date_key] = {}
+            
+            if time_slot not in grouped_data[date_key]:
+                grouped_data[date_key][time_slot] = []
+            
+            grouped_data[date_key][time_slot].append(record)
+        
+        today = datetime.now().date()
+        msg_content = "# 📅 排班信息推送\n\n"
+        
+        sorted_dates = sorted(grouped_data.keys())
+        
+        for date_str in sorted_dates:
+            day_data = grouped_data[date_str]
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            weekday = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][date_obj.weekday()]
+            
+            delta = (date_obj - today).days
+            if delta == 0:
+                date_label = f"**今天** {date_str} ({weekday})"
+            elif delta == 1:
+                date_label = f"**明天** {date_str} ({weekday})"
+            else:
+                date_label = f"**{date_str}** ({weekday})"
+            
+            msg_content += f"### {date_label}\n\n"
+            
+            time_slot_order = [
+                '8:00～9:00', '8:00～12:00', '9:00～12:00',
+                '13:30～17:30', '13:30～18:00', '17:30～21:30', '18:00～21:00'
+            ]
+            
+            sorted_slots = sorted(day_data.keys(), 
+                                key=lambda x: time_slot_order.index(x) if x in time_slot_order else 999)
+            
+            for time_slot in sorted_slots:
+                staff_records = day_data[time_slot]
+                main_staff = [r['staff_name'] for r in staff_records if r['is_main']]
+                backup_staff = [r['staff_name'] for r in staff_records if not r['is_main']]
+                staff_display = '、'.join(main_staff + backup_staff) if (main_staff + backup_staff) else '空闲'
+                msg_content += f"- **{time_slot}**: {staff_display}\n"
+            
+            msg_content += "\n---\n\n"
+        
+        schedule_view_url = "https://alidocs.dingtalk.com/i/nodes/20eMKjyp81LOavDgf46AORZwJxAZB1Gv?utm_scene=person_space&iframeQuery=viewId%3Drm8nwl6hqzo0v1952seh4%26sheetId%3Dhe1d5bovtjfxcies7i3fi"
+        msg_content += f"[查看完整排班]({schedule_view_url})\n"
+        
+        return msg_content
+    except Exception as e:
+        print(f"[ERROR] 构建消息失败: {e}")
+        return None
