@@ -1218,7 +1218,26 @@ const showAllFieldValues = async () => {
     const result = await response.json()
     
     if (result.success) {
-      fieldValuesList.value = result.data.fields || []
+      // 筛选：只显示当前输入框有值的字段
+      const currentFilledFields = allFields.value
+        .filter(field => fieldValues[field.name] && fieldValues[field.name].trim())
+        .map(field => field.name)
+      
+      if (currentFilledFields.length === 0) {
+        ElMessage.warning('当前没有已填写值的字段，请先在输入框中输入内容')
+        return
+      }
+      
+      // 过滤出当前有值的字段
+      fieldValuesList.value = (result.data.fields || []).filter(field => 
+        currentFilledFields.includes(field.field_name)
+      )
+      
+      if (fieldValuesList.value.length === 0) {
+        ElMessage.warning('已填写的字段暂无历史值选项')
+        return
+      }
+      
       fieldValuesDialogVisible.value = true
     } else {
       ElMessage.error(result.message || '加载字段选项失败')
