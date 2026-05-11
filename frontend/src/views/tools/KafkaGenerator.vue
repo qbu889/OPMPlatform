@@ -215,6 +215,32 @@
         </div>
       </template>
 
+      <!-- FP值突出显示区域 -->
+      <div v-if="resultData && resultData.FP0_FP1_FP2_FP3" class="fp-highlight-section">
+        <el-alert
+          title="FP值"
+          type="success"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <div class="fp-value-display">
+              <span class="fp-label">FP0_FP1_FP2_FP3:</span>
+              <span class="fp-value-text" :title="resultData.FP0_FP1_FP2_FP3">{{ resultData.FP0_FP1_FP2_FP3 }}</span>
+              <el-button 
+                size="small" 
+                type="primary" 
+                @click="copyFPValue"
+                style="margin-left: 15px"
+              >
+                <el-icon><CopyDocument /></el-icon>
+                复制
+              </el-button>
+            </div>
+          </template>
+        </el-alert>
+      </div>
+
       <el-input
         v-model="resultJson"
         type="textarea"
@@ -2518,6 +2544,38 @@ onMounted(() => {
 
 .es-query-section {
   margin-top: 20px;
+}
+
+/* FP值高亮显示区域 */
+.fp-highlight-section {
+  margin-bottom: 20px;
+}
+
+.fp-value-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.fp-label {
+  font-weight: bold;
+  color: #303133;
+  white-space: nowrap;
+}
+
+.fp-value-text {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #67c23a;
+  background: #f0f9ff;
+  padding: 8px 15px;
+  border-radius: 6px;
+  border: 2px solid #67c23a;
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
 }
 
 .text-center {
