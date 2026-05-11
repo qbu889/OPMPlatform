@@ -218,24 +218,34 @@
       <!-- FP值突出显示区域 -->
       <div v-if="resultData && resultData.FP0_FP1_FP2_FP3" class="fp-highlight-section">
         <el-alert
-          title="FP值"
+          title="关键信息"
           type="success"
           :closable="false"
           show-icon
         >
           <template #default>
-            <div class="fp-value-display">
-              <span class="fp-label">FP0_FP1_FP2_FP3:</span>
-              <span class="fp-value-text" :title="resultData.FP0_FP1_FP2_FP3">{{ resultData.FP0_FP1_FP2_FP3 }}</span>
-              <el-button 
-                size="small" 
-                type="primary" 
-                @click="copyFPValue"
-                style="margin-left: 15px"
-              >
-                <el-icon><CopyDocument /></el-icon>
-                复制
-              </el-button>
+            <div class="key-info-display">
+              <div class="info-row">
+                <span class="info-label">FP值:</span>
+                <span class="info-value fp-value" :title="resultData.FP0_FP1_FP2_FP3">{{ resultData.FP0_FP1_FP2_FP3 }}</span>
+                <el-button 
+                  size="small" 
+                  type="primary" 
+                  @click="copyFPValue"
+                  style="margin-left: 15px"
+                >
+                  <el-icon><CopyDocument /></el-icon>
+                  复制
+                </el-button>
+              </div>
+              <div class="info-row" v-if="resultData.EVENT_TIME">
+                <span class="info-label">事件时间:</span>
+                <span class="info-value time-value">{{ resultData.EVENT_TIME }}</span>
+              </div>
+              <div class="info-row" v-if="resultData.CREATION_EVENT_TIME">
+                <span class="info-label">创建时间:</span>
+                <span class="info-value time-value">{{ resultData.CREATION_EVENT_TIME }}</span>
+              </div>
             </div>
           </template>
         </el-alert>
@@ -2551,31 +2561,47 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.fp-value-display {
+.key-info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
-.fp-label {
+.info-label {
   font-weight: bold;
   color: #303133;
   white-space: nowrap;
+  min-width: 80px;
 }
 
-.fp-value-text {
+.info-value {
   font-family: 'Courier New', monospace;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #67c23a;
-  background: #f0f9ff;
-  padding: 8px 15px;
-  border-radius: 6px;
-  border: 2px solid #67c23a;
+  padding: 6px 12px;
+  border-radius: 4px;
   word-break: break-all;
   flex: 1;
   min-width: 0;
+}
+
+.fp-value {
+  color: #67c23a;
+  background: #f0f9ff;
+  border: 2px solid #67c23a;
+}
+
+.time-value {
+  color: #409eff;
+  background: #ecf5ff;
+  border: 1px solid #409eff;
 }
 
 .text-center {

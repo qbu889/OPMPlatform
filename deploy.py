@@ -3,7 +3,10 @@
 """
 deploy.py - Python版智能部署脚本
 解决Shell脚本的转义问题、端口配置错误、Nginx配置生成等问题
-用法: python deploy.py
+用法:
+  python deploy.py              # 完整部署（默认）
+  python deploy.py --fast       # 快速部署（跳过Git和前端构建）
+  python deploy.py --file FILE  # 仅部署指定文件
 """
 
 import os
@@ -11,6 +14,7 @@ import sys
 import subprocess
 import json
 import time
+import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -592,14 +596,141 @@ def test_api():
         print_error(f"API测试失败: {str(e)}")
         return False
 
+def upload_single_file(local_file, remote_file):
+    """快速上传单个文件"""
+    print_info(f"上传: {local_file} -> {remote_file}")
+    success = scp_upload(str(local_file), remote_file)
+    if success:
+        print_success(f"✓ {os.path.basename(local_file)}")
+    else:
+        print_error(f"✗ {os.path.basename(local_file)}")
+    return success
+
+def fast_deploy(specific_files=None):
+    """快速部署模式：仅上传变更文件，不重启服务"""
+    print_header("⚡ 快速部署模式")
+    
+    # 如果没有指定文件，检测最近的变更
+    if not specific_files:
+        print_info("检测最近变更的文件...")
+        _, changed_files, _ = run_command(
+            "git diff --name-only HEAD~1 HEAD",
+            cwd=PROJECT_ROOT
+        )
+        
+        if not changed_files:
+            # 检查未提交的修改
+            _, changed_files, _ = run_command(
+                "git ls-files --modified",
+                cwd=PROJECT_ROOT
+            )
+        
+        if not changed_files:
+            print_error("未检测到变更文件，请使用 --file 指定文件")
+            return False
+        
+        specific_files = [f.strip() for f in changed_files.split('\n') if f.strip()]
+        print_info(f"检测到 {len(specific_files)} 个变更文件")
+    
+    # 分类文件
+    backend_files = []
+    frontend_files = []
+    
+    for file in specific_files:
+        if file.startswith('frontend/src/') or file.endswith('.vue') or file.endswith('.js'):
+            frontend_files.append(file)
+        elif file.endswith('.py'):
+            backend_files.append(file)
+        else:
+            # 其他文件当作后端文件处理
+            backend_files.append(file)
+    
+    # 上传后端文件（直接SCP，不打包）
+    if backend_files:
+        print_header(f"📤 上传 {len(backend_files)} 个后端文件")
+        for file in backend_files:
+            local_path = PROJECT_ROOT / file
+            if local_path.exists():
+                remote_path = f"{REMOTE_PATH}/{file}"
+                upload_single_file(local_path, remote_path)
+            else:
+                print_warning(f"文件不存在: {file}")
+    
+    # 上传前端文件（需要重新构建）
+    if frontend_files:
+        print_warning("检测到前端文件变更，需要重新构建")
+        print_info("建议使用完整部署模式: python deploy.py")
+        return False
+    
+    # 重启后端服务（可选）
+    print("\n是否重启后端服务？(y/n): ", end="", flush=True)
+    try:
+        choice = input().strip().lower()
+        if choice == 'y':
+            restart_backend_only()
+    except:
+        pass
+    
+    print_success("✅ 快速部署完成！")
+    return True
+
+def restart_backend_only():
+    """仅重启后端服务（不影响Nginx和前端）"""
+    print_info("重启后端服务...")
+    
+    # 停止旧进程
+    ssh_command(f"cd {REMOTE_PATH} && pkill -f 'python app.py' || true")
+    time.sleep(2)
+    
+    # 启动新进程
+    start_cmd = f"""
+    cd {REMOTE_PATH}
+    source .venv/bin/activate
+    export PORT={LOCAL_PORT}
+    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
+    echo $!
+    """
+    
+    success, pid, _ = ssh_command(start_cmd)
+    if success and pid.strip().isdigit():
+        print_success(f"后端服务已重启 (PID: {pid.strip()})")
+        
+        # 等待启动
+        time.sleep(3)
+        
+        # 验证
+        _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
+        if port_check:
+            print_success(f"端口 {LOCAL_PORT} 监听正常")
+        else:
+            print_warning("端口未监听，请检查日志")
+    else:
+        print_error("重启失败")
+
 def main():
     """主函数"""
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='智能部署脚本')
+    parser.add_argument('--fast', action='store_true', help='快速部署模式（跳过Git和前端构建）')
+    parser.add_argument('--file', nargs='+', help='指定要部署的文件列表')
+    parser.add_argument('--no-restart', action='store_true', help='不重启服务')
+    args = parser.parse_args()
+    
     print_header("🚀 Python智能部署脚本")
     print_info(f"目标服务器: {REMOTE_USER}@{REMOTE_HOST}")
     print_info(f"后端端口: {LOCAL_PORT}, Nginx端口: {NGINX_PORT}")
     print()
     
     try:
+        # 快速部署模式
+        if args.fast or args.file:
+            specific_files = args.file if args.file else None
+            if fast_deploy(specific_files):
+                sys.exit(0)
+            else:
+                sys.exit(1)
+        
+        # 完整部署模式（原有逻辑）
         # 1. Git提交和推送
         if not git_commit_and_push():
             print_error("Git操作失败，终止部署")
@@ -623,7 +754,8 @@ def main():
             sys.exit(1)
         
         # 6. 重启服务
-        restart_services()
+        if not args.no_restart:
+            restart_services()
         
         # 7. 等待服务完全启动
         print_info("等待服务完全启动...")
