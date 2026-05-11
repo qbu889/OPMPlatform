@@ -5,9 +5,9 @@
 """
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 
-from routes.kafka_generator_routes import generate_es_to_kafka_mapping
+from routes.kafka.kafka_generator_routes import generate_es_to_kafka_mapping
 import json
 
 def test_data_preprocessing():

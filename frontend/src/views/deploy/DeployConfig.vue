@@ -2,669 +2,595 @@
   <div class="deploy-config-container">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h2><el-icon :size="28" color="#409eff"><Setting /></el-icon> 部署配置管理</h2>
-      <p class="subtitle">动态配置部署参数，无需修改代码</p>
+      <h2><el-icon :size="28" color="#667eea"><Upload /></el-icon> 部署管理中心</h2>
+      <p class="subtitle">可视化部署、备份恢复、实时监控</p>
     </div>
 
-    <!-- 部署操作区 -->
-    <el-card class="deploy-actions-card" shadow="hover">
+    <!-- 部署状态卡片 -->
+    <el-card class="status-card" shadow="hover">
       <template #header>
         <div class="card-header">
-          <el-icon :size="20" color="#67c23a"><Promotion /></el-icon>
-          <span>部署操作</span>
+          <span><el-icon><Monitor /></el-icon> 部署状态</span>
+          <el-tag :type="deployStatus.is_deploying ? 'warning' : 'success'">
+            {{ deployStatus.is_deploying ? '部署中' : '空闲' }}
+          </el-tag>
         </div>
       </template>
       
-      <div class="deploy-buttons">
-        <el-button type="success" size="large" @click="handleDeploy">
-          <el-icon><Upload /></el-icon>
-          执行部署
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <div class="status-item">
+            <div class="label">当前步骤</div>
+            <div class="value">{{ deployStatus.current_step || '无' }}</div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="status-item">
+            <div class="label">进度</div>
+            <el-progress :percentage="deployStatus.progress" />
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="status-item">
+            <div class="label">上次部署</div>
+            <div class="value">{{ deployStatus.last_deploy_time || '从未' }}</div>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="status-item">
+            <div class="label">状态</div>
+            <el-tag :type="getStatusType(deployStatus.last_deploy_status)">
+              {{ getStatusText(deployStatus.last_deploy_status) }}
+            </el-tag>
+          </div>
+        </el-col>
+      </el-row>
+    </el-card>
+
+    <!-- 操作按钮区域 -->
+    <el-card class="actions-card" shadow="hover">
+      <template #header>
+        <span><el-icon><Operation /></el-icon> 部署操作</span>
+      </template>
+      
+      <div class="action-buttons">
+        <el-button 
+          type="primary" 
+          size="large"
+          @click="showDeployDialog('fast')"
+          :disabled="deployStatus.is_deploying"
+        >
+          <el-icon><Cpu /></el-icon>
+          快速部署
         </el-button>
-        <el-button type="warning" size="large" @click="handleRollback">
-          <el-icon><RefreshLeft /></el-icon>
-          快速回滚
+        
+        <el-button 
+          type="success" 
+          size="large"
+          @click="showDeployDialog('full')"
+          :disabled="deployStatus.is_deploying"
+        >
+          <el-icon><Refresh /></el-icon>
+          完整部署
         </el-button>
-        <el-button type="info" size="large" @click="handleViewLogs">
-          <el-icon><Document /></el-icon>
-          查看日志
+        
+        <el-button 
+          type="warning" 
+          size="large"
+          @click="createBackup"
+          :disabled="deployStatus.is_deploying"
+        >
+          <el-icon><FolderAdd /></el-icon>
+          创建备份
         </el-button>
-        <el-button type="danger" size="large" @click="handleRestartService">
+        
+        <el-button 
+          type="info" 
+          size="large"
+          @click="restartService"
+          :disabled="deployStatus.is_deploying"
+        >
           <el-icon><SwitchButton /></el-icon>
           重启服务
         </el-button>
+        
+        <el-button 
+          type="danger" 
+          size="large"
+          @click="showRestoreDialog"
+          :disabled="deployStatus.is_deploying"
+        >
+          <el-icon><Download /></el-icon>
+          恢复备份
+        </el-button>
       </div>
+    </el-card>
+
+    <!-- 实时日志区域 -->
+    <el-card class="logs-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span><el-icon><Document /></el-icon> 实时部署日志</span>
+          <div>
+            <el-button size="small" @click="clearLogs">
+              <el-icon><Delete /></el-icon>
+              清空
+            </el-button>
+            <el-button size="small" @click="scrollToBottom">
+              <el-icon><Bottom /></el-icon>
+              滚动到底部
+            </el-button>
+          </div>
+        </div>
+      </template>
       
-      <el-alert
-        title="操作提示"
-        type="info"
-        :closable="false"
-        show-icon
-        class="mt-3"
-      >
-        <template #default>
-          部署前请确认配置正确，部署过程会自动备份当前版本。回滚功能可快速恢复到上一个稳定版本。
-        </template>
-      </el-alert>
+      <div class="logs-container" ref="logsContainer">
+        <div 
+          v-for="(log, index) in logs" 
+          :key="index"
+          class="log-entry"
+          :class="`log-${log.level}`"
+        >
+          <span class="log-time">[{{ log.timestamp }}]</span>
+          <span class="log-message">{{ log.message }}</span>
+        </div>
+        <div v-if="logs.length === 0" class="empty-logs">
+          暂无日志
+        </div>
+      </div>
     </el-card>
 
-    <!-- 配置分类标签页 -->
-    <el-card class="config-card" shadow="hover">
-      <el-tabs v-model="activeCategory" @tab-change="loadConfigs">
-        <el-tab-pane label="🖥️ 服务器配置" name="server">
-          <ConfigTable 
-            :configs="serverConfigs" 
-            @update="handleUpdateConfig"
-            @test="handleTestConnection"
-          />
-        </el-tab-pane>
-        
-        <el-tab-pane label="🚀 部署配置" name="deployment">
-          <ConfigTable 
-            :configs="deploymentConfigs" 
-            @update="handleUpdateConfig"
-          />
-        </el-tab-pane>
-        
-        <el-tab-pane label="💾 备份配置" name="backup">
-          <!-- 备份操作区 -->
-          <div class="backup-actions">
-            <el-button type="primary" size="large" @click="handleBackupNow">
-              <el-icon><CopyDocument /></el-icon>
-              立即备份
-            </el-button>
-            <el-button type="success" size="large" @click="handleViewBackupHistory">
-              <el-icon><Document /></el-icon>
-              查看备份历史
-            </el-button>
-            <el-button type="warning" size="large" @click="handleCleanupBackups">
-              <el-icon><Delete /></el-icon>
-              清理过期备份
-            </el-button>
-          </div>
-          
-          <el-divider />
-          
-          <!-- 备份配置表格 -->
-          <ConfigTable 
-            :configs="backupConfigs" 
-            @update="handleUpdateConfig"
-          />
-        </el-tab-pane>
-        
-        <el-tab-pane label="📊 监控配置" name="monitor">
-          <!-- 监控操作区 -->
-          <div class="monitor-actions">
-            <el-button type="success" size="large" @click="handleHealthCheck">
-              <el-icon><CircleCheck /></el-icon>
-              健康检查
-            </el-button>
-            <el-button type="primary" size="large" @click="handleViewBackendLogs">
-              <el-icon><Document /></el-icon>
-              查看后端日志
-            </el-button>
-            <el-button type="info" size="large" @click="handleViewFrontendLogs">
-              <el-icon><Files /></el-icon>
-              查看前端日志
-            </el-button>
-            <el-button type="warning" size="large" @click="handleViewResourceUsage">
-              <el-icon><Monitor /></el-icon>
-              资源监控
-            </el-button>
-          </div>
-          
-          <el-divider />
-          
-          <!-- 监控配置说明 -->
-          <el-alert
-            title="监控功能说明"
-            type="info"
-            :closable="false"
-            show-icon
-            class="mb-3"
-          >
-            <template #default>
-              <div style="line-height: 1.8;">
-                <strong>健康检查：</strong>检查后端和前端服务是否正常运行<br>
-                <strong>后端日志：</strong>查看 Flask 后端运行日志（默认50行）<br>
-                <strong>前端日志：</strong>查看 Vite 前端构建和运行日志<br>
-                <strong>资源监控：</strong>查看服务器 CPU、内存、磁盘使用情况
-              </div>
-            </template>
-          </el-alert>
-          
-          <!-- 监控配置表格 -->
-          <ConfigTable 
-            :configs="monitorConfigs" 
-            @update="handleUpdateConfig"
-          />
-        </el-tab-pane>
-      </el-tabs>
+    <!-- 服务器日志查看 -->
+    <el-card class="server-logs-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span><el-icon><View /></el-icon> 服务器日志</span>
+          <el-select v-model="serverLogType" size="small" style="width: 150px">
+            <el-option label="后端日志" value="backend" />
+            <el-option label="Nginx访问" value="nginx" />
+            <el-option label="Nginx错误" value="error" />
+          </el-select>
+          <el-button size="small" @click="loadServerLogs">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+        </div>
+      </template>
+      
+      <div class="server-logs-content">
+        <pre>{{ serverLogs }}</pre>
+      </div>
     </el-card>
 
-    <!-- 批量操作按钮 -->
-    <div class="action-buttons">
-      <el-button type="primary" @click="handleBatchSave">
-        <el-icon><Check /></el-icon>
-        保存所有修改
-      </el-button>
-      <el-button @click="loadConfigs">
-        <el-icon><Refresh /></el-icon>
-        刷新配置
-      </el-button>
-      <el-button type="warning" @click="handleResetDefaults">
-        <el-icon><RefreshRight /></el-icon>
-        恢复默认配置
-      </el-button>
-    </div>
-
-    <!-- 备份历史对话框 -->
-    <el-dialog
-      v-model="backupHistoryDialogVisible"
-      title="备份历史"
-      width="900px"
-      :close-on-click-modal="false"
-    >
-      <el-table
-        v-loading="backupLoading"
-        :data="backupHistoryList"
-        stripe
-        style="width: 100%"
-        max-height="500px"
-      >
-        <el-table-column prop="filename" label="备份文件" min-width="250" />
-        <el-table-column prop="size" label="大小" width="100" />
-        <el-table-column prop="created_at" label="备份时间" width="180" />
-        <el-table-column label="操作" width="180" fixed="right">
+    <!-- 备份列表 -->
+    <el-card class="backups-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span><el-icon><Folder /></el-icon> 备份版本</span>
+          <el-button size="small" @click="loadBackups">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+        </div>
+      </template>
+      
+      <el-table :data="backups" stripe max-height="400">
+        <el-table-column prop="display_name" label="备份名称" min-width="200" />
+        <el-table-column prop="date" label="备份时间" width="180" />
+        <el-table-column prop="size" label="大小" width="120" />
+        <el-table-column label="操作" width="150" align="center">
           <template #default="{ row }">
-            <el-button
-              type="success"
-              size="small"
-              @click="handleRestoreBackup(row)"
+            <el-button 
+              size="small" 
+              type="primary"
+              @click="restoreBackup(row.filename)"
             >
-              <el-icon><RefreshLeft /></el-icon>
               恢复
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click="handleDeleteBackup(row)"
-            >
-              <el-icon><Delete /></el-icon>
-              删除
             </el-button>
           </template>
         </el-table-column>
       </el-table>
+    </el-card>
 
+    <!-- 部署确认对话框 -->
+    <el-dialog
+      v-model="deployDialogVisible"
+      :title="deployDialogTitle"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        :title="deployDialogMessage"
+        type="warning"
+        :closable="false"
+        class="mb-3"
+      />
+      
       <template #footer>
-        <el-button @click="backupHistoryDialogVisible = false">关闭</el-button>
+        <el-button @click="deployDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmDeploy" :loading="deploying">
+          确认部署
+        </el-button>
       </template>
     </el-dialog>
 
-    <!-- 日志查看对话框 -->
+    <!-- 恢复确认对话框 -->
     <el-dialog
-      v-model="logDialogVisible"
-      title="查看日志"
-      width="1000px"
+      v-model="restoreDialogVisible"
+      title="选择备份版本"
+      width="700px"
       :close-on-click-modal="false"
     >
-      <div class="log-dialog-header">
-        <el-radio-group v-model="logType" @change="loadLogs">
-          <el-radio-button label="backend">后端日志</el-radio-button>
-          <el-radio-button label="frontend">前端日志</el-radio-button>
-        </el-radio-group>
-        
-        <div class="log-controls">
-          <el-input-number
-            v-model="logLines"
-            :min="10"
-            :max="500"
-            :step="10"
-            size="small"
-            @change="loadLogs"
-          />
-          <span class="log-lines-label">行</span>
-          <el-button size="small" @click="loadLogs">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
-          <el-button size="small" type="primary" @click="downloadLog">
-            <el-icon><Download /></el-icon>
-            下载
-          </el-button>
-        </div>
-      </div>
-
-      <el-divider />
-
-      <div
-        v-loading="logLoading"
-        class="log-content"
+      <el-table 
+        :data="backups" 
+        stripe 
+        max-height="400"
+        highlight-current-row
+        @current-change="handleBackupSelect"
       >
-        <pre>{{ logContent }}</pre>
-      </div>
-
+        <el-table-column prop="display_name" label="备份名称" min-width="200" />
+        <el-table-column prop="date" label="备份时间" width="180" />
+        <el-table-column prop="size" label="大小" width="120" />
+      </el-table>
+      
       <template #footer>
-        <el-button @click="logDialogVisible = false">关闭</el-button>
+        <el-button @click="restoreDialogVisible = false">取消</el-button>
+        <el-button 
+          type="primary" 
+          @click="confirmRestore"
+          :disabled="!selectedBackup"
+          :loading="restoring"
+        >
+          确认恢复
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Setting, Check, Refresh, RefreshRight, Promotion, Upload, RefreshLeft, Document, SwitchButton, CopyDocument, Delete, Download } from '@element-plus/icons-vue'
-import axios from 'axios'
-import ConfigTable from './components/ConfigTable.vue'
+import {
+  Upload, Monitor, Operation, Cpu, Refresh, FolderAdd,
+  SwitchButton, Download, Document, Delete, Bottom,
+  View, Folder
+} from '@element-plus/icons-vue'
 
-const activeCategory = ref('server')
-const allConfigs = ref([])
+// 部署状态
+const deployStatus = reactive({
+  is_deploying: false,
+  current_step: '',
+  progress: 0,
+  last_deploy_time: null,
+  last_deploy_status: null
+})
 
-// 备份历史对话框
-const backupHistoryDialogVisible = ref(false)
-const backupHistoryList = ref([])
-const backupLoading = ref(false)
+// 日志
+const logs = ref([])
+const logsContainer = ref(null)
+let eventSource = null
 
-// 日志查看对话框
-const logDialogVisible = ref(false)
-const logType = ref('backend')
-const logLines = ref(50)
-const logContent = ref('')
-const logLoading = ref(false)
+// 服务器日志
+const serverLogs = ref('')
+const serverLogType = ref('backend')
 
-// 按分类过滤配置
-const serverConfigs = computed(() => 
-  allConfigs.value.filter(c => c.category === 'server')
-)
+// 备份列表
+const backups = ref([])
 
-const deploymentConfigs = computed(() => 
-  allConfigs.value.filter(c => c.category === 'deployment')
-)
+// 对话框
+const deployDialogVisible = ref(false)
+const deployDialogTitle = ref('')
+const deployDialogMessage = ref('')
+const deployType = ref('fast')
+const deploying = ref(false)
 
-const backupConfigs = computed(() => 
-  allConfigs.value.filter(c => c.category === 'backup')
-)
+const restoreDialogVisible = ref(false)
+const selectedBackup = ref(null)
+const restoring = ref(false)
 
-const monitorConfigs = computed(() => 
-  allConfigs.value.filter(c => c.category === 'monitor')
-)
-
-// 加载配置
-const loadConfigs = async () => {
+// 加载部署状态
+const loadDeployStatus = async () => {
   try {
-    const response = await axios.get('/api/deploy/config/list', {
-      params: { hide_sensitive: false }
-    })
-    
-    if (response.data.success) {
-      allConfigs.value = response.data.configs
-      ElMessage.success('配置加载成功')
-    } else {
-      ElMessage.error('加载配置失败：' + response.data.error)
+    const response = await fetch('/deploy-config/status')
+    const result = await response.json()
+    if (result.success) {
+      Object.assign(deployStatus, result.data)
     }
   } catch (error) {
-    ElMessage.error('网络错误：' + error.message)
+    console.error('加载部署状态失败:', error)
   }
 }
 
-// 更新单个配置
-const handleUpdateConfig = async (config) => {
-  try {
-    const response = await axios.post('/api/deploy/config/update', {
-      config_key: config.config_key,
-      config_value: config.config_value
+// 连接实时日志流
+const connectLogStream = () => {
+  eventSource = new EventSource('/deploy-config/logs/stream')
+  
+  eventSource.onmessage = (event) => {
+    const log = JSON.parse(event.data)
+    logs.value.push(log)
+    
+    // 自动滚动到底部
+    nextTick(() => {
+      if (logsContainer.value) {
+        logsContainer.value.scrollTop = logsContainer.value.scrollHeight
+      }
     })
-    
-    if (response.data.success) {
-      ElMessage.success('配置更新成功')
-      // 更新本地数据
-      const index = allConfigs.value.findIndex(c => c.config_key === config.config_key)
-      if (index !== -1) {
-        allConfigs.value[index].config_value = config.config_value
-      }
-    } else {
-      ElMessage.error('更新失败：' + response.data.error)
-    }
-  } catch (error) {
-    ElMessage.error('网络错误：' + error.message)
   }
-}
-
-// 测试 SSH 连接
-const handleTestConnection = async () => {
-  try {
-    const remoteHost = serverConfigs.value.find(c => c.config_key === 'remote_host')?.config_value
-    const remoteUser = serverConfigs.value.find(c => c.config_key === 'remote_user')?.config_value
-    const sshPort = serverConfigs.value.find(c => c.config_key === 'ssh_port')?.config_value
-    
-    const response = await axios.post('/api/deploy/config/test-connection', {
-      remote_host: remoteHost,
-      remote_user: remoteUser,
-      ssh_port: parseInt(sshPort)
-    })
-    
-    if (response.data.success) {
-      ElMessage.success({
-        message: '✅ SSH 连接成功！',
-        duration: 3000
-      })
-    } else {
-      ElMessage.error({
-        message: '❌ SSH 连接失败：' + response.data.error,
-        duration: 5000
-      })
-    }
-  } catch (error) {
-    ElMessage.error('测试失败：' + error.message)
+  
+  eventSource.onerror = (error) => {
+    console.error('日志流连接错误:', error)
+    eventSource.close()
   }
-}
-
-// 批量保存
-const handleBatchSave = async () => {
-  try {
-    const modifiedConfigs = allConfigs.value.map(c => ({
-      config_key: c.config_key,
-      config_value: c.config_value
-    }))
-    
-    const response = await axios.post('/api/deploy/config/batch-update', {
-      configs: modifiedConfigs
-    })
-    
-    if (response.data.success) {
-      ElMessage.success(`✅ 成功更新 ${response.data.updated_count} 个配置`)
-      loadConfigs()
-    } else {
-      ElMessage.error('批量更新失败：' + response.data.error)
-    }
-  } catch (error) {
-    ElMessage.error('网络错误：' + error.message)
-  }
-}
-
-// 恢复默认配置
-const handleResetDefaults = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要恢复所有配置为默认值吗？此操作不可撤销！',
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    // TODO: 实现批量重置逻辑
-    ElMessage.info('恢复默认配置功能开发中...')
-  } catch {
-    // 用户取消
-  }
-}
-
-// 执行部署
-const handleDeploy = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要执行部署吗？部署过程会自动备份当前版本。',
-      '确认部署',
-      {
-        confirmButtonText: '确定部署',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    ElMessage.info('正在执行部署，请稍候...')
-    // TODO: 调用部署 API
-    // const response = await axios.post('/api/deploy/execute')
-    
-    setTimeout(() => {
-      ElMessage.success('✅ 部署成功！')
-    }, 2000)
-  } catch {
-    // 用户取消
-  }
-}
-
-// 快速回滚
-const handleRollback = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要回滚到上一个版本吗？当前版本将被备份。',
-      '确认回滚',
-      {
-        confirmButtonText: '确定回滚',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    ElMessage.info('正在执行回滚，请稍候...')
-    // TODO: 调用回滚 API
-    // const response = await axios.post('/api/deploy/rollback')
-    
-    setTimeout(() => {
-      ElMessage.success('✅ 回滚成功！')
-    }, 2000)
-  } catch {
-    // 用户取消
-  }
-}
-
-// 查看日志
-const handleViewLogs = () => {
-  logDialogVisible.value = true
-  loadLogs()
 }
 
 // 加载日志
 const loadLogs = async () => {
   try {
-    logLoading.value = true
-    
-    const response = await axios.get('/api/deploy/config/logs', {
-      params: {
-        type: logType.value,
-        lines: logLines.value
-      }
-    })
-    
-    if (response.data.success) {
-      logContent.value = response.data.content
-    } else {
-      logContent.value = '加载失败：' + response.data.error
+    const response = await fetch('/deploy-config/logs')
+    const result = await response.json()
+    if (result.success) {
+      logs.value = result.data.logs
     }
   } catch (error) {
-    logContent.value = '加载失败：' + error.message
-  } finally {
-    logLoading.value = false
+    console.error('加载日志失败:', error)
   }
 }
 
-// 下载日志
-const downloadLog = async () => {
+// 清空日志
+const clearLogs = () => {
+  logs.value = []
+}
+
+// 滚动到底部
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (logsContainer.value) {
+      logsContainer.value.scrollTop = logsContainer.value.scrollHeight
+    }
+  })
+}
+
+// 加载服务器日志
+const loadServerLogs = async () => {
   try {
-    const response = await axios.get('/api/deploy/config/logs/download', {
-      params: {
-        type: logType.value
-      },
-      responseType: 'blob'
+    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=100`)
+    const result = await response.json()
+    if (result.success) {
+      serverLogs.value = result.data.logs
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    console.error('加载服务器日志失败:', error)
+    ElMessage.error('加载失败')
+  }
+}
+
+// 加载备份列表
+const loadBackups = async () => {
+  try {
+    const response = await fetch('/deploy-config/backups')
+    const result = await response.json()
+    if (result.success) {
+      backups.value = result.data.backups
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    console.error('加载备份列表失败:', error)
+    ElMessage.error('加载失败')
+  }
+}
+
+// 显示部署对话框
+const showDeployDialog = (type) => {
+  deployType.value = type
+  if (type === 'fast') {
+    deployDialogTitle.value = '快速部署'
+    deployDialogMessage.value = '将跳过Git操作和前端构建，仅上传变更的Python文件。适合日常小改动。'
+  } else {
+    deployDialogTitle.value = '完整部署'
+    deployDialogMessage.value = '将执行完整的部署流程：Git提交推送、前端构建、后端上传、服务重启。适合重大更新。'
+  }
+  deployDialogVisible.value = true
+}
+
+// 确认部署
+const confirmDeploy = async () => {
+  deploying.value = true
+  try {
+    const response = await fetch('/deploy-config/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: deployType.value })
     })
     
-    // 创建下载链接
-    const url = window.URL.createObjectURL(new Blob([response.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `${logType.value}.log`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
-    
-    ElMessage.success('日志下载成功')
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('部署任务已启动，请查看实时日志')
+      deployDialogVisible.value = false
+      
+      // 开始轮询状态
+      startStatusPolling()
+    } else {
+      ElMessage.error(result.message)
+    }
   } catch (error) {
-    ElMessage.error('下载失败：' + error.message)
+    console.error('部署失败:', error)
+    ElMessage.error('部署失败')
+  } finally {
+    deploying.value = false
+  }
+}
+
+// 创建备份
+const createBackup = async () => {
+  try {
+    await ElMessageBox.confirm('确定要创建当前版本的备份吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    const response = await fetch('/deploy-config/backup', {
+      method: 'POST'
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('备份任务已启动')
+      // 刷新备份列表
+      setTimeout(loadBackups, 5000)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('备份失败:', error)
+      ElMessage.error('备份失败')
+    }
   }
 }
 
 // 重启服务
-const handleRestartService = async () => {
+const restartService = async () => {
   try {
-    await ElMessageBox.confirm(
-      '确定要重启服务吗？重启过程中服务将暂时不可用。',
-      '确认重启',
-      {
-        confirmButtonText: '确定重启',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    ElMessage.info('正在重启服务，请稍候...')
-    // TODO: 调用重启 API
-    // const response = await axios.post('/api/deploy/restart')
-    
-    setTimeout(() => {
-      ElMessage.success('✅ 服务重启成功！')
-    }, 2000)
-  } catch {
-    // 用户取消
-  }
-}
-
-// 立即备份
-const handleBackupNow = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要立即执行备份吗？备份将包含数据库、配置文件和重要数据。',
-      '确认备份',
-      {
-        confirmButtonText: '确定备份',
-        cancelButtonText: '取消',
-        type: 'info'
-      }
-    )
-    
-    ElMessage.info('正在执行备份，请稍候...')
-    // TODO: 调用备份 API
-    // const response = await axios.post('/api/deploy/backup/execute')
-    
-    setTimeout(() => {
-      ElMessage.success('✅ 备份成功！备份文件已保存到指定目录。')
-    }, 2000)
-  } catch {
-    // 用户取消
-  }
-}
-
-// 查看备份历史
-const handleViewBackupHistory = async () => {
-  try {
-    backupLoading.value = true
-    backupHistoryDialogVisible.value = true
-    
-    const response = await axios.get('/api/deploy/config/backup/history')
-    
-    if (response.data.success) {
-      backupHistoryList.value = response.data.backups
-    } else {
-      ElMessage.error('获取备份历史失败：' + response.data.error)
-    }
-  } catch (error) {
-    ElMessage.error('网络错误：' + error.message)
-  } finally {
-    backupLoading.value = false
-  }
-}
-
-// 删除备份
-const handleDeleteBackup = async (backup) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除备份文件 ${backup.filename} 吗？此操作不可撤销！`,
-      '确认删除',
-      {
-        confirmButtonText: '确定删除',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    const response = await axios.post('/api/deploy/config/backup/delete', {
-      filename: backup.filename
+    await ElMessageBox.confirm('确定要重启服务吗？这将导致短暂的服务中断。', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
     })
     
-    if (response.data.success) {
-      ElMessage.success('备份文件已删除')
-      // 刷新备份历史
-      handleViewBackupHistory()
+    const response = await fetch('/deploy-config/restart', {
+      method: 'POST'
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('服务重启成功')
     } else {
-      ElMessage.error('删除失败：' + response.data.error)
+      ElMessage.error(result.message)
     }
-  } catch {
-    // 用户取消
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('重启失败:', error)
+      ElMessage.error('重启失败')
+    }
   }
+}
+
+// 显示恢复对话框
+const showRestoreDialog = () => {
+  loadBackups()
+  restoreDialogVisible.value = true
+}
+
+// 选择备份
+const handleBackupSelect = (row) => {
+  selectedBackup.value = row
 }
 
 // 恢复备份
-const handleRestoreBackup = async (backup) => {
+const restoreBackup = (filename) => {
+  selectedBackup.value = { filename }
+  confirmRestore()
+}
+
+// 确认恢复
+const confirmRestore = async () => {
+  if (!selectedBackup.value) {
+    ElMessage.warning('请选择要恢复的备份版本')
+    return
+  }
+  
   try {
     await ElMessageBox.confirm(
-      `确定要从备份 ${backup.filename} 恢复吗？\n\n⚠️ 警告：这将覆盖当前项目的所有文件！\n恢复过程需要约2-3分钟，期间服务将暂时不可用。`,
-      '确认恢复',
+      `确定要恢复到备份 "${selectedBackup.value.display_name}" 吗？此操作不可逆！`,
+      '警告',
       {
         confirmButtonText: '确定恢复',
         cancelButtonText: '取消',
-        type: 'warning',
-        dangerouslyUseHTMLString: false
+        type: 'error'
       }
     )
     
-    const response = await axios.post('/api/deploy/config/backup/restore', {
-      filename: backup.filename
+    restoring.value = true
+    const response = await fetch('/deploy-config/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'restore',
+        backup_file: selectedBackup.value.filename
+      })
     })
     
-    if (response.data.success) {
-      ElMessage.success(response.data.message)
-      // 关闭对话框
-      backupHistoryDialogVisible.value = false
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('恢复任务已启动，请查看实时日志')
+      restoreDialogVisible.value = false
+      startStatusPolling()
     } else {
-      ElMessage.error('恢复失败：' + response.data.error)
+      ElMessage.error(result.message)
     }
-  } catch {
-    // 用户取消
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('恢复失败:', error)
+      ElMessage.error('恢复失败')
+    }
+  } finally {
+    restoring.value = false
   }
 }
 
-// 清理过期备份
-const handleCleanupBackups = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要清理过期备份吗？将根据配置保留天数删除旧备份。',
-      '确认清理',
-      {
-        confirmButtonText: '确定清理',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    ElMessage.info('正在清理过期备份...')
-    // TODO: 调用清理 API
-    // const response = await axios.post('/api/deploy/backup/cleanup')
-    
-    setTimeout(() => {
-      ElMessage.success('✅ 过期备份清理完成！')
-    }, 2000)
-  } catch {
-    // 用户取消
+// 开始状态轮询
+let statusPollingInterval = null
+const startStatusPolling = () => {
+  if (statusPollingInterval) {
+    clearInterval(statusPollingInterval)
   }
+  
+  statusPollingInterval = setInterval(() => {
+    loadDeployStatus()
+    
+    // 如果部署完成，停止轮询
+    if (!deployStatus.is_deploying && deployStatus.progress === 100) {
+      clearInterval(statusPollingInterval)
+    }
+  }, 2000)
 }
 
+// 获取状态类型
+const getStatusType = (status) => {
+  if (status === 'success') return 'success'
+  if (status === 'failed') return 'danger'
+  return 'info'
+}
+
+// 获取状态文本
+const getStatusText = (status) => {
+  if (status === 'success') return '成功'
+  if (status === 'failed') return '失败'
+  return '未知'
+}
+
+// 初始化
 onMounted(() => {
-  loadConfigs()
+  loadDeployStatus()
+  loadLogs()
+  loadBackups()
+  loadServerLogs()
+  connectLogStream()
+})
+
+// 清理
+onUnmounted(() => {
+  if (eventSource) {
+    eventSource.close()
+  }
+  if (statusPollingInterval) {
+    clearInterval(statusPollingInterval)
+  }
 })
 </script>
 
@@ -682,7 +608,6 @@ onMounted(() => {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
   color: white;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .page-header h2 {
@@ -700,87 +625,114 @@ onMounted(() => {
   margin: 0;
 }
 
-.config-card {
+.status-card,
+.actions-card,
+.logs-card,
+.server-logs-card,
+.backups-card {
   margin-bottom: 20px;
   border-radius: 12px;
-}
-
-.deploy-actions-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
-  border-left: 4px solid #67c23a;
 }
 
 .card-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.deploy-buttons,
-.backup-actions {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 10px 0;
-}
-
-.log-dialog-header {
-  display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  font-weight: 600;
 }
 
-.log-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.log-lines-label {
-  color: #606266;
-  font-size: 14px;
-}
-
-.log-content {
-  background: #1e1e1e;
-  color: #d4d4d4;
+.status-item {
+  text-align: center;
   padding: 15px;
-  border-radius: 8px;
-  max-height: 500px;
-  overflow-y: auto;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
 }
 
-.log-content pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-all;
+.status-item .label {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 8px;
 }
 
-.mt-3 {
-  margin-top: 15px;
+.status-item .value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
 }
 
 .action-buttons {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
   justify-content: center;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-:deep(.el-tabs__item) {
-  font-size: 16px;
-  font-weight: 500;
+.action-buttons .el-button {
+  min-width: 140px;
+}
+
+.logs-container {
+  height: 400px;
+  overflow-y: auto;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.log-entry {
+  margin-bottom: 5px;
+  line-height: 1.6;
+}
+
+.log-time {
+  color: #858585;
+  margin-right: 10px;
+}
+
+.log-message {
+  color: #d4d4d4;
+}
+
+.log-info .log-message {
+  color: #4fc3f7;
+}
+
+.log-success .log-message {
+  color: #66bb6a;
+}
+
+.log-warning .log-message {
+  color: #ffa726;
+}
+
+.log-error .log-message {
+  color: #ef5350;
+}
+
+.empty-logs {
+  text-align: center;
+  color: #666;
+  padding: 50px 0;
+}
+
+.server-logs-content {
+  height: 300px;
+  overflow-y: auto;
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.server-logs-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.mb-3 {
+  margin-bottom: 15px;
 }
 </style>

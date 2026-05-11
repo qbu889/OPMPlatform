@@ -78,7 +78,7 @@ from routes.swagger_config import swagger_bp
 from routes.tools.sql_generator_routes import sql_generator_bp
 
 # 部署配置管理
-from routes.deploy.config_routes import config_bp as deploy_config_bp
+from routes.deploy.deploy_config_routes import deploy_config_bp
 
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity

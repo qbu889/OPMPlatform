@@ -105,7 +105,8 @@ jobs:
           -m "not slow" \
           --tb=short \
           --maxfail=5 \
-          --disable-warnings
+          --disable-warnings \
+          --no-cov-on-fail
     
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
@@ -124,3 +125,5 @@ jobs:
         path: |
           htmlcov/
           .coverage
+          coverage.xml
+        retention-days: 7

@@ -1172,12 +1172,39 @@ def delete_field_meta(meta_id):
 def kafka_field_order():
     """返回所有 Kafka 字段的标准顺序和完整列表
 
-    返回 STANDARD_FIELD_ORDER 中的所有字段名
+    返回 STANDARD_FIELD_ORDER 中的所有字段名 + 数据库中配置的额外字段
     """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    # 基础字段顺序
+    field_order = list(STANDARD_FIELD_ORDER)
+    
+    # 从数据库获取额外的字段配置
+    try:
+        conn = get_mysql_conn_dict_cursor()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    # 查询所有启用的字段
+                    cur.execute("SELECT kafka_field FROM kafka_field_meta WHERE is_enabled = 1 ORDER BY id")
+                    rows = cur.fetchall() or []
+                    db_fields = [row['kafka_field'] for row in rows]
+                    
+                    # 添加不在 STANDARD_FIELD_ORDER 中的字段
+                    for field in db_fields:
+                        if field not in field_order:
+                            field_order.append(field)
+                            logger.info(f"[FIELD_ORDER] 添加数据库字段: {field}")
+            finally:
+                conn.close()
+    except Exception as e:
+        logger.error(f"[FIELD_ORDER] 从数据库加载字段失败: {e}")
+        # 失败时使用默认顺序
+    
     return jsonify({
         "success": True,
         "data": {
-            "fields": STANDARD_FIELD_ORDER
+            "fields": field_order
         }
     })
 

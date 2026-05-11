@@ -46,6 +46,7 @@ exclude_lines =
     if platform.system
 
 # 显示覆盖率阈值
+# 注意：CI环境中使用 --no-cov-on-fail 参数覆盖此设置
 fail_under = 30
 
 # 按文件排序显示

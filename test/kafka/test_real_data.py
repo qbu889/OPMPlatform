@@ -4,13 +4,19 @@
 import json
 import re
 import sys
+import os
 
 sys.path.insert(0, '/Users/linziwang/PycharmProjects/wordToWord')
 
 from routes.kafka.kafka_generator_routes import preprocess_json_data
 
 # 读取 curl 文件并提取 es_source_raw
-with open('test/kafka/es数据.txt', 'rb') as f:
+data_file = 'test/kafka/es数据.txt'
+if not os.path.exists(data_file):
+    print(f"⚠️  跳过测试：数据文件不存在 {data_file}")
+    sys.exit(0)
+
+with open(data_file, 'rb') as f:
     content = f.read().decode('utf-8')
 
 # 提取--data-raw 参数
