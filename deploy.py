@@ -362,6 +362,7 @@ def generate_nginx_config():
     location = /kafka-generator/field-cache {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-order {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-options {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
+    location = /kafka-generator/field-values {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/generate {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location /kafka-generator/history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}

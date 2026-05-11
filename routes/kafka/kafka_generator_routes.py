@@ -207,7 +207,7 @@ def load_field_meta_from_mysql():
     """从 MySQL 加载字段元数据。
 
     读取表：kafka_field_meta
-    返回结构：{ "NETWORK_TYPE_TOP": { "label_cn": "...", "es_field": "...", "db_cn": "..." }, ... }
+    返回结构：{ "NETWORK_TYPE_TOP": { "label_cn": "...", "es_field": "...", "db_cn": "...", "remark": "..." }, ... }
     失败或无数据时返回 None，供调用方回退到内置 FIELD_META。
     """
     try:
@@ -221,7 +221,7 @@ def load_field_meta_from_mysql():
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT kafka_field, es_field, db_cn, label_cn
+                    SELECT kafka_field, es_field, db_cn, label_cn, remark
                     FROM kafka_field_meta
                     WHERE is_enabled = 1
                     """
@@ -242,6 +242,7 @@ def load_field_meta_from_mysql():
                 "label_cn": (r.get("label_cn") or "").strip(),
                 "es_field": (r.get("es_field") or "").strip(),
                 "db_cn": (r.get("db_cn") or "").strip(),
+                "remark": (r.get("remark") or "").strip() if r.get("remark") else "",
             }
         return meta or None
     except Exception:
@@ -1270,6 +1271,82 @@ def kafka_field_options():
             "rows": rows,
         }
     })
+
+
+@kafka_generator_bp.route('/field-values', methods=['GET'])
+def get_all_field_values():
+    """获取所有当前有值的字段选项
+    
+    返回 kafka_field_cache 表中所有有 field_value 或 history_values 的字段
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    import json
+    
+    try:
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 查询所有有值的字段缓存
+                query = """
+                    SELECT field_name, field_value, is_pinned, history_values 
+                    FROM knowledge_base.kafka_field_cache
+                    WHERE field_value IS NOT NULL AND field_value != ''
+                       OR history_values IS NOT NULL
+                    ORDER BY is_pinned DESC, field_name ASC
+                """
+                cur.execute(query)
+                rows = cur.fetchall() or []
+                
+                # 转换为列表格式，便于前端使用
+                result = []
+                for row in rows:
+                    field_name = row.get('field_name', '')
+                    field_value = row.get('field_value', '')
+                    is_pinned = row.get('is_pinned', 0)
+                    history_values_str = row.get('history_values', '[]')
+                    
+                    # 解析历史值
+                    try:
+                        history_values = json.loads(history_values_str) if isinstance(history_values_str, str) else history_values_str
+                        if not isinstance(history_values, list):
+                            history_values = []
+                    except (json.JSONDecodeError, TypeError):
+                        history_values = []
+                    
+                    # 收集所有值（当前值 + 历史值）
+                    all_values = set()
+                    if field_value and str(field_value).strip():
+                        all_values.add(str(field_value))
+                    for val in history_values:
+                        if val and str(val).strip():
+                            all_values.add(str(val))
+                    
+                    if all_values:  # 只返回有值的字段
+                        result.append({
+                            'field_name': field_name,
+                            'current_value': field_value,
+                            'values': sorted(list(all_values))[:50],  # 最多50个值
+                            'is_pinned': bool(is_pinned),
+                            'count': len(all_values)
+                        })
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        "fields": result,
+                        "total_fields": len(result)
+                    }
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"获取字段值列表失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 def fix_json_keys(raw_data):

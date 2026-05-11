@@ -93,6 +93,10 @@
             <span>自定义字段</span>
           </div>
           <div>
+            <el-button size="small" @click="showAllFieldValues">
+              <el-icon><View /></el-icon>
+              查看所有字段选项
+            </el-button>
             <el-button size="small" @click="toggleAllFields">
               <el-icon><View /></el-icon>
               {{ showAllFields ? '隐藏所有字段' : '显示所有字段' }}
@@ -127,6 +131,14 @@
                 title="查看字段字典"
               >
                 <el-icon><Notebook /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="fieldRemarkMap[field.name] ? 'success' : 'info'"
+                @click="openRemarkEditDialog(field.name)"
+                :title="fieldRemarkMap[field.name] ? '编辑备注：' + fieldRemarkMap[field.name] : '添加备注'"
+              >
+                <el-icon><Edit /></el-icon>
               </el-button>
               <el-button 
                 size="small" 
@@ -179,9 +191,39 @@
           <div v-if="field.esField" class="field-meta">
             ES字段: <span class="es-field" :title="field.esField">{{ field.esField }}</span>
           </div>
+          <div v-if="fieldRemarkMap[field.name]" class="field-remark" :title="fieldRemarkMap[field.name]">
+            <el-icon><ChatDotSquare /></el-icon>
+            <span>{{ fieldRemarkMap[field.name] }}</span>
+          </div>
         </div>
       </div>
     </el-card>
+
+    <!-- 字段备注编辑对话框 -->
+    <el-dialog
+      v-model="fieldRemarkDialogVisible"
+      :title="`编辑字段备注 - ${currentFieldRemarkName}`"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form>
+        <el-form-item label="当前备注">
+          <el-input 
+            v-model="fieldRemarkDialogValue" 
+            type="textarea" 
+            :rows="4" 
+            placeholder="请输入备注信息"
+          />
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="fieldRemarkDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveFieldRemark" :loading="savingFieldRemark">
+          保存
+        </el-button>
+      </template>
+    </el-dialog>
 
     <!-- 生成结果 -->
     <el-card v-if="resultData" class="result-card" shadow="hover">
@@ -741,6 +783,67 @@
         <el-button @click="contentDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 所有字段选项弹窗 -->
+    <el-dialog
+      v-model="fieldValuesDialogVisible"
+      title="所有有值的字段选项"
+      width="80%"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        :title="`共 ${fieldValuesList.length} 个字段有值`"
+        type="info"
+        :closable="false"
+        class="mb-3"
+      />
+
+      <el-table
+        :data="fieldValuesList"
+        border
+        stripe
+        max-height="500"
+      >
+        <el-table-column prop="field_name" label="字段名" width="200" />
+        <el-table-column label="当前值" min-width="150">
+          <template #default="{ row }">
+            <span v-if="row.current_value" class="current-value">{{ row.current_value }}</span>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="所有可选值" min-width="300">
+          <template #default="{ row }">
+            <div class="values-list">
+              <el-tag
+                v-for="val in row.values"
+                :key="val"
+                size="small"
+                style="margin: 2px; cursor: pointer"
+                @click="useFieldValue(row.field_name, val)"
+                :type="val === row.current_value ? 'success' : ''"
+              >
+                {{ val }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="count" label="值数量" width="100" align="center" />
+        <el-table-column label="置顶" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.is_pinned" type="warning" size="small">已置顶</el-tag>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div v-if="!fieldValuesList.length" class="text-center py-5 text-muted">
+        <el-empty description="暂无有值的字段" />
+      </div>
+
+      <template #footer>
+        <el-button @click="fieldValuesDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -795,10 +898,13 @@ const DICT_FIELDS = new Set([
 // 字段配置（从后端动态加载）
 const allFields = ref([])
 
+// 字段备注映射表 {字段名: 备注内容}
+const fieldRemarkMap = reactive({})
+
 // 从后端加载字段配置
 const loadFieldMeta = async () => {
   try {
-    // 获取字段元数据（label_cn, es_field, db_cn）
+    // 获取字段元数据（label_cn, es_field, db_cn, remark）
     const metaResponse = await fetch('/kafka-generator/field-meta')
     const metaResult = await metaResponse.json()
     const fieldMeta = metaResult.success ? metaResult.data : {}
@@ -812,6 +918,10 @@ const loadFieldMeta = async () => {
     if (fieldOrder.length > 0) {
       allFields.value = fieldOrder.map(fieldName => {
         const meta = fieldMeta[fieldName] || {}
+        // 保存备注到映射表
+        if (meta.remark) {
+          fieldRemarkMap[fieldName] = meta.remark
+        }
         return {
           name: fieldName,
           label: meta.db_cn || meta.label_cn || fieldName,
@@ -980,16 +1090,157 @@ const remarkContent = ref('')
 const savingRemark = ref(false)
 const lastGeneratedHistoryId = ref(null)  // 保存最近一次生成的历史记录ID
 
+// 字段备注编辑相关
+const fieldRemarkDialogVisible = ref(false)
+const currentFieldRemarkName = ref('')
+const currentFieldRemarkMetaId = ref(null)
+const fieldRemarkDialogValue = ref('')
+const savingFieldRemark = ref(false)
+
+// 打开字段备注编辑对话框
+const openRemarkEditDialog = async (fieldName) => {
+  currentFieldRemarkName.value = fieldName
+  fieldRemarkDialogValue.value = fieldRemarkMap[fieldName] || ''
+  
+  // 获取字段元数据ID
+  try {
+    const response = await fetch('/kafka-generator/field-meta/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        keyword: fieldName,
+        page: 1,
+        per_page: 100
+      })
+    })
+    const result = await response.json()
+    if (result.success) {
+      const field = result.data.list.find(f => f.kafka_field === fieldName)
+      if (field) {
+        currentFieldRemarkMetaId.value = field.id
+      }
+    }
+  } catch (error) {
+    console.error('获取字段元数据ID失败:', error)
+  }
+  
+  fieldRemarkDialogVisible.value = true
+}
+
+// 保存字段备注
+const saveFieldRemark = async () => {
+  // 二次确认
+  try {
+    await ElMessageBox.confirm(
+      `确定要将字段 "${currentFieldRemarkName.value}" 的备注保存为：\n"${fieldRemarkDialogValue.value || '空'}" 吗？`,
+      '确认保存',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return // 用户取消
+  }
+  
+  savingFieldRemark.value = true
+  try {
+    // 如果没有meta_id，需要先获取字段列表找到对应的ID
+    if (!currentFieldRemarkMetaId.value) {
+      const response = await fetch('/kafka-generator/field-meta/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          keyword: currentFieldRemarkName.value,
+          page: 1,
+          per_page: 100
+        })
+      })
+      const result = await response.json()
+      if (result.success) {
+        const field = result.data.list.find(f => f.kafka_field === currentFieldRemarkName.value)
+        if (field) {
+          currentFieldRemarkMetaId.value = field.id
+        } else {
+          ElMessage.error('未找到该字段的元数据记录')
+          return
+        }
+      }
+    }
+    
+    // 调用更新接口
+    const response = await fetch(`/kafka-generator/field-meta/${currentFieldRemarkMetaId.value}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        remark: fieldRemarkDialogValue.value
+      })
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      // 更新本地映射表
+      fieldRemarkMap[currentFieldRemarkName.value] = fieldRemarkDialogValue.value
+      ElMessage.success('备注保存成功')
+      fieldRemarkDialogVisible.value = false
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存字段备注失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    savingFieldRemark.value = false
+  }
+}
+
 // 内容查看弹窗相关
 const contentDialogVisible = ref(false)
 const contentDialogTitle = ref('')
 const contentData = ref('')
+
+// 所有字段选项弹窗相关
+const fieldValuesDialogVisible = ref(false)
+const fieldValuesList = ref([])
 
 // 显示内容弹窗
 const showContentDialog = (title, data) => {
   contentDialogTitle.value = title
   contentData.value = data || ''
   contentDialogVisible.value = true
+}
+
+// 显示所有有值的字段选项
+const showAllFieldValues = async () => {
+  try {
+    const response = await fetch('/kafka-generator/field-values')
+    const result = await response.json()
+    
+    if (result.success) {
+      fieldValuesList.value = result.data.fields || []
+      fieldValuesDialogVisible.value = true
+    } else {
+      ElMessage.error(result.message || '加载字段选项失败')
+    }
+  } catch (error) {
+    console.error('加载字段选项错误:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  }
+}
+
+// 使用字段值
+const useFieldValue = (fieldName, value) => {
+  // 设置字段值
+  fieldValues[fieldName] = value
+  
+  // 保存到数据库
+  onFieldChange(fieldName, value)
+  
+  ElMessage.success(`已填充 ${fieldName} = ${value}`)
+  
+  // 关闭弹窗
+  fieldValuesDialogVisible.value = false
 }
 
 // 当前筛选的字段名（用于动态标题）
@@ -2758,5 +3009,21 @@ onMounted(() => {
     display: flex;
     gap: 10px;
   }
+}
+
+/* 字段选项弹窗样式 */
+.current-value {
+  color: #67c23a;
+  font-weight: 600;
+}
+
+.values-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.text-muted {
+  color: #909399;
 }
 </style>

@@ -50,7 +50,13 @@
     <!-- 操作按钮区域 -->
     <el-card class="actions-card" shadow="hover">
       <template #header>
-        <span><el-icon><Operation /></el-icon> 部署操作</span>
+        <div class="card-header">
+          <span><el-icon><Operation /></el-icon> 部署操作</span>
+          <el-button size="small" @click="showConfigDialog">
+            <el-icon><Setting /></el-icon>
+            基础配置
+          </el-button>
+        </div>
       </template>
       
       <div class="action-buttons">
@@ -145,15 +151,35 @@
       <template #header>
         <div class="card-header">
           <span><el-icon><View /></el-icon> 服务器日志</span>
-          <el-select v-model="serverLogType" size="small" style="width: 150px">
-            <el-option label="后端日志" value="backend" />
-            <el-option label="Nginx访问" value="nginx" />
-            <el-option label="Nginx错误" value="error" />
-          </el-select>
-          <el-button size="small" @click="loadServerLogs">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
+          <div class="log-controls">
+            <el-switch
+              v-model="autoRefresh"
+              active-text="自动刷新"
+              @change="toggleAutoRefresh"
+            />
+            <el-select 
+              v-model="refreshInterval" 
+              size="small" 
+              style="width: 120px"
+              :disabled="!autoRefresh"
+              @change="updateRefreshInterval"
+            >
+              <el-option label="每 5 秒" :value="5000" />
+              <el-option label="每 10 秒" :value="10000" />
+              <el-option label="每 30 秒" :value="30000" />
+              <el-option label="每 1 分钟" :value="60000" />
+              <el-option label="每 5 分钟" :value="300000" />
+            </el-select>
+            <el-select v-model="serverLogType" size="small" style="width: 150px" @change="loadServerLogs">
+              <el-option label="后端日志" value="backend" />
+              <el-option label="Nginx访问" value="nginx" />
+              <el-option label="Nginx错误" value="error" />
+            </el-select>
+            <el-button size="small" @click="loadServerLogs">
+              <el-icon><Refresh /></el-icon>
+              刷新
+            </el-button>
+          </div>
         </div>
       </template>
       
@@ -191,6 +217,75 @@
         </el-table-column>
       </el-table>
     </el-card>
+
+    <!-- 配置对话框 -->
+    <el-dialog
+      v-model="configDialogVisible"
+      title="部署基础配置"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="deployConfig" label-width="120px">
+        <el-divider content-position="left">服务器信息</el-divider>
+        
+        <el-form-item label="远程用户">
+          <el-input v-model="deployConfig.remote_user" placeholder="root" />
+        </el-form-item>
+        
+        <el-form-item label="远程主机">
+          <el-input v-model="deployConfig.remote_host" placeholder="8.146.228.47" />
+        </el-form-item>
+        
+        <el-form-item label="远程路径">
+          <el-input v-model="deployConfig.remote_path" placeholder="/project/wordToWord" />
+        </el-form-item>
+        
+        <el-form-item label="备份目录">
+          <el-input v-model="deployConfig.backup_dir" placeholder="/project/backups" />
+        </el-form-item>
+        
+        <el-divider content-position="left">端口配置</el-divider>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="本地端口">
+              <el-input-number v-model="deployConfig.local_port" :min="1" :max="65535" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Nginx端口">
+              <el-input-number v-model="deployConfig.nginx_port" :min="1" :max="65535" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-divider content-position="left">高级配置</el-divider>
+        
+        <el-form-item label="Git分支">
+          <el-input v-model="deployConfig.git_branch" placeholder="q/dev" />
+        </el-form-item>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="SSH超时(秒)">
+              <el-input-number v-model="deployConfig.ssh_timeout" :min="10" :max="300" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="部署超时(秒)">
+              <el-input-number v-model="deployConfig.deploy_timeout" :min="60" :max="600" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="configDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveConfig" :loading="savingConfig">
+          保存配置
+        </el-button>
+      </template>
+    </el-dialog>
 
     <!-- 部署确认对话框 -->
     <el-dialog
@@ -254,8 +349,23 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Upload, Monitor, Operation, Cpu, Refresh, FolderAdd,
   SwitchButton, Download, Document, Delete, Bottom,
-  View, Folder
+  View, Folder, Setting
 } from '@element-plus/icons-vue'
+
+// 配置
+const configDialogVisible = ref(false)
+const savingConfig = ref(false)
+const deployConfig = reactive({
+  remote_user: 'root',
+  remote_host: '8.146.228.47',
+  remote_path: '/project/wordToWord',
+  backup_dir: '/project/backups',
+  local_port: 5004,
+  nginx_port: 5173,
+  git_branch: 'q/dev',
+  ssh_timeout: 60,
+  deploy_timeout: 120
+})
 
 // 部署状态
 const deployStatus = reactive({
@@ -274,6 +384,9 @@ let eventSource = null
 // 服务器日志
 const serverLogs = ref('')
 const serverLogType = ref('backend')
+const autoRefresh = ref(false)
+const refreshInterval = ref(10000) // 默认 10 秒
+let autoRefreshTimer = null
 
 // 备份列表
 const backups = ref([])
@@ -288,6 +401,49 @@ const deploying = ref(false)
 const restoreDialogVisible = ref(false)
 const selectedBackup = ref(null)
 const restoring = ref(false)
+
+// 加载部署配置
+const loadDeployConfig = async () => {
+  try {
+    const response = await fetch('/deploy-config/config')
+    const result = await response.json()
+    if (result.success) {
+      Object.assign(deployConfig, result.data)
+    }
+  } catch (error) {
+    console.error('加载部署配置失败:', error)
+  }
+}
+
+// 显示配置对话框
+const showConfigDialog = () => {
+  configDialogVisible.value = true
+}
+
+// 保存配置
+const saveConfig = async () => {
+  savingConfig.value = true
+  try {
+    const response = await fetch('/deploy-config/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(deployConfig)
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('配置保存成功')
+      configDialogVisible.value = false
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    console.error('保存配置失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    savingConfig.value = false
+  }
+}
 
 // 加载部署状态
 const loadDeployStatus = async () => {
@@ -351,6 +507,37 @@ const scrollToBottom = () => {
   })
 }
 
+// 切换自动刷新
+const toggleAutoRefresh = (enabled) => {
+  if (enabled) {
+    loadServerLogs() // 立即加载一次
+    autoRefreshTimer = setInterval(() => {
+      loadServerLogs()
+    }, refreshInterval.value)
+    ElMessage.success(`已开启自动刷新（每${refreshInterval.value / 1000}秒）`)
+  } else {
+    if (autoRefreshTimer) {
+      clearInterval(autoRefreshTimer)
+      autoRefreshTimer = null
+    }
+    ElMessage.info('已关闭自动刷新')
+  }
+}
+
+// 更新刷新间隔
+const updateRefreshInterval = () => {
+  if (autoRefresh.value) {
+    // 重新设置定时器
+    if (autoRefreshTimer) {
+      clearInterval(autoRefreshTimer)
+    }
+    autoRefreshTimer = setInterval(() => {
+      loadServerLogs()
+    }, refreshInterval.value)
+    ElMessage.success(`刷新间隔已更新为每${refreshInterval.value / 1000}秒`)
+  }
+}
+
 // 加载服务器日志
 const loadServerLogs = async () => {
   try {
@@ -359,11 +546,15 @@ const loadServerLogs = async () => {
     if (result.success) {
       serverLogs.value = result.data.logs
     } else {
-      ElMessage.error(result.message)
+      if (!autoRefresh.value) {
+        ElMessage.error(result.message)
+      }
     }
   } catch (error) {
     console.error('加载服务器日志失败:', error)
-    ElMessage.error('加载失败')
+    if (!autoRefresh.value) {
+      ElMessage.error('加载失败')
+    }
   }
 }
 
@@ -577,6 +768,7 @@ const getStatusText = (status) => {
 // 初始化
 onMounted(() => {
   loadDeployStatus()
+  loadDeployConfig()
   loadLogs()
   loadBackups()
   loadServerLogs()
@@ -590,6 +782,9 @@ onUnmounted(() => {
   }
   if (statusPollingInterval) {
     clearInterval(statusPollingInterval)
+  }
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
   }
 })
 </script>
@@ -639,6 +834,12 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
+}
+
+.log-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .status-item {
