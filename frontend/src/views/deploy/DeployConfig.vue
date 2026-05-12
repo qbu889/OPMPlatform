@@ -175,9 +175,27 @@
               <el-option label="Nginx访问" value="nginx" />
               <el-option label="Nginx错误" value="error" />
             </el-select>
+            <el-select 
+              v-model="logLines" 
+              size="small" 
+              style="width: 120px"
+              @change="loadServerLogs"
+            >
+              <el-option label="50行" :value="50" />
+              <el-option label="100行" :value="100" />
+              <el-option label="200行" :value="200" />
+              <el-option label="500行" :value="500" />
+              <el-option label="1000行" :value="1000" />
+              <el-option label="2000行" :value="2000" />
+              <el-option label="5000行" :value="5000" />
+            </el-select>
             <el-button size="small" @click="loadServerLogs">
               <el-icon><Refresh /></el-icon>
               刷新
+            </el-button>
+            <el-button size="small" type="primary" @click="downloadServerLogs">
+              <el-icon><Download /></el-icon>
+              下载
             </el-button>
           </div>
         </div>
@@ -384,6 +402,7 @@ let eventSource = null
 // 服务器日志
 const serverLogs = ref('')
 const serverLogType = ref('backend')
+const logLines = ref(100) // 默认显示100行
 const autoRefresh = ref(false)
 const refreshInterval = ref(10000) // 默认 10 秒
 let autoRefreshTimer = null
@@ -541,7 +560,7 @@ const updateRefreshInterval = () => {
 // 加载服务器日志
 const loadServerLogs = async () => {
   try {
-    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=100`)
+    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}`)
     const result = await response.json()
     if (result.success) {
       serverLogs.value = result.data.logs
@@ -555,6 +574,27 @@ const loadServerLogs = async () => {
     if (!autoRefresh.value) {
       ElMessage.error('加载失败')
     }
+  }
+}
+
+// 下载服务器日志
+const downloadServerLogs = async () => {
+  try {
+    const downloadLines = logLines.value * 10 // 下载更多行数
+    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}`
+    
+    // 创建隐藏的a标签进行下载
+    const link = document.createElement('a')
+    link.href = url
+    link.download = ''
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    ElMessage.success(`正在下载最近 ${downloadLines} 行日志...`)
+  } catch (error) {
+    console.error('下载日志失败:', error)
+    ElMessage.error('下载失败')
   }
 }
 
@@ -917,20 +957,23 @@ onUnmounted(() => {
 }
 
 .server-logs-content {
-  height: 300px;
+  height: 400px;
   overflow-y: auto;
-  background: #f5f7fa;
+  background: #1e1e1e;
   border-radius: 8px;
   padding: 15px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.6;
+  color: #d4d4d4;
 }
 
 .server-logs-content pre {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
+  /* 优化大文本性能 */
+  content-visibility: auto;
 }
 
 .mb-3 {

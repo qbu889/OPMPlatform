@@ -37,12 +37,17 @@
             <template #prepend>
               <el-icon><Clock /></el-icon>
             </template>
-            <template #append>
-              <el-button @click="insertCurrentTime" title="插入当前时间">
-                <el-icon><Clock /></el-icon>
-              </el-button>
-            </template>
           </el-input>
+          <div class="time-actions" style="margin-top: 8px; display: flex; gap: 8px;">
+            <el-button size="small" @click="insertCurrentTime">
+              <el-icon><Clock /></el-icon>
+              当前时间
+            </el-button>
+            <el-button size="small" type="danger" plain @click="subtractTwoDays">
+              <el-icon><Clock /></el-icon>
+              反追单（-2天）
+            </el-button>
+          </div>
           <div class="form-hint">例如：2026/01/12 16:00 或 2026/01/12 16:00:03</div>
         </el-form-item>
         
@@ -133,6 +138,23 @@ const validateDateTimeFormat = (dateTimeStr) => {
 // 插入当前时间
 const insertCurrentTime = () => {
   const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  
+  // 格式：YYYY/MM/DD HH:MM:SS
+  formData.eventTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+}
+
+// 反追单数据：当前时间减两天
+const subtractTwoDays = () => {
+  const now = new Date()
+  // 减去2天
+  now.setDate(now.getDate() - 2)
+  
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const day = String(now.getDate()).padStart(2, '0')

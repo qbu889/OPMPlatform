@@ -762,8 +762,16 @@ def restart_service():
 @deploy_config_bp.route('/server-logs', methods=['GET'])
 def get_server_logs():
     """获取服务器日志"""
-    lines = request.args.get('lines', 50, type=int)
+    lines = request.args.get('lines', 100, type=int)
     log_type = request.args.get('type', 'backend')  # backend, nginx, error
+    
+    # 限制最大行数，防止性能问题
+    MAX_LINES = 10000
+    if lines > MAX_LINES:
+        return jsonify({
+            'success': False,
+            'message': f'查询行数不能超过{MAX_LINES}行'
+        }), 400
     
     try:
         if log_type == 'backend':
@@ -775,14 +783,15 @@ def get_server_logs():
         else:
             cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
         
-        success, stdout, stderr = ssh_command(cmd)
+        success, stdout, stderr = ssh_command(cmd, timeout=30)
         
         if success:
             return jsonify({
                 'success': True,
                 'data': {
                     'logs': stdout,
-                    'lines': lines,
+                    'lines': len(stdout.split('\n')) if stdout else 0,
+                    'requested_lines': lines,
                     'type': log_type
                 }
             })
@@ -793,6 +802,77 @@ def get_server_logs():
             }), 500
             
     except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@deploy_config_bp.route('/server-logs/download', methods=['GET'])
+def download_server_logs():
+    """下载服务器日志文件"""
+    log_type = request.args.get('type', 'backend')  # backend, nginx, error
+    lines = request.args.get('lines', 1000, type=int)
+    
+    # 限制最大行数
+    MAX_LINES = 50000
+    if lines > MAX_LINES:
+        return jsonify({
+            'success': False,
+            'message': f'下载行数不能超过{MAX_LINES}行'
+        }), 400
+    
+    try:
+        import tempfile
+        
+        # 确定日志文件路径
+        if log_type == 'backend':
+            log_file = f"{REMOTE_PATH}/logs/backend.log"
+            filename_prefix = "backend"
+        elif log_type == 'nginx':
+            log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
+            filename_prefix = "nginx_access"
+        elif log_type == 'error':
+            log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
+            filename_prefix = "nginx_error"
+        else:
+            log_file = f"{REMOTE_PATH}/logs/backend.log"
+            filename_prefix = "backend"
+        
+        # 创建临时文件
+        temp_dir = tempfile.mkdtemp()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        temp_file = os.path.join(temp_dir, f"{filename_prefix}_{timestamp}.log")
+        
+        # 从远程服务器获取日志并保存到临时文件
+        if lines > 0:
+            cmd = f"tail -n {lines} {log_file} > {temp_file}"
+        else:
+            cmd = f"cp {log_file} {temp_file}"
+        
+        success, stdout, stderr = ssh_command(cmd, timeout=60)
+        
+        if success and os.path.exists(temp_file):
+            # 返回文件供下载
+            from flask import send_file
+            return send_file(
+                temp_file,
+                as_attachment=True,
+                download_name=f"{filename_prefix}_{timestamp}.log",
+                mimetype='text/plain'
+            )
+        else:
+            # 清理临时文件
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            os.rmdir(temp_dir)
+            
+            return jsonify({
+                'success': False,
+                'message': f'下载日志失败: {stderr}'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"下载日志失败: {e}")
         return jsonify({
             'success': False,
             'message': str(e)

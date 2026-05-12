@@ -318,7 +318,7 @@
           </el-button>
           <el-button type="primary" @click="openRemarkDialog">
             <el-icon><Edit /></el-icon>
-            添加备注
+            {{ currentGeneratedRemark ? '修改备注' : '添加备注' }}
           </el-button>
         </div>
         <el-button type="danger" @click="regenerateMessage">
@@ -428,7 +428,7 @@
     <!-- 备注编辑弹窗 -->
     <el-dialog
       v-model="remarkDialogVisible"
-      title="添加备注"
+      :title="currentGeneratedRemark ? '修改备注' : '添加备注'"
       width="50%"
       :close-on-click-modal="false"
     >
@@ -1089,6 +1089,7 @@ const remarkDialogVisible = ref(false)
 const remarkContent = ref('')
 const savingRemark = ref(false)
 const lastGeneratedHistoryId = ref(null)  // 保存最近一次生成的历史记录ID
+const currentGeneratedRemark = ref('')  // 保存当前生成记录的备注
 
 // 字段备注编辑相关
 const fieldRemarkDialogVisible = ref(false)
@@ -1486,6 +1487,8 @@ const generateMessage = async () => {
       // 保存历史记录ID
       if (result.history_id) {
         lastGeneratedHistoryId.value = result.history_id
+        // 获取当前记录的备注
+        currentGeneratedRemark.value = result.remark || ''
       }
 
       // 处理测试前缀
@@ -1522,6 +1525,8 @@ const generateMessage = async () => {
 
 // 重新生成
 const regenerateMessage = () => {
+  // 清空当前备注，因为会生成新的记录
+  currentGeneratedRemark.value = ''
   generateMessage()
 }
 
@@ -2075,7 +2080,8 @@ const openRemarkDialog = () => {
     ElMessage.warning('请先生成 Kafka 消息')
     return
   }
-  remarkContent.value = ''
+  // 如果已有备注，则填充到输入框
+  remarkContent.value = currentGeneratedRemark.value || ''
   remarkDialogVisible.value = true
 }
 
@@ -2102,6 +2108,8 @@ const saveRemarkFromResult = async () => {
     const result = await response.json()
     if (result.success) {
       ElMessage.success('备注已保存')
+      // 更新当前备注
+      currentGeneratedRemark.value = remarkContent.value
       remarkDialogVisible.value = false
       remarkContent.value = ''
     } else {
