@@ -34,6 +34,7 @@ DEFAULT_CONFIG = {
     'deploy_timeout': 120
 }
 
+
 def get_deploy_config():
     """获取配置"""
     if CONFIG_FILE.exists():
@@ -44,10 +45,12 @@ def get_deploy_config():
             pass
     return DEFAULT_CONFIG.copy()
 
+
 def save_deploy_config(config):
     """保存配置"""
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
+
 
 # 加载配置
 config = get_deploy_config()
@@ -71,21 +74,22 @@ deploy_status = {
     'last_deploy_status': None
 }
 
+
 def ssh_command(cmd, timeout=None):
     """执行SSH远程命令（如果在本地则直接执行）"""
     if timeout is None:
         timeout = config.get('ssh_timeout', DEFAULT_CONFIG['ssh_timeout'])
-    
+
     # 检查是否是本地执行：通过尝试读取 REMOTE_PATH 下的文件来判断
     # 如果 REMOTE_PATH 存在且可访问，说明已经在目标服务器上
     is_local = os.path.exists(REMOTE_PATH)
-    
+
     # 强制写入调试信息到文件
     with open('/tmp/ssh_debug.log', 'a') as f:
         f.write(f"{datetime.now()} - is_local: {is_local}, REMOTE_PATH: {REMOTE_PATH}, cmd: {cmd[:50]}\n")
-    
+
     logger.info(f"ssh_command - is_local: {is_local}, REMOTE_PATH: {REMOTE_PATH}")
-    
+
     if is_local:
         # 本地直接执行
         try:
@@ -103,7 +107,7 @@ def ssh_command(cmd, timeout=None):
             logger.warning(f"本地执行命令失败: {e}, 尝试 SSH")
             # 如果本地执行失败，回退到 SSH
             pass
-    
+
     # 远程执行（SSH）
     logger.info(f"使用 SSH 执行: {config['remote_user']}@{config['remote_host']}")
     full_cmd = f'ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no {config["remote_user"]}@{config["remote_host"]} "{cmd}"'
@@ -119,6 +123,7 @@ def ssh_command(cmd, timeout=None):
     except Exception as e:
         return False, "", str(e)
 
+
 def add_log(message, level='info'):
     """添加日志"""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -131,6 +136,7 @@ def add_log(message, level='info'):
     # 只保留最近100条日志
     if len(deploy_status['logs']) > 100:
         deploy_status['logs'] = deploy_status['logs'][-100:]
+
 
 @deploy_config_bp.route('/status')
 def get_deploy_status():
@@ -146,6 +152,7 @@ def get_deploy_status():
         }
     })
 
+
 @deploy_config_bp.route('/logs')
 def get_deploy_logs():
     """获取部署日志"""
@@ -157,9 +164,11 @@ def get_deploy_logs():
         }
     })
 
+
 @deploy_config_bp.route('/logs/stream')
 def stream_logs():
     """实时日志流（SSE）"""
+
     def generate():
         last_count = 0
         while True:
@@ -170,15 +179,16 @@ def stream_logs():
                     yield f"data: {json.dumps(log)}\n\n"
                 last_count = current_count
             time.sleep(1)
-    
+
     return Response(generate(), mimetype='text/event-stream')
+
 
 @deploy_config_bp.route('/backups', methods=['GET'])
 def list_backups():
     """列出所有备份版本"""
     try:
         success, stdout, stderr = ssh_command(f"ls -lt {BACKUP_DIR}/*.tar.gz 2>/dev/null | head -50")
-        
+
         backups = []
         if success and stdout:
             for line in stdout.split('\n'):
@@ -188,11 +198,11 @@ def list_backups():
                         filename = parts[-1]
                         size = parts[4]
                         date_str = ' '.join(parts[5:8])
-                        
+
                         # 解析文件名中的时间戳
                         backup_name = os.path.basename(filename)
                         timestamp_str = backup_name.replace('wordToWord_backup_', '').replace('.tar.gz', '')
-                        
+
                         backups.append({
                             'filename': backup_name,
                             'path': filename,
@@ -201,7 +211,7 @@ def list_backups():
                             'timestamp': timestamp_str,
                             'display_name': f"备份 {timestamp_str}"
                         })
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -216,6 +226,7 @@ def list_backups():
             'message': str(e)
         }), 500
 
+
 @deploy_config_bp.route('/deploy', methods=['POST'])
 def start_deploy():
     """开始部署"""
@@ -224,11 +235,11 @@ def start_deploy():
             'success': False,
             'message': '部署正在进行中，请稍后再试'
         }), 400
-    
+
     data = request.get_json()
     deploy_type = data.get('type', 'fast')  # fast, full, restore
     backup_file = data.get('backup_file')  # 恢复时指定备份文件
-    
+
     # 启动部署线程
     thread = threading.Thread(
         target=execute_deploy,
@@ -236,11 +247,12 @@ def start_deploy():
         daemon=True
     )
     thread.start()
-    
+
     return jsonify({
         'success': True,
         'message': '部署任务已启动'
     })
+
 
 def execute_deploy(deploy_type, backup_file=None):
     """执行部署"""
@@ -249,17 +261,17 @@ def execute_deploy(deploy_type, backup_file=None):
         deploy_status['logs'] = []
         deploy_status['progress'] = 0
         deploy_status['last_deploy_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
+
         if deploy_type == 'restore' and backup_file:
             execute_restore(backup_file)
         elif deploy_type == 'full':
             execute_full_deploy()
         else:
             execute_fast_deploy()
-        
+
         deploy_status['last_deploy_status'] = 'success'
         add_log('✅ 部署完成！', 'success')
-        
+
     except Exception as e:
         logger.error(f"部署失败: {e}")
         add_log(f'❌ 部署失败: {str(e)}', 'error')
@@ -268,61 +280,62 @@ def execute_deploy(deploy_type, backup_file=None):
         deploy_status['is_deploying'] = False
         deploy_status['progress'] = 100
 
+
 def execute_fast_deploy(skip_initial_steps=False):
     """执行快速部署
-    
+
     Args:
         skip_initial_steps: 是否跳过前面的步骤（由 execute_full_deploy 调用时使用）
     """
     if not skip_initial_steps:
         add_log('🚀 开始快速部署...', 'info')
         add_log('=' * 50, 'info')
-        
+
         # ====== 步骤 1: 检测变更文件 ======
         deploy_status['current_step'] = '检测变更文件'
         deploy_status['progress'] = 10
         add_log('📝 步骤 1: 检测变更文件', 'info')
-        
+
         # 获取最新提交信息
         _, last_commit, _ = run_local_command("git log -1 --oneline", cwd=str(PROJECT_ROOT))
         if last_commit:
             add_log(f'   最新提交: {last_commit}', 'info')
-        
+
         _, changed_files, _ = run_local_command(
             "git diff --name-only HEAD~1 HEAD",
             cwd=str(PROJECT_ROOT)
         )
-        
+
         if not changed_files:
             _, changed_files, _ = run_local_command(
                 "git ls-files --modified",
                 cwd=str(PROJECT_ROOT)
             )
-        
+
         if not changed_files:
             add_log('️ 未检测到变更文件，将使用默认核心文件', 'warning')
             changed_files = "app.py config.py routes/kafka/kafka_generator_routes.py"
-        
+
         files = [f.strip() for f in changed_files.split('\n') if f.strip()]
         add_log(f'📦 检测到 {len(files)} 个变更文件', 'info')
-        
+
         # 显示文件列表（前20个）
         for i, f in enumerate(files[:20]):
             add_log(f'   - {f}', 'info')
         if len(files) > 20:
             add_log(f'   ... 还有 {len(files) - 20} 个文件', 'info')
-        
+
         # 分类文件
         backend_files = [f for f in files if f.endswith('.py')]
         frontend_files = [f for f in files if f.startswith('frontend/src/') or f.endswith('.vue') or f.endswith('.js')]
-        
+
         add_log(f'   后端文件: {len(backend_files)} 个', 'info')
         add_log(f'   前端文件: {len(frontend_files)} 个', 'info')
     else:
         # 从完整部署调用，进度从 20% 开始
         backend_files = []
         frontend_files = []
-    
+
     # ====== 步骤 2: 创建备份 ======
     deploy_status['current_step'] = '创建备份'
     deploy_status['progress'] = 20
@@ -331,19 +344,19 @@ def execute_fast_deploy(skip_initial_steps=False):
     else:
         add_log('', 'info')
         add_log('📝 步骤 2: 创建远程备份', 'info')
-    
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     backup_name = f"wordToWord_backup_{timestamp}.tar.gz"
     backup_path = f"{BACKUP_DIR}/{backup_name}"
-    
+
     backup_cmd = f"""mkdir -p {BACKUP_DIR} && cd /project && tar -czf {backup_path} --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='*.pyc' --exclude='logs/*.log' wordToWord/"""
-    
+
     success, stdout, stderr = ssh_command(backup_cmd, timeout=120)
     if success:
         add_log(f'✅ 备份创建成功: {backup_name}', 'success')
     else:
         add_log(f'⚠️ 备份可能有问题: {stderr[:100]}', 'warning')
-    
+
     # ====== 步骤 3: 上传后端文件 ======
     if backend_files:
         deploy_status['current_step'] = '上传后端文件'
@@ -351,7 +364,7 @@ def execute_fast_deploy(skip_initial_steps=False):
         add_log('', 'info')
         add_log('📝 步骤 3: 上传后端文件（打包方式）', 'info')
         add_log(f'   准备上传 {len(backend_files)} 个后端文件...', 'info')
-        
+
         # 准备文件列表
         add_log('   准备上传的文件列表:', 'info')
         upload_list = []
@@ -362,14 +375,14 @@ def execute_fast_deploy(skip_initial_steps=False):
                 add_log(f'      + {file}', 'info')
             else:
                 add_log(f'      ⚠️ {file} (文件不存在，跳过)', 'warning')
-        
+
         # 打包上传
         if upload_list:
             import tempfile
             import shutil
             temp_dir = tempfile.mkdtemp()
             tar_path = os.path.join(temp_dir, "backend_update.tar.gz")
-            
+
             try:
                 # 复制文件到临时目录
                 for file in upload_list:
@@ -377,14 +390,14 @@ def execute_fast_deploy(skip_initial_steps=False):
                     dest = Path(temp_dir) / file
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dest)
-                
+
                 # 打包
                 add_log('   正在打包...', 'info')
                 success, _, stderr = run_local_command(
                     f"tar -czf {tar_path} .",
                     cwd=temp_dir
                 )
-                
+
                 if not success:
                     add_log(f'   ❌ 打包失败: {stderr}', 'error')
                 else:
@@ -394,14 +407,14 @@ def execute_fast_deploy(skip_initial_steps=False):
                         add_log('   压缩包内容预览:', 'info')
                         for line in content.split('\n')[:5]:
                             add_log(f'      {line}', 'info')
-                    
+
                     # 上传压缩包
                     add_log('   上传压缩包到服务器...', 'info')
                     remote_tar = "/tmp/backend_update.tar.gz"
                     flag = "-r"
                     scp_cmd = f"scp -o LogLevel=ERROR -o StrictHostKeyChecking=no {flag} {tar_path} {REMOTE_USER}@{REMOTE_HOST}:{remote_tar}"
                     scp_success, _, _ = run_local_command(scp_cmd)
-                    
+
                     if not scp_success:
                         add_log('   ❌ 上传压缩包失败', 'error')
                     else:
@@ -409,10 +422,10 @@ def execute_fast_deploy(skip_initial_steps=False):
                         add_log('   远程解压...', 'info')
                         ssh_cmd = f"""cd {REMOTE_PATH} && tar -xzf {remote_tar} && rm -f {remote_tar} && echo '解压成功'"""
                         success, stdout, stderr = ssh_command(ssh_cmd)
-                        
+
                         if success:
                             add_log('   ✅ 后端文件上传并解压成功', 'success')
-                            
+
                             # 验证关键文件（前5个）
                             add_log('   验证关键文件:', 'info')
                             for file in upload_list[:5]:
@@ -421,10 +434,10 @@ def execute_fast_deploy(skip_initial_steps=False):
                                 add_log(f'      {output}', 'info')
                         else:
                             add_log(f'    远程解压失败: {stderr}', 'error')
-                
+
             finally:
                 shutil.rmtree(temp_dir, ignore_errors=True)
-    
+
     # ====== 步骤 4: 处理前端文件 ======
     if frontend_files:
         deploy_status['current_step'] = '构建前端'
@@ -432,37 +445,37 @@ def execute_fast_deploy(skip_initial_steps=False):
         add_log('', 'info')
         add_log('📝 步骤 4: 处理前端文件', 'info')
         add_log('🔨 检测到前端文件变更，开始构建...', 'info')
-        
+
         success, stdout, stderr = run_local_command(
             "npm run build",
             cwd=str(PROJECT_ROOT / "frontend"),
             timeout=180
         )
-        
+
         if success:
             add_log('✅ 前端构建成功', 'success')
-            
+
             deploy_status['current_step'] = '上传前端文件'
             deploy_status['progress'] = 70
             add_log('📤 上传前端构建产物...', 'info')
-            
+
             # 清空远程dist
             ssh_command(f"rm -rf {REMOTE_PATH}/frontend/dist/*")
-            
+
             # 上传dist
             local_dist = str(PROJECT_ROOT / "frontend" / "dist") + "/*"
             remote_dist = f"{REMOTE_PATH}/frontend/dist/"
             flag = "-r"
             scp_cmd = f"scp -o LogLevel=ERROR -o StrictHostKeyChecking=no {flag} {local_dist} {REMOTE_USER}@{REMOTE_HOST}:{remote_dist}"
             scp_success, _, _ = run_local_command(scp_cmd, timeout=120)
-            
+
             if scp_success:
                 # 验证文件数量
                 _, remote_count, _ = ssh_command(f"find {REMOTE_PATH}/frontend/dist -type f | wc -l")
                 local_count = sum(1 for _ in (PROJECT_ROOT / "frontend" / "dist").rglob('*') if _.is_file())
-                
+
                 add_log(f'   📊 本地文件数: {local_count}, 远程文件数: {remote_count.strip()}', 'info')
-                
+
                 if remote_count.strip().isdigit() and int(remote_count.strip()) > 0:
                     add_log('✅ 前端文件上传成功', 'success')
                 else:
@@ -473,19 +486,19 @@ def execute_fast_deploy(skip_initial_steps=False):
             add_log(f'❌ 前端构建失败: {stderr[:200]}', 'error')
     else:
         add_log('ℹ️ 无前端文件变更，跳过构建', 'info')
-    
+
     # ====== 步骤 5: 重启服务 ======
     deploy_status['current_step'] = '重启服务'
     deploy_status['progress'] = 90
     add_log('', 'info')
     add_log('📝 步骤 5: 重启后端服务', 'info')
-        
+
     # 5.1 停止旧进程
     add_log('   5.1 停止现有服务...', 'info')
     ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
     add_log('   ✅ 进程已停止', 'success')
-        
+
     # 5.2 启动新服务
     add_log('   5.2 启动新服务...', 'info')
     start_cmd = f"""
@@ -495,19 +508,19 @@ def execute_fast_deploy(skip_initial_steps=False):
     nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
     echo $!
     """
-        
+
     success, pid, stderr = ssh_command(start_cmd)
     if success and pid.strip().isdigit():
         add_log(f'   ✅ 后端服务已启动 (PID: {pid.strip()})', 'success')
     else:
         add_log(f'   ️ 服务启动输出: {pid}', 'warning')
-        
+
     # 等待服务启动
     time.sleep(3)
-        
+
     # 5.3 验证服务状态
     add_log('   5.3 验证服务状态...', 'info')
-        
+
     # 检查进程
     _, processes, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | head -3")
     if processes:
@@ -516,14 +529,14 @@ def execute_fast_deploy(skip_initial_steps=False):
             add_log(f'      {line.strip()}', 'info')
     else:
         add_log('   ⚠️ 未找到后端进程', 'warning')
-        
+
     # 检查端口
     _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
     if port_check:
         add_log(f'   ✅ 端口 {LOCAL_PORT} 监听正常', 'success')
     else:
         add_log(f'   ⚠️ 端口 {LOCAL_PORT} 未监听', 'warning')
-        
+
     # 查看日志
     _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -10 logs/backend.log")
     if logs:
@@ -531,20 +544,21 @@ def execute_fast_deploy(skip_initial_steps=False):
         for line in logs.split('\n')[-10:]:
             if line.strip():
                 add_log(f'      {line}', 'info')
-        
+
     add_log('', 'info')
     add_log('=' * 50, 'info')
+
 
 def execute_full_deploy():
     """执行完整部署"""
     add_log('🚀 开始完整部署...', 'info')
     add_log('=' * 50, 'info')
-    
+
     # ====== 步骤 1: Git 提交与推送 ======
     deploy_status['current_step'] = 'Git提交'
     deploy_status['progress'] = 5
     add_log(' 步骤 1: Git 提交与推送', 'info')
-    
+
     # 检查是否有未提交的更改
     _, status, _ = run_local_command("git status --porcelain", cwd=str(PROJECT_ROOT))
     if status:
@@ -555,12 +569,12 @@ def execute_full_deploy():
         add_log('   ✅ 提交完成', 'success')
     else:
         add_log('   ℹ️ 无未提交的更改', 'info')
-    
+
     # Git推送
     deploy_status['current_step'] = 'Git推送'
     deploy_status['progress'] = 15
     add_log(' Git推送到远程仓库...', 'info')
-    
+
     # 增加超时时间到 120 秒
     success, stdout, stderr = run_local_command("git push origin q/dev", cwd=str(PROJECT_ROOT), timeout=120)
     if success:
@@ -570,50 +584,51 @@ def execute_full_deploy():
         add_log(f'   ❌ Git推送失败: {stderr[:200]}', 'error')
         add_log('   ⚠️ 继续执行后续部署步骤...', 'warning')
         deploy_status['progress'] = 20
-    
+
     # 执行快速部署的剩余步骤（跳过前面的检测步骤）
     execute_fast_deploy(skip_initial_steps=True)
+
 
 def execute_restore(backup_file):
     """执行恢复操作"""
     add_log(f'🔄 开始恢复到备份: {backup_file}', 'info')
     add_log('=' * 50, 'info')
-    
+
     # 验证备份文件存在
     backup_path = f"{BACKUP_DIR}/{backup_file}"
     _, check, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'not found'")
     if 'exists' not in check:
         add_log(f' 备份文件不存在: {backup_path}', 'error')
         return
-    
+
     # 获取备份文件信息
     _, size_info, _ = ssh_command(f"ls -lh {backup_path} | awk '{{print $5}}'")
     add_log(f' 备份文件大小: {size_info.strip()}', 'info')
-    
+
     deploy_status['current_step'] = '停止服务'
     deploy_status['progress'] = 20
     add_log('⏹️ 步骤 1: 停止当前服务...', 'info')
     ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
     add_log('   ✅ 服务已停止', 'success')
-    
+
     deploy_status['current_step'] = '恢复备份'
     deploy_status['progress'] = 50
     add_log('📦 步骤 2: 解压备份文件...', 'info')
     add_log(f'   备份路径: {backup_path}', 'info')
     add_log('    正在解压（可能需要几分钟）...', 'info')
-    
+
     restore_cmd = f"""
     cd /project
     tar -xzf {backup_path}
     echo "恢复完成"
     """
-    
+
     success, stdout, stderr = ssh_command(restore_cmd, timeout=180)
-    
+
     if success:
         add_log('   ✅ 备份恢复成功', 'success')
-        
+
         # 验证关键文件
         add_log('   验证关键文件:', 'info')
         check_files = ['app.py', 'config.py', 'routes/kafka/kafka_generator_routes.py']
@@ -623,12 +638,12 @@ def execute_restore(backup_file):
     else:
         add_log(f'   恢复失败: {stderr[:200]}', 'error')
         return
-    
+
     # 重启服务
     deploy_status['current_step'] = '重启服务'
     deploy_status['progress'] = 80
     add_log('🔄 步骤 3: 重启服务...', 'info')
-    
+
     start_cmd = f"""
     cd {REMOTE_PATH}
     source .venv/bin/activate
@@ -636,15 +651,15 @@ def execute_restore(backup_file):
     nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
     echo $!
     """
-    
+
     success, pid, stderr = ssh_command(start_cmd)
     if success and pid.strip().isdigit():
         add_log(f'   ✅ 后端服务已启动 (PID: {pid.strip()})', 'success')
     else:
         add_log(f'    服务启动输出: {pid}', 'warning')
-    
+
     time.sleep(3)
-    
+
     # 验证
     add_log('   验证服务状态:', 'info')
     _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
@@ -652,29 +667,30 @@ def execute_restore(backup_file):
         add_log(f'   ✅ 端口 {LOCAL_PORT} 监听正常', 'success')
     else:
         add_log(f'    端口 {LOCAL_PORT} 未监听', 'warning')
-    
+
     add_log('', 'info')
     add_log('=' * 50, 'info')
+
 
 def execute_create_backup():
     """创建备份"""
     add_log('💾 创建远程备份...', 'info')
     add_log('=' * 50, 'info')
-    
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     backup_name = f"wordToWord_backup_{timestamp}.tar.gz"
     backup_path = f"{BACKUP_DIR}/{backup_name}"
-    
+
     add_log(f'📦 备份文件名: {backup_name}', 'info')
     add_log(f' 备份路径: {backup_path}', 'info')
-    
+
     add_log('🔍 排除项:', 'info')
     add_log('   - node_modules/', 'info')
     add_log('   - .venv/', 'info')
     add_log('   - __pycache__/', 'info')
     add_log('   - *.pyc', 'info')
     add_log('   - logs/*.log', 'info')
-    
+
     backup_cmd = f"""
     mkdir -p {BACKUP_DIR}
     cd /project
@@ -687,10 +703,10 @@ def execute_create_backup():
         wordToWord/
     echo "备份完成"
     """
-    
+
     add_log('⏳ 正在创建备份（可能需要几分钟）...', 'info')
     success, stdout, stderr = ssh_command(backup_cmd, timeout=180)
-    
+
     if success:
         # 获取备份文件大小
         _, size_info, _ = ssh_command(f"ls -lh {backup_path} | awk '{{print $5}}'")
@@ -702,6 +718,7 @@ def execute_create_backup():
         add_log(f'❌ 备份失败: {stderr[:200]}', 'error')
         return None
 
+
 @deploy_config_bp.route('/backup', methods=['POST'])
 def create_backup():
     """创建备份"""
@@ -710,14 +727,15 @@ def create_backup():
             'success': False,
             'message': '部署正在进行中，请稍后再试'
         }), 400
-    
+
     thread = threading.Thread(target=execute_create_backup, daemon=True)
     thread.start()
-    
+
     return jsonify({
         'success': True,
         'message': '备份任务已启动'
     })
+
 
 @deploy_config_bp.route('/restart', methods=['POST'])
 def restart_service():
@@ -727,14 +745,14 @@ def restart_service():
             'success': False,
             'message': '部署正在进行中，请稍后再试'
         }), 400
-    
+
     try:
         add_log('🔄 手动重启服务...', 'info')
-        
+
         # 停止
         ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
         time.sleep(2)
-        
+
         # 启动
         start_cmd = f"""
         cd {REMOTE_PATH}
@@ -742,10 +760,10 @@ def restart_service():
         export PORT={LOCAL_PORT}
         nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
         """
-        
+
         ssh_command(start_cmd)
         time.sleep(3)
-        
+
         # 验证
         _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
         if port_check:
@@ -754,17 +772,26 @@ def restart_service():
         else:
             add_log('⚠️ 端口未监听', 'warning')
             return jsonify({'success': False, 'message': '服务重启失败，请检查日志'})
-            
+
     except Exception as e:
         add_log(f'❌ 重启失败: {str(e)}', 'error')
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
 @deploy_config_bp.route('/server-logs', methods=['GET'])
 def get_server_logs():
     """获取服务器日志"""
-    lines = request.args.get('lines', 50, type=int)
+    lines = request.args.get('lines', 100, type=int)
     log_type = request.args.get('type', 'backend')  # backend, nginx, error
-    
+
+    # 限制最大行数，防止性能问题
+    MAX_LINES = 10000
+    if lines > MAX_LINES:
+        return jsonify({
+            'success': False,
+            'message': f'查询行数不能超过{MAX_LINES}行'
+        }), 400
+
     try:
         if log_type == 'backend':
             cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
@@ -774,15 +801,16 @@ def get_server_logs():
             cmd = f"tail -n {lines} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
         else:
             cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
-        
-        success, stdout, stderr = ssh_command(cmd)
-        
+
+        success, stdout, stderr = ssh_command(cmd, timeout=30)
+
         if success:
             return jsonify({
                 'success': True,
                 'data': {
                     'logs': stdout,
-                    'lines': lines,
+                    'lines': len(stdout.split('\n')) if stdout else 0,
+                    'requested_lines': lines,
                     'type': log_type
                 }
             })
@@ -791,12 +819,85 @@ def get_server_logs():
                 'success': False,
                 'message': f'获取日志失败: {stderr}'
             }), 500
-            
+
     except Exception as e:
         return jsonify({
             'success': False,
             'message': str(e)
         }), 500
+
+
+@deploy_config_bp.route('/server-logs/download', methods=['GET'])
+def download_server_logs():
+    """下载服务器日志文件"""
+    log_type = request.args.get('type', 'backend')  # backend, nginx, error
+    lines = request.args.get('lines', 1000, type=int)
+
+    # 限制最大行数
+    MAX_LINES = 50000
+    if lines > MAX_LINES:
+        return jsonify({
+            'success': False,
+            'message': f'下载行数不能超过{MAX_LINES}行'
+        }), 400
+
+    try:
+        import tempfile
+
+        # 确定日志文件路径
+        if log_type == 'backend':
+            log_file = f"{REMOTE_PATH}/logs/backend.log"
+            filename_prefix = "backend"
+        elif log_type == 'nginx':
+            log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
+            filename_prefix = "nginx_access"
+        elif log_type == 'error':
+            log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
+            filename_prefix = "nginx_error"
+        else:
+            log_file = f"{REMOTE_PATH}/logs/backend.log"
+            filename_prefix = "backend"
+
+        # 创建临时文件
+        temp_dir = tempfile.mkdtemp()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        temp_file = os.path.join(temp_dir, f"{filename_prefix}_{timestamp}.log")
+
+        # 从远程服务器获取日志并保存到临时文件
+        if lines > 0:
+            cmd = f"tail -n {lines} {log_file} > {temp_file}"
+        else:
+            cmd = f"cp {log_file} {temp_file}"
+
+        success, stdout, stderr = ssh_command(cmd, timeout=60)
+
+        if success and os.path.exists(temp_file):
+            # 返回文件供下载
+            from flask import send_file
+            return send_file(
+                temp_file,
+                as_attachment=True,
+                download_name=f"{filename_prefix}_{timestamp}.log",
+                mimetype='text/plain'
+            )
+        else:
+            # 清理临时文件
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            os.rmdir(temp_dir)
+
+            return jsonify({
+                'success': False,
+                'message': f'下载日志失败: {stderr}'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"下载日志失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
 
 def run_local_command(cmd, cwd=None, timeout=60):
     """执行本地命令"""
@@ -813,12 +914,14 @@ def run_local_command(cmd, cwd=None, timeout=60):
     except Exception as e:
         return False, "", str(e)
 
+
 def scp_upload(local_path, remote_path, recursive=False):
     """SCP上传文件"""
     flag = "-r" if recursive else ""
     cmd = f"scp -o LogLevel=ERROR -o StrictHostKeyChecking=no {flag} {local_path} {config['remote_user']}@{config['remote_host']}:{remote_path}"
     success, _, _ = run_local_command(cmd)
     return success
+
 
 @deploy_config_bp.route('/config', methods=['GET'])
 def get_config():
@@ -828,18 +931,19 @@ def get_config():
         'data': config
     })
 
+
 @deploy_config_bp.route('/config', methods=['POST'])
 def update_config():
     """更新部署配置"""
     global REMOTE_USER, REMOTE_HOST, REMOTE_PATH, BACKUP_DIR, LOCAL_PORT, NGINX_PORT
-    
+
     data = request.get_json()
     if not data:
         return jsonify({
             'success': False,
             'message': '请求数据不能为空'
         }), 400
-    
+
     # 验证必填字段
     required_fields = ['remote_user', 'remote_host', 'remote_path', 'backup_dir', 'local_port', 'nginx_port']
     for field in required_fields:
@@ -848,7 +952,7 @@ def update_config():
                 'success': False,
                 'message': f'缺少必填字段: {field}'
             }), 400
-    
+
     # 验证端口号
     try:
         local_port = int(data['local_port'])
@@ -860,12 +964,12 @@ def update_config():
             'success': False,
             'message': f'端口号格式错误: {str(e)}'
         }), 400
-    
+
     # 更新配置
     config.update(data)
     config['local_port'] = local_port
     config['nginx_port'] = nginx_port
-    
+
     # 保存到文件
     try:
         save_deploy_config(config)
@@ -874,7 +978,7 @@ def update_config():
             'success': False,
             'message': f'保存配置失败: {str(e)}'
         }), 500
-    
+
     # 更新全局变量
     REMOTE_USER = config['remote_user']
     REMOTE_HOST = config['remote_host']
@@ -882,9 +986,9 @@ def update_config():
     BACKUP_DIR = config['backup_dir']
     LOCAL_PORT = config['local_port']
     NGINX_PORT = config['nginx_port']
-    
+
     add_log('✅ 部署配置已更新', 'success')
-    
+
     return jsonify({
         'success': True,
         'message': '配置更新成功',

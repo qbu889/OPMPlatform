@@ -175,14 +175,32 @@
               <el-option label="Nginx访问" value="nginx" />
               <el-option label="Nginx错误" value="error" />
             </el-select>
+            <el-select
+              v-model="logLines"
+              size="small"
+              style="width: 120px"
+              @change="loadServerLogs"
+            >
+              <el-option label="50行" :value="50" />
+              <el-option label="100行" :value="100" />
+              <el-option label="200行" :value="200" />
+              <el-option label="500行" :value="500" />
+              <el-option label="1000行" :value="1000" />
+              <el-option label="2000行" :value="2000" />
+              <el-option label="5000行" :value="5000" />
+            </el-select>
             <el-button size="small" @click="loadServerLogs">
               <el-icon><Refresh /></el-icon>
               刷新
             </el-button>
+            <el-button size="small" type="primary" @click="downloadServerLogs">
+              <el-icon><Download /></el-icon>
+              下载
+            </el-button>
           </div>
         </div>
       </template>
-      
+
       <div class="server-logs-content">
         <pre>{{ serverLogs }}</pre>
       </div>
@@ -199,15 +217,15 @@
           </el-button>
         </div>
       </template>
-      
+
       <el-table :data="backups" stripe max-height="400">
         <el-table-column prop="display_name" label="备份名称" min-width="200" />
         <el-table-column prop="date" label="备份时间" width="180" />
         <el-table-column prop="size" label="大小" width="120" />
         <el-table-column label="操作" width="150" align="center">
           <template #default="{ row }">
-            <el-button 
-              size="small" 
+            <el-button
+              size="small"
               type="primary"
               @click="restoreBackup(row.filename)"
             >
@@ -227,25 +245,25 @@
     >
       <el-form :model="deployConfig" label-width="120px">
         <el-divider content-position="left">服务器信息</el-divider>
-        
+
         <el-form-item label="远程用户">
           <el-input v-model="deployConfig.remote_user" placeholder="root" />
         </el-form-item>
-        
+
         <el-form-item label="远程主机">
           <el-input v-model="deployConfig.remote_host" placeholder="8.146.228.47" />
         </el-form-item>
-        
+
         <el-form-item label="远程路径">
           <el-input v-model="deployConfig.remote_path" placeholder="/project/wordToWord" />
         </el-form-item>
-        
+
         <el-form-item label="备份目录">
           <el-input v-model="deployConfig.backup_dir" placeholder="/project/backups" />
         </el-form-item>
-        
+
         <el-divider content-position="left">端口配置</el-divider>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="本地端口">
@@ -258,13 +276,13 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-divider content-position="left">高级配置</el-divider>
-        
+
         <el-form-item label="Git分支">
           <el-input v-model="deployConfig.git_branch" placeholder="q/dev" />
         </el-form-item>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="SSH超时(秒)">
@@ -278,7 +296,7 @@
           </el-col>
         </el-row>
       </el-form>
-      
+
       <template #footer>
         <el-button @click="configDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveConfig" :loading="savingConfig">
@@ -300,7 +318,7 @@
         :closable="false"
         class="mb-3"
       />
-      
+
       <template #footer>
         <el-button @click="deployDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="confirmDeploy" :loading="deploying">
@@ -316,9 +334,9 @@
       width="700px"
       :close-on-click-modal="false"
     >
-      <el-table 
-        :data="backups" 
-        stripe 
+      <el-table
+        :data="backups"
+        stripe
         max-height="400"
         highlight-current-row
         @current-change="handleBackupSelect"
@@ -327,11 +345,11 @@
         <el-table-column prop="date" label="备份时间" width="180" />
         <el-table-column prop="size" label="大小" width="120" />
       </el-table>
-      
+
       <template #footer>
         <el-button @click="restoreDialogVisible = false">取消</el-button>
-        <el-button 
-          type="primary" 
+        <el-button
+          type="primary"
           @click="confirmRestore"
           :disabled="!selectedBackup"
           :loading="restoring"
@@ -384,6 +402,7 @@ let eventSource = null
 // 服务器日志
 const serverLogs = ref('')
 const serverLogType = ref('backend')
+const logLines = ref(100) // 默认显示100行
 const autoRefresh = ref(false)
 const refreshInterval = ref(10000) // 默认 10 秒
 let autoRefreshTimer = null
@@ -429,7 +448,7 @@ const saveConfig = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(deployConfig)
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('配置保存成功')
@@ -461,11 +480,11 @@ const loadDeployStatus = async () => {
 // 连接实时日志流
 const connectLogStream = () => {
   eventSource = new EventSource('/deploy-config/logs/stream')
-  
+
   eventSource.onmessage = (event) => {
     const log = JSON.parse(event.data)
     logs.value.push(log)
-    
+
     // 自动滚动到底部
     nextTick(() => {
       if (logsContainer.value) {
@@ -473,7 +492,7 @@ const connectLogStream = () => {
       }
     })
   }
-  
+
   eventSource.onerror = (error) => {
     console.error('日志流连接错误:', error)
     eventSource.close()
@@ -541,7 +560,7 @@ const updateRefreshInterval = () => {
 // 加载服务器日志
 const loadServerLogs = async () => {
   try {
-    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=100`)
+    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}`)
     const result = await response.json()
     if (result.success) {
       serverLogs.value = result.data.logs
@@ -555,6 +574,27 @@ const loadServerLogs = async () => {
     if (!autoRefresh.value) {
       ElMessage.error('加载失败')
     }
+  }
+}
+
+// 下载服务器日志
+const downloadServerLogs = async () => {
+  try {
+    const downloadLines = logLines.value * 10 // 下载更多行数
+    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}`
+
+    // 创建隐藏的a标签进行下载
+    const link = document.createElement('a')
+    link.href = url
+    link.download = ''
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    ElMessage.success(`正在下载最近 ${downloadLines} 行日志...`)
+  } catch (error) {
+    console.error('下载日志失败:', error)
+    ElMessage.error('下载失败')
   }
 }
 
@@ -596,12 +636,12 @@ const confirmDeploy = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: deployType.value })
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('部署任务已启动，请查看实时日志')
       deployDialogVisible.value = false
-      
+
       // 开始轮询状态
       startStatusPolling()
     } else {
@@ -623,11 +663,11 @@ const createBackup = async () => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const response = await fetch('/deploy-config/backup', {
       method: 'POST'
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('备份任务已启动')
@@ -652,11 +692,11 @@ const restartService = async () => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const response = await fetch('/deploy-config/restart', {
       method: 'POST'
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('服务重启成功')
@@ -694,7 +734,7 @@ const confirmRestore = async () => {
     ElMessage.warning('请选择要恢复的备份版本')
     return
   }
-  
+
   try {
     await ElMessageBox.confirm(
       `确定要恢复到备份 "${selectedBackup.value.display_name}" 吗？此操作不可逆！`,
@@ -705,7 +745,7 @@ const confirmRestore = async () => {
         type: 'error'
       }
     )
-    
+
     restoring.value = true
     const response = await fetch('/deploy-config/deploy', {
       method: 'POST',
@@ -715,7 +755,7 @@ const confirmRestore = async () => {
         backup_file: selectedBackup.value.filename
       })
     })
-    
+
     const result = await response.json()
     if (result.success) {
       ElMessage.success('恢复任务已启动，请查看实时日志')
@@ -740,10 +780,10 @@ const startStatusPolling = () => {
   if (statusPollingInterval) {
     clearInterval(statusPollingInterval)
   }
-  
+
   statusPollingInterval = setInterval(() => {
     loadDeployStatus()
-    
+
     // 如果部署完成，停止轮询
     if (!deployStatus.is_deploying && deployStatus.progress === 100) {
       clearInterval(statusPollingInterval)
@@ -917,20 +957,23 @@ onUnmounted(() => {
 }
 
 .server-logs-content {
-  height: 300px;
+  height: 400px;
   overflow-y: auto;
-  background: #f5f7fa;
+  background: #1e1e1e;
   border-radius: 8px;
   padding: 15px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.6;
+  color: #d4d4d4;
 }
 
 .server-logs-content pre {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
+  /* 优化大文本性能 */
+  content-visibility: auto;
 }
 
 .mb-3 {

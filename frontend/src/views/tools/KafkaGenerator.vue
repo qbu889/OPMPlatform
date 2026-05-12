@@ -93,10 +93,6 @@
             <span>自定义字段</span>
           </div>
           <div>
-            <el-button size="small" @click="showAllFieldValues">
-              <el-icon><View /></el-icon>
-              查看所有字段选项
-            </el-button>
             <el-button size="small" @click="toggleAllFields">
               <el-icon><View /></el-icon>
               {{ showAllFields ? '隐藏所有字段' : '显示所有字段' }}
@@ -979,8 +975,12 @@ const toggleAllFields = () => {
 const displayFields = computed(() => {
   let fields = [...allFields.value]
   
-  // 置顶字段排前面
+  // 排序优先级: 1. 有值的字段 2. 置顶字段
   fields.sort((a, b) => {
+    const aFilled = fieldValues[a.name] ? 0 : 1
+    const bFilled = fieldValues[b.name] ? 0 : 1
+    if (aFilled !== bFilled) return aFilled - bFilled
+    
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
     return aPinned - bPinned
