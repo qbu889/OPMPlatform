@@ -205,6 +205,11 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true,
       },
+      // Deploy Config API 接口(不包括 /deploy-config 页面路由)
+      '/deploy-config': {
+        target: BACKEND_URL,
+        changeOrigin: true,
+      },
       // Markdown Upload API 接口（不包括 /markdown-upload 页面路由）
       '/markdown-upload/upload': {
         target: BACKEND_URL,
