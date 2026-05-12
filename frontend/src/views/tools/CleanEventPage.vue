@@ -37,20 +37,25 @@
             <template #prepend>
               <el-icon><Clock /></el-icon>
             </template>
-            <template #append>
-              <el-button @click="insertCurrentTime" title="插入当前时间">
-                <el-icon><Clock /></el-icon>
-              </el-button>
-            </template>
           </el-input>
+          <div class="time-actions" style="margin-top: 8px; display: flex; gap: 8px;">
+            <el-button size="small" @click="insertCurrentTime">
+              <el-icon><Clock /></el-icon>
+              当前时间
+            </el-button>
+            <el-button size="small" type="danger" plain @click="subtractTwoDays">
+              <el-icon><Clock /></el-icon>
+              反追单（-2天）
+            </el-button>
+          </div>
           <div class="form-hint">例如：2026/01/12 16:00 或 2026/01/12 16:00:03</div>
         </el-form-item>
-        
+
         <el-form-item>
-          <el-button 
-            type="primary" 
-            size="large" 
-            :loading="loading" 
+          <el-button
+            type="primary"
+            size="large"
+            :loading="loading"
             @click="handleClean"
             class="clean-button"
           >
@@ -59,7 +64,7 @@
           </el-button>
         </el-form-item>
       </el-form>
-      
+
       <!-- 错误提示 -->
       <el-alert
         v-if="errorMessage"
@@ -69,7 +74,7 @@
         show-icon
         class="error-alert"
       />
-      
+
       <!-- 结果展示 -->
       <div v-if="cleanedData" class="result-section">
         <el-divider />
@@ -139,6 +144,23 @@ const insertCurrentTime = () => {
   const hours = String(now.getHours()).padStart(2, '0')
   const minutes = String(now.getMinutes()).padStart(2, '0')
   const seconds = String(now.getSeconds()).padStart(2, '0')
+
+  // 格式：YYYY/MM/DD HH:MM:SS
+  formData.eventTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+}
+
+// 反追单数据：当前时间减两天
+const subtractTwoDays = () => {
+  const now = new Date()
+  // 减去2天
+  now.setDate(now.getDate() - 2)
+
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
   
   // 格式：YYYY/MM/DD HH:MM:SS
   formData.eventTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
@@ -149,13 +171,13 @@ const handleClean = async () => {
   errorMessage.value = ''
   cleanedData.value = ''
   copySuccess.value = false
-  
+
   // 基本验证
   if (!formData.fpValue || !formData.eventTime) {
     errorMessage.value = '请填写所有字段'
     return
   }
-  
+
   // 时间格式验证
   if (!validateDateTimeFormat(formData.eventTime)) {
     errorMessage.value = '时间格式不正确，请使用格式: YYYY/MM/DD HH:MM 或 YYYY-MM-DD HH:MM (支持带秒格式: HH:MM:SS)'
@@ -166,7 +188,7 @@ const handleClean = async () => {
   try {
     const response = await fetch('/api/clean-event', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         fp_value: formData.fpValue,
         event_time: formData.eventTime,
@@ -179,12 +201,12 @@ const handleClean = async () => {
     } else {
       cleanedData.value = JSON.stringify(result.result, null, 2)
       ElMessage.success('清洗成功')
-      
+
       // 滚动到结果区域
       setTimeout(() => {
         const resultSection = document.querySelector('.result-section')
         if (resultSection) {
-          resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          resultSection.scrollIntoView({behavior: 'smooth', block: 'nearest'})
         }
       }, 100)
     }
@@ -201,7 +223,7 @@ const handleCopy = async () => {
     ElMessage.warning('没有可复制的内容')
     return
   }
-  
+
   try {
     // 方法1：尝试使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
     if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -217,15 +239,15 @@ const handleCopy = async () => {
       document.body.appendChild(textarea)
       textarea.focus()
       textarea.select()
-      
+
       const successful = document.execCommand('copy')
       document.body.removeChild(textarea)
-      
+
       if (!successful) {
         throw new Error('execCommand 复制失败')
       }
     }
-    
+
     copySuccess.value = true
     ElMessage.success('已复制到剪贴板')
     setTimeout(() => {
@@ -448,19 +470,19 @@ const handleCopy = async () => {
   .clean-event-container {
     padding: 20px 15px;
   }
-  
+
   .page-header {
     padding: 30px 20px;
   }
-  
+
   .page-header h2 {
     font-size: 28px;
   }
-  
+
   .subtitle {
     font-size: 15px;
   }
-  
+
   :deep(.el-card__body) {
     padding: 20px 15px;
   }
