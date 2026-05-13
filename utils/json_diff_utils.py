@@ -116,8 +116,8 @@ def build_object_diff(left_obj, right_obj, side, options, path):
                     # 基本类型不同
                     tree[key] = {
                         'status': 'different',
-                        'left': left_val if side == 'left' else None,
-                        'right': right_val if side == 'right' else None,
+                        'left': left_val,
+                        'right': right_val,
                         'path': current_path,
                         'type': get_type_name(left_val)
                     }
@@ -180,8 +180,8 @@ def build_array_diff(left_arr, right_arr, side, options, path):
                 else:
                     tree.append({
                         'status': 'different',
-                        'left': left_val if side == 'left' else None,
-                        'right': right_val if side == 'right' else None,
+                        'left': left_val,
+                        'right': right_val,
                         'path': current_path,
                         'type': get_type_name(left_val)
                     })
@@ -201,8 +201,8 @@ def build_value_diff(left_val, right_val, side, options, path):
     else:
         return {
             'status': 'different',
-            'left': left_val if side == 'left' else None,
-            'right': right_val if side == 'right' else None,
+            'left': left_val,
+            'right': right_val,
             'path': path,
             'type': get_type_name(left_val)
         }
