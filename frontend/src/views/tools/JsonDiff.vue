@@ -330,7 +330,7 @@ const getStatusClass = (status) => {
 
 // 格式化值显示
 const formatValue = (value) => {
-  if (value === null || value === undefined) return '<span style="color: #909399; font-style: italic;">null</span>'
+  if (value === null || value === undefined) return ''
   if (typeof value === 'string') return `"${value}"`
   if (typeof value === 'boolean') return value.toString()
   return String(value)
