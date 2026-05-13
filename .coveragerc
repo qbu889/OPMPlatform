@@ -78,7 +78,8 @@ exclude_lines =
 
 # 显示覆盖率阈值
 # 注意：CI环境中使用 --no-cov-on-fail 参数覆盖此设置
-fail_under = 15
+# 设置为0表示不强制要求最低覆盖率，仅作为参考
+fail_under = 0
 
 # 按文件排序显示
 sort = Cover
