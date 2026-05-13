@@ -145,6 +145,14 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/json-diff" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/json-diff">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>JSON 对比工具</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 

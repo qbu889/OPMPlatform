@@ -186,6 +186,13 @@ const routes = [
     component: () => import('../views/tools/SqlGenerator.vue'),
     meta: { title: 'SQL 智能生成器', hidden: true }
   },
+  // JSON对比工具
+  {
+    path: '/json-diff',
+    name: 'JsonDiff',
+    component: () => import('../views/tools/JsonDiff.vue'),
+    meta: { title: 'JSON 对比工具', hidden: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',
