@@ -1,9 +1,16 @@
 from flask import Blueprint, jsonify, request
 import json
-from app import app_logger
-from utils.json_diff_utils import compare_json_data
+import logging
 
 diff_bp = Blueprint('diff_bp', __name__, url_prefix='/api/diff')
+
+# 获取logger
+logger = logging.getLogger(__name__)
+
+# 延迟导入，避免循环依赖
+def get_compare_function():
+    from utils.json_diff_utils import compare_json_data
+    return compare_json_data
 
 
 @diff_bp.route('/compare', methods=['POST'])
@@ -69,9 +76,10 @@ def compare_json():
             }), 400
         
         # 执行对比
-        result = compare_json_data(left_data, right_data, options)
+        compare_func = get_compare_function()
+        result = compare_func(left_data, right_data, options)
         
-        app_logger.info(f'JSON对比成功: 相同={result["stats"]["same"]}, 不同={result["stats"]["different"]}')
+        logger.info(f'JSON对比成功: 相同={result["stats"]["same"]}, 不同={result["stats"]["different"]}')
         
         return jsonify({
             'success': True,
@@ -79,7 +87,7 @@ def compare_json():
         })
         
     except Exception as e:
-        app_logger.error(f'JSON对比失败: {e}')
+        logger.error(f'JSON对比失败: {e}')
         return jsonify({
             'success': False,
             'message': f'对比失败: {str(e)}'
@@ -114,7 +122,7 @@ def format_json():
             'message': f'JSON格式错误: {str(e)}'
         }), 400
     except Exception as e:
-        app_logger.error(f'JSON格式化失败: {e}')
+        logger.error(f'JSON格式化失败: {e}')
         return jsonify({
             'success': False,
             'message': f'格式化失败: {str(e)}'
