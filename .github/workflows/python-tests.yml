@@ -49,12 +49,26 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
+        
+        # 先安装numpy（pandas的依赖）
+        echo "Installing numpy..."
+        pip install 'numpy>=1.26.0'
+        
+        # 再安装pandas（指定版本确保有wheel）
+        echo "Installing pandas..."
+        pip install 'pandas==2.2.3' --only-binary=:all: || pip install 'pandas==2.2.3'
+        
+        # 安装其他依赖
         if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
+          # 排除numpy和pandas，避免版本冲突
+          grep -v '^numpy' requirements.txt | grep -v '^pandas' > requirements_filtered.txt
+          pip install -r requirements_filtered.txt
+          rm requirements_filtered.txt
         fi
         if [ -f requirements-linux.txt ]; then
           pip install -r requirements-linux.txt
         fi
+        
         # 安装测试依赖
         pip install pytest pytest-cov pytest-flask
     
