@@ -90,6 +90,22 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/dingtalk-push" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/dingtalk-push">
+                <el-icon><Bell /></el-icon>
+                <span>钉钉推送管理</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/deploy-config" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/deploy-config">
+                <el-icon><Setting /></el-icon>
+                <span>部署配置管理</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
 
         <el-sub-menu index="tools">
@@ -248,6 +264,7 @@ import {
   ArrowLeft,
   Picture,
   Cpu,
+  Bell,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'
