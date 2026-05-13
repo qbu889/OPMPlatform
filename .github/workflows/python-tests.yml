@@ -141,8 +141,7 @@ jobs:
           --cov-report=term-missing \
           -m "not slow" \
           --tb=short \
-          --disable-warnings \
-          --no-cov-on-fail
+          --disable-warnings
         TEST_EXIT_CODE=$?
         set -e  # 恢复 exit on error
         
