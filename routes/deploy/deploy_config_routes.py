@@ -493,10 +493,18 @@ def execute_fast_deploy(skip_initial_steps=False):
     add_log('', 'info')
     add_log('📝 步骤 5: 重启后端服务', 'info')
 
-    # 5.1 停止旧进程
+    # 5.1 停止旧进程（强制清理，避免僵尸进程）
     add_log('   5.1 停止现有服务...', 'info')
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+    ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
+    
+    # 验证进程已清理
+    _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+    if remaining and int(remaining.strip()) > 0:
+        add_log(f'   ⚠️ 发现 {remaining.strip()} 个残留进程，强制清理...', 'warning')
+        ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+        time.sleep(1)
+    
     add_log('   ✅ 进程已停止', 'success')
 
     # 5.2 启动新服务
@@ -608,8 +616,18 @@ def execute_restore(backup_file):
     deploy_status['current_step'] = '停止服务'
     deploy_status['progress'] = 20
     add_log('⏹️ 步骤 1: 停止当前服务...', 'info')
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+    
+    # 强制清理所有相关进程
+    ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
+    
+    # 验证清理
+    _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+    if remaining and int(remaining.strip()) > 0:
+        add_log(f'   ⚠️ 发现残留进程，二次清理...', 'warning')
+        ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+        time.sleep(1)
+    
     add_log('   ✅ 服务已停止', 'success')
 
     deploy_status['current_step'] = '恢复备份'
@@ -749,9 +767,16 @@ def restart_service():
     try:
         add_log('🔄 手动重启服务...', 'info')
 
-        # 停止
-        ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+        # 停止（强制清理）
+        ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
         time.sleep(2)
+        
+        # 验证清理
+        _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+        if remaining and int(remaining.strip()) > 0:
+            add_log(f'   ⚠️ 发现残留进程，强制清理...', 'warning')
+            ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+            time.sleep(1)
 
         # 启动
         start_cmd = f"""
