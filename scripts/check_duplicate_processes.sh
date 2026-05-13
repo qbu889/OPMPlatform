@@ -7,8 +7,8 @@ echo "  检查 wordToWord Python 进程"
 echo "=========================================="
 echo ""
 
-# 查找所有 python app.py 进程
-PROCESSES=$(ps aux | grep 'python app.py' | grep -v grep)
+# 查找所有 python app.py 进程（排除 bash 包装器）
+PROCESSES=$(ps aux | grep 'python app.py' | grep -v grep | grep -v 'bash -c')
 COUNT=$(echo "$PROCESSES" | grep -c 'python app.py' 2>/dev/null || echo 0)
 
 if [ "$COUNT" -eq 0 ]; then
