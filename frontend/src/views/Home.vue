@@ -71,6 +71,15 @@
             <p>AI 驱动的智能 SQL 生成器，支持复杂查询和多表关联</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/json-diff')">
+            <div class="feature-icon" style="background: #fff9c4">
+              <el-icon size="40" color="#fbc02d"><DataAnalysis /></el-icon>
+            </div>
+            <h3>JSON 对比工具</h3>
+            <p>智能对比 JSON 数据差异，忽略字段顺序，高亮显示不同</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 
