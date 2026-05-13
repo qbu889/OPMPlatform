@@ -55,13 +55,20 @@ ssh ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
     cd /project/wordToWord
     
     echo "1️⃣ 停止现有进程..."
-    pkill -f "python app.py" || true
-    pkill -f "vite" || true
-    pkill -f "npm run" || true
+    # 更严格的进程清理，避免僵尸进程
+    pkill -9 -f "python app.py" || true
+    pkill -9 -f "vite" || true
+    pkill -9 -f "npm run" || true
     sleep 2
     
-    echo "2️⃣ 清理进程..."
-    ps -ef | grep -E "python|vite|node" | grep wordToWord | grep -v grep || echo "   所有进程已停止"
+    echo "2️⃣ 验证进程已清理..."
+    REMAINING=$(ps aux | grep 'python app.py' | grep -v grep | wc -l)
+    if [ "$REMAINING" -gt 0 ]; then
+        echo "   ⚠️  发现 $REMAINING 个残留进程，强制清理..."
+        ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+        sleep 1
+    fi
+    ps -ef | grep -E "python|vite|node" | grep wordToWord | grep -v grep || echo "   ✅ 所有进程已停止"
     
     echo "3️⃣ 激活虚拟环境..."
     source .venv/bin/activate
