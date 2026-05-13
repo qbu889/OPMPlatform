@@ -86,12 +86,21 @@ jobs:
         echo "  - test/kafka/test_kafka_api.py"
         echo ""
         
+        # 执行测试，即使失败也继续
+        set +e  # 禁用 exit on error
         pytest test/kafka/test_kafka_complete.py test/kafka/test_kafka_api.py -v \
           --cov=routes.kafka.kafka_generator_routes \
           --cov-report=term-missing \
           --tb=short \
-          --disable-warnings \
-          || echo "⚠️  Kafka tests completed with some failures"
+          --disable-warnings
+        TEST_EXIT_CODE=$?
+        set -e  # 恢复 exit on error
+        
+        if [ $TEST_EXIT_CODE -ne 0 ]; then
+          echo "⚠️  Kafka tests completed with some failures (exit code: $TEST_EXIT_CODE)"
+        else
+          echo "✅ Kafka tests passed"
+        fi
     
     - name: Run other unit tests
       run: |
@@ -103,6 +112,7 @@ jobs:
         echo ""
         
         # 运行除Kafka外的其他测试
+        set +e  # 禁用 exit on error
         pytest test/ \
           --ignore=test/kafka/ \
           -v \
@@ -113,8 +123,33 @@ jobs:
           -m "not slow" \
           --tb=short \
           --disable-warnings \
-          --no-cov-on-fail \
-          || echo "⚠️  Unit tests completed with some failures"
+          --no-cov-on-fail
+        TEST_EXIT_CODE=$?
+        set -e  # 恢复 exit on error
+        
+        if [ $TEST_EXIT_CODE -ne 0 ]; then
+          echo "⚠️  Unit tests completed with some failures (exit code: $TEST_EXIT_CODE)"
+          echo "💡 覆盖率报告已生成，请查看 Summary"
+        else
+          echo "✅ All unit tests passed"
+        fi
+        
+        # 验证覆盖率文件是否生成
+        echo ""
+        echo "========== 检查覆盖率文件 =========="
+        if [ -f "coverage.xml" ]; then
+          echo "✅ coverage.xml 已生成"
+          ls -lh coverage.xml
+        else
+          echo "❌ coverage.xml 未生成"
+        fi
+        
+        if [ -d "htmlcov" ]; then
+          echo "✅ htmlcov/ 目录已生成"
+          ls -lh htmlcov/ | head -5
+        else
+          echo "❌ htmlcov/ 目录未生成"
+        fi
     
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
