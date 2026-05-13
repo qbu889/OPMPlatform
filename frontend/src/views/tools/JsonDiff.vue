@@ -266,12 +266,33 @@ const renderDiffTree = (tree, side) => {
     // 对象类型
     html += '{\n'
     Object.keys(tree).forEach(key => {
-      html += renderNode(tree[key], side, key)
+      const node = tree[key]
+      // 根据对比模式过滤字段
+      if (shouldShowNode(node, side)) {
+        html += renderNode(node, side, key)
+      }
     })
     html += '}'
   }
   
   return html
+}
+
+// 判断是否应该显示该节点
+const shouldShowNode = (node, side) => {
+  if (!node) return false
+  
+  // 以右侧为基准时，左侧视图不显示仅在左侧存在的字段（added状态）
+  if (compareMode.value === 'right' && side === 'left') {
+    return node.status !== 'added'
+  }
+  
+  // 以左侧为基准时，右侧视图不显示仅在右侧存在的字段（removed状态在右侧是added）
+  if (compareMode.value === 'left' && side === 'right') {
+    return node.status !== 'added'
+  }
+  
+  return true
 }
 
 // 渲染单个节点
