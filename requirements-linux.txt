@@ -28,7 +28,7 @@ soupsieve==2.7
 
 # 图像处理（水印清除）
 opencv-python==4.13.0.92
-Pillow==10.2.0
+Pillow>=10.4.0
 
 # HTTP 请求
 requests==2.33.1
