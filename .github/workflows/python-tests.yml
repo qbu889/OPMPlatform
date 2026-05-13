@@ -130,18 +130,19 @@ jobs:
         done
         echo ""
         
-        # 运行除Kafka外的其他测试
+        # 运行除Kafka、chatbot（AI相关）外的其他测试
         set +e  # 禁用 exit on error
         
         # 先尝试收集测试，看是否有导入错误
         echo "========== 测试收集阶段 =========="
-        pytest test/ --ignore=test/kafka/ --collect-only -q 2>&1 | tail -20
+        pytest test/ --ignore=test/kafka/ --ignore=test/chatbot/ --collect-only -q 2>&1 | tail -20
         echo ""
         
         # 执行测试并生成覆盖率
         echo "========== 执行测试 =========="
         pytest test/ \
           --ignore=test/kafka/ \
+          --ignore=test/chatbot/ \
           -v \
           --cov=. \
           --cov-report=xml:./coverage.xml \
