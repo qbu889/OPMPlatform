@@ -148,7 +148,7 @@ def detect_changed_files():
     # 方法4: 使用默认核心文件
     if not changed_files:
         print_warning("未检测到任何变更，将上传核心文件...")
-        changed_files = "app.py config.py routes/kafka/kafka_generator_routes.py"
+        changed_files = "app.py config.py routes/kafka/kafka_generator_routes.py routes/diff/diff_routes.py utils/json_diff_utils.py"
     
     # 解析文件列表
     files = [f.strip() for f in changed_files.split('\n') if f.strip()]

@@ -66,7 +66,7 @@ fi
 # 方法4: 如果仍然为空，使用默认核心文件
 if [ -z "$CHANGED_FILES" ]; then
     echo "   ⚠️  未检测到任何变更，将上传核心文件..."
-    CHANGED_FILES="app.py config.py requirements.txt routes/kafka/kafka_generator_routes.py"
+    CHANGED_FILES="app.py config.py requirements.txt routes/kafka/kafka_generator_routes.py routes/diff/diff_routes.py utils/json_diff_utils.py"
 fi
 
 echo "📦 检测到以下变更文件："
