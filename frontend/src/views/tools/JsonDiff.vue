@@ -89,6 +89,16 @@
         inactive-text="手动对比"
         style="margin-left: 20px"
       />
+      <el-button 
+        v-if="hasResult"
+        size="large" 
+        :type="compareMode === 'right' ? 'success' : 'default'"
+        @click="toggleCompareMode"
+        style="margin-left: 20px"
+      >
+        <el-icon><Switch /></el-icon>
+        {{ compareMode === 'left' ? '以右侧字段为基准' : '以左侧字段为基准' }}
+      </el-button>
     </div>
 
     <!-- 统计信息 -->
@@ -115,7 +125,7 @@
           <template #header>
             <span>左侧结果</span>
           </template>
-          <div class="diff-viewer" ref="leftViewerRef">
+          <div class="diff-viewer" ref="leftViewerRef" @scroll="handleLeftScroll">
             <pre v-html="renderDiffTree(diffResult.left_tree, 'left')"></pre>
           </div>
         </el-card>
@@ -125,7 +135,7 @@
           <template #header>
             <span>右侧结果</span>
           </template>
-          <div class="diff-viewer" ref="rightViewerRef">
+          <div class="diff-viewer" ref="rightViewerRef" @scroll="handleRightScroll">
             <pre v-html="renderDiffTree(diffResult.right_tree, 'right')"></pre>
           </div>
         </el-card>
@@ -135,8 +145,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Switch, Search, Document, Upload } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 const leftJson = ref('')
@@ -145,6 +156,10 @@ const comparing = ref(false)
 const autoCompare = ref(false)
 const diffResult = ref({})
 const hasResult = ref(false)
+const compareMode = ref('left') // 'left' 或 'right'
+const leftViewerRef = ref(null)
+const rightViewerRef = ref(null)
+const isSyncingScroll = ref(false) // 防止循环触发
 
 const stats = computed(() => {
   return diffResult.value.stats || { same: 0, different: 0, added: 0, removed: 0, total: 0 }
@@ -280,9 +295,18 @@ const renderNode = (node, side, key) => {
     html += renderDiffTree(node.children, side)
     html += `\n${indent}<span class="${statusClass}">${node.type === 'object' ? '}' : ']'}</span>,\n`
   } else {
-    // 叶子节点
-    const value = formatValue(node.value || node[side])
-    html += `<span class="${statusClass}">${value}</span>,\n`
+    // 叶子节点 - 特殊处理 null/undefined
+    let value
+    if (compareMode.value === 'right') {
+      // 以右侧为基准：优先显示右侧值
+      value = node.right !== undefined ? node.right : node.left
+    } else {
+      // 以左侧为基准：优先显示左侧值
+      value = node.left !== undefined ? node.left : node.right
+    }
+    
+    const formattedValue = formatValue(value)
+    html += `<span class="${statusClass}">${formattedValue}</span>,\n`
   }
   
   return html
@@ -306,7 +330,7 @@ const getStatusClass = (status) => {
 
 // 格式化值显示
 const formatValue = (value) => {
-  if (value === null) return 'null'
+  if (value === null || value === undefined) return '<span style="color: #909399; font-style: italic;">null</span>'
   if (typeof value === 'string') return `"${value}"`
   if (typeof value === 'boolean') return value.toString()
   return String(value)
@@ -328,7 +352,46 @@ const loadExample = () => {
     phone: "13800138000"
   }, null, 2)
   
-  ElMessage.info('已加载示例数据，点击"开始对比"查看效果')
+  ElMessage.info('已加载示例数据，点击“开始对比”查看效果')
+}
+
+// 切换对比模式
+const toggleCompareMode = async () => {
+  compareMode.value = compareMode.value === 'left' ? 'right' : 'left'
+  ElMessage.success(`已切换到以${compareMode.value === 'left' ? '左侧' : '右侧'}字段为基准`)
+  
+  // 重新渲染
+  await nextTick()
+}
+
+// 同步滚动 - 左侧
+const handleLeftScroll = (event) => {
+  if (isSyncingScroll.value) return
+  isSyncingScroll.value = true
+  
+  const scrollTop = event.target.scrollTop
+  if (rightViewerRef.value) {
+    rightViewerRef.value.scrollTop = scrollTop
+  }
+  
+  setTimeout(() => {
+    isSyncingScroll.value = false
+  }, 10)
+}
+
+// 同步滚动 - 右侧
+const handleRightScroll = (event) => {
+  if (isSyncingScroll.value) return
+  isSyncingScroll.value = true
+  
+  const scrollTop = event.target.scrollTop
+  if (leftViewerRef.value) {
+    leftViewerRef.value.scrollTop = scrollTop
+  }
+  
+  setTimeout(() => {
+    isSyncingScroll.value = false
+  }, 10)
 }
 </script>
 
