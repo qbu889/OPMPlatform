@@ -62,6 +62,14 @@
                   </el-input>
                   <div class="form-hint">例如：2026-04-13 14:30:00，留空则使用 ES 数据中的 EVENT_TIME</div>
                 </el-form-item>
+                
+                <el-form-item label="反追单时间">
+                  <el-button type="warning" @click="applyRetroactiveTime" :disabled="!customEventTime">
+                    <el-icon><Clock /></el-icon>
+                    反追单（-2天）
+                  </el-button>
+                  <div class="form-hint">将自定义事件时间减去2天，用于反追单场景</div>
+                </el-form-item>
               </el-form>
             </el-card>
 

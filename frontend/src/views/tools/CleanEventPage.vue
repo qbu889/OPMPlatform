@@ -166,23 +166,6 @@ const subtractTwoDays = () => {
   formData.eventTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
 }
 
-// 反追单数据：当前时间减两天
-const subtractTwoDays = () => {
-  const now = new Date()
-  // 减去2天
-  now.setDate(now.getDate() - 2)
-  
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-  
-  // 格式：YYYY/MM/DD HH:MM:SS
-  formData.eventTime = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
-}
-
 const handleClean = async () => {
   // 清空之前的错误和结果
   errorMessage.value = ''

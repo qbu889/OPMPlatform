@@ -7,9 +7,12 @@
 
 import sys
 import os
+
+from routes.排班.paiBanNew_v2 import RosterDB, DB_CONFIG, RosterGenerator
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from routes.排班.paiBanNew import RosterDB, RosterGenerator, DB_CONFIG
+
 from datetime import date, datetime
 
 def test_same_person_shifts():

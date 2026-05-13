@@ -4,12 +4,13 @@
 from dotenv import load_dotenv
 import os, sys
 
+from routes.排班.paiBanNew_v2 import RosterDB, DB_CONFIG, RosterGenerator
+
 # 添加项目根目录到路径
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 sys.path.insert(0, os.path.join(project_root, 'routes'))
 
-from 排班.paiBanNew_v2 import RosterDB, RosterGenerator, DB_CONFIG
 from datetime import date
 
 def test_all_staff_leave():

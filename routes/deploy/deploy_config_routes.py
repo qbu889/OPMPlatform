@@ -805,123 +805,123 @@ def restart_service():
 
 @deploy_config_bp.route('/server-logs', methods=['GET'])
 def get_server_logs():
-    """获取服务器日志"""
-    lines = request.args.get('lines', 100, type=int)
-    log_type = request.args.get('type', 'backend')  # backend, nginx, error
+    """获取服务器日志
 
-    # 限制最大行数，防止性能问题
-    MAX_LINES = 10000
-    if lines > MAX_LINES:
+    参数：
+        type: 日志类型 (backend/nginx_access/nginx_error)
+        preset: 预设行数 (100|1000|10000)，默认 100
+    """
+    preset = request.args.get('preset', '100')
+    log_type = request.args.get('type', 'backend')
+
+    PRESET_LINES = {'100': 100, '1000': 1000, '10000': 10000}
+
+    if preset not in PRESET_LINES:
         return jsonify({
             'success': False,
-            'message': f'查询行数不能超过{MAX_LINES}行'
+            'message': f'预设参数错误，支持的 preset: 100, 1000, 10000'
         }), 400
+
+    lines_count = PRESET_LINES[preset]
 
     try:
         if log_type == 'backend':
-            cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
-        elif log_type == 'nginx':
-            cmd = f"tail -n {lines} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
-        elif log_type == 'error':
-            cmd = f"tail -n {lines} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
+            cmd = f"cd {REMOTE_PATH} && tail -n {lines_count} logs/backend.log"
+        elif log_type == 'nginx_access':
+            cmd = f"tail -n {lines_count} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
+        elif log_type == 'nginx_error':
+            cmd = f"tail -n {lines_count} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
         else:
-            cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
+            cmd = f"cd {REMOTE_PATH} && tail -n {lines_count} logs/backend.log"
+            log_type = 'backend'
 
-        success, stdout, stderr = ssh_command(cmd, timeout=30)
+        success, stdout, stderr = ssh_command(cmd, timeout=60)
 
         if success:
+            log_lines = stdout.split('\n') if stdout else []
             return jsonify({
                 'success': True,
                 'data': {
                     'logs': stdout,
-                    'lines': len(stdout.split('\n')) if stdout else 0,
-                    'requested_lines': lines,
-                    'type': log_type
+                    'lines_count': len(log_lines),
+                    'requested_lines': lines_count,
+                    'preset': preset,
+                    'type': log_type,
+                    'type_name': get_log_type_name(log_type)
                 }
             })
         else:
             return jsonify({
                 'success': False,
-                'message': f'获取日志失败: {stderr}'
+                'message': f'获取日志失败：{stderr}'
             }), 500
 
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
+        logger.error(f"查询日志失败：{e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+def get_log_type_name(log_type):
+    """获取日志类型的中文名称"""
+    return {'backend': '后端日志', 'nginx_access': 'Nginx 访问日志', 'nginx_error': 'Nginx 错误日志'}.get(log_type, '日志')
+
 
 
 @deploy_config_bp.route('/server-logs/download', methods=['GET'])
 def download_server_logs():
-    """下载服务器日志文件"""
-    log_type = request.args.get('type', 'backend')  # backend, nginx, error
-    lines = request.args.get('lines', 1000, type=int)
-
-    # 限制最大行数
-    MAX_LINES = 50000
-    if lines > MAX_LINES:
-        return jsonify({
-            'success': False,
-            'message': f'下载行数不能超过{MAX_LINES}行'
-        }), 400
+    """下载完整的服务器日志文件"""
+    log_type = request.args.get('type', 'backend')
 
     try:
         import tempfile
+        import shutil
 
-        # 确定日志文件路径
+        # 确定日志文件路径和前缀
         if log_type == 'backend':
             log_file = f"{REMOTE_PATH}/logs/backend.log"
             filename_prefix = "backend"
-        elif log_type == 'nginx':
+        elif log_type == 'nginx_access':
             log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
             filename_prefix = "nginx_access"
-        elif log_type == 'error':
+        elif log_type == 'nginx_error':
             log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
             filename_prefix = "nginx_error"
         else:
             log_file = f"{REMOTE_PATH}/logs/backend.log"
             filename_prefix = "backend"
 
-        # 创建临时文件
+        # 创建临时目录和文件
         temp_dir = tempfile.mkdtemp()
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         temp_file = os.path.join(temp_dir, f"{filename_prefix}_{timestamp}.log")
 
-        # 从远程服务器获取日志并保存到临时文件
-        if lines > 0:
-            cmd = f"tail -n {lines} {log_file} > {temp_file}"
-        else:
-            cmd = f"cp {log_file} {temp_file}"
+        try:
+            # 从远程服务器复制完整日志文件到临时文件
+            cmd = f"cat {log_file} > {temp_file}"
+            success, stdout, stderr = ssh_command(cmd, timeout=120)
 
-        success, stdout, stderr = ssh_command(cmd, timeout=60)
+            if success and os.path.exists(temp_file):
+                from flask import send_file
+                return send_file(
+                    temp_file,
+                    as_attachment=True,
+                    download_name=f"{filename_prefix}_{timestamp}.log",
+                    mimetype='text/plain'
+                )
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'下载日志失败：{stderr}'
+                }), 500
 
-        if success and os.path.exists(temp_file):
-            # 返回文件供下载
-            from flask import send_file
-            return send_file(
-                temp_file,
-                as_attachment=True,
-                download_name=f"{filename_prefix}_{timestamp}.log",
-                mimetype='text/plain'
-            )
-        else:
+        finally:
             # 清理临时文件
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-            os.rmdir(temp_dir)
-
-            return jsonify({
-                'success': False,
-                'message': f'下载日志失败: {stderr}'
-            }), 500
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
     except Exception as e:
-        logger.error(f"下载日志失败: {e}")
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
+        logger.error(f"下载日志失败：{e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 
 def run_local_command(cmd, cwd=None, timeout=60):
