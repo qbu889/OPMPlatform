@@ -31,12 +31,20 @@ class DingTalkPushScheduler:
     
     def init_app(self, app):
         """初始化应用"""
-        # 防止重复初始化
-        if self._initialized:
-            logger.warning("⚠️  调度器已经初始化，跳过重复初始化")
-            return
-        
         self.app = app
+        
+        # 关键修复：无论是否已初始化，都要先清除所有旧任务，避免重复注册
+        if self.scheduler.running:
+            logger.info("🔄 检测到调度器已在运行，清除所有旧任务...")
+            existing_jobs = self.scheduler.get_jobs()
+            removed_count = 0
+            for job in existing_jobs:
+                try:
+                    self.scheduler.remove_job(job.id)
+                    removed_count += 1
+                except Exception as e:
+                    logger.debug(f"移除任务 {job.id} 失败: {e}")
+            logger.info(f"✅ 已清除 {removed_count} 个旧任务")
         
         # 启动调度器
         if not self.scheduler.running:
