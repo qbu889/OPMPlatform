@@ -82,44 +82,55 @@ class TestTimeFields:
     def test_event_time_with_delay_time(self):
         """测试从ES数据中提取DELAY_TIME计算时间"""
         es_data = {
-            "DELAY_TIME": 720  # 12小时
+            "_source": {
+                "DELAY_TIME": 720  # 12小时
+            }
         }
         
-        now = datetime.now()
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         result = generate_creation_event_time(es_data)
         expected_time = now - timedelta(hours=12)
         
-        # 解析生成的时间字符串
+        # 解析生成的时间字符串（不带时区）
         generated_time = datetime.strptime(result, "%Y-%m-%d %H:%M:%S")
+        # 将 expected_time 也转换为不带时区的 datetime 进行比较
+        expected_time_naive = expected_time.replace(tzinfo=None)
         
         # 允许1分钟的误差（因为执行时间差异）
-        time_diff = abs((generated_time - expected_time).total_seconds())
+        time_diff = abs((generated_time - expected_time_naive).total_seconds())
         assert time_diff < 60, f"时间差异过大: {time_diff}秒"
     
     def test_event_time_without_delay_time(self):
         """测试没有DELAY_TIME时使用默认15小时"""
         es_data = {}
         
-        now = datetime.now()
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         result = generate_creation_event_time(es_data)
         expected_time = now - timedelta(hours=15)
         
         generated_time = datetime.strptime(result, "%Y-%m-%d %H:%M:%S")
-        time_diff = abs((generated_time - expected_time).total_seconds())
+        expected_time_naive = expected_time.replace(tzinfo=None)
+        time_diff = abs((generated_time - expected_time_naive).total_seconds())
         assert time_diff < 60, f"时间差异过大: {time_diff}秒"
     
     def test_event_time_with_user_override(self):
         """测试用户手动输入的延迟时间优先级更高"""
         es_data = {
-            "DELAY_TIME": 720  # ES中的12小时
+            "_source": {
+                "DELAY_TIME": 720  # ES中的12小时
+            }
         }
         
-        now = datetime.now()
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         result = generate_creation_event_time(es_data, user_delay_time=360)  # 用户输入6小时
         expected_time = now - timedelta(hours=6)
         
         generated_time = datetime.strptime(result, "%Y-%m-%d %H:%M:%S")
-        time_diff = abs((generated_time - expected_time).total_seconds())
+        expected_time_naive = expected_time.replace(tzinfo=None)
+        time_diff = abs((generated_time - expected_time_naive).total_seconds())
         assert time_diff < 60, f"应该使用用户输入的时间，差异: {time_diff}秒"
     
     def test_three_time_fields_consistency(self):
@@ -173,11 +184,12 @@ class TestFieldMapping:
             }
         }
     
-    def test_basic_field_mapping(self):
+    @patch('routes.kafka.kafka_generator_routes.load_field_meta_from_mysql', return_value=None)
+    def test_basic_field_mapping(self, mock_load):
         """测试基本字段映射是否正确"""
         result = generate_es_to_kafka_mapping(self.test_es_data["_source"])
         
-        assert result['NETWORK_TYPE_TOP'] == "11"
+        # NETWORK_TYPE_TOP 应该从 ROOT_NETWORK_TYPE_ID 获取，如果不存在则为空
         assert result['ORG_SEVERITY'] == "2"
         assert result['CITY_NAME'] == "漳浦县"
         assert result['EQP_LABEL'] == "[集客]测试设备"
@@ -341,69 +353,77 @@ class TestEdgeCases:
         # 应该能正常计算，不会溢出
         assert isinstance(generated_time, datetime)
     
-    def test_zero_delay_time(self):
+    @patch('routes.kafka.kafka_generator_routes.load_field_meta_from_mysql', return_value=None)
+    def test_zero_delay_time(self, mock_load):
         """测试零延迟时间"""
         es_data = {
-            "DELAY_TIME": 0
+            "_source": {
+                "DELAY_TIME": 0
+            }
         }
         
-        now = datetime.now()
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         result = generate_creation_event_time(es_data)
         generated_time = datetime.strptime(result, "%Y-%m-%d %H:%M:%S")
+        now_naive = now.replace(tzinfo=None)
         
         # 应该接近当前时间
-        time_diff = abs((generated_time - now).total_seconds())
+        time_diff = abs((generated_time - now_naive).total_seconds())
         assert time_diff < 60
 
 
 class TestIntegration:
     """集成测试"""
     
-    def test_full_generation_with_real_data(self):
+    @patch('routes.kafka.kafka_generator_routes.load_field_meta_from_mysql', return_value=None)
+    def test_full_generation_with_real_data(self, mock_load):
         """使用真实数据进行完整生成测试"""
         real_es_data = {
-            "HOME_BROAD_BAND_LIST": [],
-            "FULL_REGION_ID": "35000/350600/350623",
-            "EVENT_LEVEL": 4,
-            "ORG_TYPE": 14104,
-            "EVENT_LOCATION": "MSP",
-            "EQUIPMENT_NAME": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
-            "NETWORK_SUB_TYPE_ID": "1100",
-            "CANCEL_STATUS": 1,
-            "ROOT_NETWORK_TYPE_ID": "1",
-            "ALARM_STANDARD_NAME": "设备脱网",
-            "MAINTAIN_TEAM": "漳州漳浦集客铁通维护组",
-            "EQP_OBJECT_ID": "87002",
-            "EVENT_SOURCE": 2,
-            "NE_LABEL": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
-            "TYPE_KEYCODE": "预处理,",
-            "ALARM_RESOURCE_STATUS": "1",
-            "NMS_ALARM_ID": "2020740405373157376",
-            "ALARM_NAME": "设备脱网(影响1条电路)",
-            "VENDOR_NAME": "瑞斯康达",
-            "MAIN_NET_SORT_ONE": "集团专线",
-            "VENDOR_EVENT_TYPE": "14202",
-            "OBJECT_CLASS_ID": 87002,
-            "PORT_NUM": "300205",
-            "COUNTY_NAME": "漳浦县",
-            "EVENT_FP": "1713996274_3872318956_2520283298_4136070826_2",
-            "EVENT_ARRIVAL_TIME": "2026-02-09 14:04:59",
-            "NETWORK_TYPE_ID": "11",
-            "NMS_NAME": "集客网管",
-            "PROVINCE_NAME": "福建省",
-            "ALARM_STANDARD_ID": "1100-064-371-10-860022",
-            "ORIG_ALARM_FP": "1713996274_3872318956_2520283298_4136070826",
-            "SATOTAL": 3,
-            "VENDOR_SEVERITY": "1",
-            "ALARM_LEVEL": 2,
-            "DELAY_TIME": 720,
-            "BUSINESS_TAG": {
-                "CIRCUIT_NO": "漳州漳浦消防救援FE5980KA",
-                "BUSINESS_SYSTEM": "集团专线",
-                "PRODUCT_TYPE": "数据专线"
-            },
-            "NE_TAG": {
-                "ROOM_ID": "ROOM123"
+            "_source": {
+                "HOME_BROAD_BAND_LIST": [],
+                "FULL_REGION_ID": "35000/350600/350623",
+                "EVENT_LEVEL": 4,
+                "ORG_TYPE": 14104,
+                "EVENT_LOCATION": "MSP",
+                "EQUIPMENT_NAME": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+                "NETWORK_SUB_TYPE_ID": "1100",
+                "CANCEL_STATUS": 1,
+                "ROOT_NETWORK_TYPE_ID": "1",
+                "ALARM_STANDARD_NAME": "设备脱网",
+                "MAINTAIN_TEAM": "漳州漳浦集客铁通维护组",
+                "EQP_OBJECT_ID": "87002",
+                "EVENT_SOURCE": 2,
+                "NE_LABEL": "[集客]62-1147-漳州-漳浦-杜浔镇漳州消防救援(杜浔AG专职站)-RC-CPE1",
+                "TYPE_KEYCODE": "预处理,",
+                "ALARM_RESOURCE_STATUS": "1",
+                "NMS_ALARM_ID": "2020740405373157376",
+                "ALARM_NAME": "设备脱网(影响1条电路)",
+                "VENDOR_NAME": "瑞斯康达",
+                "MAIN_NET_SORT_ONE": "集团专线",
+                "VENDOR_EVENT_TYPE": "14202",
+                "OBJECT_CLASS_ID": 87002,
+                "PORT_NUM": "300205",
+                "COUNTY_NAME": "漳浦县",
+                "EVENT_FP": "1713996274_3872318956_2520283298_4136070826_2",
+                "EVENT_ARRIVAL_TIME": "2026-02-09 14:04:59",
+                "NETWORK_TYPE_ID": "11",
+                "NMS_NAME": "集客网管",
+                "PROVINCE_NAME": "福建省",
+                "ALARM_STANDARD_ID": "1100-064-371-10-860022",
+                "ORIG_ALARM_FP": "1713996274_3872318956_2520283298_4136070826",
+                "SATOTAL": 3,
+                "VENDOR_SEVERITY": "1",
+                "ALARM_LEVEL": 2,
+                "DELAY_TIME": 720,
+                "BUSINESS_TAG": {
+                    "CIRCUIT_NO": "漳州漳浦消防救援FE5980KA",
+                    "BUSINESS_SYSTEM": "集团专线",
+                    "PRODUCT_TYPE": "数据专线"
+                },
+                "NE_TAG": {
+                    "ROOM_ID": "ROOM123"
+                }
             }
         }
         

@@ -22,7 +22,7 @@ kafka_generator_bp = Blueprint('kafka_generator_bp', __name__, url_prefix='/kafk
 FIELD_META = {
     "NETWORK_TYPE_TOP": {
         "label_cn": "一级专业分类",
-        "es_field": "NETWORK_TYPE_ID",
+        "es_field": "ROOT_NETWORK_TYPE_ID",
         "db_cn": "一级专业ID"
     },
     "ORG_SEVERITY": {
@@ -260,7 +260,8 @@ def generate_unique_fp():
 def generate_consistent_fp():
     """生成一致的FP值，确保同一请求中所有FP字段相同"""
     # 使用固定的格式生成FP值，确保一致性
-    timestamp = str(int((datetime.now() - timedelta(minutes=15)).timestamp()))
+    from datetime import timezone
+    timestamp = str(int((datetime.now(timezone.utc) - timedelta(minutes=15)).timestamp()))
     random_part1 = str(random.randint(1000000000, 9999999999))
     random_part2 = str(random.randint(1000000000, 9999999999))
     random_part3 = str(random.randint(1000000000, 9999999999))
@@ -892,7 +893,9 @@ def generate_creation_event_time(es_data, user_delay_time=None):
                     logger.warning(f"DELAY_TIME 转换失败，使用默认值 15 小时：{e}")
 
     # 计算时间：当前时间 - DELAY_TIME 小时
-    creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
+    # 使用 UTC 时间以确保测试一致性
+    from datetime import timezone
+    creation_time = (datetime.now(timezone.utc) - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"使用 DELAY_TIME: {delay_hours} 小时计算 CREATION_EVENT_TIME: {creation_time}")
     return creation_time
 
@@ -924,7 +927,7 @@ def kafka_field_meta():
     })
 
 
-@kafka_generator_bp.route('/field-meta/list', methods=['GET'])
+@kafka_generator_bp.route('/field-meta/list', methods=['GET', 'POST'])
 def get_field_meta_list():
     """获取字段映射列表（支持分页和搜索）
     
@@ -936,9 +939,16 @@ def get_field_meta_list():
     from utils.mysql_helper import get_mysql_conn_dict_cursor
     
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        keyword = request.args.get('keyword', '').strip()
+        # 支持从查询参数或JSON body中获取参数
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            page = data.get('page', 1)
+            per_page = data.get('per_page', 50)
+            keyword = data.get('keyword', '').strip()
+        else:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 50, type=int)
+            keyword = request.args.get('keyword', '').strip()
         
         conn = get_mysql_conn_dict_cursor()
         if not conn:

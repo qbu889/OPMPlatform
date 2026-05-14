@@ -109,7 +109,11 @@
           :class="{ 'filled': fieldValues[field.name] }"
         >
           <div class="field-header">
-            <label>{{ field.name }}（{{ field.label }}）:</label>
+            <label>
+              <span v-if="pinnedFields.has(field.name)" class="pin-icon" title="已置顶">📌 </span>
+              <span v-else-if="fieldValues[field.name]" class="value-icon" title="有值">✓ </span>
+              {{ field.name }}（{{ field.label }}）:
+            </label>
             <div class="field-actions">
               <el-button 
                 size="small" 
@@ -466,7 +470,10 @@
           <el-input v-model="pushMessageEventTime" placeholder="请输入事件时间 (YYYY-MM-DD HH:mm:ss)">
             <template #append>
               <el-button @click="subtractPushMessageEventTime(15)">-15分钟</el-button>
-              <el-button @click="subtractPushMessageEventYear(1)" type="warning">-1年</el-button>
+              <el-button @click="subtractPushMessageEventYear(1)" type="warning">
+                <el-icon><Clock /></el-icon>
+                反追单（-1年）
+              </el-button>
             </template>
           </el-input>
         </el-form-item>
@@ -975,15 +982,14 @@ const toggleAllFields = () => {
 const displayFields = computed(() => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 有值的字段 2. 置顶字段
+  // 排序优先级: 1. 手动置顶字段 2. 保持原有顺序（有值字段不自动排序）
   fields.sort((a, b) => {
-    const aFilled = fieldValues[a.name] ? 0 : 1
-    const bFilled = fieldValues[b.name] ? 0 : 1
-    if (aFilled !== bFilled) return aFilled - bFilled
-    
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
-    return aPinned - bPinned
+    if (aPinned !== bPinned) return aPinned - bPinned
+    
+    // 其他字段保持原始顺序，不再按有值/无值排序
+    return 0
   })
   
   // 如果不显示所有字段,过滤掉空值且未置顶的字段
@@ -2716,10 +2722,23 @@ onMounted(() => {
   border-color: #67c23a;
 }
 
+.field-item.pinned {
+  background: linear-gradient(135deg, #fff9e6 0%, #fef0b8 100%);
+  border-color: #f56c6c;
+}
+
 .field-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   border-color: #667eea;
+}
+
+/* 聚焦状态 - 最高优先级 */
+.field-item:focus-within {
+  border-color: #409eff !important;
+  box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.3) !important;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%) !important;
+  transform: translateY(-2px);
 }
 
 .field-header {
@@ -2733,6 +2752,29 @@ onMounted(() => {
   font-weight: 600;
   font-size: 14px;
   color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pin-icon {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+.value-icon {
+  font-size: 16px;
+  color: #67c23a;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .field-actions {

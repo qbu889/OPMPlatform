@@ -77,8 +77,11 @@ class OllamaClient:
         logger.info(f"[OLLAMA_INIT] 初始化 - URL: {self.base_url}, Model: {self.model}, OMLX: {self.use_omlx}")
         
         # 快速检查服务是否可用（不阻塞）
-        if not self._quick_check():
-            logger.warning(f"[OLLAMA_INIT] 服务可能不可用，将在首次请求时报错")
+        # 在测试环境中跳过此检查
+        import os as _os
+        if not _os.getenv('PYTEST_CURRENT_TEST'):
+            if not self._quick_check():
+                logger.warning(f"[OLLAMA_INIT] 服务可能不可用，将在首次请求时报错")
     
     def _quick_check(self) -> bool:
         """快速检查服务是否可用（超时 2 秒）"""

@@ -323,13 +323,13 @@ const renderNode = (node, side, key) => {
     if (node.status === 'same') {
       value = node.value
     } else {
-      // different/added/removed 状态使用 left/right 字段
-      if (compareMode.value === 'right') {
-        // 以右侧为基准：优先显示右侧值
-        value = node.right !== undefined && node.right !== null ? node.right : node.left
+      // different/added/removed 状态根据当前视图侧边显示对应的值
+      if (side === 'left') {
+        // 左侧视图显示左侧的值
+        value = node.left
       } else {
-        // 以左侧为基准：优先显示左侧值
-        value = node.left !== undefined && node.left !== null ? node.left : node.right
+        // 右侧视图显示右侧的值
+        value = node.right
       }
     }
     
