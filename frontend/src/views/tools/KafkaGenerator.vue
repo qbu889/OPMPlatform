@@ -106,10 +106,7 @@
           v-for="field in displayFields" 
           :key="field.name"
           class="field-item"
-          :class="{ 
-            'filled': fieldValues[field.name],
-            'green-filled': fieldValues[field.name] && !pinnedFields.has(field.name) && focusedFieldName !== field.name
-          }"
+          :class="{ 'filled': fieldValues[field.name] }"
         >
           <div class="field-header">
             <label>
@@ -978,7 +975,6 @@ const historyValues = ref({})
 // 显示所有字段
 const showAllFields = ref(false)  // 默认只显示常用字段
 const shouldSortFields = ref(false)  // 是否触发排序（失去焦点后才排序）
-const focusedFieldName = ref(null)  // 当前获得焦点的字段名
 
 // 切换显示/隐藏所有字段
 const toggleAllFields = () => {
@@ -1297,11 +1293,7 @@ const onFieldChange = async (field, value) => {
 }
 
 // 字段获得焦点时，重置排序状态
-const onFieldFocus = (event) => {
-  // 记录当前聚焦的字段名
-  const fieldName = event.target.id.replace('field_', '')
-  focusedFieldName.value = fieldName
-  
+const onFieldFocus = () => {
   // 获得焦点时，禁用排序，保持当前位置
   shouldSortFields.value = false
 }
@@ -1310,8 +1302,6 @@ const onFieldFocus = (event) => {
 const onFieldBlur = () => {
   // 失去焦点后，启用有值字段排序
   shouldSortFields.value = true
-  // 清除聚焦状态
-  focusedFieldName.value = null
 }
 
 // 保存历史值到数据库
@@ -2750,13 +2740,6 @@ onMounted(() => {
 }
 
 .field-item.filled {
-  /* 有值字段失去焦点后：保持蓝色背景 */
-  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
-  border-color: #409eff;
-}
-
-.field-item.filled.green-filled {
-  /* 其他已输入但非当前聚焦的字段：绿色背景 */
   background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   border-color: #67c23a;
 }
