@@ -157,6 +157,7 @@
             :placeholder="field.placeholder || '请输入'"
             size="small"
             @change="onFieldChange(field.name, fieldValues[field.name])"
+            @blur="onFieldBlur"
           >
             <template #append>
               <el-select 
@@ -972,23 +973,31 @@ const historyValues = ref({})
 
 // 显示所有字段
 const showAllFields = ref(false)  // 默认只显示常用字段
+const shouldSortFields = ref(false)  // 是否触发排序（失去焦点后才排序）
 
 // 切换显示/隐藏所有字段
 const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
 }
 
-// 显示字段(置顶的优先,且可选择是否显示空字段)
+// 显示字段(置顶的优先,有值字段在失去焦点后排序)
 const displayFields = computed(() => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 手动置顶字段 2. 保持原有顺序（有值字段不自动排序）
+  // 排序优先级: 1. 手动置顶字段 2. 有值字段(失去焦点后) 3. 原始顺序
   fields.sort((a, b) => {
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
     if (aPinned !== bPinned) return aPinned - bPinned
     
-    // 其他字段保持原始顺序，不再按有值/无值排序
+    // 如果启用了排序,有值字段优先
+    if (shouldSortFields.value) {
+      const aHasValue = fieldValues[a.name] ? 0 : 1
+      const bHasValue = fieldValues[b.name] ? 0 : 1
+      if (aHasValue !== bHasValue) return aHasValue - bHasValue
+    }
+    
+    // 其他字段保持原始顺序
     return 0
   })
   
@@ -1280,6 +1289,12 @@ const onFieldChange = async (field, value) => {
   if (value && value.trim()) {
     await saveHistoryToDB(field, value)
   }
+}
+
+// 字段失去焦点时触发排序
+const onFieldBlur = () => {
+  // 失去焦点后，启用有值字段排序
+  shouldSortFields.value = true
 }
 
 // 保存历史值到数据库
@@ -2733,12 +2748,13 @@ onMounted(() => {
   border-color: #667eea;
 }
 
-/* 聚焦状态 - 最高优先级 */
+/* 聚焦状态 - 最高优先级，蓝色高亮 */
 .field-item:focus-within {
   border-color: #409eff !important;
   box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.3) !important;
   background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%) !important;
   transform: translateY(-2px);
+  animation: none !important;
 }
 
 .field-header {
