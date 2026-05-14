@@ -60,8 +60,10 @@ def build_diff_tree(left, right, side, options, path=''):
 
 def build_object_diff(left_obj, right_obj, side, options, path):
     """构建对象类型的对比树"""
-    # 获取所有键（去重并排序）
-    all_keys = sorted(set(list(left_obj.keys()) + list(right_obj.keys())))
+    # 以左侧原始顺序为基准，右侧独有的字段追加到末尾
+    left_keys = list(left_obj.keys())
+    right_only_keys = [k for k in right_obj.keys() if k not in left_obj]
+    all_keys = left_keys + right_only_keys
     
     tree = {}
     for key in all_keys:

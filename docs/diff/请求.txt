@@ -12,1894 +12,2129 @@ curl 'http://192.168.1.94:5004/api/diff/compare' \
   --insecure
 
 
-  结果返回：
   {
-    "data": {
-        "left_tree": {
-            "ACTIVE_STATUS": {
-                "path": "ACTIVE_STATUS",
-                "status": "same",
-                "type": "string",
-                "value": "1"
-            },
-            "ADMIN_GRID_ID": {
-                "path": "ADMIN_GRID_ID",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_ABNORMAL_TYPE": {
-                "path": "ALARM_ABNORMAL_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": "40"
-            },
-            "ALARM_EQP_STATUS": {
-                "path": "ALARM_EQP_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_EXPLANATION": {
-                "path": "ALARM_EXPLANATION",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_EXPLANATION_ADDITION": {
-                "path": "ALARM_EXPLANATION_ADDITION",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_NE_STATUS": {
-                "path": "ALARM_NE_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_REASON": {
-                "path": "ALARM_REASON",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_RESOURCE_STATUS": {
-                "path": "ALARM_RESOURCE_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": "1"
-            },
-            "ALARM_SOURCE": {
-                "path": "ALARM_SOURCE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ALARM_TEXT": {
-                "path": "ALARM_TEXT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ASSIGN_TENANCE_GROUP": {
-                "path": "ASSIGN_TENANCE_GROUP",
-                "status": "same",
-                "type": "string",
-                "value": "泉州丰泽嘉环公司传输线路维护组1"
-            },
-            "BOARD_TYPE": {
-                "path": "BOARD_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "BUSINESS_LAYER": {
-                "path": "BUSINESS_LAYER",
-                "status": "same",
-                "type": "string",
-                "value": "1005"
-            },
-            "BUSINESS_LAYER_CN": {
-                "path": "BUSINESS_LAYER_CN",
-                "status": "same",
-                "type": "string",
-                "value": "本地接入"
-            },
-            "BUSINESS_REGIONS": {
-                "path": "BUSINESS_REGIONS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "BUSINESS_REGION_IDS": {
-                "path": "BUSINESS_REGION_IDS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "BUSINESS_SYSTEM": {
-                "path": "BUSINESS_SYSTEM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "BUSINESS_TYPE": {
-                "path": "BUSINESS_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "CANCEL_TIME": {
-                "left": "2026-05-11 16:59:19",
-                "path": "CANCEL_TIME",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "CFP0_CFP1_CFP2_CFP3": {
-                "left": "1778663719_9831242413_3557417254_1880115533_93106",
-                "path": "CFP0_CFP1_CFP2_CFP3",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "CIRCUIT_ID": {
-                "path": "CIRCUIT_ID",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "CIRCUIT_LEVEL": {
-                "path": "CIRCUIT_LEVEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "CIRCUIT_NO": {
-                "path": "CIRCUIT_NO",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "CITY_ID": {
-                "path": "CITY_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350503"
-            },
-            "CITY_NAME": {
-                "path": "CITY_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "丰泽区"
-            },
-            "CREATION_EVENT_TIME": {
-                "left": "2026-05-13 17:15:19",
-                "path": "CREATION_EVENT_TIME",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "EFFECT_CIRCUIT_NUM": {
-                "path": "EFFECT_CIRCUIT_NUM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "EFFECT_NE": {
-                "path": "EFFECT_NE",
-                "status": "removed",
-                "type": "number",
-                "value": 1
-            },
-            "EFFECT_SERVICE": {
-                "path": "EFFECT_SERVICE",
-                "status": "removed",
-                "type": "number",
-                "value": 2
-            },
-            "EQP_LABEL": {
-                "left": "【测试】泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
-                "path": "EQP_LABEL",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "EQP_OBJECT_CLASS": {
-                "path": "EQP_OBJECT_CLASS",
-                "status": "same",
-                "type": "string",
-                "value": "1100005"
-            },
-            "EQP_OBJECT_NAME": {
-                "path": "EQP_OBJECT_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "管道段"
-            },
-            "EVENT_ALARM_REASON": {
-                "path": "EVENT_ALARM_REASON",
-                "status": "removed",
-                "type": "string",
-                "value": "定界结果：初判为光缆中断；\n定位结论：。"
-            },
-            "EVENT_ARRIVAL_TIME": {
-                "path": "EVENT_ARRIVAL_TIME",
-                "status": "removed",
-                "type": "string",
-                "value": "2026-05-13 17:15:19"
-            },
-            "EVENT_CAT": {
-                "path": "EVENT_CAT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "EVENT_EFFECT_DESC": {
-                "path": "EVENT_EFFECT_DESC",
-                "status": "removed",
-                "type": "string",
-                "value": "\n网络影响：泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段；\n业务影响：基站业务；\n社会影响：暂无投诉。\n"
-            },
-            "EVENT_ROOT_CATEGORY": {
-                "path": "EVENT_ROOT_CATEGORY",
-                "status": "removed",
-                "type": "string",
-                "value": "传输线路故障或连接件故障"
-            },
-            "EVENT_SOURCE": {
-                "path": "EVENT_SOURCE",
-                "status": "same",
-                "type": "string",
-                "value": "20"
-            },
-            "EVENT_SUMMARY": {
-                "path": "EVENT_SUMMARY",
-                "status": "removed",
-                "type": "string",
-                "value": "1、核查是否工程操作：否；2、核查是否对端板件故障：否；3.核实是否对端设备退服：否；4、若以上条件均不满足，判断为光缆中断导致"
-            },
-            "EVENT_TIME": {
-                "left": "2026-05-13 17:15:19",
-                "path": "EVENT_TIME",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "EXTRA_ID2": {
-                "path": "EXTRA_ID2",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "EXTRA_STRING1": {
-                "path": "EXTRA_STRING1",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "FAULT_LOCATION": {
-                "path": "FAULT_LOCATION",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "FIBER_ADJUST_LABEL": {
-                "left": "",
-                "path": "FIBER_ADJUST_LABEL",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "FP0_FP1_FP2_FP3": {
-                "left": "1778663719_9831242413_3557417254_1880115533_93106",
-                "path": "FP0_FP1_FP2_FP3",
-                "right": null,
-                "status": "different",
-                "type": "string"
-            },
-            "GCSS_CLIENT": {
-                "path": "GCSS_CLIENT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_CLIENT_GRADE": {
-                "path": "GCSS_CLIENT_GRADE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_CLIENT_LEVEL": {
-                "path": "GCSS_CLIENT_LEVEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_CLIENT_NAME": {
-                "path": "GCSS_CLIENT_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_CLIENT_NUM": {
-                "path": "GCSS_CLIENT_NUM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_SERVICE": {
-                "path": "GCSS_SERVICE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_SERVICE_LEVEL": {
-                "path": "GCSS_SERVICE_LEVEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_SERVICE_NUM": {
-                "path": "GCSS_SERVICE_NUM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "GCSS_SERVICE_TYPE": {
-                "path": "GCSS_SERVICE_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "HAS_FIBER_ADJUST_PLAN": {
-                "path": "HAS_FIBER_ADJUST_PLAN",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "HOME_CLIENT_NUM": {
-                "path": "HOME_CLIENT_NUM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ID": {
-                "path": "ID",
-                "status": "removed",
-                "type": "string",
-                "value": "2695e447-c43e-4125-9521-90c3a13baa75"
-            },
-            "INTERFERENCE_FLAG": {
-                "path": "INTERFERENCE_FLAG",
-                "status": "removed",
-                "type": "string",
-                "value": "0"
-            },
-            "INT_ID": {
-                "path": "INT_ID",
-                "status": "removed",
-                "type": "string",
-                "value": "0"
-            },
-            "IRMS_GRID_NAME": {
-                "path": "IRMS_GRID_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "IS_EFFECT_HIGHSPEED": {
-                "path": "IS_EFFECT_HIGHSPEED",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "IS_EOTDR": {
-                "path": "IS_EOTDR",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "IS_FIBER_ADJUST_FIRST": {
-                "path": "IS_FIBER_ADJUST_FIRST",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "LAYER_RATE": {
-                "path": "LAYER_RATE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "LAY_SECTION_CENTER_LAT": {
-                "path": "LAY_SECTION_CENTER_LAT",
-                "status": "same",
-                "type": "string",
-                "value": "24.89564528261185"
-            },
-            "LAY_SECTION_CENTER_LON": {
-                "path": "LAY_SECTION_CENTER_LON",
-                "status": "same",
-                "type": "string",
-                "value": "118.618993312113"
-            },
-            "LOCATE_INFO": {
-                "path": "LOCATE_INFO",
-                "status": "same",
-                "type": "string",
-                "value": "长度:17米;坐标:LINESTRING(118.619059342156 24.8955970985265,118.61892728207 24.8956934666972)"
-            },
-            "LOGIC_ALARM_TYPE": {
-                "path": "LOGIC_ALARM_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "LOGIC_SUB_ALARM_TYPE": {
-                "path": "LOGIC_SUB_ALARM_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "MACHINE_ROOM_INFO": {
-                "path": "MACHINE_ROOM_INFO",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "MAINTAIN_GROUP": {
-                "path": "MAINTAIN_GROUP",
-                "status": "same",
-                "type": "string",
-                "value": "泉州丰泽嘉环公司传输线路维护组1"
-            },
-            "NETWORK_TYPE": {
-                "path": "NETWORK_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "NETWORK_TYPE_TOP": {
-                "path": "NETWORK_TYPE_TOP",
-                "status": "same",
-                "type": "string",
-                "value": "4"
-            },
-            "NE_ADMIN_STATUS": {
-                "path": "NE_ADMIN_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "NE_IP": {
-                "path": "NE_IP",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "NE_LABEL": {
-                "path": "NE_LABEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "NE_LOCATION": {
-                "path": "NE_LOCATION",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "NMS_ALARM_ID": {
-                "path": "NMS_ALARM_ID",
-                "status": "same",
-                "type": "string",
-                "value": "578844411"
-            },
-            "NMS_NAME": {
-                "path": "NMS_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "OBJECT_CLASS": {
-                "path": "OBJECT_CLASS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "OBJECT_CLASS_TEXT": {
-                "path": "OBJECT_CLASS_TEXT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "OBJECT_LEVEL": {
-                "path": "OBJECT_LEVEL",
-                "status": "removed",
-                "type": "string",
-                "value": "0"
-            },
-            "ORG_SEVERITY": {
-                "path": "ORG_SEVERITY",
-                "status": "same",
-                "type": "string",
-                "value": "2"
-            },
-            "ORG_TEXT": {
-                "path": "ORG_TEXT",
-                "status": "removed",
-                "type": "string",
-                "value": "4_;__;泉州市_;1_;丰泽区_;泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段_;1100005_;__;__;1_;__;__;0_;2_;__;__;__;__;【高速高铁】泉州市丰泽区传输外线光缆中断事件_;传输外线光缆中断事件_;WLSJ-WL-CS-02-80-9001_;__;__;__;578844411_;__;__;2026-05-13 17:15:19_;1778637012_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;__;0_;2_;__;__;__;__;泉州丰泽嘉环公司传输线路维护组1_;__;__;__;__;350500_;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;40_;__;__;__;0_;__;__;__;__;__;1_;2_;__;__;__;__;1005_;__;__;__;__;__;__;__;__;GZEVENT317d1e465b444c10_;0_;1001_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_"
-            },
-            "ORG_TYPE": {
-                "path": "ORG_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ORIG_ALARM_CLEAR_FP": {
-                "path": "ORIG_ALARM_CLEAR_FP",
-                "status": "removed",
-                "type": "string",
-                "value": "1778663719_9831242413_3557417254_1880115533_93106"
-            },
-            "ORIG_ALARM_FP": {
-                "path": "ORIG_ALARM_FP",
-                "status": "removed",
-                "type": "string",
-                "value": "1778663719_9831242413_3557417254_1880115533_93106"
-            },
-            "PORT_NUM": {
-                "path": "PORT_NUM",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_CITY_ID": {
-                "path": "POS_REAL_CITY_ID",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_CITY_NAME": {
-                "path": "POS_REAL_CITY_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_DESC": {
-                "path": "POS_REAL_DESC",
-                "status": "same",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_LATITUDE": {
-                "path": "POS_REAL_LATITUDE",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_LONGITUDE": {
-                "path": "POS_REAL_LONGITUDE",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_REGION_ID": {
-                "path": "POS_REAL_REGION_ID",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_REGION_NAME": {
-                "path": "POS_REAL_REGION_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "PREHANDLE": {
-                "path": "PREHANDLE",
-                "status": "removed",
-                "type": "string",
-                "value": "0"
-            },
-            "PREPROCESS_MANNER": {
-                "path": "PREPROCESS_MANNER",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROBABLE_CAUSE": {
-                "path": "PROBABLE_CAUSE",
-                "status": "removed",
-                "type": "null",
-                "value": null
-            },
-            "PROBABLE_CAUSE_TXT": {
-                "path": "PROBABLE_CAUSE_TXT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PRODUCT_TYPE": {
-                "path": "PRODUCT_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROFESSIONAL_TYPE": {
-                "path": "PROFESSIONAL_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": "2"
-            },
-            "PROJ_END_TIME": {
-                "path": "PROJ_END_TIME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROJ_NAME": {
-                "path": "PROJ_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROJ_OA_FILE_CONTENT": {
-                "path": "PROJ_OA_FILE_CONTENT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROJ_OA_FILE_ID": {
-                "path": "PROJ_OA_FILE_ID",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROJ_START_TIME": {
-                "path": "PROJ_START_TIME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "PROV_BACKBONE_ONLY": {
-                "path": "PROV_BACKBONE_ONLY",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "REDEFINE_SEVERITY": {
-                "path": "REDEFINE_SEVERITY",
-                "status": "same",
-                "type": "number",
-                "value": 2
-            },
-            "REGION_ID": {
-                "path": "REGION_ID",
-                "status": "removed",
-                "type": "string",
-                "value": null
-            },
-            "REGION_NAME": {
-                "path": "REGION_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "泉州市"
-            },
-            "RELATED_MAINTAIN_GROUP": {
-                "path": "RELATED_MAINTAIN_GROUP",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "REMOTE_CITY_ID": {
-                "path": "REMOTE_CITY_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350503"
-            },
-            "REMOTE_CITY_NAME": {
-                "path": "REMOTE_CITY_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "丰泽区"
-            },
-            "REMOTE_EQP_LABEL": {
-                "path": "REMOTE_EQP_LABEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "REMOTE_INT_ID": {
-                "path": "REMOTE_INT_ID",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "REMOTE_OBJECT_CLASS": {
-                "path": "REMOTE_OBJECT_CLASS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "REMOTE_PROJ_SUB_STATUS": {
-                "path": "REMOTE_PROJ_SUB_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "REMOTE_REGION_ID": {
-                "path": "REMOTE_REGION_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350500"
-            },
-            "REMOTE_REGION_NAME": {
-                "path": "REMOTE_REGION_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "泉州市"
-            },
-            "REMOTE_RESOURCE_STATUS": {
-                "path": "REMOTE_RESOURCE_STATUS",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ROOT_EQP_LABEL": {
-                "path": "ROOT_EQP_LABEL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "ROOT_NETWORK_TYPE_TOP": {
-                "path": "ROOT_NETWORK_TYPE_TOP",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SEND_JT_FLAG": {
-                "path": "SEND_JT_FLAG",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SITE_TYPE": {
-                "path": "SITE_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD14": {
-                "path": "SPECIAL_FIELD14",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD17": {
-                "path": "SPECIAL_FIELD17",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD18": {
-                "path": "SPECIAL_FIELD18",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD2": {
-                "path": "SPECIAL_FIELD2",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD20": {
-                "path": "SPECIAL_FIELD20",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD21": {
-                "path": "SPECIAL_FIELD21",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SPECIAL_FIELD7": {
-                "path": "SPECIAL_FIELD7",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SRC_APP_ID": {
-                "path": "SRC_APP_ID",
-                "status": "removed",
-                "type": "string",
-                "value": "1001"
-            },
-            "SRC_ID": {
-                "path": "SRC_ID",
-                "status": "removed",
-                "type": "string",
-                "value": "GZEVENT317d1e465b444c10"
-            },
-            "SRC_IS_TEST": {
-                "path": "SRC_IS_TEST",
-                "status": "removed",
-                "type": "number",
-                "value": 0
-            },
-            "SRC_ORG_ID": {
-                "path": "SRC_ORG_ID",
-                "status": "removed",
-                "type": "string",
-                "value": "1778663719_9831242413_3557417254_1880115533_93106"
-            },
-            "STANDARD_ALARM_ID": {
-                "path": "STANDARD_ALARM_ID",
-                "status": "same",
-                "type": "string",
-                "value": "WLSJ-WL-CS-02-80-9001"
-            },
-            "STANDARD_ALARM_NAME": {
-                "path": "STANDARD_ALARM_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "传输外线光缆中断事件"
-            },
-            "STANDARD_FLAG": {
-                "path": "STANDARD_FLAG",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "SUB_ALARM_TYPE": {
-                "path": "SUB_ALARM_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "TIME_STAMP": {
-                "path": "TIME_STAMP",
-                "status": "removed",
-                "type": "string",
-                "value": "1778637012"
-            },
-            "TIME_STAMP_C": {
-                "path": "TIME_STAMP_C",
-                "status": "removed",
-                "type": "string",
-                "value": "2026-05-11 16:59:19"
-            },
-            "TITLE_TEXT": {
-                "path": "TITLE_TEXT",
-                "status": "same",
-                "type": "string",
-                "value": "【高速高铁】泉州市丰泽区传输外线光缆中断事件"
-            },
-            "TMSC_CAT": {
-                "path": "TMSC_CAT",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "TOPIC_PARTITION": {
-                "path": "TOPIC_PARTITION",
-                "status": "removed",
-                "type": "number",
-                "value": 7
-            },
-            "TOPIC_PREFIX": {
-                "path": "TOPIC_PREFIX",
-                "status": "removed",
-                "type": "string",
-                "value": "EVENT-GZ"
-            },
-            "TYPE_KEYCODE": {
-                "path": "TYPE_KEYCODE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "VENDOR_ID": {
-                "path": "VENDOR_ID",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "VENDOR_NAME": {
-                "path": "VENDOR_NAME",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "VENDOR_SEVERITY": {
-                "path": "VENDOR_SEVERITY",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "VENDOR_TYPE": {
-                "path": "VENDOR_TYPE",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "custGroupFeature": {
-                "path": "custGroupFeature",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "industryCustType": {
-                "path": "industryCustType",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "strategicCustTypeFL": {
-                "path": "strategicCustTypeFL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            },
-            "strategicCustTypeSL": {
-                "path": "strategicCustTypeSL",
-                "status": "removed",
-                "type": "string",
-                "value": ""
-            }
-        },
-        "right_tree": {
-            "ACTIVE_STATUS": {
-                "path": "ACTIVE_STATUS",
-                "status": "same",
-                "type": "string",
-                "value": "1"
-            },
-            "ADMIN_GRID_ID": {
-                "path": "ADMIN_GRID_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_ABNORMAL_TYPE": {
-                "path": "ALARM_ABNORMAL_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_EQP_STATUS": {
-                "path": "ALARM_EQP_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_EXPLANATION": {
-                "path": "ALARM_EXPLANATION",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_EXPLANATION_ADDITION": {
-                "path": "ALARM_EXPLANATION_ADDITION",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_NE_STATUS": {
-                "path": "ALARM_NE_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_REASON": {
-                "path": "ALARM_REASON",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_RESOURCE_STATUS": {
-                "path": "ALARM_RESOURCE_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_SOURCE": {
-                "path": "ALARM_SOURCE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ALARM_TEXT": {
-                "path": "ALARM_TEXT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ASSIGN_TENANCE_GROUP": {
-                "path": "ASSIGN_TENANCE_GROUP",
-                "status": "same",
-                "type": "string",
-                "value": "泉州丰泽嘉环公司传输线路维护组1"
-            },
-            "BOARD_TYPE": {
-                "path": "BOARD_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "BUSINESS_LAYER": {
-                "path": "BUSINESS_LAYER",
-                "status": "same",
-                "type": "string",
-                "value": "1005"
-            },
-            "BUSINESS_LAYER_CN": {
-                "path": "BUSINESS_LAYER_CN",
-                "status": "same",
-                "type": "string",
-                "value": "本地接入"
-            },
-            "BUSINESS_REGIONS": {
-                "path": "BUSINESS_REGIONS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "BUSINESS_REGION_IDS": {
-                "path": "BUSINESS_REGION_IDS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "BUSINESS_SYSTEM": {
-                "path": "BUSINESS_SYSTEM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "BUSINESS_TYPE": {
-                "path": "BUSINESS_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "CANCEL_TIME": {
-                "left": null,
-                "path": "CANCEL_TIME",
-                "right": "",
-                "status": "different",
-                "type": "string"
-            },
-            "CFP0_CFP1_CFP2_CFP3": {
-                "left": null,
-                "path": "CFP0_CFP1_CFP2_CFP3",
-                "right": "135201000000001729274198_029",
-                "status": "different",
-                "type": "string"
-            },
-            "CIRCUIT_ID": {
-                "path": "CIRCUIT_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "CIRCUIT_LEVEL": {
-                "path": "CIRCUIT_LEVEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "CIRCUIT_NO": {
-                "path": "CIRCUIT_NO",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "CITY_ID": {
-                "path": "CITY_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350503"
-            },
-            "CITY_NAME": {
-                "path": "CITY_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "丰泽区"
-            },
-            "CREATION_EVENT_TIME": {
-                "left": null,
-                "path": "CREATION_EVENT_TIME",
-                "right": "2026-05-13 09:50:12",
-                "status": "different",
-                "type": "string"
-            },
-            "EFFECT_CIRCUIT_NUM": {
-                "path": "EFFECT_CIRCUIT_NUM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EFFECT_NE": {
-                "path": "EFFECT_NE",
-                "status": "added",
-                "type": "number",
-                "value": null
-            },
-            "EFFECT_SERVICE": {
-                "path": "EFFECT_SERVICE",
-                "status": "added",
-                "type": "number",
-                "value": null
-            },
-            "EQP_LABEL": {
-                "left": null,
-                "path": "EQP_LABEL",
-                "right": "泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
-                "status": "different",
-                "type": "string"
-            },
-            "EQP_OBJECT_CLASS": {
-                "path": "EQP_OBJECT_CLASS",
-                "status": "same",
-                "type": "string",
-                "value": "1100005"
-            },
-            "EQP_OBJECT_NAME": {
-                "path": "EQP_OBJECT_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "管道段"
-            },
-            "EVENT_ALARM_REASON": {
-                "path": "EVENT_ALARM_REASON",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_ARRIVAL_TIME": {
-                "path": "EVENT_ARRIVAL_TIME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_CAT": {
-                "path": "EVENT_CAT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_EFFECT_DESC": {
-                "path": "EVENT_EFFECT_DESC",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_ROOT_CATEGORY": {
-                "path": "EVENT_ROOT_CATEGORY",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_SOURCE": {
-                "path": "EVENT_SOURCE",
-                "status": "same",
-                "type": "string",
-                "value": "20"
-            },
-            "EVENT_SUMMARY": {
-                "path": "EVENT_SUMMARY",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EVENT_TIME": {
-                "left": null,
-                "path": "EVENT_TIME",
-                "right": "2026-05-13 09:50:12",
-                "status": "different",
-                "type": "string"
-            },
-            "EXTRA_ID2": {
-                "path": "EXTRA_ID2",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "EXTRA_STRING1": {
-                "path": "EXTRA_STRING1",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "FAULT_LOCATION": {
-                "path": "FAULT_LOCATION",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "FIBER_ADJUST_LABEL": {
-                "left": null,
-                "path": "FIBER_ADJUST_LABEL",
-                "right": "高速高铁",
-                "status": "different",
-                "type": "string"
-            },
-            "FP0_FP1_FP2_FP3": {
-                "left": null,
-                "path": "FP0_FP1_FP2_FP3",
-                "right": "135201000000001729274198_029",
-                "status": "different",
-                "type": "string"
-            },
-            "GCSS_CLIENT": {
-                "path": "GCSS_CLIENT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_CLIENT_GRADE": {
-                "path": "GCSS_CLIENT_GRADE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_CLIENT_LEVEL": {
-                "path": "GCSS_CLIENT_LEVEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_CLIENT_NAME": {
-                "path": "GCSS_CLIENT_NAME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_CLIENT_NUM": {
-                "path": "GCSS_CLIENT_NUM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_SERVICE": {
-                "path": "GCSS_SERVICE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_SERVICE_LEVEL": {
-                "path": "GCSS_SERVICE_LEVEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_SERVICE_NUM": {
-                "path": "GCSS_SERVICE_NUM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "GCSS_SERVICE_TYPE": {
-                "path": "GCSS_SERVICE_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "HAS_FIBER_ADJUST_PLAN": {
-                "path": "HAS_FIBER_ADJUST_PLAN",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "HOME_CLIENT_NUM": {
-                "path": "HOME_CLIENT_NUM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ID": {
-                "path": "ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "INTERFERENCE_FLAG": {
-                "path": "INTERFERENCE_FLAG",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "INT_ID": {
-                "path": "INT_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "IRMS_GRID_NAME": {
-                "path": "IRMS_GRID_NAME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "IS_EFFECT_HIGHSPEED": {
-                "path": "IS_EFFECT_HIGHSPEED",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "IS_EOTDR": {
-                "path": "IS_EOTDR",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "IS_FIBER_ADJUST_FIRST": {
-                "path": "IS_FIBER_ADJUST_FIRST",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "LAYER_RATE": {
-                "path": "LAYER_RATE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "LAY_SECTION_CENTER_LAT": {
-                "path": "LAY_SECTION_CENTER_LAT",
-                "status": "same",
-                "type": "string",
-                "value": "24.89564528261185"
-            },
-            "LAY_SECTION_CENTER_LON": {
-                "path": "LAY_SECTION_CENTER_LON",
-                "status": "same",
-                "type": "string",
-                "value": "118.618993312113"
-            },
-            "LOCATE_INFO": {
-                "path": "LOCATE_INFO",
-                "status": "same",
-                "type": "string",
-                "value": "长度:17米;坐标:LINESTRING(118.619059342156 24.8955970985265,118.61892728207 24.8956934666972)"
-            },
-            "LOGIC_ALARM_TYPE": {
-                "path": "LOGIC_ALARM_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "LOGIC_SUB_ALARM_TYPE": {
-                "path": "LOGIC_SUB_ALARM_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "MACHINE_ROOM_INFO": {
-                "path": "MACHINE_ROOM_INFO",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "MAINTAIN_GROUP": {
-                "path": "MAINTAIN_GROUP",
-                "status": "same",
-                "type": "string",
-                "value": "泉州丰泽嘉环公司传输线路维护组1"
-            },
-            "NETWORK_TYPE": {
-                "path": "NETWORK_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "NETWORK_TYPE_TOP": {
-                "path": "NETWORK_TYPE_TOP",
-                "status": "same",
-                "type": "string",
-                "value": "4"
-            },
-            "NE_ADMIN_STATUS": {
-                "path": "NE_ADMIN_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "NE_IP": {
-                "path": "NE_IP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "NE_LABEL": {
-                "path": "NE_LABEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "NE_LOCATION": {
-                "path": "NE_LOCATION",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "NMS_ALARM_ID": {
-                "path": "NMS_ALARM_ID",
-                "status": "same",
-                "type": "string",
-                "value": "578844411"
-            },
-            "NMS_NAME": {
-                "path": "NMS_NAME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "OBJECT_CLASS": {
-                "path": "OBJECT_CLASS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "OBJECT_CLASS_TEXT": {
-                "path": "OBJECT_CLASS_TEXT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "OBJECT_LEVEL": {
-                "path": "OBJECT_LEVEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ORG_SEVERITY": {
-                "path": "ORG_SEVERITY",
-                "status": "same",
-                "type": "string",
-                "value": "2"
-            },
-            "ORG_TEXT": {
-                "path": "ORG_TEXT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ORG_TYPE": {
-                "path": "ORG_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ORIG_ALARM_CLEAR_FP": {
-                "path": "ORIG_ALARM_CLEAR_FP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ORIG_ALARM_FP": {
-                "path": "ORIG_ALARM_FP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PORT_NUM": {
-                "path": "PORT_NUM",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "POS_REAL_CITY_ID": {
-                "path": "POS_REAL_CITY_ID",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_CITY_NAME": {
-                "path": "POS_REAL_CITY_NAME",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_DESC": {
-                "path": "POS_REAL_DESC",
-                "status": "same",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_LATITUDE": {
-                "path": "POS_REAL_LATITUDE",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_LONGITUDE": {
-                "path": "POS_REAL_LONGITUDE",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_REGION_ID": {
-                "path": "POS_REAL_REGION_ID",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "POS_REAL_REGION_NAME": {
-                "path": "POS_REAL_REGION_NAME",
-                "status": "added",
-                "type": "string",
-                "value": ""
-            },
-            "PREHANDLE": {
-                "path": "PREHANDLE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PREPROCESS_MANNER": {
-                "path": "PREPROCESS_MANNER",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROBABLE_CAUSE": {
-                "path": "PROBABLE_CAUSE",
-                "status": "added",
-                "type": "null",
-                "value": null
-            },
-            "PROBABLE_CAUSE_TXT": {
-                "path": "PROBABLE_CAUSE_TXT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PRODUCT_TYPE": {
-                "path": "PRODUCT_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROFESSIONAL_TYPE": {
-                "path": "PROFESSIONAL_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROJ_END_TIME": {
-                "path": "PROJ_END_TIME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROJ_NAME": {
-                "path": "PROJ_NAME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROJ_OA_FILE_CONTENT": {
-                "path": "PROJ_OA_FILE_CONTENT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROJ_OA_FILE_ID": {
-                "path": "PROJ_OA_FILE_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROJ_START_TIME": {
-                "path": "PROJ_START_TIME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "PROV_BACKBONE_ONLY": {
-                "path": "PROV_BACKBONE_ONLY",
-                "status": "same",
-                "type": "string",
-                "value": "0"
-            },
-            "REDEFINE_SEVERITY": {
-                "path": "REDEFINE_SEVERITY",
-                "status": "same",
-                "type": "number",
-                "value": "2"
-            },
-            "REGION_ID": {
-                "path": "REGION_ID",
-                "status": "added",
-                "type": "string",
-                "value": "350500"
-            },
-            "REGION_NAME": {
-                "path": "REGION_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "泉州市"
-            },
-            "RELATED_MAINTAIN_GROUP": {
-                "path": "RELATED_MAINTAIN_GROUP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "REMOTE_CITY_ID": {
-                "path": "REMOTE_CITY_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350503"
-            },
-            "REMOTE_CITY_NAME": {
-                "path": "REMOTE_CITY_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "丰泽区"
-            },
-            "REMOTE_EQP_LABEL": {
-                "path": "REMOTE_EQP_LABEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "REMOTE_INT_ID": {
-                "path": "REMOTE_INT_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "REMOTE_OBJECT_CLASS": {
-                "path": "REMOTE_OBJECT_CLASS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "REMOTE_PROJ_SUB_STATUS": {
-                "path": "REMOTE_PROJ_SUB_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "REMOTE_REGION_ID": {
-                "path": "REMOTE_REGION_ID",
-                "status": "same",
-                "type": "string",
-                "value": "350500"
-            },
-            "REMOTE_REGION_NAME": {
-                "path": "REMOTE_REGION_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "泉州市"
-            },
-            "REMOTE_RESOURCE_STATUS": {
-                "path": "REMOTE_RESOURCE_STATUS",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ROOT_EQP_LABEL": {
-                "path": "ROOT_EQP_LABEL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "ROOT_NETWORK_TYPE_TOP": {
-                "path": "ROOT_NETWORK_TYPE_TOP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SEND_JT_FLAG": {
-                "path": "SEND_JT_FLAG",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SITE_TYPE": {
-                "path": "SITE_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD14": {
-                "path": "SPECIAL_FIELD14",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD17": {
-                "path": "SPECIAL_FIELD17",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD18": {
-                "path": "SPECIAL_FIELD18",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD2": {
-                "path": "SPECIAL_FIELD2",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD20": {
-                "path": "SPECIAL_FIELD20",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD21": {
-                "path": "SPECIAL_FIELD21",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SPECIAL_FIELD7": {
-                "path": "SPECIAL_FIELD7",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SRC_APP_ID": {
-                "path": "SRC_APP_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SRC_ID": {
-                "path": "SRC_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SRC_IS_TEST": {
-                "path": "SRC_IS_TEST",
-                "status": "added",
-                "type": "number",
-                "value": null
-            },
-            "SRC_ORG_ID": {
-                "path": "SRC_ORG_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "STANDARD_ALARM_ID": {
-                "path": "STANDARD_ALARM_ID",
-                "status": "same",
-                "type": "string",
-                "value": "WLSJ-WL-CS-02-80-9001"
-            },
-            "STANDARD_ALARM_NAME": {
-                "path": "STANDARD_ALARM_NAME",
-                "status": "same",
-                "type": "string",
-                "value": "传输外线光缆中断事件"
-            },
-            "STANDARD_FLAG": {
-                "path": "STANDARD_FLAG",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "SUB_ALARM_TYPE": {
-                "path": "SUB_ALARM_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "TIME_STAMP": {
-                "path": "TIME_STAMP",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "TIME_STAMP_C": {
-                "path": "TIME_STAMP_C",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "TITLE_TEXT": {
-                "path": "TITLE_TEXT",
-                "status": "same",
-                "type": "string",
-                "value": "【高速高铁】泉州市丰泽区传输外线光缆中断事件"
-            },
-            "TMSC_CAT": {
-                "path": "TMSC_CAT",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "TOPIC_PARTITION": {
-                "path": "TOPIC_PARTITION",
-                "status": "added",
-                "type": "number",
-                "value": null
-            },
-            "TOPIC_PREFIX": {
-                "path": "TOPIC_PREFIX",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "TYPE_KEYCODE": {
-                "path": "TYPE_KEYCODE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "VENDOR_ID": {
-                "path": "VENDOR_ID",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "VENDOR_NAME": {
-                "path": "VENDOR_NAME",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "VENDOR_SEVERITY": {
-                "path": "VENDOR_SEVERITY",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "VENDOR_TYPE": {
-                "path": "VENDOR_TYPE",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "custGroupFeature": {
-                "path": "custGroupFeature",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "industryCustType": {
-                "path": "industryCustType",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "strategicCustTypeFL": {
-                "path": "strategicCustTypeFL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            },
-            "strategicCustTypeSL": {
-                "path": "strategicCustTypeSL",
-                "status": "added",
-                "type": "string",
-                "value": null
-            }
-        },
-        "stats": {
-            "added": 0,
-            "different": 7,
-            "removed": 118,
-            "same": 30,
-            "total": 155
-        }
+  "success": true,
+  "data": {
+    "left_tree": {
+      "ACTIVE_STATUS": {
+        "status": "same",
+        "value": "1",
+        "path": "ACTIVE_STATUS",
+        "type": "string"
+      },
+      "ADMIN_GRID_ID": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ADMIN_GRID_ID",
+        "type": "string"
+      },
+      "ALARM_ABNORMAL_TYPE": {
+        "status": "removed",
+        "left": "40",
+        "right": null,
+        "path": "ALARM_ABNORMAL_TYPE",
+        "type": "string"
+      },
+      "ALARM_EQP_STATUS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EQP_STATUS",
+        "type": "string"
+      },
+      "ALARM_EXPLANATION": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EXPLANATION",
+        "type": "string"
+      },
+      "ALARM_EXPLANATION_ADDITION": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EXPLANATION_ADDITION",
+        "type": "string"
+      },
+      "ALARM_NE_STATUS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_NE_STATUS",
+        "type": "string"
+      },
+      "ALARM_REASON": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_REASON",
+        "type": "string"
+      },
+      "ALARM_RESOURCE_STATUS": {
+        "status": "removed",
+        "left": "1",
+        "right": null,
+        "path": "ALARM_RESOURCE_STATUS",
+        "type": "string"
+      },
+      "ALARM_SOURCE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_SOURCE",
+        "type": "string"
+      },
+      "ALARM_TEXT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ALARM_TEXT",
+        "type": "string"
+      },
+      "ASSIGN_TENANCE_GROUP": {
+        "status": "same",
+        "value": "泉州丰泽嘉环公司传输线路维护组1",
+        "path": "ASSIGN_TENANCE_GROUP",
+        "type": "string"
+      },
+      "BOARD_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "BOARD_TYPE",
+        "type": "string"
+      },
+      "BUSINESS_LAYER": {
+        "status": "same",
+        "value": "1005",
+        "path": "BUSINESS_LAYER",
+        "type": "string"
+      },
+      "BUSINESS_LAYER_CN": {
+        "status": "same",
+        "value": "本地接入",
+        "path": "BUSINESS_LAYER_CN",
+        "type": "string"
+      },
+      "BUSINESS_REGIONS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_REGIONS",
+        "type": "string"
+      },
+      "BUSINESS_REGION_IDS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_REGION_IDS",
+        "type": "string"
+      },
+      "BUSINESS_SYSTEM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_SYSTEM",
+        "type": "string"
+      },
+      "BUSINESS_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_TYPE",
+        "type": "string"
+      },
+      "CANCEL_TIME": {
+        "status": "different",
+        "left": "2026-05-11 16:59:19",
+        "right": "",
+        "path": "CANCEL_TIME",
+        "type": "string"
+      },
+      "CFP0_CFP1_CFP2_CFP3": {
+        "status": "different",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": "135201000000001729274198_029",
+        "path": "CFP0_CFP1_CFP2_CFP3",
+        "type": "string"
+      },
+      "CIRCUIT_ID": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_ID",
+        "type": "string"
+      },
+      "CIRCUIT_LEVEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_LEVEL",
+        "type": "string"
+      },
+      "CIRCUIT_NO": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_NO",
+        "type": "string"
+      },
+      "CITY_ID": {
+        "status": "same",
+        "value": "350503",
+        "path": "CITY_ID",
+        "type": "string"
+      },
+      "CITY_NAME": {
+        "status": "same",
+        "value": "丰泽区",
+        "path": "CITY_NAME",
+        "type": "string"
+      },
+      "CREATION_EVENT_TIME": {
+        "status": "different",
+        "left": "2026-05-13 17:15:19",
+        "right": "2026-05-13 09:50:12",
+        "path": "CREATION_EVENT_TIME",
+        "type": "string"
+      },
+      "EFFECT_CIRCUIT_NUM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "EFFECT_CIRCUIT_NUM",
+        "type": "string"
+      },
+      "EFFECT_NE": {
+        "status": "removed",
+        "left": 1,
+        "right": null,
+        "path": "EFFECT_NE",
+        "type": "number"
+      },
+      "EFFECT_SERVICE": {
+        "status": "removed",
+        "left": 2,
+        "right": null,
+        "path": "EFFECT_SERVICE",
+        "type": "number"
+      },
+      "EQP_LABEL": {
+        "status": "different",
+        "left": "【测试】泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
+        "right": "泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
+        "path": "EQP_LABEL",
+        "type": "string"
+      },
+      "EQP_OBJECT_CLASS": {
+        "status": "same",
+        "value": "1100005",
+        "path": "EQP_OBJECT_CLASS",
+        "type": "string"
+      },
+      "EQP_OBJECT_NAME": {
+        "status": "same",
+        "value": "管道段",
+        "path": "EQP_OBJECT_NAME",
+        "type": "string"
+      },
+      "EVENT_ALARM_REASON": {
+        "status": "removed",
+        "left": "定界结果：初判为光缆中断；\n定位结论：。",
+        "right": null,
+        "path": "EVENT_ALARM_REASON",
+        "type": "string"
+      },
+      "EVENT_ARRIVAL_TIME": {
+        "status": "removed",
+        "left": "2026-05-13 17:15:19",
+        "right": null,
+        "path": "EVENT_ARRIVAL_TIME",
+        "type": "string"
+      },
+      "EVENT_CAT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "EVENT_CAT",
+        "type": "string"
+      },
+      "EVENT_EFFECT_DESC": {
+        "status": "removed",
+        "left": "\n网络影响：泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段；\n业务影响：基站业务；\n社会影响：暂无投诉。\n",
+        "right": null,
+        "path": "EVENT_EFFECT_DESC",
+        "type": "string"
+      },
+      "EVENT_ROOT_CATEGORY": {
+        "status": "removed",
+        "left": "传输线路故障或连接件故障",
+        "right": null,
+        "path": "EVENT_ROOT_CATEGORY",
+        "type": "string"
+      },
+      "EVENT_SOURCE": {
+        "status": "same",
+        "value": "20",
+        "path": "EVENT_SOURCE",
+        "type": "string"
+      },
+      "EVENT_SUMMARY": {
+        "status": "removed",
+        "left": "1、核查是否工程操作：否；2、核查是否对端板件故障：否；3.核实是否对端设备退服：否；4、若以上条件均不满足，判断为光缆中断导致",
+        "right": null,
+        "path": "EVENT_SUMMARY",
+        "type": "string"
+      },
+      "EVENT_TIME": {
+        "status": "different",
+        "left": "2026-05-13 17:15:19",
+        "right": "2026-05-13 09:50:12",
+        "path": "EVENT_TIME",
+        "type": "string"
+      },
+      "EXTRA_ID2": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "EXTRA_ID2",
+        "type": "string"
+      },
+      "EXTRA_STRING1": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "EXTRA_STRING1",
+        "type": "string"
+      },
+      "FAULT_LOCATION": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "FAULT_LOCATION",
+        "type": "string"
+      },
+      "FIBER_ADJUST_LABEL": {
+        "status": "different",
+        "left": "",
+        "right": "高速高铁",
+        "path": "FIBER_ADJUST_LABEL",
+        "type": "string"
+      },
+      "FP0_FP1_FP2_FP3": {
+        "status": "different",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": "135201000000001729274198_029",
+        "path": "FP0_FP1_FP2_FP3",
+        "type": "string"
+      },
+      "GCSS_CLIENT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT",
+        "type": "string"
+      },
+      "GCSS_CLIENT_GRADE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_GRADE",
+        "type": "string"
+      },
+      "GCSS_CLIENT_LEVEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_LEVEL",
+        "type": "string"
+      },
+      "GCSS_CLIENT_NAME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_NAME",
+        "type": "string"
+      },
+      "GCSS_CLIENT_NUM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_NUM",
+        "type": "string"
+      },
+      "GCSS_SERVICE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE",
+        "type": "string"
+      },
+      "GCSS_SERVICE_LEVEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_LEVEL",
+        "type": "string"
+      },
+      "GCSS_SERVICE_NUM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_NUM",
+        "type": "string"
+      },
+      "GCSS_SERVICE_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_TYPE",
+        "type": "string"
+      },
+      "HAS_FIBER_ADJUST_PLAN": {
+        "status": "same",
+        "value": "0",
+        "path": "HAS_FIBER_ADJUST_PLAN",
+        "type": "string"
+      },
+      "HOME_CLIENT_NUM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "HOME_CLIENT_NUM",
+        "type": "string"
+      },
+      "ID": {
+        "status": "removed",
+        "left": "2695e447-c43e-4125-9521-90c3a13baa75",
+        "right": null,
+        "path": "ID",
+        "type": "string"
+      },
+      "INTERFERENCE_FLAG": {
+        "status": "removed",
+        "left": "0",
+        "right": null,
+        "path": "INTERFERENCE_FLAG",
+        "type": "string"
+      },
+      "INT_ID": {
+        "status": "removed",
+        "left": "0",
+        "right": null,
+        "path": "INT_ID",
+        "type": "string"
+      },
+      "IRMS_GRID_NAME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "IRMS_GRID_NAME",
+        "type": "string"
+      },
+      "IS_EFFECT_HIGHSPEED": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "IS_EFFECT_HIGHSPEED",
+        "type": "string"
+      },
+      "IS_EOTDR": {
+        "status": "same",
+        "value": "0",
+        "path": "IS_EOTDR",
+        "type": "string"
+      },
+      "IS_FIBER_ADJUST_FIRST": {
+        "status": "same",
+        "value": "0",
+        "path": "IS_FIBER_ADJUST_FIRST",
+        "type": "string"
+      },
+      "LAYER_RATE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "LAYER_RATE",
+        "type": "string"
+      },
+      "LAY_SECTION_CENTER_LAT": {
+        "status": "same",
+        "value": "24.89564528261185",
+        "path": "LAY_SECTION_CENTER_LAT",
+        "type": "string"
+      },
+      "LAY_SECTION_CENTER_LON": {
+        "status": "same",
+        "value": "118.618993312113",
+        "path": "LAY_SECTION_CENTER_LON",
+        "type": "string"
+      },
+      "LOCATE_INFO": {
+        "status": "same",
+        "value": "长度:17米;坐标:LINESTRING(118.619059342156 24.8955970985265,118.61892728207 24.8956934666972)",
+        "path": "LOCATE_INFO",
+        "type": "string"
+      },
+      "LOGIC_ALARM_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "LOGIC_ALARM_TYPE",
+        "type": "string"
+      },
+      "LOGIC_SUB_ALARM_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "LOGIC_SUB_ALARM_TYPE",
+        "type": "string"
+      },
+      "MACHINE_ROOM_INFO": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "MACHINE_ROOM_INFO",
+        "type": "string"
+      },
+      "MAINTAIN_GROUP": {
+        "status": "same",
+        "value": "泉州丰泽嘉环公司传输线路维护组1",
+        "path": "MAINTAIN_GROUP",
+        "type": "string"
+      },
+      "NETWORK_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NETWORK_TYPE",
+        "type": "string"
+      },
+      "NETWORK_TYPE_TOP": {
+        "status": "same",
+        "value": "4",
+        "path": "NETWORK_TYPE_TOP",
+        "type": "string"
+      },
+      "NE_ADMIN_STATUS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NE_ADMIN_STATUS",
+        "type": "string"
+      },
+      "NE_IP": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NE_IP",
+        "type": "string"
+      },
+      "NE_LABEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NE_LABEL",
+        "type": "string"
+      },
+      "NE_LOCATION": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NE_LOCATION",
+        "type": "string"
+      },
+      "NMS_ALARM_ID": {
+        "status": "same",
+        "value": "578844411",
+        "path": "NMS_ALARM_ID",
+        "type": "string"
+      },
+      "NMS_NAME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "NMS_NAME",
+        "type": "string"
+      },
+      "OBJECT_CLASS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "OBJECT_CLASS",
+        "type": "string"
+      },
+      "OBJECT_CLASS_TEXT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "OBJECT_CLASS_TEXT",
+        "type": "string"
+      },
+      "OBJECT_LEVEL": {
+        "status": "removed",
+        "left": "0",
+        "right": null,
+        "path": "OBJECT_LEVEL",
+        "type": "string"
+      },
+      "ORG_SEVERITY": {
+        "status": "same",
+        "value": "2",
+        "path": "ORG_SEVERITY",
+        "type": "string"
+      },
+      "ORG_TEXT": {
+        "status": "removed",
+        "left": "4_;__;泉州市_;1_;丰泽区_;泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段_;1100005_;__;__;1_;__;__;0_;2_;__;__;__;__;【高速高铁】泉州市丰泽区传输外线光缆中断事件_;传输外线光缆中断事件_;WLSJ-WL-CS-02-80-9001_;__;__;__;578844411_;__;__;2026-05-13 17:15:19_;1778637012_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;__;0_;2_;__;__;__;__;泉州丰泽嘉环公司传输线路维护组1_;__;__;__;__;350500_;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;40_;__;__;__;0_;__;__;__;__;__;1_;2_;__;__;__;__;1005_;__;__;__;__;__;__;__;__;GZEVENT317d1e465b444c10_;0_;1001_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_",
+        "right": null,
+        "path": "ORG_TEXT",
+        "type": "string"
+      },
+      "ORG_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ORG_TYPE",
+        "type": "string"
+      },
+      "ORIG_ALARM_CLEAR_FP": {
+        "status": "removed",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "ORIG_ALARM_CLEAR_FP",
+        "type": "string"
+      },
+      "ORIG_ALARM_FP": {
+        "status": "removed",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "ORIG_ALARM_FP",
+        "type": "string"
+      },
+      "PORT_NUM": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PORT_NUM",
+        "type": "string"
+      },
+      "POS_REAL_CITY_ID": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_CITY_ID",
+        "type": "string"
+      },
+      "POS_REAL_CITY_NAME": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_CITY_NAME",
+        "type": "string"
+      },
+      "POS_REAL_DESC": {
+        "status": "same",
+        "value": "",
+        "path": "POS_REAL_DESC",
+        "type": "string"
+      },
+      "POS_REAL_LATITUDE": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_LATITUDE",
+        "type": "string"
+      },
+      "POS_REAL_LONGITUDE": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_LONGITUDE",
+        "type": "string"
+      },
+      "POS_REAL_REGION_ID": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_REGION_ID",
+        "type": "string"
+      },
+      "POS_REAL_REGION_NAME": {
+        "status": "removed",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_REGION_NAME",
+        "type": "string"
+      },
+      "PREHANDLE": {
+        "status": "removed",
+        "left": "0",
+        "right": null,
+        "path": "PREHANDLE",
+        "type": "string"
+      },
+      "PREPROCESS_MANNER": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PREPROCESS_MANNER",
+        "type": "string"
+      },
+      "PROBABLE_CAUSE": {
+        "status": "removed",
+        "left": null,
+        "right": null,
+        "path": "PROBABLE_CAUSE",
+        "type": "null"
+      },
+      "PROBABLE_CAUSE_TXT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROBABLE_CAUSE_TXT",
+        "type": "string"
+      },
+      "PRODUCT_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PRODUCT_TYPE",
+        "type": "string"
+      },
+      "PROFESSIONAL_TYPE": {
+        "status": "removed",
+        "left": "2",
+        "right": null,
+        "path": "PROFESSIONAL_TYPE",
+        "type": "string"
+      },
+      "PROJ_END_TIME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROJ_END_TIME",
+        "type": "string"
+      },
+      "PROJ_NAME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROJ_NAME",
+        "type": "string"
+      },
+      "PROJ_OA_FILE_CONTENT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROJ_OA_FILE_CONTENT",
+        "type": "string"
+      },
+      "PROJ_OA_FILE_ID": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROJ_OA_FILE_ID",
+        "type": "string"
+      },
+      "PROJ_START_TIME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "PROJ_START_TIME",
+        "type": "string"
+      },
+      "PROV_BACKBONE_ONLY": {
+        "status": "same",
+        "value": "0",
+        "path": "PROV_BACKBONE_ONLY",
+        "type": "string"
+      },
+      "REDEFINE_SEVERITY": {
+        "status": "same",
+        "value": 2,
+        "path": "REDEFINE_SEVERITY",
+        "type": "number"
+      },
+      "REGION_ID": {
+        "status": "removed",
+        "left": null,
+        "right": "350500",
+        "path": "REGION_ID",
+        "type": "string"
+      },
+      "REGION_NAME": {
+        "status": "same",
+        "value": "泉州市",
+        "path": "REGION_NAME",
+        "type": "string"
+      },
+      "RELATED_MAINTAIN_GROUP": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "RELATED_MAINTAIN_GROUP",
+        "type": "string"
+      },
+      "REMOTE_CITY_ID": {
+        "status": "same",
+        "value": "350503",
+        "path": "REMOTE_CITY_ID",
+        "type": "string"
+      },
+      "REMOTE_CITY_NAME": {
+        "status": "same",
+        "value": "丰泽区",
+        "path": "REMOTE_CITY_NAME",
+        "type": "string"
+      },
+      "REMOTE_EQP_LABEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_EQP_LABEL",
+        "type": "string"
+      },
+      "REMOTE_INT_ID": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_INT_ID",
+        "type": "string"
+      },
+      "REMOTE_OBJECT_CLASS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_OBJECT_CLASS",
+        "type": "string"
+      },
+      "REMOTE_PROJ_SUB_STATUS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_PROJ_SUB_STATUS",
+        "type": "string"
+      },
+      "REMOTE_REGION_ID": {
+        "status": "same",
+        "value": "350500",
+        "path": "REMOTE_REGION_ID",
+        "type": "string"
+      },
+      "REMOTE_REGION_NAME": {
+        "status": "same",
+        "value": "泉州市",
+        "path": "REMOTE_REGION_NAME",
+        "type": "string"
+      },
+      "REMOTE_RESOURCE_STATUS": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_RESOURCE_STATUS",
+        "type": "string"
+      },
+      "ROOT_EQP_LABEL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ROOT_EQP_LABEL",
+        "type": "string"
+      },
+      "ROOT_NETWORK_TYPE_TOP": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "ROOT_NETWORK_TYPE_TOP",
+        "type": "string"
+      },
+      "SEND_JT_FLAG": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SEND_JT_FLAG",
+        "type": "string"
+      },
+      "SITE_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SITE_TYPE",
+        "type": "string"
+      },
+      "SPECIAL_FIELD14": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD14",
+        "type": "string"
+      },
+      "SPECIAL_FIELD17": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD17",
+        "type": "string"
+      },
+      "SPECIAL_FIELD18": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD18",
+        "type": "string"
+      },
+      "SPECIAL_FIELD2": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD2",
+        "type": "string"
+      },
+      "SPECIAL_FIELD20": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD20",
+        "type": "string"
+      },
+      "SPECIAL_FIELD21": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD21",
+        "type": "string"
+      },
+      "SPECIAL_FIELD7": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD7",
+        "type": "string"
+      },
+      "SRC_APP_ID": {
+        "status": "removed",
+        "left": "1001",
+        "right": null,
+        "path": "SRC_APP_ID",
+        "type": "string"
+      },
+      "SRC_ID": {
+        "status": "removed",
+        "left": "GZEVENT317d1e465b444c10",
+        "right": null,
+        "path": "SRC_ID",
+        "type": "string"
+      },
+      "SRC_IS_TEST": {
+        "status": "removed",
+        "left": 0,
+        "right": null,
+        "path": "SRC_IS_TEST",
+        "type": "number"
+      },
+      "SRC_ORG_ID": {
+        "status": "removed",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "SRC_ORG_ID",
+        "type": "string"
+      },
+      "STANDARD_ALARM_ID": {
+        "status": "same",
+        "value": "WLSJ-WL-CS-02-80-9001",
+        "path": "STANDARD_ALARM_ID",
+        "type": "string"
+      },
+      "STANDARD_ALARM_NAME": {
+        "status": "same",
+        "value": "传输外线光缆中断事件",
+        "path": "STANDARD_ALARM_NAME",
+        "type": "string"
+      },
+      "STANDARD_FLAG": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "STANDARD_FLAG",
+        "type": "string"
+      },
+      "SUB_ALARM_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "SUB_ALARM_TYPE",
+        "type": "string"
+      },
+      "TIME_STAMP": {
+        "status": "removed",
+        "left": "1778637012",
+        "right": null,
+        "path": "TIME_STAMP",
+        "type": "string"
+      },
+      "TIME_STAMP_C": {
+        "status": "removed",
+        "left": "2026-05-11 16:59:19",
+        "right": null,
+        "path": "TIME_STAMP_C",
+        "type": "string"
+      },
+      "TITLE_TEXT": {
+        "status": "same",
+        "value": "【高速高铁】泉州市丰泽区传输外线光缆中断事件",
+        "path": "TITLE_TEXT",
+        "type": "string"
+      },
+      "TMSC_CAT": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "TMSC_CAT",
+        "type": "string"
+      },
+      "TOPIC_PARTITION": {
+        "status": "removed",
+        "left": 7,
+        "right": null,
+        "path": "TOPIC_PARTITION",
+        "type": "number"
+      },
+      "TOPIC_PREFIX": {
+        "status": "removed",
+        "left": "EVENT-GZ",
+        "right": null,
+        "path": "TOPIC_PREFIX",
+        "type": "string"
+      },
+      "TYPE_KEYCODE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "TYPE_KEYCODE",
+        "type": "string"
+      },
+      "VENDOR_ID": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_ID",
+        "type": "string"
+      },
+      "VENDOR_NAME": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_NAME",
+        "type": "string"
+      },
+      "VENDOR_SEVERITY": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_SEVERITY",
+        "type": "string"
+      },
+      "VENDOR_TYPE": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_TYPE",
+        "type": "string"
+      },
+      "custGroupFeature": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "custGroupFeature",
+        "type": "string"
+      },
+      "industryCustType": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "industryCustType",
+        "type": "string"
+      },
+      "strategicCustTypeFL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "strategicCustTypeFL",
+        "type": "string"
+      },
+      "strategicCustTypeSL": {
+        "status": "removed",
+        "left": "",
+        "right": null,
+        "path": "strategicCustTypeSL",
+        "type": "string"
+      }
     },
-    "success": true
+    "right_tree": {
+      "ACTIVE_STATUS": {
+        "status": "same",
+        "value": "1",
+        "path": "ACTIVE_STATUS",
+        "type": "string"
+      },
+      "ADMIN_GRID_ID": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ADMIN_GRID_ID",
+        "type": "string"
+      },
+      "ALARM_ABNORMAL_TYPE": {
+        "status": "added",
+        "left": "40",
+        "right": null,
+        "path": "ALARM_ABNORMAL_TYPE",
+        "type": "string"
+      },
+      "ALARM_EQP_STATUS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EQP_STATUS",
+        "type": "string"
+      },
+      "ALARM_EXPLANATION": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EXPLANATION",
+        "type": "string"
+      },
+      "ALARM_EXPLANATION_ADDITION": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_EXPLANATION_ADDITION",
+        "type": "string"
+      },
+      "ALARM_NE_STATUS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_NE_STATUS",
+        "type": "string"
+      },
+      "ALARM_REASON": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_REASON",
+        "type": "string"
+      },
+      "ALARM_RESOURCE_STATUS": {
+        "status": "added",
+        "left": "1",
+        "right": null,
+        "path": "ALARM_RESOURCE_STATUS",
+        "type": "string"
+      },
+      "ALARM_SOURCE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_SOURCE",
+        "type": "string"
+      },
+      "ALARM_TEXT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ALARM_TEXT",
+        "type": "string"
+      },
+      "ASSIGN_TENANCE_GROUP": {
+        "status": "same",
+        "value": "泉州丰泽嘉环公司传输线路维护组1",
+        "path": "ASSIGN_TENANCE_GROUP",
+        "type": "string"
+      },
+      "BOARD_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "BOARD_TYPE",
+        "type": "string"
+      },
+      "BUSINESS_LAYER": {
+        "status": "same",
+        "value": "1005",
+        "path": "BUSINESS_LAYER",
+        "type": "string"
+      },
+      "BUSINESS_LAYER_CN": {
+        "status": "same",
+        "value": "本地接入",
+        "path": "BUSINESS_LAYER_CN",
+        "type": "string"
+      },
+      "BUSINESS_REGIONS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_REGIONS",
+        "type": "string"
+      },
+      "BUSINESS_REGION_IDS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_REGION_IDS",
+        "type": "string"
+      },
+      "BUSINESS_SYSTEM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_SYSTEM",
+        "type": "string"
+      },
+      "BUSINESS_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "BUSINESS_TYPE",
+        "type": "string"
+      },
+      "CANCEL_TIME": {
+        "status": "different",
+        "left": "2026-05-11 16:59:19",
+        "right": "",
+        "path": "CANCEL_TIME",
+        "type": "string"
+      },
+      "CFP0_CFP1_CFP2_CFP3": {
+        "status": "different",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": "135201000000001729274198_029",
+        "path": "CFP0_CFP1_CFP2_CFP3",
+        "type": "string"
+      },
+      "CIRCUIT_ID": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_ID",
+        "type": "string"
+      },
+      "CIRCUIT_LEVEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_LEVEL",
+        "type": "string"
+      },
+      "CIRCUIT_NO": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "CIRCUIT_NO",
+        "type": "string"
+      },
+      "CITY_ID": {
+        "status": "same",
+        "value": "350503",
+        "path": "CITY_ID",
+        "type": "string"
+      },
+      "CITY_NAME": {
+        "status": "same",
+        "value": "丰泽区",
+        "path": "CITY_NAME",
+        "type": "string"
+      },
+      "CREATION_EVENT_TIME": {
+        "status": "different",
+        "left": "2026-05-13 17:15:19",
+        "right": "2026-05-13 09:50:12",
+        "path": "CREATION_EVENT_TIME",
+        "type": "string"
+      },
+      "EFFECT_CIRCUIT_NUM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "EFFECT_CIRCUIT_NUM",
+        "type": "string"
+      },
+      "EFFECT_NE": {
+        "status": "added",
+        "left": 1,
+        "right": null,
+        "path": "EFFECT_NE",
+        "type": "number"
+      },
+      "EFFECT_SERVICE": {
+        "status": "added",
+        "left": 2,
+        "right": null,
+        "path": "EFFECT_SERVICE",
+        "type": "number"
+      },
+      "EQP_LABEL": {
+        "status": "different",
+        "left": "【测试】泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
+        "right": "泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段",
+        "path": "EQP_LABEL",
+        "type": "string"
+      },
+      "EQP_OBJECT_CLASS": {
+        "status": "same",
+        "value": "1100005",
+        "path": "EQP_OBJECT_CLASS",
+        "type": "string"
+      },
+      "EQP_OBJECT_NAME": {
+        "status": "same",
+        "value": "管道段",
+        "path": "EQP_OBJECT_NAME",
+        "type": "string"
+      },
+      "EVENT_ALARM_REASON": {
+        "status": "added",
+        "left": "定界结果：初判为光缆中断；\n定位结论：。",
+        "right": null,
+        "path": "EVENT_ALARM_REASON",
+        "type": "string"
+      },
+      "EVENT_ARRIVAL_TIME": {
+        "status": "added",
+        "left": "2026-05-13 17:15:19",
+        "right": null,
+        "path": "EVENT_ARRIVAL_TIME",
+        "type": "string"
+      },
+      "EVENT_CAT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "EVENT_CAT",
+        "type": "string"
+      },
+      "EVENT_EFFECT_DESC": {
+        "status": "added",
+        "left": "\n网络影响：泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段；\n业务影响：基站业务；\n社会影响：暂无投诉。\n",
+        "right": null,
+        "path": "EVENT_EFFECT_DESC",
+        "type": "string"
+      },
+      "EVENT_ROOT_CATEGORY": {
+        "status": "added",
+        "left": "传输线路故障或连接件故障",
+        "right": null,
+        "path": "EVENT_ROOT_CATEGORY",
+        "type": "string"
+      },
+      "EVENT_SOURCE": {
+        "status": "same",
+        "value": "20",
+        "path": "EVENT_SOURCE",
+        "type": "string"
+      },
+      "EVENT_SUMMARY": {
+        "status": "added",
+        "left": "1、核查是否工程操作：否；2、核查是否对端板件故障：否；3.核实是否对端设备退服：否；4、若以上条件均不满足，判断为光缆中断导致",
+        "right": null,
+        "path": "EVENT_SUMMARY",
+        "type": "string"
+      },
+      "EVENT_TIME": {
+        "status": "different",
+        "left": "2026-05-13 17:15:19",
+        "right": "2026-05-13 09:50:12",
+        "path": "EVENT_TIME",
+        "type": "string"
+      },
+      "EXTRA_ID2": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "EXTRA_ID2",
+        "type": "string"
+      },
+      "EXTRA_STRING1": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "EXTRA_STRING1",
+        "type": "string"
+      },
+      "FAULT_LOCATION": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "FAULT_LOCATION",
+        "type": "string"
+      },
+      "FIBER_ADJUST_LABEL": {
+        "status": "different",
+        "left": "",
+        "right": "高速高铁",
+        "path": "FIBER_ADJUST_LABEL",
+        "type": "string"
+      },
+      "FP0_FP1_FP2_FP3": {
+        "status": "different",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": "135201000000001729274198_029",
+        "path": "FP0_FP1_FP2_FP3",
+        "type": "string"
+      },
+      "GCSS_CLIENT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT",
+        "type": "string"
+      },
+      "GCSS_CLIENT_GRADE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_GRADE",
+        "type": "string"
+      },
+      "GCSS_CLIENT_LEVEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_LEVEL",
+        "type": "string"
+      },
+      "GCSS_CLIENT_NAME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_NAME",
+        "type": "string"
+      },
+      "GCSS_CLIENT_NUM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_CLIENT_NUM",
+        "type": "string"
+      },
+      "GCSS_SERVICE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE",
+        "type": "string"
+      },
+      "GCSS_SERVICE_LEVEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_LEVEL",
+        "type": "string"
+      },
+      "GCSS_SERVICE_NUM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_NUM",
+        "type": "string"
+      },
+      "GCSS_SERVICE_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "GCSS_SERVICE_TYPE",
+        "type": "string"
+      },
+      "HAS_FIBER_ADJUST_PLAN": {
+        "status": "same",
+        "value": "0",
+        "path": "HAS_FIBER_ADJUST_PLAN",
+        "type": "string"
+      },
+      "HOME_CLIENT_NUM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "HOME_CLIENT_NUM",
+        "type": "string"
+      },
+      "ID": {
+        "status": "added",
+        "left": "2695e447-c43e-4125-9521-90c3a13baa75",
+        "right": null,
+        "path": "ID",
+        "type": "string"
+      },
+      "INTERFERENCE_FLAG": {
+        "status": "added",
+        "left": "0",
+        "right": null,
+        "path": "INTERFERENCE_FLAG",
+        "type": "string"
+      },
+      "INT_ID": {
+        "status": "added",
+        "left": "0",
+        "right": null,
+        "path": "INT_ID",
+        "type": "string"
+      },
+      "IRMS_GRID_NAME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "IRMS_GRID_NAME",
+        "type": "string"
+      },
+      "IS_EFFECT_HIGHSPEED": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "IS_EFFECT_HIGHSPEED",
+        "type": "string"
+      },
+      "IS_EOTDR": {
+        "status": "same",
+        "value": "0",
+        "path": "IS_EOTDR",
+        "type": "string"
+      },
+      "IS_FIBER_ADJUST_FIRST": {
+        "status": "same",
+        "value": "0",
+        "path": "IS_FIBER_ADJUST_FIRST",
+        "type": "string"
+      },
+      "LAYER_RATE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "LAYER_RATE",
+        "type": "string"
+      },
+      "LAY_SECTION_CENTER_LAT": {
+        "status": "same",
+        "value": "24.89564528261185",
+        "path": "LAY_SECTION_CENTER_LAT",
+        "type": "string"
+      },
+      "LAY_SECTION_CENTER_LON": {
+        "status": "same",
+        "value": "118.618993312113",
+        "path": "LAY_SECTION_CENTER_LON",
+        "type": "string"
+      },
+      "LOCATE_INFO": {
+        "status": "same",
+        "value": "长度:17米;坐标:LINESTRING(118.619059342156 24.8955970985265,118.61892728207 24.8956934666972)",
+        "path": "LOCATE_INFO",
+        "type": "string"
+      },
+      "LOGIC_ALARM_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "LOGIC_ALARM_TYPE",
+        "type": "string"
+      },
+      "LOGIC_SUB_ALARM_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "LOGIC_SUB_ALARM_TYPE",
+        "type": "string"
+      },
+      "MACHINE_ROOM_INFO": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "MACHINE_ROOM_INFO",
+        "type": "string"
+      },
+      "MAINTAIN_GROUP": {
+        "status": "same",
+        "value": "泉州丰泽嘉环公司传输线路维护组1",
+        "path": "MAINTAIN_GROUP",
+        "type": "string"
+      },
+      "NETWORK_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NETWORK_TYPE",
+        "type": "string"
+      },
+      "NETWORK_TYPE_TOP": {
+        "status": "same",
+        "value": "4",
+        "path": "NETWORK_TYPE_TOP",
+        "type": "string"
+      },
+      "NE_ADMIN_STATUS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NE_ADMIN_STATUS",
+        "type": "string"
+      },
+      "NE_IP": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NE_IP",
+        "type": "string"
+      },
+      "NE_LABEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NE_LABEL",
+        "type": "string"
+      },
+      "NE_LOCATION": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NE_LOCATION",
+        "type": "string"
+      },
+      "NMS_ALARM_ID": {
+        "status": "same",
+        "value": "578844411",
+        "path": "NMS_ALARM_ID",
+        "type": "string"
+      },
+      "NMS_NAME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "NMS_NAME",
+        "type": "string"
+      },
+      "OBJECT_CLASS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "OBJECT_CLASS",
+        "type": "string"
+      },
+      "OBJECT_CLASS_TEXT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "OBJECT_CLASS_TEXT",
+        "type": "string"
+      },
+      "OBJECT_LEVEL": {
+        "status": "added",
+        "left": "0",
+        "right": null,
+        "path": "OBJECT_LEVEL",
+        "type": "string"
+      },
+      "ORG_SEVERITY": {
+        "status": "same",
+        "value": "2",
+        "path": "ORG_SEVERITY",
+        "type": "string"
+      },
+      "ORG_TEXT": {
+        "status": "added",
+        "left": "4_;__;泉州市_;1_;丰泽区_;泉州市丰泽区鸣翠园005号井-泉州市丰泽区鸣翠园004号井管道段_;1100005_;__;__;1_;__;__;0_;2_;__;__;__;__;【高速高铁】泉州市丰泽区传输外线光缆中断事件_;传输外线光缆中断事件_;WLSJ-WL-CS-02-80-9001_;__;__;__;578844411_;__;__;2026-05-13 17:15:19_;1778637012_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_;__;0_;2_;__;__;__;__;泉州丰泽嘉环公司传输线路维护组1_;__;__;__;__;350500_;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;__;40_;__;__;__;0_;__;__;__;__;__;1_;2_;__;__;__;__;1005_;__;__;__;__;__;__;__;__;GZEVENT317d1e465b444c10_;0_;1001_;1778663719\\_9831242413\\_3557417254\\_1880115533\\_93106_",
+        "right": null,
+        "path": "ORG_TEXT",
+        "type": "string"
+      },
+      "ORG_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ORG_TYPE",
+        "type": "string"
+      },
+      "ORIG_ALARM_CLEAR_FP": {
+        "status": "added",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "ORIG_ALARM_CLEAR_FP",
+        "type": "string"
+      },
+      "ORIG_ALARM_FP": {
+        "status": "added",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "ORIG_ALARM_FP",
+        "type": "string"
+      },
+      "PORT_NUM": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PORT_NUM",
+        "type": "string"
+      },
+      "POS_REAL_CITY_ID": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_CITY_ID",
+        "type": "string"
+      },
+      "POS_REAL_CITY_NAME": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_CITY_NAME",
+        "type": "string"
+      },
+      "POS_REAL_DESC": {
+        "status": "same",
+        "value": "",
+        "path": "POS_REAL_DESC",
+        "type": "string"
+      },
+      "POS_REAL_LATITUDE": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_LATITUDE",
+        "type": "string"
+      },
+      "POS_REAL_LONGITUDE": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_LONGITUDE",
+        "type": "string"
+      },
+      "POS_REAL_REGION_ID": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_REGION_ID",
+        "type": "string"
+      },
+      "POS_REAL_REGION_NAME": {
+        "status": "added",
+        "left": null,
+        "right": "",
+        "path": "POS_REAL_REGION_NAME",
+        "type": "string"
+      },
+      "PREHANDLE": {
+        "status": "added",
+        "left": "0",
+        "right": null,
+        "path": "PREHANDLE",
+        "type": "string"
+      },
+      "PREPROCESS_MANNER": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PREPROCESS_MANNER",
+        "type": "string"
+      },
+      "PROBABLE_CAUSE": {
+        "status": "added",
+        "left": null,
+        "right": null,
+        "path": "PROBABLE_CAUSE",
+        "type": "null"
+      },
+      "PROBABLE_CAUSE_TXT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROBABLE_CAUSE_TXT",
+        "type": "string"
+      },
+      "PRODUCT_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PRODUCT_TYPE",
+        "type": "string"
+      },
+      "PROFESSIONAL_TYPE": {
+        "status": "added",
+        "left": "2",
+        "right": null,
+        "path": "PROFESSIONAL_TYPE",
+        "type": "string"
+      },
+      "PROJ_END_TIME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROJ_END_TIME",
+        "type": "string"
+      },
+      "PROJ_NAME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROJ_NAME",
+        "type": "string"
+      },
+      "PROJ_OA_FILE_CONTENT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROJ_OA_FILE_CONTENT",
+        "type": "string"
+      },
+      "PROJ_OA_FILE_ID": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROJ_OA_FILE_ID",
+        "type": "string"
+      },
+      "PROJ_START_TIME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "PROJ_START_TIME",
+        "type": "string"
+      },
+      "PROV_BACKBONE_ONLY": {
+        "status": "same",
+        "value": "0",
+        "path": "PROV_BACKBONE_ONLY",
+        "type": "string"
+      },
+      "REDEFINE_SEVERITY": {
+        "status": "same",
+        "value": "2",
+        "path": "REDEFINE_SEVERITY",
+        "type": "number"
+      },
+      "REGION_ID": {
+        "status": "added",
+        "left": null,
+        "right": "350500",
+        "path": "REGION_ID",
+        "type": "string"
+      },
+      "REGION_NAME": {
+        "status": "same",
+        "value": "泉州市",
+        "path": "REGION_NAME",
+        "type": "string"
+      },
+      "RELATED_MAINTAIN_GROUP": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "RELATED_MAINTAIN_GROUP",
+        "type": "string"
+      },
+      "REMOTE_CITY_ID": {
+        "status": "same",
+        "value": "350503",
+        "path": "REMOTE_CITY_ID",
+        "type": "string"
+      },
+      "REMOTE_CITY_NAME": {
+        "status": "same",
+        "value": "丰泽区",
+        "path": "REMOTE_CITY_NAME",
+        "type": "string"
+      },
+      "REMOTE_EQP_LABEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_EQP_LABEL",
+        "type": "string"
+      },
+      "REMOTE_INT_ID": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_INT_ID",
+        "type": "string"
+      },
+      "REMOTE_OBJECT_CLASS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_OBJECT_CLASS",
+        "type": "string"
+      },
+      "REMOTE_PROJ_SUB_STATUS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_PROJ_SUB_STATUS",
+        "type": "string"
+      },
+      "REMOTE_REGION_ID": {
+        "status": "same",
+        "value": "350500",
+        "path": "REMOTE_REGION_ID",
+        "type": "string"
+      },
+      "REMOTE_REGION_NAME": {
+        "status": "same",
+        "value": "泉州市",
+        "path": "REMOTE_REGION_NAME",
+        "type": "string"
+      },
+      "REMOTE_RESOURCE_STATUS": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "REMOTE_RESOURCE_STATUS",
+        "type": "string"
+      },
+      "ROOT_EQP_LABEL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ROOT_EQP_LABEL",
+        "type": "string"
+      },
+      "ROOT_NETWORK_TYPE_TOP": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "ROOT_NETWORK_TYPE_TOP",
+        "type": "string"
+      },
+      "SEND_JT_FLAG": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SEND_JT_FLAG",
+        "type": "string"
+      },
+      "SITE_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SITE_TYPE",
+        "type": "string"
+      },
+      "SPECIAL_FIELD14": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD14",
+        "type": "string"
+      },
+      "SPECIAL_FIELD17": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD17",
+        "type": "string"
+      },
+      "SPECIAL_FIELD18": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD18",
+        "type": "string"
+      },
+      "SPECIAL_FIELD2": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD2",
+        "type": "string"
+      },
+      "SPECIAL_FIELD20": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD20",
+        "type": "string"
+      },
+      "SPECIAL_FIELD21": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD21",
+        "type": "string"
+      },
+      "SPECIAL_FIELD7": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SPECIAL_FIELD7",
+        "type": "string"
+      },
+      "SRC_APP_ID": {
+        "status": "added",
+        "left": "1001",
+        "right": null,
+        "path": "SRC_APP_ID",
+        "type": "string"
+      },
+      "SRC_ID": {
+        "status": "added",
+        "left": "GZEVENT317d1e465b444c10",
+        "right": null,
+        "path": "SRC_ID",
+        "type": "string"
+      },
+      "SRC_IS_TEST": {
+        "status": "added",
+        "left": 0,
+        "right": null,
+        "path": "SRC_IS_TEST",
+        "type": "number"
+      },
+      "SRC_ORG_ID": {
+        "status": "added",
+        "left": "1778663719_9831242413_3557417254_1880115533_93106",
+        "right": null,
+        "path": "SRC_ORG_ID",
+        "type": "string"
+      },
+      "STANDARD_ALARM_ID": {
+        "status": "same",
+        "value": "WLSJ-WL-CS-02-80-9001",
+        "path": "STANDARD_ALARM_ID",
+        "type": "string"
+      },
+      "STANDARD_ALARM_NAME": {
+        "status": "same",
+        "value": "传输外线光缆中断事件",
+        "path": "STANDARD_ALARM_NAME",
+        "type": "string"
+      },
+      "STANDARD_FLAG": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "STANDARD_FLAG",
+        "type": "string"
+      },
+      "SUB_ALARM_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "SUB_ALARM_TYPE",
+        "type": "string"
+      },
+      "TIME_STAMP": {
+        "status": "added",
+        "left": "1778637012",
+        "right": null,
+        "path": "TIME_STAMP",
+        "type": "string"
+      },
+      "TIME_STAMP_C": {
+        "status": "added",
+        "left": "2026-05-11 16:59:19",
+        "right": null,
+        "path": "TIME_STAMP_C",
+        "type": "string"
+      },
+      "TITLE_TEXT": {
+        "status": "same",
+        "value": "【高速高铁】泉州市丰泽区传输外线光缆中断事件",
+        "path": "TITLE_TEXT",
+        "type": "string"
+      },
+      "TMSC_CAT": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "TMSC_CAT",
+        "type": "string"
+      },
+      "TOPIC_PARTITION": {
+        "status": "added",
+        "left": 7,
+        "right": null,
+        "path": "TOPIC_PARTITION",
+        "type": "number"
+      },
+      "TOPIC_PREFIX": {
+        "status": "added",
+        "left": "EVENT-GZ",
+        "right": null,
+        "path": "TOPIC_PREFIX",
+        "type": "string"
+      },
+      "TYPE_KEYCODE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "TYPE_KEYCODE",
+        "type": "string"
+      },
+      "VENDOR_ID": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_ID",
+        "type": "string"
+      },
+      "VENDOR_NAME": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_NAME",
+        "type": "string"
+      },
+      "VENDOR_SEVERITY": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_SEVERITY",
+        "type": "string"
+      },
+      "VENDOR_TYPE": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "VENDOR_TYPE",
+        "type": "string"
+      },
+      "custGroupFeature": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "custGroupFeature",
+        "type": "string"
+      },
+      "industryCustType": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "industryCustType",
+        "type": "string"
+      },
+      "strategicCustTypeFL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "strategicCustTypeFL",
+        "type": "string"
+      },
+      "strategicCustTypeSL": {
+        "status": "added",
+        "left": "",
+        "right": null,
+        "path": "strategicCustTypeSL",
+        "type": "string"
+      }
+    },
+    "stats": {
+      "same": 30,
+      "different": 7,
+      "added": 0,
+      "removed": 118,
+      "total": 155
+    }
+  }
 }

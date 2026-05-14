@@ -482,9 +482,46 @@ def update_nginx_config():
         os.unlink(local_nginx_conf)
         ssh_command(f"rm -f {remote_nginx_conf}")
 
+def stop_old_processes():
+    """停止旧的进程（端口和任务）"""
+    print_header("步骤 0: 清理旧进程")
+    
+    # 1. 清理占用后端端口的进程
+    print_info(f"检查端口 {LOCAL_PORT}...")
+    check_cmd = f"lsof -ti:{LOCAL_PORT}"
+    success, pids, _ = ssh_command(check_cmd)
+    
+    if success and pids:
+        pid_list = pids.strip().split('\n')
+        print_warning(f"发现 {len(pid_list)} 个进程占用端口 {LOCAL_PORT}，强制清理...")
+        for pid in pid_list:
+            ssh_command(f"kill -9 {pid}")
+            print(f"   - 已终止进程 PID: {pid}")
+        time.sleep(1)
+    else:
+        print_success(f"端口 {LOCAL_PORT} 空闲")
+    
+    # 2. 清理 app.py 进程（防止僵尸进程）
+    print_info("检查 app.py 进程...")
+    check_cmd = "ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}'"
+    success, pids, _ = ssh_command(check_cmd)
+    
+    if success and pids:
+        pid_list = pids.strip().split('\n')
+        print_warning(f"发现 {len(pid_list)} 个 app.py 进程，强制清理...")
+        for pid in pid_list:
+            ssh_command(f"kill -9 {pid}")
+            print(f"   - 已终止进程 PID: {pid}")
+        time.sleep(1)
+    else:
+        print_success("无残留 app.py 进程")
+
 def restart_services():
     """重启服务"""
-    print_header("步骤 5: 远程备份并重启服务")
+    print_header("步骤 5: 清理旧进程并重启服务")
+    
+    # 先清理旧进程
+    stop_old_processes()
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
