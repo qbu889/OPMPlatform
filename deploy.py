@@ -853,9 +853,38 @@ def main():
         # 7. 等待服务完全启动
         print_info("等待服务完全启动...")
         time.sleep(5)
-        
-        # 8. 测试API
-        test_api()
+            
+        # 验证后端进程是否正常运行
+        print_info("验证后端服务状态...")
+        max_retries = 10
+        retry_count = 0
+        backend_ready = False
+            
+        while retry_count < max_retries:
+            success, processes, _ = ssh_command("ps -ef | grep 'python app.py' | grep -v grep")
+            if success and processes:
+                # 检查端口是否监听
+                _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
+                if port_check:
+                    backend_ready = True
+                    print_success(f"后端服务已就绪 (尝试 {retry_count + 1}/{max_retries})")
+                    break
+                
+            retry_count += 1
+            print_info(f"等待后端启动... ({retry_count}/{max_retries})")
+            time.sleep(3)
+            
+        if not backend_ready:
+            print_error("后端服务启动超时，请检查日志")
+            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log")
+            if logs:
+                print_info("最新日志:")
+                for line in logs.split('\n')[-10:]:
+                    print(f"   {line}")
+            
+        # 8. 测试API（仅在服务就绪后）
+        if backend_ready:
+            test_api()
         
         # 9. 更新Kafka字段元数据
         update_kafka_field_meta()
