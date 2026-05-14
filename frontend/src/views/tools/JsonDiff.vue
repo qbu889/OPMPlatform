@@ -124,10 +124,48 @@
       class="stats-alert"
     >
       <template #default>
-        <el-tag type="success" style="margin-right: 10px">相同: {{ stats.same }}</el-tag>
-        <el-tag type="danger" style="margin-right: 10px">不同: {{ stats.different }}</el-tag>
-        <el-tag type="warning" style="margin-right: 10px">新增: {{ stats.added }}</el-tag>
-        <el-tag type="info">删除: {{ stats.removed }}</el-tag>
+        <el-tag 
+          type="success" 
+          :effect="filterStatus === 'same' ? 'dark' : 'light'"
+          @click="setFilterStatus('same')"
+          style="margin-right: 10px; cursor: pointer"
+        >
+          相同: {{ stats.same }}
+        </el-tag>
+        <el-tag 
+          type="danger" 
+          :effect="filterStatus === 'different' ? 'dark' : 'light'"
+          @click="setFilterStatus('different')"
+          style="margin-right: 10px; cursor: pointer"
+        >
+          不同: {{ stats.different }}
+        </el-tag>
+        <el-tag 
+          type="warning" 
+          :effect="filterStatus === 'added' ? 'dark' : 'light'"
+          @click="setFilterStatus('added')"
+          style="margin-right: 10px; cursor: pointer"
+        >
+          新增: {{ stats.added }}
+        </el-tag>
+        <el-tag 
+          type="info"
+          :effect="filterStatus === 'removed' ? 'dark' : 'light'"
+          @click="setFilterStatus('removed')"
+          style="cursor: pointer"
+        >
+          删除: {{ stats.removed }}
+        </el-tag>
+        <el-button 
+          v-if="filterStatus"
+          size="small" 
+          type="primary" 
+          link 
+          @click="clearFilter"
+          style="margin-left: 15px"
+        >
+          清除筛选
+        </el-button>
       </template>
     </el-alert>
 
@@ -170,6 +208,7 @@ const autoCompare = ref(false)
 const diffResult = ref({})
 const hasResult = ref(false)
 const compareMode = ref('all') // 'left', 'right', 'all'
+const filterStatus = ref(null) // null, 'same', 'different', 'added', 'removed'
 const leftViewerRef = ref(null)
 const rightViewerRef = ref(null)
 const isSyncingScroll = ref(false) // 防止循环触发
@@ -295,6 +334,11 @@ const renderDiffTree = (tree, side) => {
 const shouldShowNode = (node, side) => {
   if (!node) return false
   
+  // 按状态过滤
+  if (filterStatus.value && node.status !== filterStatus.value) {
+    return false
+  }
+  
   // 全部模式：显示所有字段
   if (compareMode.value === 'all') {
     return true
@@ -399,6 +443,28 @@ const loadExample = () => {
   }, null, 2)
   
   ElMessage.info('已加载示例数据，点击“开始对比”查看效果')
+}
+
+// 设置过滤状态
+const setFilterStatus = async (status) => {
+  filterStatus.value = filterStatus.value === status ? null : status
+  const statusText = filterStatus.value === 'same' ? '相同' : 
+                     filterStatus.value === 'different' ? '不同' : 
+                     filterStatus.value === 'added' ? '新增' : 
+                     filterStatus.value === 'removed' ? '删除' : '全部'
+  if (filterStatus.value) {
+    ElMessage.success(`已筛选：${statusText}字段`)
+  } else {
+    ElMessage.success('已清除筛选，显示全部字段')
+  }
+  await nextTick()
+}
+
+// 清除筛选
+const clearFilter = async () => {
+  filterStatus.value = null
+  ElMessage.success('已清除筛选')
+  await nextTick()
 }
 
 // 设置对比模式
