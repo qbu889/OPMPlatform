@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Switch, Search, Document, Upload } from '@element-plus/icons-vue'
 import axios from 'axios'
@@ -212,6 +212,7 @@ const filterStatus = ref(null) // null, 'same', 'different', 'added', 'removed'
 const leftViewerRef = ref(null)
 const rightViewerRef = ref(null)
 const isSyncingScroll = ref(false) // 防止循环触发
+const activeFieldName = ref(null) // 当前选中的字段名
 
 const stats = computed(() => {
   return diffResult.value.stats || { same: 0, different: 0, added: 0, removed: 0, total: 0 }
@@ -330,6 +331,43 @@ const renderDiffTree = (tree, side) => {
   return html
 }
 
+// 点击字段名，定位到另一侧对应字段
+const handleFieldClick = (fieldName, sourceSide) => {
+  activeFieldName.value = fieldName
+  
+  // 确定目标侧（点击左侧则定位右侧，点击右侧则定位左侧）
+  const targetSide = sourceSide === 'left' ? 'right' : 'left'
+  
+  // 滚动到另一侧对应的字段
+  nextTick(() => {
+    // 在目标侧查找对应字段并滚动
+    const targetRef = targetSide === 'left' ? leftViewerRef.value : rightViewerRef.value
+    if (targetRef) {
+      const targetElement = targetRef.querySelector(`[data-field-name="${fieldName}"]`)
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        // 添加高亮动画
+        targetElement.classList.add('field-highlight')
+        setTimeout(() => {
+          targetElement.classList.remove('field-highlight')
+        }, 2000)
+      }
+    }
+    
+    // 当前侧也高亮
+    const currentRef = sourceSide === 'left' ? leftViewerRef.value : rightViewerRef.value
+    if (currentRef) {
+      const currentElement = currentRef.querySelector(`[data-field-name="${fieldName}"]`)
+      if (currentElement) {
+        currentElement.classList.add('field-highlight')
+        setTimeout(() => {
+          currentElement.classList.remove('field-highlight')
+        }, 2000)
+      }
+    }
+  })
+}
+
 // 判断是否应该显示该节点
 const shouldShowNode = (node, side) => {
   if (!node) return false
@@ -366,7 +404,11 @@ const renderNode = (node, side, key) => {
   
   // 添加键名（如果不是数组元素）
   if (typeof key !== 'number') {
-    html += `${indent}"${key}": `
+    const isActive = activeFieldName.value === key
+    html += `${indent}<span class="json-key ${isActive ? 'active-key' : ''}" 
+                 data-field-name="${key}" 
+                 data-side="${side}"
+                 onclick="window.handleJsonFieldClick('${key}', '${side}')">"${key}"</span>: `
   }
   
   // 根据状态设置样式
@@ -470,12 +512,21 @@ const clearFilter = async () => {
 // 设置对比模式
 const setCompareMode = async (mode) => {
   compareMode.value = mode
-  const modeText = mode === 'left' ? '左侧' : mode === 'right' ? '右侧' : '全部'
-  ElMessage.success(`已切换到以${modeText}字段为基准`)
   
   // 重新渲染
   await nextTick()
 }
+
+// 将字段点击处理函数暴露到全局，供v-html中的onclick调用
+onMounted(() => {
+  window.handleJsonFieldClick = (fieldName, sourceSide) => {
+    handleFieldClick(fieldName, sourceSide)
+  }
+})
+
+onUnmounted(() => {
+  delete window.handleJsonFieldClick
+})
 
 // 同步滚动 - 左侧
 const handleLeftScroll = (event) => {
@@ -605,6 +656,79 @@ const handleRightScroll = (event) => {
   padding: 2px 4px;
   border-radius: 3px;
   text-decoration: line-through;
+}
+
+/* JSON字段名样式 */
+:deep(.json-key) {
+  color: #8b5cf6;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+:deep(.json-key:hover) {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: #7c3aed;
+}
+
+:deep(.active-key) {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #d97706 !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+/* 字段高亮动画 */
+:deep(.field-highlight) {
+  animation: fieldPulse 2s ease-in-out;
+}
+
+@keyframes fieldPulse {
+  0% {
+    background-color: rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    background-color: rgba(245, 158, 11, 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* 关联线容器 */
+.result-section {
+  position: relative;
+}
+
+.connector-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, 
+    transparent 0%, 
+    rgba(245, 158, 11, 0.6) 20%, 
+    rgba(245, 158, 11, 0.6) 80%, 
+    transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+  display: none;
+}
+
+.connector-line.active {
+  display: block;
+  animation: linePulse 2s ease-in-out;
+}
+
+@keyframes linePulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 </style>
 
