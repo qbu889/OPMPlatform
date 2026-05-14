@@ -157,6 +157,7 @@
             :placeholder="field.placeholder || '请输入'"
             size="small"
             @change="onFieldChange(field.name, fieldValues[field.name])"
+            @focus="onFieldFocus"
             @blur="onFieldBlur"
           >
             <template #append>
@@ -1289,6 +1290,12 @@ const onFieldChange = async (field, value) => {
   if (value && value.trim()) {
     await saveHistoryToDB(field, value)
   }
+}
+
+// 字段获得焦点时，重置排序状态
+const onFieldFocus = () => {
+  // 获得焦点时，禁用排序，保持当前位置
+  shouldSortFields.value = false
 }
 
 // 字段失去焦点时触发排序
