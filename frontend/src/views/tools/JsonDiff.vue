@@ -89,16 +89,29 @@
         inactive-text="手动对比"
         style="margin-left: 20px"
       />
-      <el-button 
-        v-if="hasResult"
-        size="large" 
-        :type="compareMode === 'right' ? 'success' : 'default'"
-        @click="toggleCompareMode"
-        style="margin-left: 20px"
-      >
-        <el-icon><Switch /></el-icon>
-        {{ compareMode === 'left' ? '以右侧字段为基准' : '以左侧字段为基准' }}
-      </el-button>
+      <el-button-group v-if="hasResult" style="margin-left: 20px">
+        <el-button 
+          size="large" 
+          :type="compareMode === 'left' ? 'success' : 'default'"
+          @click="setCompareMode('left')"
+        >
+          以左侧字段为基准
+        </el-button>
+        <el-button 
+          size="large" 
+          :type="compareMode === 'right' ? 'success' : 'default'"
+          @click="setCompareMode('right')"
+        >
+          以右侧字段为基准
+        </el-button>
+        <el-button 
+          size="large" 
+          :type="compareMode === 'all' ? 'success' : 'default'"
+          @click="setCompareMode('all')"
+        >
+          全部字段对比
+        </el-button>
+      </el-button-group>
     </div>
 
     <!-- 统计信息 -->
@@ -156,7 +169,7 @@ const comparing = ref(false)
 const autoCompare = ref(false)
 const diffResult = ref({})
 const hasResult = ref(false)
-const compareMode = ref('left') // 'left' 或 'right'
+const compareMode = ref('all') // 'left', 'right', 'all'
 const leftViewerRef = ref(null)
 const rightViewerRef = ref(null)
 const isSyncingScroll = ref(false) // 防止循环触发
@@ -282,12 +295,17 @@ const renderDiffTree = (tree, side) => {
 const shouldShowNode = (node, side) => {
   if (!node) return false
   
-  // 以右侧为基准时，左侧视图不显示仅在左侧存在的字段（added状态）
-  if (compareMode.value === 'right' && side === 'left') {
-    return node.status !== 'added'
+  // 全部模式：显示所有字段
+  if (compareMode.value === 'all') {
+    return true
   }
   
-  // 以左侧为基准时，右侧视图不显示仅在右侧存在的字段（removed状态在右侧是added）
+  // 以右侧为基准：左侧视图只显示右侧也存在的字段（过滤 removed）
+  if (compareMode.value === 'right' && side === 'left') {
+    return node.status !== 'removed'
+  }
+  
+  // 以左侧为基准：右侧视图只显示左侧也存在的字段（过滤 added）
   if (compareMode.value === 'left' && side === 'right') {
     return node.status !== 'added'
   }
@@ -383,10 +401,11 @@ const loadExample = () => {
   ElMessage.info('已加载示例数据，点击“开始对比”查看效果')
 }
 
-// 切换对比模式
-const toggleCompareMode = async () => {
-  compareMode.value = compareMode.value === 'left' ? 'right' : 'left'
-  ElMessage.success(`已切换到以${compareMode.value === 'left' ? '左侧' : '右侧'}字段为基准`)
+// 设置对比模式
+const setCompareMode = async (mode) => {
+  compareMode.value = mode
+  const modeText = mode === 'left' ? '左侧' : mode === 'right' ? '右侧' : '全部'
+  ElMessage.success(`已切换到以${modeText}字段为基准`)
   
   // 重新渲染
   await nextTick()
