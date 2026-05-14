@@ -71,7 +71,8 @@ def build_object_diff(left_obj, right_obj, side, options, path):
             # 仅存在于右侧（新增）
             tree[key] = {
                 'status': 'added' if side == 'right' else 'removed',
-                'value': right_obj[key] if side == 'right' else None,
+                'left': None,
+                'right': right_obj[key],
                 'path': current_path,
                 'type': get_type_name(right_obj[key])
             }
@@ -79,7 +80,8 @@ def build_object_diff(left_obj, right_obj, side, options, path):
             # 仅存在于左侧（删除）
             tree[key] = {
                 'status': 'removed' if side == 'left' else 'added',
-                'value': left_obj[key] if side == 'left' else None,
+                'left': left_obj[key],
+                'right': None,
                 'path': current_path,
                 'type': get_type_name(left_obj[key])
             }
@@ -138,7 +140,8 @@ def build_array_diff(left_arr, right_arr, side, options, path):
             # 仅存在于右侧
             tree.append({
                 'status': 'added' if side == 'right' else 'removed',
-                'value': right_arr[i] if side == 'right' else None,
+                'left': None,
+                'right': right_arr[i],
                 'path': current_path,
                 'type': get_type_name(right_arr[i]) if i < len(right_arr) else None
             })
@@ -146,7 +149,8 @@ def build_array_diff(left_arr, right_arr, side, options, path):
             # 仅存在于左侧
             tree.append({
                 'status': 'removed' if side == 'left' else 'added',
-                'value': left_arr[i] if side == 'left' else None,
+                'left': left_arr[i],
+                'right': None,
                 'path': current_path,
                 'type': get_type_name(left_arr[i])
             })

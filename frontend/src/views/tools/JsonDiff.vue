@@ -319,15 +319,18 @@ const renderNode = (node, side, key) => {
     // 叶子节点 - 特殊处理 null/undefined
     let value
     
-    // same 状态的节点只有 value 字段
+    // same 状态的节点使用 value 字段
     if (node.status === 'same') {
       value = node.value
-    } else if (compareMode.value === 'right') {
-      // different/added/removed 状态：以右侧为基准，优先显示右侧值
-      value = node.right !== undefined ? node.right : node.left
     } else {
-      // different/added/removed 状态：以左侧为基准，优先显示左侧值
-      value = node.left !== undefined ? node.left : node.right
+      // different/added/removed 状态使用 left/right 字段
+      if (compareMode.value === 'right') {
+        // 以右侧为基准：优先显示右侧值
+        value = node.right !== undefined && node.right !== null ? node.right : node.left
+      } else {
+        // 以左侧为基准：优先显示左侧值
+        value = node.left !== undefined && node.left !== null ? node.left : node.right
+      }
     }
     
     const formattedValue = formatValue(value)

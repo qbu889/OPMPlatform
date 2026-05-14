@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 import json
 import logging
 
@@ -81,10 +81,15 @@ def compare_json():
         
         logger.info(f'JSON对比成功: 相同={result["stats"]["same"]}, 不同={result["stats"]["different"]}')
         
-        return jsonify({
-            'success': True,
-            'data': result
-        })
+        # 使用 Response 和 ensure_ascii=False 确保中文不被转义
+        return Response(
+            response=json.dumps({
+                'success': True,
+                'data': result
+            }, ensure_ascii=False, indent=2),
+            status=200,
+            mimetype='application/json; charset=utf-8'
+        )
         
     except Exception as e:
         logger.error(f'JSON对比失败: {e}')
