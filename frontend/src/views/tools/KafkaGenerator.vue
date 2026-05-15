@@ -190,6 +190,16 @@
           
           <div v-if="field.esField" class="field-meta">
             ES字段: <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+            <el-button 
+              size="small" 
+              type="primary" 
+              link
+              @click="openMappingEditDialog(field)"
+              style="margin-left: 8px"
+              title="编辑映射"
+            >
+              <el-icon><Edit /></el-icon>
+            </el-button>
           </div>
           <div v-if="fieldRemarkMap[field.name]" class="field-remark" :title="fieldRemarkMap[field.name]">
             <el-icon><ChatDotSquare /></el-icon>
@@ -221,6 +231,65 @@
         <el-button @click="fieldRemarkDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveFieldRemark" :loading="savingFieldRemark">
           保存
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 字段映射编辑对话框 -->
+    <el-dialog
+      v-model="mappingEditDialogVisible"
+      title="编辑映射"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="mappingEditForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="mappingEditForm.kafka_field" disabled />
+        </el-form-item>
+        
+        <el-form-item label="ES 字段">
+          <el-input 
+            v-model="mappingEditForm.es_field" 
+            placeholder="例如：ALARM_STANDARD_ID"
+          />
+          <div class="form-tip">输入 ES 中的原始字段名，留空则使用默认映射</div>
+        </el-form-item>
+        
+        <el-form-item label="字段中文解释">
+          <el-input 
+            v-model="mappingEditForm.label_cn" 
+            placeholder="例如：网管告警ID"
+          />
+        </el-form-item>
+        
+        <el-form-item label="数据库中文">
+          <el-input 
+            v-model="mappingEditForm.db_cn" 
+            placeholder="例如：告警标准化ID"
+          />
+        </el-form-item>
+        
+        <el-form-item label="备注">
+          <el-input 
+            v-model="mappingEditForm.remark" 
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+        
+        <el-form-item label="状态">
+          <el-radio-group v-model="mappingEditForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="mappingEditDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveMappingEdit" :loading="savingMapping">
+          确定
         </el-button>
       </template>
     </el-dialog>
@@ -1104,6 +1173,19 @@ const currentFieldRemarkMetaId = ref(null)
 const fieldRemarkDialogValue = ref('')
 const savingFieldRemark = ref(false)
 
+// 字段映射编辑相关
+const mappingEditDialogVisible = ref(false)
+const mappingEditForm = ref({
+  kafka_field: '',
+  es_field: '',
+  label_cn: '',
+  db_cn: '',
+  remark: '',
+  is_enabled: 1,
+  meta_id: null
+})
+const savingMapping = ref(false)
+
 // 打开字段备注编辑对话框
 const openRemarkEditDialog = async (fieldName) => {
   currentFieldRemarkName.value = fieldName
@@ -1199,6 +1281,107 @@ const saveFieldRemark = async () => {
     ElMessage.error('保存失败')
   } finally {
     savingFieldRemark.value = false
+  }
+}
+
+// 打开映射编辑对话框
+const openMappingEditDialog = async (field) => {
+  // 从 allFields 中找到完整的字段信息
+  const fullField = allFields.value.find(f => f.name === field.name)
+  
+  if (!fullField) {
+    ElMessage.error('未找到字段信息')
+    return
+  }
+  
+  // 填充表单
+  mappingEditForm.value = {
+    kafka_field: fullField.name,
+    es_field: fullField.esField || '',
+    label_cn: fullField.label || '',
+    db_cn: fullField.dbCn || '',
+    remark: fieldRemarkMap[field.name] || '',
+    is_enabled: 1,
+    meta_id: null
+  }
+  
+  // 获取字段元数据ID
+  try {
+    const response = await fetch('/kafka-generator/field-meta/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        keyword: field.name,
+        page: 1,
+        per_page: 100
+      })
+    })
+    const result = await response.json()
+    if (result.success) {
+      const meta = result.data.list.find(f => f.kafka_field === field.name)
+      if (meta) {
+        mappingEditForm.value.meta_id = meta.id
+        mappingEditForm.value.is_enabled = meta.is_enabled || 1
+      }
+    }
+  } catch (error) {
+    console.error('获取字段元数据失败:', error)
+  }
+  
+  mappingEditDialogVisible.value = true
+}
+
+// 保存映射编辑
+const saveMappingEdit = async () => {
+  if (!mappingEditForm.value.meta_id) {
+    ElMessage.error('未找到字段元数据记录')
+    return
+  }
+  
+  // 二次确认
+  try {
+    await ElMessageBox.confirm(
+      `确定要更新字段 "${mappingEditForm.value.kafka_field}" 的映射配置吗？`,
+      '确认保存',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return // 用户取消
+  }
+  
+  savingMapping.value = true
+  try {
+    const response = await fetch(`/kafka-generator/field-meta/${mappingEditForm.value.meta_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        es_field: mappingEditForm.value.es_field || null,
+        label_cn: mappingEditForm.value.label_cn || null,
+        db_cn: mappingEditForm.value.db_cn || null,
+        remark: mappingEditForm.value.remark || null,
+        is_enabled: mappingEditForm.value.is_enabled
+      })
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('映射配置保存成功')
+      mappingEditDialogVisible.value = false
+      
+      // 重新加载字段元数据以刷新显示
+      await loadFieldMeta()
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存映射配置失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    savingMapping.value = false
   }
 }
 

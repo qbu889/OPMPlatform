@@ -596,51 +596,51 @@ def restart_services():
             print(f"   {line}")
 
 
-def update_kafka_field_meta():
-    """远程执行Kafka字段元数据更新脚本"""
-    print_header("步骤 7: 更新Kafka字段元数据")
-    
-    # 检查本地脚本是否存在
-    local_script = PROJECT_ROOT / "scripts" / "update_kafka_field_meta.py"
-    if not local_script.exists():
-        print_warning("本地更新脚本不存在，跳过")
-        return False
-    
-    print_info("上传更新脚本到远程服务器...")
-    
-    # 上传脚本
-    remote_script = f"{REMOTE_PATH}/scripts/update_kafka_field_meta.py"
-    success = scp_upload(str(local_script), remote_script)
-    
-    if not success:
-        print_error("脚本上传失败")
-        return False
-    
-    print_success("脚本上传成功")
-    
-    # 在远程执行脚本
-    print_info("在远程服务器执行更新脚本...")
-    exec_cmd = f"""
-    cd {REMOTE_PATH}
-    source .venv/bin/activate
-    python scripts/update_kafka_field_meta.py
-    """
-    
-    success, stdout, stderr = ssh_command(exec_cmd, timeout=120)
-    
-    if success:
-        print_success("Kafka字段元数据更新完成")
-        if stdout:
-            # 显示最后几行输出
-            lines = stdout.split('\n')
-            print_info("更新结果:")
-            for line in lines[-10:]:
-                if line.strip():
-                    print(f"   {line}")
-        return True
-    else:
-        print_error(f"更新脚本执行失败: {stderr[:200]}")
-        return False
+# def update_kafka_field_meta():
+#     """远程执行Kafka字段元数据更新脚本"""
+#     print_header("步骤 7: 更新Kafka字段元数据")
+#
+#     # 检查本地脚本是否存在
+#     local_script = PROJECT_ROOT / "scripts" / "update_kafka_field_meta.py"
+#     if not local_script.exists():
+#         print_warning("本地更新脚本不存在，跳过")
+#         return False
+#
+#     print_info("上传更新脚本到远程服务器...")
+#
+#     # 上传脚本
+#     remote_script = f"{REMOTE_PATH}/scripts/update_kafka_field_meta.py"
+#     success = scp_upload(str(local_script), remote_script)
+#
+#     if not success:
+#         print_error("脚本上传失败")
+#         return False
+#
+#     print_success("脚本上传成功")
+#
+#     # 在远程执行脚本
+#     print_info("在远程服务器执行更新脚本...")
+#     exec_cmd = f"""
+#     cd {REMOTE_PATH}
+#     source .venv/bin/activate
+#     python scripts/update_kafka_field_meta.py
+#     """
+#
+#     success, stdout, stderr = ssh_command(exec_cmd, timeout=120)
+#
+#     if success:
+#         print_success("Kafka字段元数据更新完成")
+#         if stdout:
+#             # 显示最后几行输出
+#             lines = stdout.split('\n')
+#             print_info("更新结果:")
+#             for line in lines[-10:]:
+#                 if line.strip():
+#                     print(f"   {line}")
+#         return True
+#     else:
+#         print_error(f"更新脚本执行失败: {stderr[:200]}")
+#         return False
 
 def test_api():
     """测试API接口"""
