@@ -238,7 +238,7 @@ server {
     location = /dingtalk-push/confirm-checkin { proxy_pass http://127.0.0.1:5004; }
     location = /dingtalk-push/view-checkin { proxy_pass http://127.0.0.1:5004; }
     
-    location = /kafka-generator/field-meta { proxy_pass http://127.0.0.1:5004; }
+    location /kafka-generator/field-meta { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/field-meta/list { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/field-cache { proxy_pass http://127.0.0.1:5004; }
     location = /kafka-generator/field-order { proxy_pass http://127.0.0.1:5004; }

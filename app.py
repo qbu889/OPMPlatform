@@ -483,9 +483,10 @@ def handle_404(error):
     404 错误处理 - 如果是前端路由，返回 index.html
     """
     # 如果是 API 请求，返回 JSON 404
+    # 注意：/kafka-generator/ 是前端页面，只有 /kafka-generator/xxx 才是 API
     if '/api/' in request.path or \
        request.path.startswith('/dingtalk-push/') or \
-       request.path.startswith('/kafka-generator/') or \
+       (request.path.startswith('/kafka-generator/') and request.path != '/kafka-generator/' and request.path != '/kafka-generator') or \
        request.path.startswith('/fpa-generator/') or \
        request.path.startswith('/fpa-rules') or \
        request.path.startswith('/adjustment') or \

@@ -17,7 +17,7 @@ def get_compare_function():
 def compare_json():
     """
     JSON对比接口
-    
+
     请求体:
     {
         "left": "JSON字符串1",
@@ -28,7 +28,7 @@ def compare_json():
             "ignore_whitespace": false
         }
     }
-    
+
     返回:
     {
         "success": true,
@@ -40,24 +40,31 @@ def compare_json():
     }
     """
     try:
+        # 处理空请求体的情况
+        if not request.get_data():
+            return jsonify({
+                'success': False,
+                'message': '请求体不能为空'
+            }), 400
+
         data = request.get_json()
-        
+
         if not data:
             return jsonify({
                 'success': False,
                 'message': '请求体不能为空'
             }), 400
-        
+
         left_json = data.get('left', '')
         right_json = data.get('right', '')
         options = data.get('options', {})
-        
+
         if not left_json or not right_json:
             return jsonify({
                 'success': False,
                 'message': '请提供左右两侧的JSON数据'
             }), 400
-        
+
         # 解析JSON
         try:
             left_data = json.loads(left_json)
@@ -66,7 +73,7 @@ def compare_json():
                 'success': False,
                 'message': f'左侧JSON格式错误: {str(e)}'
             }), 400
-        
+
         try:
             right_data = json.loads(right_json)
         except json.JSONDecodeError as e:
@@ -74,13 +81,13 @@ def compare_json():
                 'success': False,
                 'message': f'右侧JSON格式错误: {str(e)}'
             }), 400
-        
+
         # 执行对比
         compare_func = get_compare_function()
         result = compare_func(left_data, right_data, options)
-        
+
         logger.info(f'JSON对比成功: 相同={result["stats"]["same"]}, 不同={result["stats"]["different"]}')
-        
+
         # 使用 Response 和 ensure_ascii=False 确保中文不被转义
         return Response(
             response=json.dumps({
@@ -90,7 +97,7 @@ def compare_json():
             status=200,
             mimetype='application/json; charset=utf-8'
         )
-        
+
     except Exception as e:
         logger.error(f'JSON对比失败: {e}')
         return jsonify({

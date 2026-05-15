@@ -2,15 +2,16 @@ import json
 import time
 import uuid
 import random
+import argparse
 from confluent_kafka import Producer, KafkaError
 
 # -------------------------- 核心配置 --------------------------
 # Kafka 集群地址（替换为你的实际地址）
 KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
 # 要发送的 Kafka 主题
-KAFKA_TOPIC = "test-reinstall"
+KAFKA_TOPIC = "EVENT-GZ-COLLECTION-TOPIC"
 # 批量发送的消息总数（可改为 1000/10000）
-TOTAL_MSG_COUNT = 10000
+TOTAL_MSG_COUNT = 100
 # 基础 JSON 模板（基于你提供的结构，动态字段后续替换）
 BASE_ALARM_JSON = {
     "ID": "",  # 动态生成 UUID
@@ -41,7 +42,7 @@ BASE_ALARM_JSON = {
     "NMS_ALARM_ID": "",  # 动态生成随机数
     "PROBABLE_CAUSE_TXT": "affectedSNCName:3500FHCS3TNL0000000PE28YI000",
     "PREPROCESS_MANNER": "",
-    "EVENT_TIME": "22025-12-04 14:21:37",
+    "EVENT_TIME": "2025-12-04 14:21:37",
     "TIME_STAMP": "",  # 动态生成时间戳
     "FP0_FP1_FP2_FP3": "",  # 需要唯一值
     "CFP0_CFP1_CFP2_CFP3": "",  # 需要唯一值
@@ -132,7 +133,8 @@ BASE_ALARM_JSON = {
     "EVENT_SOURCE": 2,
     "ORIG_ALARM_CLEAR_FP": "",  # 需要唯一值
     "ORIG_ALARM_FP": "",  # 需要唯一值
-    "EVENT_ARRIVAL_TIME": "22025-12-04 11:23:11"
+    "EVENT_ARRIVAL_TIME": "2026-05-13 10:25:07",
+    "CREATION_EVENT_TIME": "2026-05-13 10:25:07",
 }
 
 
@@ -146,13 +148,18 @@ def generate_unique_alarm():
     alarm["NMS_ALARM_ID"] = str(random.randint(1000000000, 9999999999))
     # 3. 生成当前时间戳（秒级）
     alarm["TIME_STAMP"] = str(int(time.time()))
-    # 3.1 生成名称
-    alarm['PROJ_NAME'] = "【传输网】【福州】C类割接：福州核心层PTN7900、 7900E版本升级FJ-0001-20250714-5201314"
-    # 4. 生成唯一标识符，用于所有FP字段
+    
+    # 4. 生成当前时间字符串（格式：YYYY-MM-DD HH:MM:SS）
+    current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+    alarm["EVENT_TIME"] = current_time
+    alarm["EVENT_ARRIVAL_TIME"] = current_time
+    alarm["CREATION_EVENT_TIME"] = current_time
+    
+    # 5. 生成唯一标识符，用于所有FP字段
     unique_id = str(int(time.time() * 1000000) % 10000000000)  # 使用微秒时间戳的一部分
     fp_suffix = f"{unique_id}_{random.randint(1000000000, 9999999999)}_{random.randint(1000000000, 9999999999)}_{random.randint(1000000000, 9999999999)}_2"
 
-    # 5. 所有FP字段使用相同值
+    # 6. 所有FP字段使用相同值
     alarm["FP0_FP1_FP2_FP3"] = fp_suffix
     alarm["CFP0_CFP1_CFP2_CFP3"] = fp_suffix
     alarm["ORIG_ALARM_FP"] = fp_suffix
@@ -171,7 +178,15 @@ def delivery_report(err, msg):
 
 
 # -------------------------- 核心发送逻辑 --------------------------
-def batch_send_kafka_messages():
+def batch_send_kafka_messages(total_count=10000, batch_size=1000, interval=1.0):
+    """
+    批量发送 Kafka 消息
+    
+    Args:
+        total_count: 总消息数量
+        batch_size: 每批次发送的消息数量
+        interval: 每批次之间的间隔时间（秒）
+    """
     # 1. 配置Kafka Producer（批量优化参数）
     producer_conf = {
         'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,
@@ -189,26 +204,33 @@ def batch_send_kafka_messages():
     # 2. 创建Producer实例
     producer = Producer(producer_conf)
 
-    # 3. 时间控制参数
-    target_rate = 1000  # 每秒1000条
-    batch_size = 1000  # 每批次1000条
-    interval = 1.0  # 1秒间隔
+    # 3. 计算总批次数
+    total_batches = total_count // batch_size
+    if total_count % batch_size != 0:
+        total_batches += 1
 
     # 4. 批量发送消息
     start_time = time.time()
     success_count = 0
     fail_count = 0
 
-    # 计算总批次数
-    total_batches = TOTAL_MSG_COUNT // batch_size
-
-    print(f"开始发送消息，总共 {TOTAL_MSG_COUNT} 条，分 {total_batches} 批次发送")
+    print(f"=" * 60)
+    print(f"开始发送消息")
+    print(f"总消息数: {total_count} 条")
+    print(f"批次大小: {batch_size} 条/批")
+    print(f"批次间隔: {interval} 秒")
+    print(f"预计批次: {total_batches} 批")
+    print(f"预计耗时: {total_batches * interval:.2f} 秒")
+    print(f"=" * 60)
 
     for batch_num in range(total_batches):
         batch_start_time = time.time()
+        
+        # 计算当前批次应该发送的消息数
+        current_batch_size = min(batch_size, total_count - success_count)
 
         # 发送一批消息
-        for i in range(batch_size):
+        for i in range(current_batch_size):
             try:
                 # 生成唯一告警消息
                 alarm_msg = generate_unique_alarm()
@@ -227,36 +249,45 @@ def batch_send_kafka_messages():
                 )
 
                 success_count += 1
+                
+                # 如果已达到总数，退出循环
+                if success_count >= total_count:
+                    break
 
             except Exception as e:
                 print(f"第 {batch_num * batch_size + i} 条消息发送异常: {e}")
                 fail_count += 1
 
-        # 定期报告进度（每10批次报告一次）
-        if (batch_num + 1) % 10 == 0:
-            elapsed = time.time() - start_time
-            actual_rate = success_count / elapsed if elapsed > 0 else 0
-            print(f"已发送 {success_count} 条消息，耗时: {elapsed:.2f}s，实际速率: {actual_rate:.2f} 条/秒")
+        # 每批次都报告进度
+        elapsed = time.time() - start_time
+        actual_rate = success_count / elapsed if elapsed > 0 else 0
+        remaining_batches = total_batches - (batch_num + 1)
+        estimated_remaining_time = remaining_batches * interval
+        print(f"[批次 {batch_num + 1}/{total_batches}] 已发送 {success_count} 条，耗时: {elapsed:.2f}s，速率: {actual_rate:.2f} 条/秒，预计剩余: {estimated_remaining_time:.2f}s")
 
-            # 添加key和FP0_FP1_FP2_FP3值的打印示例
-            if success_count > 0:
-                # 获取最近一条消息的示例数据
-                sample_alarm = generate_unique_alarm()
-                sample_key = sample_alarm["ID"]
-                sample_fp = sample_alarm["FP0_FP1_FP2_FP3"]
-                print(f"示例消息 - Key: {sample_key}, FP0_FP1_FP2_FP3: {sample_fp}")
+        # 添加key和FP0_FP1_FP2_FP3值的打印示例
+        if success_count > 0:
+            # 获取最近一条消息的示例数据
+            sample_alarm = generate_unique_alarm()
+            sample_key = sample_alarm["ID"]
+            sample_fp = sample_alarm["FP0_FP1_FP2_FP3"]
+            print(f"  示例消息 - Key: {sample_key}, FP0_FP1_FP2_FP3: {sample_fp}")
 
         # 控制发送速率
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
 
-        # 如果发送太快，等待剩余时间
-        if batch_duration < interval:
+        # 如果还有下一批次，等待剩余时间
+        if batch_num < total_batches - 1 and batch_duration < interval:
             sleep_time = interval - batch_duration
             time.sleep(sleep_time)
 
         # 定期触发消息发送（每秒触发一次）
         producer.poll(0)
+        
+        # 如果已达到总数，退出循环
+        if success_count >= total_count:
+            break
 
     # 4. 刷出剩余所有消息
     flush_start = time.time()
@@ -267,12 +298,41 @@ def batch_send_kafka_messages():
 
     # 5. 打印统计信息
     total_time = time.time() - start_time
-    print("=" * 50)
-    print(f"发送完成！总计: {TOTAL_MSG_COUNT} 条")
-    print(f"成功: {success_count} 条 | 失败: {fail_count} 条")
-    print(f"总耗时: {total_time:.2f}s | 平均速率: {TOTAL_MSG_COUNT / total_time:.2f} 条/秒")
-    print("=" * 50)
+    print("\n" + "=" * 60)
+    print(f"✅ 发送完成！")
+    print(f"总消息数: {total_count} 条")
+    print(f"成功发送: {success_count} 条")
+    print(f"失败数量: {fail_count} 条")
+    print(f"总耗时: {total_time:.2f} 秒")
+    print(f"平均速率: {success_count / total_time:.2f} 条/秒")
+    print(f"实际批次: {batch_num + 1} 批")
+    print(f"=" * 60)
 
 
 if __name__ == "__main__":
-    batch_send_kafka_messages()
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='Kafka 消息批量发送工具')
+    parser.add_argument('--total', type=int, default=100, help='总消息数量 (默认: 10000)')
+    parser.add_argument('--batch', type=int, default=5, help='每批次消息数量 (默认: 1000)')
+    parser.add_argument('--interval', type=float, default=1.0, help='批次间隔时间-秒 (默认: 1.0)')
+    parser.add_argument('--topic', type=str, default='EVENT-GZ-COLLECTION-TOPIC', help='Kafka 主题名称 (默认: EVENT-GZ-COLLECTION-TOPIC)')
+    
+    args = parser.parse_args()
+    
+    # 更新全局变量
+    KAFKA_TOPIC = args.topic
+    
+    print(f"\n📋 配置参数:")
+    print(f"   主题: {args.topic}")
+    print(f"   总数: {args.total} 条")
+    print(f"   批次: {args.batch} 条/批")
+    print(f"   间隔: {args.interval} 秒")
+    print(f"   预计批次: {args.total // args.batch + (1 if args.total % args.batch != 0 else 0)} 批")
+    print(f"   预计耗时: {(args.total // args.batch + (1 if args.total % args.batch != 0 else 0)) * args.interval:.2f} 秒\n")
+    
+    # 执行发送
+    batch_send_kafka_messages(
+        total_count=args.total,
+        batch_size=args.batch,
+        interval=args.interval
+    )

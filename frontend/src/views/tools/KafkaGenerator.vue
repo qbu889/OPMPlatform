@@ -7,10 +7,20 @@
           <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
           <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
         </div>
-        <el-button type="primary" @click="goToFieldMetaManager">
-          <el-icon><Setting /></el-icon>
-          字段映射管理
-        </el-button>
+        <div class="header-buttons">
+          <el-button type="primary" @click="goToFieldMetaManager">
+            <el-icon><Setting /></el-icon>
+            字段映射管理
+          </el-button>
+          <el-button type="success" @click="goToFieldDictManager">
+            <el-icon><Collection /></el-icon>
+            字段字典管理
+          </el-button>
+          <el-button type="warning" @click="openAddDictDialog">
+            <el-icon><Plus /></el-icon>
+            新增字典项
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -159,34 +169,45 @@
             @change="onFieldChange(field.name, fieldValues[field.name])"
           >
             <template #append>
-              <el-select 
-                v-if="historyValues[field.name] && historyValues[field.name].length > 0"
-                v-model="fieldValues[field.name]"
-                placeholder="历史值"
-                size="small"
-                style="width: 120px"
-                @change="onFieldChange(field.name, fieldValues[field.name])"
+              <el-button 
+                size="small" 
+                type="success"
+                @click="generateUniqueValue(field.name)"
+                title="为当前字段值添加唯一后缀"
+                class="unique-value-btn"
               >
-                <el-option
-                  v-for="val in historyValues[field.name]"
-                  :key="val"
-                  :label="val"
-                  :value="val"
-                >
-                  <span style="float: left">{{ val }}</span>
-                  <el-button
-                    size="small"
-                    type="danger"
-                    link
-                    @click.stop="deleteHistoryValue(field.name, val)"
-                    style="float: right; margin-right: 10px"
-                  >
-                    <el-icon><Close /></el-icon>
-                  </el-button>
-                </el-option>
-              </el-select>
+                <el-icon><MagicStick /></el-icon>
+                唯一值
+              </el-button>
             </template>
           </el-input>
+          <el-select 
+            v-if="historyValues[field.name] && historyValues[field.name].length > 0"
+            v-model="fieldValues[field.name]"
+            placeholder="历史值"
+            size="small"
+            class="history-select-standalone"
+            @change="onFieldChange(field.name, fieldValues[field.name])"
+            style="margin-top: 5px; width: 100%;"
+          >
+            <el-option
+              v-for="val in historyValues[field.name]"
+              :key="val"
+              :label="val"
+              :value="val"
+            >
+              <span style="float: left">{{ val }}</span>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click.stop="deleteHistoryValue(field.name, val)"
+                style="float: right; margin-right: 10px"
+              >
+                <el-icon><Close /></el-icon>
+              </el-button>
+            </el-option>
+          </el-select>
           
           <div v-if="field.esField" class="field-meta">
             <span class="meta-label">Kafka字段:</span>
@@ -442,6 +463,13 @@
       width="80%"
       :close-on-click-modal="false"
     >
+      <div class="dict-actions mb-3">
+        <el-button type="primary" size="small" @click="openAddDictFromField">
+          <el-icon><Plus /></el-icon>
+          新增字典项
+        </el-button>
+        <span class="dict-field-label">当前字段：{{ currentDictField }}</span>
+      </div>
       <el-table
         :data="dictData"
         border
@@ -449,14 +477,67 @@
         max-height="500"
         @row-click="selectDictValue"
       >
-        <el-table-column prop="field_name" label="字段名" width="150" />
-        <el-table-column prop="field_value" label="字段值" min-width="200" />
-        <el-table-column prop="description" label="说明" min-width="250" />
-        <el-table-column prop="source" label="来源" width="120" />
+        <el-table-column prop="dict_key" label="字典键" width="150" />
+        <el-table-column prop="dict_value" label="字典值" min-width="200" />
+        <el-table-column prop="remark" label="说明" min-width="250" />
+        <el-table-column prop="sort_order" label="排序" width="80" />
       </el-table>
 
       <template #footer>
         <el-button @click="dictDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新增/编辑字典项对话框 -->
+    <el-dialog
+      v-model="addDictDialogVisible"
+      :title="editingDictId ? '编辑字典项' : '新增字典项'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="addDictForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="addDictForm.kafka_field" placeholder="例如：SEVERITY" />
+          <div class="form-tip">输入 Kafka 字段名，如 SEVERITY、EVENT_TYPE 等</div>
+        </el-form-item>
+        
+        <el-form-item label="字典键" required>
+          <el-input v-model="addDictForm.dict_key" placeholder="例如：1" />
+          <div class="form-tip">字典的键值，通常是数字或代码</div>
+        </el-form-item>
+        
+        <el-form-item label="字典值" required>
+          <el-input v-model="addDictForm.dict_value" placeholder="例如：紧急" />
+          <div class="form-tip">字典的显示值，通常是中文描述</div>
+        </el-form-item>
+        
+        <el-form-item label="排序">
+          <el-input-number v-model="addDictForm.sort_order" :min="0" :max="9999" style="width: 100%" />
+          <div class="form-tip">数字越小越靠前</div>
+        </el-form-item>
+        
+        <el-form-item label="备注">
+          <el-input 
+            v-model="addDictForm.remark" 
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+        
+        <el-form-item label="状态">
+          <el-radio-group v-model="addDictForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="addDictDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDictItem" :loading="savingDict">
+          {{ editingDictId ? '更新' : '新增' }}
+        </el-button>
       </template>
     </el-dialog>
 
@@ -966,6 +1047,7 @@ import {
   MagicStick,
   Edit,
   Setting,
+  Collection,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -1149,6 +1231,19 @@ const handleTestPrefixChange = (value) => {
 const dictDialogVisible = ref(false)
 const dictData = ref([])
 const currentDictField = ref('')
+
+// 新增/编辑字典项相关
+const addDictDialogVisible = ref(false)
+const editingDictId = ref(null)
+const savingDict = ref(false)
+const addDictForm = ref({
+  kafka_field: '',
+  dict_key: '',
+  dict_value: '',
+  sort_order: 0,
+  remark: '',
+  is_enabled: 1
+})
 
 // 推送消息弹窗
 const pushMessageDialogVisible = ref(false)
@@ -1481,6 +1576,32 @@ const historyDialogTitle = computed(() => {
   return '历史生成记录'
 })
 
+// 生成唯一值（添加时间戳后缀）
+const generateUniqueValue = (fieldName) => {
+  const currentValue = fieldValues[fieldName] || ''
+  
+  // 生成时间戳：年月日时分秒毫秒
+  const now = new Date()
+  const timestamp = now.getFullYear().toString() +
+    String(now.getMonth() + 1).padStart(2, '0') +
+    String(now.getDate()).padStart(2, '0') +
+    String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0') +
+    String(now.getSeconds()).padStart(2, '0') +
+    String(now.getMilliseconds()).padStart(3, '0')
+  
+  // 添加唯一后缀（如果有值则添加下划线，空值则直接使用时间戳）
+  const uniqueValue = currentValue ? `${currentValue}_${timestamp}` : timestamp
+  
+  // 更新字段值
+  fieldValues[fieldName] = uniqueValue
+  
+  // 保存到历史记录
+  onFieldChange(fieldName, uniqueValue)
+  
+  ElMessage.success(`已为 ${fieldName} 生成唯一值: ${uniqueValue}`)
+}
+
 // 字段值改变
 const onFieldChange = async (field, value) => {
   if (value && value.trim()) {
@@ -1620,10 +1741,85 @@ const openFieldDict = async (field) => {
 // 选择字典值
 const selectDictValue = (row) => {
   if (currentDictField.value) {
-    fieldValues[currentDictField.value] = row.field_value
-    onFieldChange(currentDictField.value, row.field_value)
+    fieldValues[currentDictField.value] = row.dict_value || row.dict_key
+    onFieldChange(currentDictField.value, row.dict_value || row.dict_key)
     dictDialogVisible.value = false
     ElMessage.success('已填充字段值')
+  }
+}
+
+// 打开新增字典对话框（从页面顶部）
+const openAddDictDialog = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value || '',
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 从字段字典弹窗中打开新增（自动填充当前字段）
+const openAddDictFromField = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value,
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 保存字典项
+const saveDictItem = async () => {
+  // 校验必填字段
+  if (!addDictForm.value.kafka_field || !addDictForm.value.dict_key || !addDictForm.value.dict_value) {
+    ElMessage.warning('请填写必填字段')
+    return
+  }
+  
+  savingDict.value = true
+  try {
+    let url, method
+    if (editingDictId.value) {
+      // 编辑模式
+      url = `/kafka-generator/field-dict/${editingDictId.value}`
+      method = 'PUT'
+    } else {
+      // 新增模式
+      url = '/kafka-generator/field-dict'
+      method = 'POST'
+    }
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addDictForm.value)
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success(editingDictId.value ? '更新成功' : '新增成功')
+      addDictDialogVisible.value = false
+      
+      // 如果当前打开了字典弹窗，刷新字典数据
+      if (dictDialogVisible.value && currentDictField.value) {
+        openFieldDict(currentDictField.value)
+      }
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存字典项失败:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  } finally {
+    savingDict.value = false
   }
 }
 
@@ -2563,6 +2759,11 @@ const goToFieldMetaManager = () => {
   window.location.href = '/kafka-field-meta'
 }
 
+// 跳转到字段字典管理页面
+const goToFieldDictManager = () => {
+  window.location.href = '/kafka-field-dict'
+}
+
 // 复制 ES 查询
 const copyEsQuery = async () => {
   if (!esQuery.value) {
@@ -2845,6 +3046,21 @@ onMounted(() => {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.header-content > div:first-child {
+  flex-shrink: 0;
+}
+
+.header-content > .el-button {
+  margin: 0;
+}
+
+/* 右侧按钮组样式 */
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .page-header h2 {
@@ -3292,5 +3508,21 @@ onMounted(() => {
 
 .text-muted {
   color: #909399;
+}
+
+/* 字段输入框 append 区域样式 */
+.field-append-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unique-value-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.history-select {
+  width: 120px;
 }
 </style>

@@ -151,6 +151,12 @@ const routes = [
     meta: { title: 'Kafka 字段映射管理', hidden: true }
   },
   {
+    path: '/kafka-field-dict',
+    name: 'KafkaFieldDictManager',
+    component: () => import('../views/kafka/KafkaFieldDictManager.vue'),
+    meta: { title: 'Kafka 字段字典管理', hidden: true }
+  },
+  {
     path: '/es-to-excel',
     name: 'EsToExcel',
     component: () => import('../views/tools/EsToExcel.vue'),
