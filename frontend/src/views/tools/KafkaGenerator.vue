@@ -189,7 +189,30 @@
           </el-input>
           
           <div v-if="field.esField" class="field-meta">
-            ES字段: <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+            <span class="meta-label">Kafka字段:</span>
+            <span class="kafka-field" :title="field.name">{{ field.name }}</span>
+            <el-button 
+              size="small" 
+              type="success" 
+              link
+              @click="copyText(field.name, 'Kafka字段')"
+              style="margin-left: 4px"
+              title="复制 Kafka 字段"
+            >
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+            <span class="meta-label" style="margin-left: 12px">ES字段:</span>
+            <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+            <el-button 
+              size="small" 
+              type="primary" 
+              link
+              @click="copyText(field.esField, 'ES字段')"
+              style="margin-left: 4px"
+              title="复制 ES 字段"
+            >
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
             <el-button 
               size="small" 
               type="primary" 
@@ -1781,6 +1804,41 @@ const copyFPValue = async () => {
   }
 }
 
+// 通用复制文本方法
+const copyText = async (text, label) => {
+  if (!text) {
+    ElMessage.warning(`${label}为空`)
+    return
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      ElMessage.success(`${label}已复制`)
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success(`${label}已复制`)
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败')
+  }
+}
+
 // 生成推送消息
 const generatePushMessage = () => {
   if (!resultData.value) {
@@ -2329,45 +2387,6 @@ const getFieldValueFromJson = (jsonData, fieldName) => {
       return match ? match[1] : null
     }
     return null
-  }
-}
-
-// 复制文本
-const copyText = async (text, label) => {
-  if (!text) {
-    ElMessage.warning('没有可复制的内容')
-    return
-  }
-  
-  try {
-    const textToCopy = typeof text === 'string' ? text : JSON.stringify(text, null, 2)
-    
-    // 尝试使用现代 Clipboard API
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(textToCopy)
-      ElMessage.success(`${label}已复制`)
-    } else {
-      // 降级方案：使用 execCommand
-      const textarea = document.createElement('textarea')
-      textarea.value = textToCopy
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      
-      try {
-        document.execCommand('copy')
-        ElMessage.success(`${label}已复制`)
-      } catch (err) {
-        console.error('复制失败:', err)
-        ElMessage.error('复制失败，请手动选择文本复制')
-      } finally {
-        document.body.removeChild(textarea)
-      }
-    }
-  } catch (error) {
-    console.error('复制失败:', error)
-    ElMessage.error('复制失败')
   }
 }
 
@@ -2969,7 +2988,22 @@ onMounted(() => {
   font-size: 12px;
   color: #6c757d;
   margin-top: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.meta-label {
   font-style: italic;
+  font-weight: 500;
+}
+
+.kafka-field {
+  color: #67c23a;
+  cursor: help;
+  text-decoration: underline dotted;
+  font-weight: 500;
 }
 
 .es-field {

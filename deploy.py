@@ -81,7 +81,8 @@ def ssh_command(cmd, timeout=60):
     """执行SSH远程命令"""
     full_cmd = f"ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no {REMOTE_USER}@{REMOTE_HOST} \"{cmd}\""
     success, stdout, stderr = run_command(full_cmd, timeout=timeout)
-    if not success and stderr:
+    # 只在真正失败时显示警告（返回码非0且没有stdout输出）
+    if not success and not stdout and stderr:
         print_warning(f"SSH命令警告: {stderr[:200]}")
     return success, stdout, stderr
 
@@ -752,7 +753,10 @@ def fast_deploy(specific_files=None):
     try:
         choice = input().strip().lower()
         if choice == 'y':
-            restart_backend_only()
+            if restart_backend_only():
+                print_success("后端服务重启成功")
+            else:
+                print_error("后端服务重启失败，请检查日志")
     except:
         pass
     
@@ -763,34 +767,40 @@ def restart_backend_only():
     """仅重启后端服务（不影响Nginx和前端）"""
     print_info("重启后端服务...")
     
-    # 停止旧进程
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f 'python app.py' || true")
+    # 停止旧进程（使用更可靠的方式，避免 pkill 返回码问题）
+    ssh_command(f"cd {REMOTE_PATH} && ps -ef | grep 'python app.py' | grep -v grep | awk '{{print $2}}' | xargs -r kill")
     time.sleep(2)
     
-    # 启动新进程
-    start_cmd = f"""
-    cd {REMOTE_PATH}
-    source .venv/bin/activate
-    export PORT={LOCAL_PORT}
-    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
-    echo $!
-    """
+    # 确认旧进程已停止
+    _, processes, _ = ssh_command(f"ps -ef | grep 'python app.py' | grep -v grep")
+    if processes:
+        print_warning("检测到仍有进程运行，强制终止...")
+        ssh_command(f"pkill -9 -f 'python app.py'")
+        time.sleep(1)
     
-    success, pid, _ = ssh_command(start_cmd)
-    if success and pid.strip().isdigit():
-        print_success(f"后端服务已重启 (PID: {pid.strip()})")
-        
-        # 等待启动
-        time.sleep(3)
-        
-        # 验证
-        _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
-        if port_check:
-            print_success(f"端口 {LOCAL_PORT} 监听正常")
-        else:
-            print_warning("端口未监听，请检查日志")
+    # 启动新进程
+    start_cmd = f"""cd {REMOTE_PATH} && source .venv/bin/activate && export PORT={LOCAL_PORT} && nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 & echo $!"""
+    
+    success, pid, stderr = ssh_command(start_cmd)
+    
+    # 等待启动
+    time.sleep(5)
+    
+    # 验证端口是否监听
+    _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
+    if port_check:
+        print_success(f"后端服务已重启 (端口 {LOCAL_PORT} 监听正常)")
+        return True
     else:
-        print_error("重启失败")
+        print_error("端口未监听，服务启动失败")
+        # 显示最新日志帮助排查
+        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log")
+        if logs:
+            print_info("最新日志:")
+            for line in logs.split('\n')[-10:]:
+                if line.strip():
+                    print(f"   {line}")
+        return False
 
 def main():
     """主函数"""
@@ -886,8 +896,8 @@ def main():
         if backend_ready:
             test_api()
         
-        # 9. 更新Kafka字段元数据
-        update_kafka_field_meta()
+        # 9. 更新Kafka字段元数据（已禁用）
+        # update_kafka_field_meta()
         
         print_header("✅ 部署完成！")
         print(f"{Colors.GREEN}📍 访问地址:{Colors.END}")
