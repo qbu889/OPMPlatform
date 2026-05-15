@@ -81,8 +81,10 @@ def ssh_command(cmd, timeout=60):
     """执行SSH远程命令"""
     full_cmd = f"ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no {REMOTE_USER}@{REMOTE_HOST} \"{cmd}\""
     success, stdout, stderr = run_command(full_cmd, timeout=timeout)
-    # 只在真正失败时显示警告（返回码非0且没有stdout输出）
-    if not success and not stdout and stderr:
+    # 特殊处理 grep 命令：退出码 1 表示未找到匹配项（不是错误）
+    is_grep_no_match = 'grep' in cmd and not success and not stdout
+    # 只在真正失败时显示警告（返回码非0且没有stdout输出且不是grep无匹配）
+    if not success and not stdout and stderr and not is_grep_no_match:
         print_warning(f"SSH命令警告: {stderr[:200]}")
     return success, stdout, stderr
 
@@ -358,12 +360,13 @@ def generate_nginx_config():
     location = /dingtalk-push/view-checkin {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     
     # Kafka Generator API
-    location = /kafka-generator/field-meta {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
+    location /kafka-generator/field-meta {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-meta/list {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-cache {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-order {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-options {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-values {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
+    location /kafka-generator/field-dict {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/generate {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location /kafka-generator/history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
@@ -721,15 +724,26 @@ def fast_deploy(specific_files=None):
     # 分类文件
     backend_files = []
     frontend_files = []
+    skipped_files = []
     
     for file in specific_files:
-        if file.startswith('frontend/src/') or file.endswith('.vue') or file.endswith('.js'):
+        # 跳过 __pycache__ 目录和编译文件
+        if '__pycache__' in file or file.endswith('.pyc'):
+            skipped_files.append(file)
+            continue
+        
+        # 判断是否为前端源码文件（需要构建）
+        if file.startswith('frontend/src/') and (file.endswith('.vue') or file.endswith('.js') or file.endswith('.ts')):
             frontend_files.append(file)
         elif file.endswith('.py'):
             backend_files.append(file)
         else:
             # 其他文件当作后端文件处理
             backend_files.append(file)
+    
+    # 显示跳过的文件
+    if skipped_files:
+        print_info(f"已跳过 {len(skipped_files)} 个非部署文件（__pycache__/编译文件）")
     
     # 上传后端文件（直接SCP，不打包）
     if backend_files:
@@ -744,7 +758,11 @@ def fast_deploy(specific_files=None):
     
     # 上传前端文件（需要重新构建）
     if frontend_files:
-        print_warning("检测到前端文件变更，需要重新构建")
+        print_warning(f"检测到 {len(frontend_files)} 个前端源码文件变更，需要重新构建")
+        for f in frontend_files[:5]:
+            print(f"   - {f}")
+        if len(frontend_files) > 5:
+            print(f"   ... 还有 {len(frontend_files) - 5} 个文件")
         print_info("建议使用完整部署模式: python deploy.py")
         return False
     

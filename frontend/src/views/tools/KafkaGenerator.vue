@@ -11,6 +11,14 @@
           <el-icon><Setting /></el-icon>
           字段映射管理
         </el-button>
+        <el-button type="success" @click="goToFieldDictManager">
+          <el-icon><Collection /></el-icon>
+          字段字典管理
+        </el-button>
+        <el-button type="warning" @click="openAddDictDialog">
+          <el-icon><Plus /></el-icon>
+          新增字典项
+        </el-button>
       </div>
     </div>
 
@@ -442,6 +450,13 @@
       width="80%"
       :close-on-click-modal="false"
     >
+      <div class="dict-actions mb-3">
+        <el-button type="primary" size="small" @click="openAddDictFromField">
+          <el-icon><Plus /></el-icon>
+          新增字典项
+        </el-button>
+        <span class="dict-field-label">当前字段：{{ currentDictField }}</span>
+      </div>
       <el-table
         :data="dictData"
         border
@@ -449,14 +464,67 @@
         max-height="500"
         @row-click="selectDictValue"
       >
-        <el-table-column prop="field_name" label="字段名" width="150" />
-        <el-table-column prop="field_value" label="字段值" min-width="200" />
-        <el-table-column prop="description" label="说明" min-width="250" />
-        <el-table-column prop="source" label="来源" width="120" />
+        <el-table-column prop="dict_key" label="字典键" width="150" />
+        <el-table-column prop="dict_value" label="字典值" min-width="200" />
+        <el-table-column prop="remark" label="说明" min-width="250" />
+        <el-table-column prop="sort_order" label="排序" width="80" />
       </el-table>
 
       <template #footer>
         <el-button @click="dictDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新增/编辑字典项对话框 -->
+    <el-dialog
+      v-model="addDictDialogVisible"
+      :title="editingDictId ? '编辑字典项' : '新增字典项'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="addDictForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="addDictForm.kafka_field" placeholder="例如：SEVERITY" />
+          <div class="form-tip">输入 Kafka 字段名，如 SEVERITY、EVENT_TYPE 等</div>
+        </el-form-item>
+        
+        <el-form-item label="字典键" required>
+          <el-input v-model="addDictForm.dict_key" placeholder="例如：1" />
+          <div class="form-tip">字典的键值，通常是数字或代码</div>
+        </el-form-item>
+        
+        <el-form-item label="字典值" required>
+          <el-input v-model="addDictForm.dict_value" placeholder="例如：紧急" />
+          <div class="form-tip">字典的显示值，通常是中文描述</div>
+        </el-form-item>
+        
+        <el-form-item label="排序">
+          <el-input-number v-model="addDictForm.sort_order" :min="0" :max="9999" style="width: 100%" />
+          <div class="form-tip">数字越小越靠前</div>
+        </el-form-item>
+        
+        <el-form-item label="备注">
+          <el-input 
+            v-model="addDictForm.remark" 
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+        
+        <el-form-item label="状态">
+          <el-radio-group v-model="addDictForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="addDictDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDictItem" :loading="savingDict">
+          {{ editingDictId ? '更新' : '新增' }}
+        </el-button>
       </template>
     </el-dialog>
 
@@ -966,6 +1034,7 @@ import {
   MagicStick,
   Edit,
   Setting,
+  Collection,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -1149,6 +1218,19 @@ const handleTestPrefixChange = (value) => {
 const dictDialogVisible = ref(false)
 const dictData = ref([])
 const currentDictField = ref('')
+
+// 新增/编辑字典项相关
+const addDictDialogVisible = ref(false)
+const editingDictId = ref(null)
+const savingDict = ref(false)
+const addDictForm = ref({
+  kafka_field: '',
+  dict_key: '',
+  dict_value: '',
+  sort_order: 0,
+  remark: '',
+  is_enabled: 1
+})
 
 // 推送消息弹窗
 const pushMessageDialogVisible = ref(false)
@@ -1620,10 +1702,85 @@ const openFieldDict = async (field) => {
 // 选择字典值
 const selectDictValue = (row) => {
   if (currentDictField.value) {
-    fieldValues[currentDictField.value] = row.field_value
-    onFieldChange(currentDictField.value, row.field_value)
+    fieldValues[currentDictField.value] = row.dict_value || row.dict_key
+    onFieldChange(currentDictField.value, row.dict_value || row.dict_key)
     dictDialogVisible.value = false
     ElMessage.success('已填充字段值')
+  }
+}
+
+// 打开新增字典对话框（从页面顶部）
+const openAddDictDialog = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value || '',
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 从字段字典弹窗中打开新增（自动填充当前字段）
+const openAddDictFromField = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value,
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 保存字典项
+const saveDictItem = async () => {
+  // 校验必填字段
+  if (!addDictForm.value.kafka_field || !addDictForm.value.dict_key || !addDictForm.value.dict_value) {
+    ElMessage.warning('请填写必填字段')
+    return
+  }
+  
+  savingDict.value = true
+  try {
+    let url, method
+    if (editingDictId.value) {
+      // 编辑模式
+      url = `/kafka-generator/field-dict/${editingDictId.value}`
+      method = 'PUT'
+    } else {
+      // 新增模式
+      url = '/kafka-generator/field-dict'
+      method = 'POST'
+    }
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addDictForm.value)
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success(editingDictId.value ? '更新成功' : '新增成功')
+      addDictDialogVisible.value = false
+      
+      // 如果当前打开了字典弹窗，刷新字典数据
+      if (dictDialogVisible.value && currentDictField.value) {
+        openFieldDict(currentDictField.value)
+      }
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存字典项失败:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  } finally {
+    savingDict.value = false
   }
 }
 
@@ -2561,6 +2718,11 @@ const loadSampleData = () => {
 // 跳转到字段映射管理页面
 const goToFieldMetaManager = () => {
   window.location.href = '/kafka-field-meta'
+}
+
+// 跳转到字段字典管理页面
+const goToFieldDictManager = () => {
+  window.location.href = '/kafka-field-dict'
 }
 
 // 复制 ES 查询
