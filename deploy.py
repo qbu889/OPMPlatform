@@ -557,16 +557,17 @@ def restart_services():
     # 更新Nginx配置
     update_nginx_config()
     
-    # 清空旧日志，避免混淆
-    print_info("清空旧日志文件...")
-    ssh_command(f"> {REMOTE_PATH}/logs/backend.log")
+    # 备份旧日志（不清空，保留历史）
+    print_info("备份旧日志...")
+    ssh_command(f"cd {REMOTE_PATH}/logs && mv backend.log backend.log.bak.$(date +%s) 2>/dev/null || true")
     
-    # 启动后端
+    # 启动后端（使用正确的日志重定向）
     start_cmd = f"""
     cd {REMOTE_PATH}
     source .venv/bin/activate
     export PORT={LOCAL_PORT}
-    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
+    nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 &
+    sleep 2
     echo "后端已启动 (PID: $!)"
     """
     
@@ -575,42 +576,73 @@ def restart_services():
     
     # 4. 等待服务启动
     print_info("步骤 5.4: 等待服务启动...")
-    time.sleep(8)  # 给服务足够的启动时间
+    time.sleep(10)  # 给服务足够的启动时间（Flask 初始化需要时间）
     
     # 5. 验证服务状态
     print_info("步骤 5.5: 验证服务状态")
     
-    # 检查进程
-    _, processes, _ = ssh_command("ps -ef | grep 'python app.py' | grep -v grep")
+    # 方法1: 检查进程（使用更宽松的匹配）
+    _, processes, _ = ssh_command(f"ps aux | grep '[p]ython.*app.py'")
     if processes:
-        print_success("后端进程运行中:")
+        print_success("后端进程运行中")
         for line in processes.split('\n')[:2]:
-            print(f"   {line}")
+            print(f"   {line.strip()}")
     else:
-        print_error("未检测到后端进程！")
+        print_warning("未检测到进程，尝试其他验证方式...")
     
-    # 检查端口
-    _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
-    if port_check:
-        print_success(f"端口 {LOCAL_PORT} 监听正常")
-        print(f"   {port_check}")
+    # 方法2: 直接测试端口连通性（最可靠）
+    print_info("测试端口连通性...")
+    test_port_cmd = f"timeout 3 bash -c 'echo > /dev/tcp/127.0.0.1/{LOCAL_PORT}' 2>/dev/null && echo 'OK' || echo 'FAIL'"
+    _, port_result, _ = ssh_command(test_port_cmd)
+    
+    if port_result.strip() == 'OK':
+        print_success(f"✅ 端口 {LOCAL_PORT} 可访问（服务已就绪）")
     else:
-        print_warning(f"端口 {LOCAL_PORT} 未检测到监听")
-        print_info("尝试等待更长时间...")
+        print_warning(f"端口 {LOCAL_PORT} 暂时不可访问，继续等待...")
         time.sleep(5)
-        _, port_check_retry, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
-        if port_check_retry:
-            print_success(f"端口 {LOCAL_PORT} 已就绪（延迟启动）")
+        _, port_result_retry, _ = ssh_command(test_port_cmd)
+        if port_result_retry.strip() == 'OK':
+            print_success(f"✅ 端口 {LOCAL_PORT} 已就绪（延迟启动）")
         else:
-            print_error(f"端口 {LOCAL_PORT} 仍未监听，服务可能启动失败")
+            print_error(f"❌ 端口 {LOCAL_PORT} 仍不可访问")
     
-    # 查看最新日志（从启动后开始）
+    # 方法3: 尝试 curl 本地测试
+    print_info("本地 HTTP 测试...")
+    _, http_result, _ = ssh_command(f"curl -s -o /dev/null -w '%{{http_code}}' http://127.0.0.1:{LOCAL_PORT}/ 2>/dev/null || echo 'FAILED'")
+    if http_result.strip() in ['200', '302', '404']:
+        print_success(f"HTTP 响应码: {http_result.strip()} (服务正常)")
+    else:
+        print_warning(f"HTTP 测试结果: {http_result.strip()}")
+    
+    # 查看最新日志
     print_info("查看启动日志:")
-    _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log | grep -E '(Running on|Started|ERROR|Exception)' || tail -20 logs/backend.log")
-    if logs:
-        for line in logs.split('\n')[-10:]:
-            if line.strip():
-                print(f"   {line}")
+    time.sleep(3)  # 再等待一下，确保日志已写入
+    
+    # 先检查日志文件是否存在且有内容
+    _, log_size, _ = ssh_command(f"wc -c {REMOTE_PATH}/logs/backend.log 2>/dev/null | awk '{{print $1}}'")
+    
+    if log_size and int(log_size.strip()) > 0:
+        # 查找关键启动信息
+        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && grep -E '(Running on|Started|Listening|ERROR|Exception|Traceback)' logs/backend.log | tail -10")
+        
+        if not logs:
+            # 如果没有关键日志，显示最后15行
+            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -15 logs/backend.log")
+        
+        if logs:
+            print_info("服务启动日志:")
+            for line in logs.split('\n'):
+                if line.strip():
+                    print(f"   {line}")
+        else:
+            print_warning("日志文件为空或无内容")
+    else:
+        print_error("日志文件不存在或为空！")
+        # 尝试查看是否有其他日志
+        _, alt_logs, _ = ssh_command(f"ls -lh {REMOTE_PATH}/logs/*.log 2>/dev/null")
+        if alt_logs:
+            print_info("其他日志文件:")
+            print(f"   {alt_logs}")
 
 
 # def update_kafka_field_meta():
