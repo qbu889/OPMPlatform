@@ -557,6 +557,10 @@ def restart_services():
     # 更新Nginx配置
     update_nginx_config()
     
+    # 清空旧日志，避免混淆
+    print_info("清空旧日志文件...")
+    ssh_command(f"> {REMOTE_PATH}/logs/backend.log")
+    
     # 启动后端
     start_cmd = f"""
     cd {REMOTE_PATH}
@@ -582,6 +586,8 @@ def restart_services():
         print_success("后端进程运行中:")
         for line in processes.split('\n')[:2]:
             print(f"   {line}")
+    else:
+        print_error("未检测到后端进程！")
     
     # 检查端口
     _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
@@ -590,11 +596,18 @@ def restart_services():
         print(f"   {port_check}")
     else:
         print_warning(f"端口 {LOCAL_PORT} 未检测到监听")
+        print_info("尝试等待更长时间...")
+        time.sleep(5)
+        _, port_check_retry, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
+        if port_check_retry:
+            print_success(f"端口 {LOCAL_PORT} 已就绪（延迟启动）")
+        else:
+            print_error(f"端口 {LOCAL_PORT} 仍未监听，服务可能启动失败")
     
-    # 查看日志
-    _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -10 logs/backend.log")
+    # 查看最新日志（从启动后开始）
+    print_info("查看启动日志:")
+    _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log | grep -E '(Running on|Started|ERROR|Exception)' || tail -20 logs/backend.log")
     if logs:
-        print_info("后端日志（最后10行）:")
         for line in logs.split('\n')[-10:]:
             if line.strip():
                 print(f"   {line}")
