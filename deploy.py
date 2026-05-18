@@ -524,9 +524,6 @@ def restart_services():
     """重启服务"""
     print_header("步骤 5: 清理旧进程并重启服务")
     
-    # 先清理旧进程
-    stop_old_processes()
-    
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
     # 1. 备份
@@ -551,13 +548,7 @@ def restart_services():
     
     # 2. 停止旧进程
     print_info("步骤 5.2: 停止现有服务")
-    stop_cmd = f"""
-    cd {REMOTE_PATH}
-    pkill -f "python app.py" 2>/dev/null || true
-    sleep 2
-    echo "进程已停止"
-    """
-    ssh_command(stop_cmd)
+    stop_old_processes()
     print_success("进程已停止")
     
     # 3. 启动新服务
@@ -578,26 +569,35 @@ def restart_services():
     success, stdout, stderr = ssh_command(start_cmd)
     print_success("后端服务已启动")
     
-    # 4. 验证服务状态
-    print_info("步骤 5.4: 验证服务状态")
+    # 4. 等待服务启动
+    print_info("步骤 5.4: 等待服务启动...")
+    time.sleep(8)  # 给服务足够的启动时间
+    
+    # 5. 验证服务状态
+    print_info("步骤 5.5: 验证服务状态")
     
     # 检查进程
     _, processes, _ = ssh_command("ps -ef | grep 'python app.py' | grep -v grep")
     if processes:
         print_success("后端进程运行中:")
-        print(f"   {processes}")
+        for line in processes.split('\n')[:2]:
+            print(f"   {line}")
     
     # 检查端口
     _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
     if port_check:
         print_success(f"端口 {LOCAL_PORT} 监听正常")
+        print(f"   {port_check}")
+    else:
+        print_warning(f"端口 {LOCAL_PORT} 未检测到监听")
     
     # 查看日志
     _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -10 logs/backend.log")
     if logs:
         print_info("后端日志（最后10行）:")
         for line in logs.split('\n')[-10:]:
-            print(f"   {line}")
+            if line.strip():
+                print(f"   {line}")
 
 
 # def update_kafka_field_meta():
@@ -878,41 +878,10 @@ def main():
         if not args.no_restart:
             restart_services()
         
-        # 7. 等待服务完全启动
-        print_info("等待服务完全启动...")
-        time.sleep(5)
-            
-        # 验证后端进程是否正常运行
-        print_info("验证后端服务状态...")
-        max_retries = 10
-        retry_count = 0
-        backend_ready = False
-            
-        while retry_count < max_retries:
-            success, processes, _ = ssh_command("ps -ef | grep 'python app.py' | grep -v grep")
-            if success and processes:
-                # 检查端口是否监听
-                _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
-                if port_check:
-                    backend_ready = True
-                    print_success(f"后端服务已就绪 (尝试 {retry_count + 1}/{max_retries})")
-                    break
-                
-            retry_count += 1
-            print_info(f"等待后端启动... ({retry_count}/{max_retries})")
-            time.sleep(3)
-            
-        if not backend_ready:
-            print_error("后端服务启动超时，请检查日志")
-            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log")
-            if logs:
-                print_info("最新日志:")
-                for line in logs.split('\n')[-10:]:
-                    print(f"   {line}")
-            
-        # 8. 测试API（仅在服务就绪后）
-        if backend_ready:
-            test_api()
+        # 7. 测试API
+        print_info("测试 API 接口...")
+        time.sleep(2)
+        test_api()
         
         # 9. 更新Kafka字段元数据（已禁用）
         # update_kafka_field_meta()
