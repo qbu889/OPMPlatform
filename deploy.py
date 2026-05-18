@@ -625,7 +625,7 @@ def restart_services():
     today = datetime.now().strftime('%Y%m%d')
     log_file = f"app_{today}.log"
     
-    _, log_size, _ = ssh_command(f"wc -c {REMOTE_PATH}/logs/{log_file} 2>/dev/null | awk '{{print $1}}'")
+    _, log_size, _ = ssh_command(f"test -f {REMOTE_PATH}/logs/{log_file} && wc -c < {REMOTE_PATH}/logs/{log_file} || echo '0'")
     
     if log_size and int(log_size.strip()) > 0:
         # 查找关键启动信息

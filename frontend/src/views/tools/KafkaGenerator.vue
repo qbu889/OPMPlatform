@@ -31,6 +31,37 @@
         </div>
       </template>
 
+      <!-- 当前字段信息汇总 -->
+      <div v-if="Object.keys(fieldRemarkMap).length > 0" class="field-summary-panel">
+        <div class="summary-header">
+          <el-icon color="#67c23a"><InfoFilled /></el-icon>
+          <span>当前字段备注信息（{{ Object.keys(fieldRemarkMap).length }}个字段）</span>
+          <el-button size="small" type="text" @click="showAllRemarks = !showAllRemarks">
+            {{ showAllRemarks ? '收起' : '展开' }}
+          </el-button>
+        </div>
+        <div v-if="showAllRemarks" class="summary-content">
+          <el-table :data="remarkTableData" size="small" border max-height="300">
+            <el-table-column prop="fieldName" label="字段名" width="180" />
+            <el-table-column prop="fieldLabel" label="说明" width="150" />
+            <el-table-column prop="currentValue" label="当前值" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip>
+              <template #default="{ row }">
+                <span v-if="row.remark" style="color: #67c23a;">{{ row.remark }}</span>
+                <span v-else style="color: #909399;">-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" link @click="openRemarkEditDialog(row.fieldName)">
+                  编辑
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+
       <div class="es-input-wrapper">
         <el-input
           v-model="esSourceData"
@@ -1099,6 +1130,7 @@ import {
   Edit,
   Setting,
   Collection,
+  InfoFilled,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -1198,6 +1230,9 @@ const historyValues = ref({})
 // 显示所有字段
 const showAllFields = ref(false)  // 默认只显示常用字段
 
+// 显示所有备注信息
+const showAllRemarks = ref(true)  // 默认展开备注面板
+
 // 切换显示/隐藏所有字段
 const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
@@ -1225,6 +1260,18 @@ const displayFields = computed(() => {
   }
   
   return fields
+})
+
+// 备注表格数据（计算属性）
+const remarkTableData = computed(() => {
+  return allFields.value
+    .filter(field => fieldRemarkMap[field.name])  // 只显示有备注的字段
+    .map(field => ({
+      fieldName: field.name,
+      fieldLabel: field.label,
+      currentValue: fieldValues[field.name] || '-',
+      remark: fieldRemarkMap[field.name]
+    }))
 })
 
 // 生成结果
@@ -3136,6 +3183,31 @@ onMounted(() => {
   font-size: 16px;
   color: #666;
   margin: 0;
+}
+
+/* 字段信息汇总面板 */
+.field-summary-panel {
+  margin-bottom: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  overflow: hidden;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid #e4e7ed;
+  font-weight: 600;
+  color: #409eff;
+}
+
+.summary-content {
+  padding: 12px;
+  background: white;
 }
 
 .input-card,
