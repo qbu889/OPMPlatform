@@ -559,24 +559,27 @@ def restart_services():
     
     # 备份旧日志（不清空，保留历史）
     print_info("备份旧日志...")
-    ssh_command(f"cd {REMOTE_PATH}/logs && mv backend.log backend.log.bak.$(date +%s) 2>/dev/null || true")
+    today = datetime.now().strftime('%Y%m%d')
+    ssh_command(f"cd {REMOTE_PATH}/logs && [ -f app_{today}.log ] && mv app_{today}.log app_{today}.log.bak || true")
     
-    # 启动后端（使用正确的日志重定向）
-    start_cmd = f"""
-    cd {REMOTE_PATH}
-    source .venv/bin/activate
-    export PORT={LOCAL_PORT}
-    nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 &
-    sleep 2
-    echo "后端已启动 (PID: $!)"
-    """
+    # 启动后端（简化命令，避免SSH转义问题）
+    start_cmd = f"cd {REMOTE_PATH} && source .venv/bin/activate && PORT={LOCAL_PORT} nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 &"
     
-    success, stdout, stderr = ssh_command(start_cmd)
-    print_success("后端服务已启动")
+    success, pid_output, stderr = ssh_command(start_cmd)
+    
+    if success:
+        print_success("后端服务已启动")
+        if pid_output:
+            print_info(f"启动输出: {pid_output}")
+    else:
+        print_error(f"启动命令执行失败: {stderr[:200]}")
+    
+    # 等待进程启动
+    time.sleep(3)
     
     # 4. 等待服务启动
     print_info("步骤 5.4: 等待服务启动...")
-    time.sleep(10)  # 给服务足够的启动时间（Flask 初始化需要时间）
+    time.sleep(7)  # 总共等待10秒（3+7）
     
     # 5. 验证服务状态
     print_info("步骤 5.5: 验证服务状态")
@@ -618,31 +621,36 @@ def restart_services():
     print_info("查看启动日志:")
     time.sleep(3)  # 再等待一下，确保日志已写入
     
-    # 先检查日志文件是否存在且有内容
-    _, log_size, _ = ssh_command(f"wc -c {REMOTE_PATH}/logs/backend.log 2>/dev/null | awk '{{print $1}}'")
+    # 检查今天的日志文件
+    today = datetime.now().strftime('%Y%m%d')
+    log_file = f"app_{today}.log"
+    
+    _, log_size, _ = ssh_command(f"wc -c {REMOTE_PATH}/logs/{log_file} 2>/dev/null | awk '{{print $1}}'")
     
     if log_size and int(log_size.strip()) > 0:
         # 查找关键启动信息
-        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && grep -E '(Running on|Started|Listening|ERROR|Exception|Traceback)' logs/backend.log | tail -10")
+        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && grep -E '(Running on|Started|Listening|ERROR|Exception|Traceback)' logs/{log_file} | tail -10")
         
         if not logs:
             # 如果没有关键日志，显示最后15行
-            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -15 logs/backend.log")
+            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -15 logs/{log_file}")
         
         if logs:
-            print_info("服务启动日志:")
+            print_info(f"服务启动日志 (from {log_file}):")
             for line in logs.split('\n'):
                 if line.strip():
                     print(f"   {line}")
         else:
             print_warning("日志文件为空或无内容")
     else:
-        print_error("日志文件不存在或为空！")
+        print_error(f"日志文件 {log_file} 不存在或为空！")
         # 尝试查看是否有其他日志
-        _, alt_logs, _ = ssh_command(f"ls -lh {REMOTE_PATH}/logs/*.log 2>/dev/null")
+        _, alt_logs, _ = ssh_command(f"ls -lht {REMOTE_PATH}/logs/app_*.log 2>/dev/null | head -5")
         if alt_logs:
-            print_info("其他日志文件:")
-            print(f"   {alt_logs}")
+            print_info("最近的日志文件:")
+            for line in alt_logs.split('\n'):
+                if line.strip():
+                    print(f"   {line}")
 
 
 # def update_kafka_field_meta():
