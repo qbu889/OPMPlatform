@@ -202,12 +202,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import axios from 'axios'
-
-const router = useRouter()
 
 // 数据
 const loading = ref(false)
@@ -497,7 +494,7 @@ const resetForm = () => {
 
 // 返回上一页
 const goBack = () => {
-  router.push('/kafka-generator')
+  window.history.back()
 }
 
 // 初始化

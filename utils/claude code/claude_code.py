@@ -9,72 +9,20 @@ import logging
 from datetime import datetime
 from typing import Dict, Any
 
-# 配置日志 - 同时输出到文件和控制台
-log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
-os.makedirs(log_dir, exist_ok=True)
-
-# 按日期生成日志文件名
-log_file = os.path.join(log_dir, f'lmstudio_bridge_{datetime.now().strftime("%Y%m%d")}.log')
-
-# 创建 logger
-logger = logging.getLogger('lmstudio_bridge')
-logger.setLevel(logging.INFO)
-
-# 文件处理器 - 详细日志
-file_handler = logging.FileHandler(log_file, encoding='utf-8')
-file_handler.setLevel(logging.DEBUG)
-file_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-file_handler.setFormatter(file_formatter)
-
-# 控制台处理器 - 简洁日志
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%H:%M:%S'
-)
-console_handler.setFormatter(console_formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
 # 从环境变量读取配置，提供默认值
 LMSTUDIO_BASE_URL = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234")
 LMSTUDIO_API_KEY = os.getenv("LMSTUDIO_API_KEY", "sk-lm-6DRaG7rN:ZXtTmkXmVj9DBFzYGsLB")
-# DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "qwen3.5-35b-a3b")
-DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "qwen3-coder-30b-a3b-instruct-mlx")
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "qwen3.5-35b-a3b")
 PROXY_PORT = int(os.getenv("PROXY_PORT", "8081"))
-
-
-@app.before_request
-def log_request():
-    """记录每个请求的详细信息"""
-    request.start_time = datetime.now()
-    logger.info(f"\n{'='*60}")
-    logger.info(f"收到请求: {request.method} {request.path}")
-    logger.info(f"来源 IP: {request.remote_addr}")
-    logger.info(f"User-Agent: {request.headers.get('User-Agent', 'Unknown')[:100]}")
-    
-    # 记录请求体大小
-    content_length = request.content_length
-    if content_length:
-        logger.info(f"请求体大小: {content_length} bytes")
-
-
-@app.after_request
-def log_response(response):
-    """记录响应信息"""
-    if hasattr(request, 'start_time'):
-        duration = (datetime.now() - request.start_time).total_seconds()
-        logger.info(f"响应状态: {response.status_code}")
-        logger.info(f"处理耗时: {duration:.3f}s")
-        logger.info(f"{'='*60}\n")
-    return response
 
 
 def forward_request(endpoint: str, method: str = "POST", **kwargs) -> Response:
@@ -90,10 +38,6 @@ def forward_request(endpoint: str, method: str = "POST", **kwargs) -> Response:
         Flask Response 对象
     """
     url = f"{LMSTUDIO_BASE_URL}{endpoint}"
-    
-    logger.info(f"准备转发请求:")
-    logger.info(f"  - 目标 URL: {url}")
-    logger.info(f"  - 请求方法: {method}")
 
     headers = {
         "Authorization": f"Bearer {LMSTUDIO_API_KEY}",
@@ -105,8 +49,7 @@ def forward_request(endpoint: str, method: str = "POST", **kwargs) -> Response:
         headers.update(kwargs.pop('headers'))
 
     try:
-        logger.info(f"发送请求到 LM Studio...")
-        request_start = datetime.now()
+        logger.info(f"转发请求到 LM Studio: {method} {url}")
 
         response = requests.request(
             method=method,
@@ -115,12 +58,8 @@ def forward_request(endpoint: str, method: str = "POST", **kwargs) -> Response:
             timeout=int(os.getenv("REQUEST_TIMEOUT", "120")),
             **kwargs
         )
-        
-        request_duration = (datetime.now() - request_start).total_seconds()
-        logger.info(f"LM Studio 响应:")
-        logger.info(f"  - 状态码: {response.status_code}")
-        logger.info(f"  - 响应时间: {request_duration:.3f}s")
-        logger.info(f"  - 响应大小: {len(response.content)} bytes")
+
+        logger.info(f"LM Studio 响应状态码: {response.status_code}")
 
         # 返回原始响应
         return Response(
@@ -164,29 +103,13 @@ def chat_completions():
     """
     try:
         payload = request.get_json(force=True)
-        
-        # 记录关键请求信息（不记录完整消息内容，避免日志过大）
-        model_name = payload.get('model', '未指定')
-        messages_count = len(payload.get('messages', []))
-        has_stream = payload.get('stream', False)
-        
-        logger.info(f"聊天请求详情:")
-        logger.info(f"  - 模型: {model_name}")
-        logger.info(f"  - 消息数量: {messages_count}")
-        logger.info(f"  - 流式输出: {has_stream}")
-        
-        # 如果有 system message，记录其长度
-        messages = payload.get('messages', [])
-        if messages and messages[0].get('role') == 'system':
-            system_msg_len = len(messages[0].get('content', ''))
-            logger.info(f"  - System 消息长度: {system_msg_len} 字符")
 
         # 如果没有指定模型，使用默认模型
         if "model" not in payload or not payload["model"]:
             payload["model"] = DEFAULT_MODEL
-            logger.info(f"使用默认模型: {DEFAULT_MODEL}")
 
-        logger.info(f"转发请求到 LM Studio...")
+        logger.info(f"收到聊天请求，模型: {payload.get('model')}")
+        logger.debug(f"消息数量: {len(payload.get('messages', []))}")
 
         return forward_request('/v1/chat/completions', json=payload)
 
@@ -305,7 +228,6 @@ if __name__ == "__main__":
     print(f"📡 代理地址: http://0.0.0.0:{PROXY_PORT}")
     print(f"🎯 LM Studio: {LMSTUDIO_BASE_URL}")
     print(f"🤖 默认模型: {DEFAULT_MODEL}")
-    print(f"📝 日志文件: {log_file}")
     print("=" * 60)
     print("\n可用接口:")
     print("  POST /v1/chat/completions - 聊天补全")
@@ -313,13 +235,5 @@ if __name__ == "__main__":
     print("  GET  /v1/models           - 列出模型")
     print("  GET  /health              - 健康检查")
     print("\n按 Ctrl+C 停止服务\n")
-    
-    logger.info("="*60)
-    logger.info("LM Studio Bridge 服务启动")
-    logger.info(f"监听地址: 0.0.0.0:{PROXY_PORT}")
-    logger.info(f"LM Studio: {LMSTUDIO_BASE_URL}")
-    logger.info(f"默认模型: {DEFAULT_MODEL}")
-    logger.info(f"日志文件: {log_file}")
-    logger.info("="*60)
 
     app.run(host="0.0.0.0", port=PROXY_PORT, debug=False)
