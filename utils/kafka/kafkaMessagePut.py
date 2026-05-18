@@ -165,6 +165,20 @@ def generate_unique_alarm():
     alarm["ORIG_ALARM_FP"] = fp_suffix
     alarm["ORIG_ALARM_CLEAR_FP"] = fp_suffix
 
+    # 7. 确保三个关键字段在最后（保持顺序）
+    # 先移除这三个字段
+    fp_value = alarm.pop("FP0_FP1_FP2_FP3", None)
+    creation_time_value = alarm.pop("CREATION_EVENT_TIME", None)
+    event_time_value = alarm.pop("EVENT_TIME", None)
+    
+    # 再按顺序添加到最后
+    if fp_value is not None:
+        alarm["FP0_FP1_FP2_FP3"] = fp_value
+    if creation_time_value is not None:
+        alarm["CREATION_EVENT_TIME"] = creation_time_value
+    if event_time_value is not None:
+        alarm["EVENT_TIME"] = event_time_value
+
     return alarm
 
 

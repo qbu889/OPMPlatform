@@ -1641,8 +1641,17 @@ const generateUniqueValue = (fieldName) => {
     String(now.getSeconds()).padStart(2, '0') +
     String(now.getMilliseconds()).padStart(3, '0')
 
-  // 添加唯一后缀（如果有值则添加下划线，空值则直接使用时间戳）
-  const uniqueValue = currentValue ? `${currentValue}_${timestamp}` : timestamp
+  let uniqueValue
+  
+  // 检查是否已经有时间戳后缀（格式：_YYYYMMDDHHmmssSSS，17位数字）
+  const timestampPattern = /_\d{17}$/
+  if (timestampPattern.test(currentValue)) {
+    // 如果已有时间戳，只替换后面的时间戳部分
+    uniqueValue = currentValue.replace(timestampPattern, `_${timestamp}`)
+  } else {
+    // 如果没有时间戳，添加新的时间戳后缀
+    uniqueValue = currentValue ? `${currentValue}_${timestamp}` : timestamp
+  }
 
   // 更新字段值
   fieldValues[fieldName] = uniqueValue
