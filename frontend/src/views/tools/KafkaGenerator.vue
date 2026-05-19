@@ -7,20 +7,18 @@
           <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
           <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
         </div>
-        <div class="header-buttons">
-          <el-button type="primary" @click="goToFieldMetaManager">
-            <el-icon><Setting /></el-icon>
-            字段映射管理
-          </el-button>
-          <el-button type="success" @click="goToFieldDictManager">
-            <el-icon><Collection /></el-icon>
-            字段字典管理
-          </el-button>
-          <el-button type="warning" @click="openAddDictDialog">
-            <el-icon><Plus /></el-icon>
-            新增字典项
-          </el-button>
-        </div>
+        <el-button type="primary" @click="goToFieldMetaManager">
+          <el-icon><Setting /></el-icon>
+          字段映射管理
+        </el-button>
+        <el-button type="success" @click="goToFieldDictManager">
+          <el-icon><Collection /></el-icon>
+          字段字典管理
+        </el-button>
+        <el-button type="warning" @click="openAddDictDialog">
+          <el-icon><Plus /></el-icon>
+          新增字典项
+        </el-button>
       </div>
     </div>
 
@@ -3155,11 +3153,14 @@ onMounted(() => {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  gap: 20px;
 }
 
 .header-content > div:first-child {
   flex-shrink: 0;
+}
+
+.header-content > .el-button {
+  margin: 0;
 }
 
 /* 右侧按钮组样式 */
@@ -3167,7 +3168,6 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-shrink: 0;
 }
 
 .page-header h2 {
