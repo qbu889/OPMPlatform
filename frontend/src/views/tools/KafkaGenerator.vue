@@ -2021,17 +2021,21 @@ const generateMessage = async () => {
     // 收集自定义字段
     const customFields = {}
     allFields.value.forEach(field => {
-      if (fieldValues[field.name]) {
-        let value = fieldValues[field.name]
+      const originalValue = fieldValues[field.name]
+      
+      // 如果开启了唯一值，为字段值添加唯一后缀（包括空值的情况）
+      if (uniqueFields.value.has(field.name)) {
+        const timestamp = Date.now().toString().slice(-6) // 取后6位时间戳
+        const random = Math.random().toString(36).substring(2, 5) // 3位随机字符
+        const uniqueSuffix = `${timestamp}${random}`
         
-        // 如果开启了唯一值，为字段值添加唯一后缀
-        if (uniqueFields.value.has(field.name)) {
-          const timestamp = Date.now().toString().slice(-6) // 取后6位时间戳
-          const random = Math.random().toString(36).substring(2, 5) // 3位随机字符
-          value = `${value}_${timestamp}${random}`
-        }
-        
-        customFields[field.name] = value
+        // 如果原值为空，直接使用唯一后缀；否则追加到原值后面
+        customFields[field.name] = originalValue 
+          ? `${originalValue}_${uniqueSuffix}`
+          : uniqueSuffix
+      } else if (originalValue) {
+        // 未开启唯一值且有值时才添加
+        customFields[field.name] = originalValue
       }
     })
 
