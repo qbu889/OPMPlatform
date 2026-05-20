@@ -3303,6 +3303,8 @@ onMounted(() => {
 .field-actions {
   display: flex;
   gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .field-meta {
