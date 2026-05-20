@@ -688,25 +688,26 @@ def execute_full_deploy():
         add_log('   ⚠️ 继续执行后续部署步骤...', 'warning')
         deploy_status['progress'] = 20
 
-    # ====== 步骤 2: 调用 deploy.py 进行快速部署 ======
-    deploy_status['current_step'] = '执行快速部署'
+    # ====== 步骤 2: 调用 deploy.py 进行完整部署 ======
+    deploy_status['current_step'] = '执行完整部署'
     deploy_status['progress'] = 25
     add_log('', 'info')
-    add_log('📝 步骤 2: 调用 deploy.py --fast 进行快速部署', 'info')
+    add_log('📝 步骤 2: 调用 deploy.py 进行完整部署', 'info')
     add_log('   这将包括：', 'info')
     add_log('   - 检测变更文件', 'info')
     add_log('   - 前端构建', 'info')
     add_log('   - 创建备份', 'info')
     add_log('   - 上传文件', 'info')
     add_log('   - 重启服务', 'info')
+    add_log('   - 自动执行 SQL（如有）', 'info')
 
-    # 执行 deploy.py --fast
+    # 执行 deploy.py（完整部署，不使用 --fast）
     deploy_script = PROJECT_ROOT / 'deploy.py'
     if not deploy_script.exists():
         add_log(f'   ❌ deploy.py 不存在: {deploy_script}', 'error')
         return
 
-    add_log('   正在执行 deploy.py --fast ...', 'info')
+    add_log('   正在执行 python deploy.py ...', 'info')
     
     # 设置进度回调（通过子进程输出监控）
     import subprocess
@@ -738,9 +739,9 @@ def execute_full_deploy():
                     add_log(f'   [deploy.py] {line}', 'info')
     
     try:
-        # 执行 deploy.py --fast
+        # 执行 deploy.py（完整部署）
         proc = subprocess.Popen(
-            ['python', str(deploy_script), '--fast'],
+            ['python', str(deploy_script)],  # 不使用 --fast 参数
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
