@@ -2018,24 +2018,40 @@ const generateMessage = async () => {
   }
 
   try {
+    // 先解析 ES 数据，提取字段值
+    let esData = null
+    try {
+      esData = JSON.parse(esSourceData.value)
+      // 如果包含 _source，使用 _source 中的数据
+      if (esData && esData._source) {
+        esData = esData._source
+      }
+    } catch (e) {
+      console.warn('ES 数据解析失败，将只使用输入框的值:', e)
+    }
+
     // 收集自定义字段
     const customFields = {}
     allFields.value.forEach(field => {
-      const originalValue = fieldValues[field.name]
+      const inputValue = fieldValues[field.name]  // 输入框的值
+      const esValue = esData ? esData[field.name] : null  // 从 ES 提取的值
       
-      // 如果开启了唯一值，为字段值添加唯一后缀（包括空值的情况）
+      // 优先使用输入框的值，如果为空则使用 ES 中的值
+      const baseValue = inputValue || esValue
+      
+      // 如果开启了唯一值，为字段值添加唯一后缀
       if (uniqueFields.value.has(field.name)) {
         const timestamp = Date.now().toString().slice(-6) // 取后6位时间戳
         const random = Math.random().toString(36).substring(2, 5) // 3位随机字符
         const uniqueSuffix = `${timestamp}${random}`
         
-        // 如果原值为空，直接使用唯一后缀；否则追加到原值后面
-        customFields[field.name] = originalValue 
-          ? `${originalValue}_${uniqueSuffix}`
+        // 如果基础值为空，直接使用唯一后缀；否则追加到基础值后面
+        customFields[field.name] = baseValue 
+          ? `${baseValue}_${uniqueSuffix}`
           : uniqueSuffix
-      } else if (originalValue) {
+      } else if (baseValue) {
         // 未开启唯一值且有值时才添加
-        customFields[field.name] = originalValue
+        customFields[field.name] = baseValue
       }
     })
 
