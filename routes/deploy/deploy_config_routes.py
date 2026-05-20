@@ -689,9 +689,19 @@ def execute_full_deploy():
     
     def monitor_progress(proc):
         """监控子进程输出并更新进度"""
+        import re
         for line in iter(proc.stdout.readline, ''):
             if line:
                 line = line.strip()
+                # 过滤 ANSI 颜色代码
+                line = re.sub(r'\033\[[0-9;]*m', '', line)
+                # 过滤其他 ANSI 转义序列
+                line = re.sub(r'\033\[[0-9;]*[a-zA-Z]', '', line)
+                line = line.strip()
+                
+                if not line:  # 跳过空行
+                    continue
+                    
                 # 根据输出内容更新进度
                 if '步骤 1:' in line or 'Git' in line:
                     deploy_status['progress'] = 30
@@ -705,29 +715,36 @@ def execute_full_deploy():
                     deploy_status['progress'] = 70
                 elif '步骤 6:' in line or '重启' in line or '启动' in line:
                     deploy_status['progress'] = 85
-                elif '✅' in line or '成功' in line:
-                    pass  # 保持当前进度
                 
-                # 添加日志
-                if line and len(line) < 200:  # 过滤过长的行
-                    add_log(f'   [deploy.py] {line}', 'info')
+                # 添加日志（过滤掉过长的行）
+                if len(line) < 300:
+                    add_log(f'   {line}', 'info')
     
     try:
         # 执行 deploy.py（完整部署）
+        add_log(f'   脚本路径: {deploy_script}', 'info')
+        add_log(f'   工作目录: {PROJECT_ROOT}', 'info')
+        
         proc = subprocess.Popen(
             ['python', str(deploy_script)],  # 不使用 --fast 参数
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             cwd=str(PROJECT_ROOT),
-            env=os.environ.copy()
+            env=os.environ.copy(),
+            bufsize=1,  # 行缓冲
+            universal_newlines=True
         )
+        
+        add_log(f'   进程 PID: {proc.pid}', 'info')
+        add_log('   开始执行，等待输出...', 'info')
         
         # 启动监控线程
         monitor_thread = threading.Thread(target=monitor_progress, args=(proc,), daemon=True)
         monitor_thread.start()
         
         # 等待完成（最多 10 分钟）
+        add_log('   部署中，请稍候...', 'info')
         proc.wait(timeout=600)
         
         if proc.returncode == 0:
@@ -741,13 +758,27 @@ def execute_full_deploy():
                 for line in remaining_output.split('\n')[-10:]:
                     if line.strip():
                         add_log(f'   {line.strip()}', 'error')
+            else:
+                add_log('   ⚠️ 无法获取错误输出', 'warning')
+                
     except subprocess.TimeoutExpired:
         add_log('   ❌ deploy.py 执行超时（超过10分钟）', 'error')
-        proc.kill()
+        try:
+            proc.kill()
+            add_log('   已终止进程', 'warning')
+        except:
+            pass
     except Exception as e:
         add_log(f'   ❌ 执行 deploy.py 时出错: {str(e)}', 'error')
         import traceback
         add_log(f'   错误详情: {traceback.format_exc()}', 'error')
+    finally:
+        # 确保读取所有剩余输出
+        try:
+            if proc:
+                proc.stdout.close()
+        except:
+            pass
 
 
 def execute_restore(backup_file):
