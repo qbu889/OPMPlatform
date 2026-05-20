@@ -259,8 +259,8 @@
               </el-button>
               <el-button 
                 size="small" 
-                type="primary" 
-                link
+                type="primary"
+                circle
                 @click="openMappingEditDialog(field)"
                 style="margin-left: 8px"
                 title="编辑映射"
@@ -1260,7 +1260,7 @@ const displayFields = ref([])
 const updateDisplayFields = () => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 有值的字段 4. 保持原有顺序
+  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 有值的字段 4. 无值的字段
   fields.sort((a, b) => {
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
@@ -1271,12 +1271,10 @@ const updateDisplayFields = () => {
     const bFixed = fixedFields.value.has(b.name) ? 0 : 1
     if (aFixed !== bFixed) return aFixed - bFixed
     
-    // 如果都不是固定，检查是否有值（仅在隐藏空字段模式下生效）
-    if (!showAllFields.value) {
-      const aHasValue = fieldValues[a.name] ? 0 : 1
-      const bHasValue = fieldValues[b.name] ? 0 : 1
-      if (aHasValue !== bHasValue) return aHasValue - bHasValue
-    }
+    // 如果都不是固定，检查是否有值
+    const aHasValue = fieldValues[a.name] ? 0 : 1
+    const bHasValue = fieldValues[b.name] ? 0 : 1
+    if (aHasValue !== bHasValue) return aHasValue - bHasValue
     
     // 其他字段保持原始顺序
     return 0
@@ -2630,13 +2628,14 @@ const useEsSourceHistory = (record) => {
       customClass: 'sync-confirm-dialog'
     }
   ).then(() => {
-    // 用户选择"是" - 同步自定义字段
+    // 用户选择“是” - 同步自定义字段
     if (record.custom_fields) {
       try {
         const customFields = typeof record.custom_fields === 'string' 
           ? JSON.parse(record.custom_fields) 
           : record.custom_fields
         Object.assign(fieldValues, customFields)
+        updateDisplayFields() // 触发排序更新
         ElMessage.success('已加载 ES 源数据并同步自定义字段')
       } catch (e) {
         console.error('同步自定义字段失败:', e)
@@ -2644,6 +2643,7 @@ const useEsSourceHistory = (record) => {
         Object.keys(fieldValues).forEach(key => {
           fieldValues[key] = ''
         })
+        updateDisplayFields() // 触发排序更新
         ElMessage.warning('加载 ES 源数据成功，但自定义字段同步失败，已清空字段值')
       }
     } else {
@@ -2651,6 +2651,7 @@ const useEsSourceHistory = (record) => {
       Object.keys(fieldValues).forEach(key => {
         fieldValues[key] = ''
       })
+      updateDisplayFields() // 触发排序更新
       ElMessage.success('已加载 ES 源数据，自定义字段已清空')
     }
     esSourceData.value = typeof record.es_source_raw === 'string' 
@@ -2658,11 +2659,12 @@ const useEsSourceHistory = (record) => {
       : JSON.stringify(record.es_source_raw, null, 2)
     esSourceHistoryDialogVisible.value = false
   }).catch((action) => {
-    // 用户选择"否" - 清空自定义字段并加载数据
-    console.log('用户选择"否"（action:', action, '），清空自定义字段并加载数据')
+    // 用户选择“否” - 清空自定义字段并加载数据
+    console.log('用户选择“否”（action:', action, '），清空自定义字段并加载数据')
     Object.keys(fieldValues).forEach(key => {
       fieldValues[key] = ''
     })
+    updateDisplayFields() // 触发排序更新
     esSourceData.value = typeof record.es_source_raw === 'string' 
       ? record.es_source_raw 
       : JSON.stringify(record.es_source_raw, null, 2)

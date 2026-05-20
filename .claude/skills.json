@@ -1,0 +1,34 @@
+{
+  "skills": [
+    {
+      "name": "superpowers",
+      "description": "Enhanced capabilities for Claude Code",
+      "source": "npm:@anthropic-ai/superpowers"
+    },
+    {
+      "name": "gsd",
+      "description": "Get Shit Done - productivity focused skill",
+      "source": "npm:gsd-skill"
+    },
+    {
+      "name": "find-skills",
+      "description": "Search and discover available skills",
+      "source": "npm:find-skills"
+    },
+    {
+      "name": "web-design-guidelines",
+      "description": "Web design best practices and guidelines",
+      "source": "npm:web-design-guidelines"
+    },
+    {
+      "name": "frontend-design",
+      "description": "Frontend development and design patterns",
+      "source": "npm:frontend-design"
+    },
+    {
+      "name": "agent-browser",
+      "description": "Browser automation and web interaction",
+      "source": "npm:agent-browser"
+    }
+  ]
+}

@@ -17,7 +17,7 @@ class TestDiffCompareUI:
     """JSON 对比接口 UI 自动化测试类"""
     
     # 配置项
-    BASE_URL = "http://192.168.1.135:5004"  # Flask 后端服务地址（提供前端静态文件）
+    BASE_URL = "http://localhost:5004"  # Flask 后端服务地址（提供前端静态文件）
     TIMEOUT = 10
     
     @pytest.fixture
