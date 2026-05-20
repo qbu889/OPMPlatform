@@ -132,6 +132,14 @@
                 <el-icon><Top /></el-icon>
               </el-button>
               <el-button 
+                size="small" 
+                :type="fixedFields.has(field.name) ? 'success' : 'info'"
+                @click="toggleFieldFixed(field.name)"
+                title="固定/取消固定"
+              >
+                <el-icon><Lock /></el-icon>
+              </el-button>
+              <el-button 
                 v-if="DICT_FIELDS.has(field.name)"
                 size="small" 
                 type="danger"
@@ -1104,6 +1112,7 @@ import {
   Setting,
   Collection,
   InfoFilled,
+  Lock,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -1197,6 +1206,9 @@ const fieldValues = reactive({})
 // 置顶字段集合
 const pinnedFields = ref(new Set())
 
+// 固定字段集合
+const fixedFields = ref(new Set())
+
 // 历史值缓存
 const historyValues = ref({})
 
@@ -1211,24 +1223,29 @@ const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
 }
 
-// 显示字段(置顶的优先,且可选择是否显示空字段)
+// 显示字段(置顶的优先,固定的第二优先,且可选择是否显示空字段)
 const displayFields = computed(() => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 手动置顶字段 2. 保持原有顺序（有值字段不自动排序）
+  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 保持原有顺序
   fields.sort((a, b) => {
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
     if (aPinned !== bPinned) return aPinned - bPinned
     
-    // 其他字段保持原始顺序，不再按有值/无值排序
+    // 如果都不是置顶，检查是否是固定字段
+    const aFixed = fixedFields.value.has(a.name) ? 0 : 1
+    const bFixed = fixedFields.value.has(b.name) ? 0 : 1
+    if (aFixed !== bFixed) return aFixed - bFixed
+    
+    // 其他字段保持原始顺序
     return 0
   })
   
-  // 如果不显示所有字段,过滤掉空值且未置顶的字段
+  // 如果不显示所有字段,过滤掉空值且未置顶/未固定的字段
   if (!showAllFields.value) {
     fields = fields.filter(f => {
-      return pinnedFields.value.has(f.name) || fieldValues[f.name]
+      return pinnedFields.value.has(f.name) || fixedFields.value.has(f.name) || fieldValues[f.name]
     })
   }
   
@@ -1763,10 +1780,23 @@ const toggleFieldPin = async (field) => {
   await saveFieldValue(field, fieldValues[field] || '')
 }
 
+// 切换字段固定
+const toggleFieldFixed = async (field) => {
+  if (fixedFields.value.has(field)) {
+    fixedFields.value.delete(field)
+  } else {
+    fixedFields.value.add(field)
+  }
+  
+  // 保存到数据库
+  await saveFieldValue(field, fieldValues[field] || '')
+}
+
 // 保存字段值
 const saveFieldValue = async (field, value) => {
   try {
     const isPinned = pinnedFields.value.has(field)
+    const isFixed = fixedFields.value.has(field)
     const response = await fetch('/kafka-generator/field-cache', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1774,6 +1804,7 @@ const saveFieldValue = async (field, value) => {
         field_name: field,
         field_value: value,
         is_pinned: isPinned,
+        is_fixed: isFixed,
       }),
     })
     const result = await response.json()
@@ -2986,12 +3017,14 @@ const clearAllFields = async () => {
     
     // 批量清除数据库记录
     const pinnedFieldsArray = Array.from(pinnedFields.value)
+    const fixedFieldsArray = Array.from(fixedFields.value)
     await fetch('/kafka-generator/field-cache/batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         field_cache: {},
         pinned_fields: pinnedFieldsArray,
+        fixed_fields: fixedFieldsArray,
       }),
     })
     
@@ -3011,8 +3044,9 @@ const loadFieldCache = async () => {
     
     if (result.success && result.data) {
       // 【需求3】自定义字段默认全部为空，不恢复缓存的字段值
-      // 只加载置顶字段和历史值
+      // 只加载置顶字段、固定字段和历史值
       pinnedFields.value = new Set(result.data.pinned_fields || [])
+      fixedFields.value = new Set(result.data.fixed_fields || [])
       historyValues.value = result.data.history_values || {}
       
       console.log('已加载字段缓存（字段值已清空）')

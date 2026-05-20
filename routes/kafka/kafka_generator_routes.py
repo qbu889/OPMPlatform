@@ -2735,7 +2735,7 @@ def get_field_cache():
 
     try:
         with conn.cursor() as cur:
-            query = "SELECT field_name, field_value, is_pinned, history_values FROM knowledge_base.kafka_field_cache"
+            query = "SELECT field_name, field_value, is_pinned, is_fixed, history_values FROM knowledge_base.kafka_field_cache"
             cur.execute(query)
             rows = cur.fetchall()
 
@@ -2743,6 +2743,7 @@ def get_field_cache():
 
             cache_data = {}
             pinned_fields = []
+            fixed_fields = []
             history_data = {}
 
             for row in rows:
@@ -2750,6 +2751,8 @@ def get_field_cache():
                     cache_data[row['field_name']] = row['field_value']
                 if row['is_pinned']:
                     pinned_fields.append(row['field_name'])
+                if row.get('is_fixed'):
+                    fixed_fields.append(row['field_name'])
 
                 # 处理历史值
                 history_val = row['history_values']
@@ -2773,13 +2776,14 @@ def get_field_cache():
                         history_data[row['field_name']] = []
 
             logger.info(
-                f"返回缓存数据：{len(cache_data)} 个字段值，{len(pinned_fields)} 个置顶，{len(history_data)} 个历史值")
+                f"返回缓存数据：{len(cache_data)} 个字段值，{len(pinned_fields)} 个置顶，{len(fixed_fields)} 个固定，{len(history_data)} 个历史值")
 
             return jsonify({
                 "success": True,
                 "data": {
                     "field_cache": cache_data,
                     "pinned_fields": pinned_fields,
+                    "fixed_fields": fixed_fields,
                     "history_values": history_data
                 }
             })
@@ -2802,6 +2806,7 @@ def save_field_cache():
     field_name = data.get('field_name', '').strip().upper()
     field_value = data.get('field_value', '')
     is_pinned = 1 if data.get('is_pinned', False) else 0
+    is_fixed = 1 if data.get('is_fixed', False) else 0
 
     if not field_name:
         return jsonify({"success": False, "message": "缺少字段名称"}), 400
@@ -2814,14 +2819,15 @@ def save_field_cache():
         with conn.cursor() as cur:
             # 使用 INSERT ... ON DUPLICATE KEY UPDATE
             query = """
-                INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
-                VALUES (%s, %s, %s)
+                INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned, is_fixed)
+                VALUES (%s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE 
                     field_value = VALUES(field_value),
                     is_pinned = VALUES(is_pinned),
+                    is_fixed = VALUES(is_fixed),
                     updated_at = CURRENT_TIMESTAMP
             """
-            cur.execute(query, (field_name, field_value, is_pinned))
+            cur.execute(query, (field_name, field_value, is_pinned, is_fixed))
             conn.commit()
 
             return jsonify({"success": True, "message": "保存成功"})
@@ -2843,6 +2849,7 @@ def save_batch_field_cache():
 
     field_cache = data.get('field_cache', {})
     pinned_fields = data.get('pinned_fields', [])
+    fixed_fields = data.get('fixed_fields', [])
 
     conn = get_mysql_conn_dict_cursor()
     if not conn:
@@ -2854,16 +2861,18 @@ def save_batch_field_cache():
             for field_name, field_value in field_cache.items():
                 field_name = field_name.strip().upper()
                 is_pinned = 1 if field_name in pinned_fields else 0
+                is_fixed = 1 if field_name in fixed_fields else 0
 
                 query = """
-                    INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned, is_fixed)
+                    VALUES (%s, %s, %s, %s)
                     ON DUPLICATE KEY UPDATE 
                         field_value = VALUES(field_value),
                         is_pinned = VALUES(is_pinned),
+                        is_fixed = VALUES(is_fixed),
                         updated_at = CURRENT_TIMESTAMP
                 """
-                cur.execute(query, (field_name, field_value if field_value else None, is_pinned))
+                cur.execute(query, (field_name, field_value if field_value else None, is_pinned, is_fixed))
 
             conn.commit()
             return jsonify({"success": True, "message": "批量保存成功"})
