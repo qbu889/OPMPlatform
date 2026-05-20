@@ -520,6 +520,52 @@ def stop_old_processes():
     else:
         print_success("无残留 app.py 进程")
 
+def execute_sql_file(sql_file_path, db_name="schedule"):
+    """在远程服务器执行 SQL 文件
+    
+    Args:
+        sql_file_path: 本地 SQL 文件路径
+        db_name: 数据库名称
+    """
+    if not sql_file_path.exists():
+        print_warning(f"SQL 文件不存在: {sql_file_path}")
+        return False
+    
+    print_info(f"上传并执行 SQL 文件: {sql_file_path.name}")
+    
+    # 读取 SQL 文件内容
+    try:
+        with open(sql_file_path, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+    except Exception as e:
+        print_error(f"读取 SQL 文件失败: {e}")
+        return False
+    
+    # 在远程执行 SQL（使用管道，避免密码明文）
+    # 使用 base64 编码避免特殊字符问题
+    import base64
+    sql_encoded = base64.b64encode(sql_content.encode('utf-8')).decode('utf-8')
+    
+    exec_cmd = f"""
+    echo '{sql_encoded}' | base64 -d | mysql -u root {db_name}
+    """
+    
+    success, stdout, stderr = ssh_command(exec_cmd, timeout=60)
+    
+    if success:
+        print_success(f"SQL 文件 {sql_file_path.name} 执行成功")
+        if stdout:
+            # 显示最后几行输出
+            lines = stdout.split('\n')
+            print_info("执行结果:")
+            for line in lines[-5:]:
+                if line.strip():
+                    print(f"   {line}")
+        return True
+    else:
+        print_error(f"SQL 文件执行失败: {stderr[:200]}")
+        return False
+
 def restart_services():
     """重启服务"""
     print_header("步骤 5: 清理旧进程并重启服务")
@@ -651,6 +697,14 @@ def restart_services():
             for line in alt_logs.split('\n'):
                 if line.strip():
                     print(f"   {line}")
+    
+    # 执行 SQL 文件（创建缺失的表）
+    print_info("检查并创建数据库表...")
+    sql_file = PROJECT_ROOT / "sql" / "create_kafka_field_dict.sql"
+    if sql_file.exists():
+        execute_sql_file(sql_file, "schedule")
+    else:
+        print_warning(f"SQL 文件不存在: {sql_file}")
 
 
 # def update_kafka_field_meta():
