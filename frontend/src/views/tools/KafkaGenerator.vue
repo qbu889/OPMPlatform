@@ -1187,6 +1187,9 @@ const loadFieldMeta = async () => {
         { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
       ]
     }
+    
+    // 字段加载完成后，立即更新显示列表
+    updateDisplayFields()
   } catch (error) {
     console.error('加载字段配置失败:', error)
     // 回退到默认配置
@@ -1200,6 +1203,9 @@ const loadFieldMeta = async () => {
       { name: 'EVENT_TYPE', label: '事件类型', esField: 'event_type', placeholder: '请输入事件类型' },
       { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
     ]
+    
+    // 字段加载完成后，立即更新显示列表
+    updateDisplayFields()
   }
 }
 
@@ -3180,11 +3186,6 @@ const cancelImportFields = () => {
 onMounted(() => {
   loadFieldMeta()
   loadFieldCache()
-  
-  // 等待字段加载完成后初始化显示列表
-  setTimeout(() => {
-    updateDisplayFields()
-  }, 100)
 })
 
 // 监听相关状态变化，自动更新显示字段
