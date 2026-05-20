@@ -31,37 +31,6 @@
         </div>
       </template>
 
-      <!-- 当前字段信息汇总 -->
-      <div v-if="Object.keys(fieldRemarkMap).length > 0" class="field-summary-panel">
-        <div class="summary-header">
-          <el-icon color="#67c23a"><InfoFilled /></el-icon>
-          <span>当前字段备注信息（{{ Object.keys(fieldRemarkMap).length }}个字段）</span>
-          <el-button size="small" type="text" @click="showAllRemarks = !showAllRemarks">
-            {{ showAllRemarks ? '收起' : '展开' }}
-          </el-button>
-        </div>
-        <div v-if="showAllRemarks" class="summary-content">
-          <el-table :data="remarkTableData" size="small" border max-height="300">
-            <el-table-column prop="fieldName" label="字段名" width="180" />
-            <el-table-column prop="fieldLabel" label="说明" width="150" />
-            <el-table-column prop="currentValue" label="当前值" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip>
-              <template #default="{ row }">
-                <span v-if="row.remark" style="color: #67c23a;">{{ row.remark }}</span>
-                <span v-else style="color: #909399;">-</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="100" fixed="right">
-              <template #default="{ row }">
-                <el-button size="small" type="primary" link @click="openRemarkEditDialog(row.fieldName)">
-                  编辑
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
-
       <div class="es-input-wrapper">
         <el-input
           v-model="esSourceData"
