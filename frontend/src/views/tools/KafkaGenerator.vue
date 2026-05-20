@@ -208,40 +208,44 @@
           </el-select>
           
           <div v-if="field.esField" class="field-meta">
-            <span class="meta-label">Kafka字段:</span>
-            <span class="kafka-field" :title="field.name">{{ field.name }}</span>
-            <el-button 
-              size="small" 
-              type="success" 
-              link
-              @click="copyText(field.name, 'Kafka字段')"
-              style="margin-left: 4px"
-              title="复制 Kafka 字段"
-            >
-              <el-icon><CopyDocument /></el-icon>
-            </el-button>
-            <span class="meta-label" style="margin-left: 12px">ES字段:</span>
-            <span class="es-field" :title="field.esField">{{ field.esField }}</span>
-            <el-button 
-              size="small" 
-              type="primary" 
-              link
-              @click="copyText(field.esField, 'ES字段')"
-              style="margin-left: 4px"
-              title="复制 ES 字段"
-            >
-              <el-icon><CopyDocument /></el-icon>
-            </el-button>
-            <el-button 
-              size="small" 
-              type="primary" 
-              link
-              @click="openMappingEditDialog(field)"
-              style="margin-left: 8px"
-              title="编辑映射"
-            >
-              <el-icon><Edit /></el-icon>
-            </el-button>
+            <div class="meta-row">
+              <span class="meta-label">Kafka字段:</span>
+              <span class="kafka-field" :title="field.name">{{ field.name }}</span>
+              <el-button 
+                size="small" 
+                type="success" 
+                link
+                @click="copyText(field.name, 'Kafka字段')"
+                style="margin-left: 4px"
+                title="复制 Kafka 字段"
+              >
+                <el-icon><CopyDocument /></el-icon>
+              </el-button>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">ES字段:</span>
+              <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+              <el-button 
+                size="small" 
+                type="primary" 
+                link
+                @click="copyText(field.esField, 'ES字段')"
+                style="margin-left: 4px"
+                title="复制 ES 字段"
+              >
+                <el-icon><CopyDocument /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                type="primary" 
+                link
+                @click="openMappingEditDialog(field)"
+                style="margin-left: 8px"
+                title="编辑映射"
+              >
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
           </div>
           <div v-if="fieldRemarkMap[field.name]" class="field-remark" :title="fieldRemarkMap[field.name]">
             <el-icon><ChatDotSquare /></el-icon>
@@ -3306,9 +3310,15 @@ onMounted(() => {
   color: #6c757d;
   margin-top: 8px;
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 4px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .meta-label {
