@@ -222,7 +222,7 @@
         <el-table-column prop="display_name" label="备份名称" min-width="200" />
         <el-table-column prop="date" label="备份时间" width="180" />
         <el-table-column prop="size" label="大小" width="120" />
-        <el-table-column label="操作" width="150" align="center">
+        <el-table-column label="操作" width="250" align="center">
           <template #default="{ row }">
             <el-button
               size="small"
@@ -230,6 +230,22 @@
               @click="restoreBackup(row.filename)"
             >
               恢复
+            </el-button>
+            <el-button
+              size="small"
+              type="success"
+              @click="downloadBackup(row.filename)"
+            >
+              <el-icon><Download /></el-icon>
+              下载
+            </el-button>
+            <el-button
+              size="small"
+              type="danger"
+              @click="deleteBackup(row.filename)"
+            >
+              <el-icon><Delete /></el-icon>
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -771,6 +787,72 @@ const confirmRestore = async () => {
     }
   } finally {
     restoring.value = false
+  }
+}
+
+// 下载备份
+const downloadBackup = async (filename) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要下载备份文件 "${filename}" 吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    )
+
+    // 创建隐藏的 iframe 来触发下载
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = `/deploy-config/backups/${encodeURIComponent(filename)}/download`
+    document.body.appendChild(iframe)
+    
+    // 5秒后移除 iframe
+    setTimeout(() => {
+      document.body.removeChild(iframe)
+    }, 5000)
+    
+    ElMessage.success('开始下载备份文件')
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('下载失败:', error)
+      ElMessage.error('下载失败')
+    }
+  }
+}
+
+// 删除备份
+const deleteBackup = async (filename) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除备份 "${filename}" 吗？此操作不可恢复！`,
+      '警告',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const response = await fetch(`/deploy-config/backups/${encodeURIComponent(filename)}`, {
+      method: 'DELETE'
+    })
+
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('备份已删除')
+      // 刷新备份列表
+      loadBackups()
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+      ElMessage.error('删除失败')
+    }
   }
 }
 

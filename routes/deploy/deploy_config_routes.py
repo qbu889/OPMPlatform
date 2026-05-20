@@ -227,6 +227,100 @@ def list_backups():
         }), 500
 
 
+@deploy_config_bp.route('/backups/<filename>', methods=['DELETE'])
+def delete_backup(filename):
+    """删除备份文件"""
+    try:
+        backup_path = f"{BACKUP_DIR}/{filename}"
+        
+        # 验证文件存在
+        _, check, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'not found'")
+        if 'exists' not in check:
+            return jsonify({
+                'success': False,
+                'message': f'备份文件不存在: {filename}'
+            }), 404
+        
+        # 删除文件
+        ssh_command(f"rm -f {backup_path}")
+        
+        # 验证删除成功
+        _, verify, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'deleted'")
+        if 'deleted' in verify:
+            add_log(f'🗑️ 已删除备份: {filename}', 'info')
+            return jsonify({
+                'success': True,
+                'message': f'备份 {filename} 已删除'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '删除失败'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"删除备份失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@deploy_config_bp.route('/backups/<filename>/download', methods=['GET'])
+def download_backup(filename):
+    """下载备份文件"""
+    try:
+        import tempfile
+        import shutil
+        
+        backup_path = f"{BACKUP_DIR}/{filename}"
+        
+        # 验证文件存在
+        _, check, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'not found'")
+        if 'exists' not in check:
+            return jsonify({
+                'success': False,
+                'message': f'备份文件不存在: {filename}'
+            }), 404
+        
+        # 创建临时目录
+        temp_dir = tempfile.mkdtemp()
+        local_file = os.path.join(temp_dir, filename)
+        
+        try:
+            # 从远程服务器下载文件
+            scp_cmd = f"scp -o LogLevel=ERROR -o StrictHostKeyChecking=no {REMOTE_USER}@{REMOTE_HOST}:{backup_path} {local_file}"
+            success, stdout, stderr = run_local_command(scp_cmd)
+            
+            if not success:
+                return jsonify({
+                    'success': False,
+                    'message': f'下载失败: {stderr}'
+                }), 500
+            
+            # 返回文件
+            return send_file(
+                local_file,
+                mimetype='application/gzip',
+                as_attachment=True,
+                download_name=filename
+            )
+        finally:
+            # 清理临时文件（延迟删除，让 Flask 先发送文件）
+            import threading
+            def cleanup():
+                time.sleep(2)
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            threading.Thread(target=cleanup, daemon=True).start()
+            
+    except Exception as e:
+        logger.error(f"下载备份失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
 @deploy_config_bp.route('/deploy', methods=['POST'])
 def start_deploy():
     """开始部署"""
