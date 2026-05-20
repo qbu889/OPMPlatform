@@ -811,13 +811,22 @@ def fast_deploy(specific_files=None):
     
     # 上传前端文件（需要重新构建）
     if frontend_files:
-        print_warning(f"检测到 {len(frontend_files)} 个前端源码文件变更，需要重新构建")
+        print_warning(f"检测到 {len(frontend_files)} 个前端源码文件变更，开始重新构建")
         for f in frontend_files[:5]:
             print(f"   - {f}")
         if len(frontend_files) > 5:
             print(f"   ... 还有 {len(frontend_files) - 5} 个文件")
-        print_info("建议使用完整部署模式: python deploy.py")
-        return False
+        
+        # 执行前端构建
+        if not build_frontend():
+            print_error("前端构建失败")
+            return False
+        
+        # 上传构建后的文件
+        print_info("上传前端构建文件...")
+        if not upload_frontend_files():
+            print_error("前端文件上传失败")
+            return False
     
     # 重启后端服务（可选）
     print("\n是否重启后端服务？(y/n): ", end="", flush=True)
