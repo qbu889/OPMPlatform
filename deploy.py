@@ -871,15 +871,9 @@ def fast_deploy(specific_files=None):
         if len(frontend_files) > 5:
             print(f"   ... 还有 {len(frontend_files) - 5} 个文件")
         
-        # 执行前端构建
-        if not build_frontend():
-            print_error("前端构建失败")
-            return False
-        
-        # 上传构建后的文件
-        print_info("上传前端构建文件...")
-        if not upload_frontend_files():
-            print_error("前端文件上传失败")
+        # 执行前端构建并上传
+        if not build_and_upload_frontend(need_frontend_build=True):
+            print_error("前端构建或上传失败")
             return False
     
     # 重启后端服务（可选）
