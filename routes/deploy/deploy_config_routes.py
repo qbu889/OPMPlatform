@@ -652,14 +652,14 @@ def execute_fast_deploy(skip_initial_steps=False):
 
 
 def execute_full_deploy():
-    """执行完整部署"""
-    add_log('🚀 开始完整部署...', 'info')
+    """执行完整部署（调用 deploy.py 脚本）"""
+    add_log('🚀 开始完整部署（使用 deploy.py）...', 'info')
     add_log('=' * 50, 'info')
 
     # ====== 步骤 1: Git 提交与推送 ======
     deploy_status['current_step'] = 'Git提交'
     deploy_status['progress'] = 5
-    add_log(' 步骤 1: Git 提交与推送', 'info')
+    add_log('📝 步骤 1: Git 提交与推送', 'info')
 
     # 检查是否有未提交的更改
     _, status, _ = run_local_command("git status --porcelain", cwd=str(PROJECT_ROOT))
@@ -675,7 +675,7 @@ def execute_full_deploy():
     # Git推送
     deploy_status['current_step'] = 'Git推送'
     deploy_status['progress'] = 15
-    add_log(' Git推送到远程仓库...', 'info')
+    add_log('   📤 Git推送到远程仓库...', 'info')
 
     # 增加超时时间到 120 秒
     success, stdout, stderr = run_local_command("git push origin q/dev", cwd=str(PROJECT_ROOT), timeout=120)
@@ -687,8 +687,91 @@ def execute_full_deploy():
         add_log('   ⚠️ 继续执行后续部署步骤...', 'warning')
         deploy_status['progress'] = 20
 
-    # 执行快速部署的剩余步骤（跳过前面的检测步骤）
-    execute_fast_deploy(skip_initial_steps=True)
+    # ====== 步骤 2: 调用 deploy.py 进行快速部署 ======
+    deploy_status['current_step'] = '执行快速部署'
+    deploy_status['progress'] = 25
+    add_log('', 'info')
+    add_log('📝 步骤 2: 调用 deploy.py --fast 进行快速部署', 'info')
+    add_log('   这将包括：', 'info')
+    add_log('   - 检测变更文件', 'info')
+    add_log('   - 前端构建', 'info')
+    add_log('   - 创建备份', 'info')
+    add_log('   - 上传文件', 'info')
+    add_log('   - 重启服务', 'info')
+
+    # 执行 deploy.py --fast
+    deploy_script = PROJECT_ROOT / 'deploy.py'
+    if not deploy_script.exists():
+        add_log(f'   ❌ deploy.py 不存在: {deploy_script}', 'error')
+        return
+
+    add_log('   正在执行 deploy.py --fast ...', 'info')
+    
+    # 设置进度回调（通过子进程输出监控）
+    import subprocess
+    import threading
+    
+    def monitor_progress(proc):
+        """监控子进程输出并更新进度"""
+        for line in iter(proc.stdout.readline, ''):
+            if line:
+                line = line.strip()
+                # 根据输出内容更新进度
+                if '步骤 1:' in line or 'Git' in line:
+                    deploy_status['progress'] = 30
+                elif '步骤 2:' in line or '检测' in line:
+                    deploy_status['progress'] = 40
+                elif '步骤 3:' in line or '前端' in line or '构建' in line:
+                    deploy_status['progress'] = 50
+                elif '步骤 4:' in line or '备份' in line:
+                    deploy_status['progress'] = 60
+                elif '步骤 5:' in line or '上传' in line:
+                    deploy_status['progress'] = 70
+                elif '步骤 6:' in line or '重启' in line or '启动' in line:
+                    deploy_status['progress'] = 85
+                elif '✅' in line or '成功' in line:
+                    pass  # 保持当前进度
+                
+                # 添加日志
+                if line and len(line) < 200:  # 过滤过长的行
+                    add_log(f'   [deploy.py] {line}', 'info')
+    
+    try:
+        # 执行 deploy.py --fast
+        proc = subprocess.Popen(
+            ['python', str(deploy_script), '--fast'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            cwd=str(PROJECT_ROOT),
+            env=os.environ.copy()
+        )
+        
+        # 启动监控线程
+        monitor_thread = threading.Thread(target=monitor_progress, args=(proc,), daemon=True)
+        monitor_thread.start()
+        
+        # 等待完成（最多 10 分钟）
+        proc.wait(timeout=600)
+        
+        if proc.returncode == 0:
+            add_log('   ✅ deploy.py 执行成功', 'success')
+            deploy_status['progress'] = 95
+        else:
+            add_log(f'   ❌ deploy.py 执行失败，返回码: {proc.returncode}', 'error')
+            # 尝试获取最后几行输出
+            remaining_output = proc.stdout.read()
+            if remaining_output:
+                for line in remaining_output.split('\n')[-10:]:
+                    if line.strip():
+                        add_log(f'   {line.strip()}', 'error')
+    except subprocess.TimeoutExpired:
+        add_log('   ❌ deploy.py 执行超时（超过10分钟）', 'error')
+        proc.kill()
+    except Exception as e:
+        add_log(f'   ❌ 执行 deploy.py 时出错: {str(e)}', 'error')
+        import traceback
+        add_log(f'   错误详情: {traceback.format_exc()}', 'error')
 
 
 def execute_restore(backup_file):
