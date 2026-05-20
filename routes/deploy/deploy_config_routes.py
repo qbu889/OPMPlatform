@@ -269,50 +269,24 @@ def delete_backup(filename):
 
 @deploy_config_bp.route('/backups/<filename>/download', methods=['GET'])
 def download_backup(filename):
-    """下载备份文件"""
+    """下载备份文件（从当前服务器直接下载）"""
     try:
-        import tempfile
-        import shutil
-        
         backup_path = f"{BACKUP_DIR}/{filename}"
         
-        # 验证文件存在
-        _, check, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'not found'")
-        if 'exists' not in check:
+        # 验证文件存在（直接在当前服务器检查）
+        if not os.path.exists(backup_path):
             return jsonify({
                 'success': False,
                 'message': f'备份文件不存在: {filename}'
             }), 404
         
-        # 创建临时目录
-        temp_dir = tempfile.mkdtemp()
-        local_file = os.path.join(temp_dir, filename)
-        
-        try:
-            # 从远程服务器下载文件
-            scp_cmd = f"scp -o LogLevel=ERROR -o StrictHostKeyChecking=no {REMOTE_USER}@{REMOTE_HOST}:{backup_path} {local_file}"
-            success, stdout, stderr = run_local_command(scp_cmd)
-            
-            if not success:
-                return jsonify({
-                    'success': False,
-                    'message': f'下载失败: {stderr}'
-                }), 500
-            
-            # 返回文件
-            return send_file(
-                local_file,
-                mimetype='application/gzip',
-                as_attachment=True,
-                download_name=filename
-            )
-        finally:
-            # 清理临时文件（延迟删除，让 Flask 先发送文件）
-            import threading
-            def cleanup():
-                time.sleep(2)
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            threading.Thread(target=cleanup, daemon=True).start()
+        # 直接返回文件
+        return send_file(
+            backup_path,
+            mimetype='application/gzip',
+            as_attachment=True,
+            download_name=filename
+        )
             
     except Exception as e:
         logger.error(f"下载备份失败: {e}")
