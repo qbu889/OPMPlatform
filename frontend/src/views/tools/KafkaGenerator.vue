@@ -7,18 +7,20 @@
           <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
           <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
         </div>
-        <el-button type="primary" @click="goToFieldMetaManager">
-          <el-icon><Setting /></el-icon>
-          字段映射管理
-        </el-button>
-        <el-button type="success" @click="goToFieldDictManager">
-          <el-icon><Collection /></el-icon>
-          字段字典管理
-        </el-button>
-        <el-button type="warning" @click="openAddDictDialog">
-          <el-icon><Plus /></el-icon>
-          新增字典项
-        </el-button>
+        <div class="header-buttons">
+          <el-button type="primary" @click="goToFieldMetaManager">
+            <el-icon><Setting /></el-icon>
+            字段映射管理
+          </el-button>
+          <el-button type="success" @click="goToFieldDictManager">
+            <el-icon><Collection /></el-icon>
+            字段字典管理
+          </el-button>
+          <el-button type="warning" @click="openAddDictDialog">
+            <el-icon><Plus /></el-icon>
+            新增字典项
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -116,7 +118,8 @@
           class="field-item"
           :class="{ 
             'filled': fieldValues[field.name],
-            'newly-valued': newlyValuedFields.has(field.name)
+            'newly-valued': newlyValuedFields.has(field.name),
+            'unique-enabled': uniqueFields.has(field.name)
           }"
         >
           <div class="field-header">
@@ -141,6 +144,14 @@
                 title="固定/取消固定"
               >
                 <el-icon><Lock /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="uniqueFields.has(field.name) ? 'warning' : 'info'"
+                @click="toggleUniqueField(field.name)"
+                title="开启/关闭唯一值"
+              >
+                <el-icon><MagicStick /></el-icon>
               </el-button>
               <el-button 
                 v-if="DICT_FIELDS.has(field.name)"
@@ -1218,6 +1229,9 @@ const pinnedFields = ref(new Set())
 // 固定字段集合
 const fixedFields = ref(new Set())
 
+// 唯一值字段集合（开启唯一值的字段）
+const uniqueFields = ref(new Set())
+
 // 历史值缓存
 const historyValues = ref({})
 
@@ -1845,6 +1859,15 @@ const toggleFieldFixed = async (field) => {
   await saveFieldValue(field, fieldValues[field] || '')
 }
 
+// 切换唯一值字段
+const toggleUniqueField = (field) => {
+  if (uniqueFields.value.has(field)) {
+    uniqueFields.value.delete(field)
+  } else {
+    uniqueFields.value.add(field)
+  }
+}
+
 // 保存字段值
 const saveFieldValue = async (field, value) => {
   try {
@@ -1999,7 +2022,16 @@ const generateMessage = async () => {
     const customFields = {}
     allFields.value.forEach(field => {
       if (fieldValues[field.name]) {
-        customFields[field.name] = fieldValues[field.name]
+        let value = fieldValues[field.name]
+        
+        // 如果开启了唯一值，为字段值添加唯一后缀
+        if (uniqueFields.value.has(field.name)) {
+          const timestamp = Date.now().toString().slice(-6) // 取后6位时间戳
+          const random = Math.random().toString(36).substring(2, 5) // 3位随机字符
+          value = `${value}_${timestamp}${random}`
+        }
+        
+        customFields[field.name] = value
       }
     })
 
@@ -3240,8 +3272,13 @@ watch(
 /* 右侧按钮组样式 */
 .header-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+}
+
+.header-buttons .el-button {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 .page-header h2 {
@@ -3314,8 +3351,13 @@ watch(
 
 .button-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+}
+
+.button-group .el-button {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 .mt-3 {
@@ -3368,6 +3410,12 @@ watch(
 .field-item.pinned {
   background: linear-gradient(135deg, #fff9e6 0%, #fef0b8 100%);
   border-color: #f56c6c;
+}
+
+.field-item.unique-enabled {
+  background: linear-gradient(135deg, #ffe6f0 0%, #ffd6e7 100%);
+  border-color: #e6a23c;
+  box-shadow: 0 0 0 2px rgba(230, 162, 60, 0.2);
 }
 
 .field-item:hover {
