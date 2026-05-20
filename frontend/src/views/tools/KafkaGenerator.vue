@@ -114,7 +114,10 @@
           v-for="field in displayFields" 
           :key="field.name"
           class="field-item"
-          :class="{ 'filled': fieldValues[field.name] }"
+          :class="{ 
+            'filled': fieldValues[field.name],
+            'newly-valued': newlyValuedFields.has(field.name)
+          }"
         >
           <div class="field-header">
             <label>
@@ -1212,6 +1215,13 @@ const fixedFields = ref(new Set())
 // 历史值缓存
 const historyValues = ref({})
 
+// 新有值的字段集合（用于高亮显示）
+const newlyValuedFields = ref(new Set())
+
+// 防抖定时器
+let sortDebounceTimer = null
+const SORT_DEBOUNCE_DELAY = 1000 // 1秒后重新排序
+
 // 显示所有字段
 const showAllFields = ref(false)  // 默认只显示常用字段
 
@@ -1223,8 +1233,11 @@ const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
 }
 
-// 显示字段(置顶的优先,固定的第二优先,有值的第三优先)
-const displayFields = computed(() => {
+// 稳定的字段列表（用于输入过程中保持位置不变）
+const displayFields = ref([])
+
+// 计算并更新显示字段列表
+const updateDisplayFields = () => {
   let fields = [...allFields.value]
   
   // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 有值的字段 4. 保持原有顺序
@@ -1256,8 +1269,8 @@ const displayFields = computed(() => {
     })
   }
   
-  return fields
-})
+  displayFields.value = fields
+}
 
 // 备注表格数据（计算属性）
 const remarkTableData = computed(() => {
@@ -1708,9 +1721,36 @@ const generateUniqueValue = (fieldName) => {
 
 // 字段值改变
 const onFieldChange = async (field, value) => {
+  // 记录之前的状态
+  const hadValueBefore = !!fieldValues[field]
+  
   if (value && value.trim()) {
     await saveHistoryToDB(field, value)
+    
+    // 如果之前没有值，现在有值了，标记为新有值的字段
+    if (!hadValueBefore) {
+      newlyValuedFields.value.add(field)
+      
+      // 5秒后移除高亮
+      setTimeout(() => {
+        newlyValuedFields.value.delete(field)
+      }, 5000)
+    }
+  } else {
+    // 值被清空，从高亮集合中移除
+    newlyValuedFields.value.delete(field)
   }
+  
+  // 清除之前的定时器
+  if (sortDebounceTimer) {
+    clearTimeout(sortDebounceTimer)
+  }
+  
+  // 设置防抖定时器，1秒后重新排序
+  sortDebounceTimer = setTimeout(() => {
+    updateDisplayFields()
+    sortDebounceTimer = null
+  }, SORT_DEBOUNCE_DELAY)
 }
 
 // 保存历史值到数据库
@@ -3140,7 +3180,26 @@ const cancelImportFields = () => {
 onMounted(() => {
   loadFieldMeta()
   loadFieldCache()
+  
+  // 等待字段加载完成后初始化显示列表
+  setTimeout(() => {
+    updateDisplayFields()
+  }, 100)
 })
+
+// 监听相关状态变化，自动更新显示字段
+watch(
+  [showAllFields, pinnedFields, fixedFields],
+  () => {
+    // 清除之前的定时器
+    if (sortDebounceTimer) {
+      clearTimeout(sortDebounceTimer)
+    }
+    // 立即更新（不防抖）
+    updateDisplayFields()
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
@@ -3284,6 +3343,25 @@ onMounted(() => {
 .field-item.filled {
   background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   border-color: #67c23a;
+}
+
+.field-item.newly-valued {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border-color: #ffc107;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+  animation: newlyValuedPulse 1s ease-in-out;
+}
+
+@keyframes newlyValuedPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .field-item.pinned {
