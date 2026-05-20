@@ -1223,11 +1223,11 @@ const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
 }
 
-// 显示字段(置顶的优先,固定的第二优先,且可选择是否显示空字段)
+// 显示字段(置顶的优先,固定的第二优先,有值的第三优先)
 const displayFields = computed(() => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 保持原有顺序
+  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 有值的字段 4. 保持原有顺序
   fields.sort((a, b) => {
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
@@ -1237,6 +1237,13 @@ const displayFields = computed(() => {
     const aFixed = fixedFields.value.has(a.name) ? 0 : 1
     const bFixed = fixedFields.value.has(b.name) ? 0 : 1
     if (aFixed !== bFixed) return aFixed - bFixed
+    
+    // 如果都不是固定，检查是否有值（仅在隐藏空字段模式下生效）
+    if (!showAllFields.value) {
+      const aHasValue = fieldValues[a.name] ? 0 : 1
+      const bHasValue = fieldValues[b.name] ? 0 : 1
+      if (aHasValue !== bHasValue) return aHasValue - bHasValue
+    }
     
     // 其他字段保持原始顺序
     return 0
