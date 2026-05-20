@@ -62,7 +62,8 @@ REMOTE_PATH = config.get('remote_path', DEFAULT_CONFIG['remote_path'])
 BACKUP_DIR = config.get('backup_dir', DEFAULT_CONFIG['backup_dir'])
 LOCAL_PORT = config.get('local_port', DEFAULT_CONFIG['local_port'])
 NGINX_PORT = config.get('nginx_port', DEFAULT_CONFIG['nginx_port'])
-PROJECT_ROOT = Path(__file__).parent.parent
+# PROJECT_ROOT 指向项目根目录（deploy.py 所在位置）
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 # 部署状态存储（生产环境应使用Redis）
 deploy_status = {
