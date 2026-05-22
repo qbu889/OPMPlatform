@@ -314,9 +314,12 @@ def _format_time_columns(df):
     """格式化 DataFrame 中的时间字段（ISO 8601 -> 标准格式）"""
     time_columns_count = 0
     for col in df.columns:
-        col_dtype = str(df[col].dtype)
+        col_dtype = str(df.dtypes[col])
         if col_dtype in ['object', 'str']:
-            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            col_data = df[col]
+            if isinstance(col_data, pd.DataFrame):
+                col_data = col_data.iloc[:, 0]
+            sample = col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else None
             if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
                 try:
                     def format_time(x):
@@ -327,7 +330,7 @@ def _format_time_columns(df):
                             time_str = time_str.split('.')[0]
                         return time_str
                     
-                    df[col] = df[col].apply(format_time)
+                    df[col] = col_data.apply(format_time)
                     time_columns_count += 1
                 except Exception:
                     pass
@@ -388,12 +391,15 @@ def parse_vertical_txt(file_path):
     # 例如：2026-04-09T10:37:30.000Z -> 2026-04-09 10:37:30（去掉毫秒）
     time_columns_count = 0
     for col in df.columns:
-        col_dtype = str(df[col].dtype)
+        col_dtype = str(df.dtypes[col])
         
         # 支持 object 和 str 类型
         if col_dtype in ['object', 'str']:
+            col_data = df[col]
+            if isinstance(col_data, pd.DataFrame):
+                col_data = col_data.iloc[:, 0]
             # 检测是否为时间格式（包含 T 和 Z）
-            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            sample = col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else None
             if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
                 try:
                     print(f"⏰ 检测到时间列: {col}，示例值: {sample}")
@@ -408,9 +414,9 @@ def parse_vertical_txt(file_path):
                             time_str = time_str.split('.')[0]
                         return time_str
                     
-                    df[col] = df[col].apply(format_time)
+                    df[col] = col_data.apply(format_time)
                     time_columns_count += 1
-                    print(f"✅ 时间列 {col} 已格式化，示例: {df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else 'N/A'}")
+                    print(f"✅ 时间列 {col} 已格式化，示例: {col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else 'N/A'}")
                 except Exception as e:
                     print(f"❌ 时间列 {col} 格式化失败: {e}")
                     pass  # 如果转换失败，保持原样

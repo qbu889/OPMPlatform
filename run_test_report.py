@@ -24,16 +24,14 @@ def generate_report(test_path=None, output_dir=None):
     project_root = Path(__file__).parent.absolute()
     os.chdir(project_root)
     
-    # 激活虚拟环境
     venv_path = project_root / ".venv"
     if venv_path.exists():
         python_executable = venv_path / "bin" / "python"
-        print(f"📦 使用虚拟环境: {python_executable}")
+        print(f"使用虚拟环境: {python_executable}")
     else:
         python_executable = sys.executable
-        print(f"📦 使用系统Python: {python_executable}")
+        print(f"使用系统Python: {python_executable}")
     
-    # 设置默认值
     if test_path is None:
         test_path = "test/kafka/test_kafka_api_complete.py"
     
@@ -41,28 +39,16 @@ def generate_report(test_path=None, output_dir=None):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = f"test_reports/report_{timestamp}"
     
-    # 创建输出目录
     output_path = project_root / output_dir
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    # 确保输出目录创建成功
-    if not output_path.exists():
-        raise OSError(f"无法创建输出目录: {output_path}")
-    
-    # 确保输出目录创建成功
-    if not output_path.exists():
-        raise OSError(f"无法创建输出目录: {output_path}")
-
-
     
     report_file = output_path / "report.html"
     junit_file = output_path / "results.xml"
     
-    print(f"\n📋 测试文件: {test_path}")
-    print(f"📁 输出目录: {output_path}")
-    print(f"📊 报告文件: {report_file}")
+    print(f"\n测试文件: {test_path}")
+    print(f"输出目录: {output_path}")
+    print(f"报告文件: {report_file}")
     
-    # 构建pytest命令
     pytest_cmd = [
         str(python_executable), "-m", "pytest",
         test_path,
@@ -76,10 +62,9 @@ def generate_report(test_path=None, output_dir=None):
         "--override-ini=addopts=",
     ]
     
-    print("\n🚀 开始执行测试...")
+    print("\n开始执行测试...")
     print("-" * 80)
     
-    # 执行测试
     result = subprocess.run(
         pytest_cmd,
         capture_output=True,
@@ -89,22 +74,20 @@ def generate_report(test_path=None, output_dir=None):
     
     print(result.stdout)
     if result.stderr:
-        print("⚠️  stderr:", result.stderr[:500] if len(result.stderr) > 500 else result.stderr)
+        print("stderr:", result.stderr[:500])
     
     print("-" * 80)
     
     if result.returncode == 0:
-        print("✅ 测试全部通过!")
+        print("测试全部通过!")
     else:
-        print(f"⚠️  部分测试失败 (退出码: {result.returncode})")
+        print(f"部分测试失败 (退出码: {result.returncode})")
     
-    # 添加自定义样式
     customize_report(report_file)
     
-    print(f"\n🎉 测试报告已生成: {report_file}")
-    print(f"📈 JUnit结果文件: {junit_file}")
+    print(f"\n测试报告已生成: {report_file}")
+    print(f"JUnit结果文件: {junit_file}")
     
-    # 显示报告摘要
     show_report_summary(report_file)
     
     return report_file
@@ -115,7 +98,6 @@ def customize_report(report_path):
         with open(report_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # 添加自定义CSS样式
         custom_css = """
         <style>
             :root {
@@ -230,24 +212,13 @@ def customize_report(report_path):
                 font-weight: 700;
             }
             
-            .summary-card.passed-card .value {
-                color: var(--success-color);
-            }
-            
-            .summary-card.failed-card .value {
-                color: var(--danger-color);
-            }
-            
-            .summary-card.total-card .value {
-                color: var(--primary-color);
-            }
-            
-            .summary-card.time-card .value {
-                color: var(--warning-color);
-            }
+            .summary-card.passed-card .value { color: var(--success-color); }
+            .summary-card.failed-card .value { color: var(--danger-color); }
+            .summary-card.total-card .value { color: var(--primary-color); }
+            .summary-card.time-card .value { color: var(--warning-color); }
             
             .test-name {
-                font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                font-family: 'JetBrains Mono', monospace;
                 font-size: 13px;
                 color: #cbd5e1;
             }
@@ -280,43 +251,6 @@ def customize_report(report_path):
                 font-size: 14px;
             }
             
-            .time-stamp {
-                font-size: 12px;
-                color: #64748b;
-            }
-            
-            .expand-button {
-                background: var(--primary-color);
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 12px;
-                font-weight: 600;
-                transition: all 0.2s;
-            }
-            
-            .expand-button:hover {
-                background: #6366f1;
-                transform: translateY(-1px);
-            }
-            
-            .collapsed {
-                display: none;
-            }
-            
-            .error-message {
-                background: rgba(239, 68, 68, 0.1);
-                border-left: 4px solid var(--danger-color);
-                padding: 12px 16px;
-                border-radius: 0 8px 8px 0;
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 12px;
-                color: #fca5a5;
-                white-space: pre-wrap;
-            }
-            
             .footer {
                 text-align: center;
                 padding: 20px;
@@ -326,66 +260,47 @@ def customize_report(report_path):
         </style>
         """
         
-        # 在 </head> 前插入自定义CSS
         content = content.replace('</head>', custom_css + '</head>')
-        
-        # 更新标题
         content = content.replace(
             '<h1>Test Report</h1>',
             '<div class="header"><h1>Kafka生成器API测试报告</h1><p>自动化接口测试结果</p></div>'
         )
         
-        # 更新摘要部分
-        content = content.replace(
-            '<p class="filter">',
-            '<div class="summary">'
-        )
-        
-        # 替换表格样式
-        content = content.replace(
-            '<table class="results-table">',
-            '<table class="results-table" style="width:100%;">'
-        )
-        
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write(content)
         
-        print("✨ 报告样式已美化")
+        print("报告样式已美化")
         
     except Exception as e:
-        print(f"⚠️  美化报告失败: {e}")
+        print(f"美化报告失败: {e}")
 
-def show_report_summary(report_path):
+def show_report_summary(report_file):
     """显示报告摘要"""
     try:
-        with open(report_path, 'r', encoding='utf-8') as f:
+        with open(report_file, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # 提取统计信息
         import re
         
         total_match = re.search(r'Total: (\d+)', content)
         passed_match = re.search(r'Passed: (\d+)', content)
         failed_match = re.search(r'Failed: (\d+)', content)
-        error_match = re.search(r'Error: (\d+)', content)
         time_match = re.search(r'Time: ([\d.]+)s', content)
         
-        print("\n📊 测试报告摘要:")
+        print("\n测试报告摘要:")
         print("-" * 40)
         if total_match:
-            print(f"📝 总测试数: {total_match.group(1)}")
+            print(f"总测试数: {total_match.group(1)}")
         if passed_match:
-            print(f"✅ 通过: {passed_match.group(1)}")
+            print(f"通过: {passed_match.group(1)}")
         if failed_match:
-            print(f"❌ 失败: {failed_match.group(1)}")
-        if error_match:
-            print(f"⚠️  错误: {error_match.group(1)}")
+            print(f"失败: {failed_match.group(1)}")
         if time_match:
-            print(f"⏱️  耗时: {time_match.group(1)}秒")
+            print(f"耗时: {time_match.group(1)}秒")
         print("-" * 40)
         
     except Exception as e:
-        print(f"⚠️  读取报告摘要失败: {e}")
+        print(f"读取报告摘要失败: {e}")
 
 def main():
     """主函数"""
@@ -403,7 +318,7 @@ def main():
     parser.add_argument(
         '-o', '--output',
         default=None,
-        help='输出目录（默认自动生成带时间戳的目录）'
+        help='输出目录'
     )
     
     parser.add_argument(
@@ -418,20 +333,17 @@ def main():
         print_header("可用测试文件")
         test_files = sorted(Path('test').rglob('*.py'))
         for f in test_files:
-            print(f"  📄 {f}")
+            print(f"  {f}")
         return
     
     report_file = generate_report(args.test, args.output)
     
-    # 询问是否打开报告
-    print("\n❓ 是否打开报告? (y/n)")
     try:
-        # 在脚本中直接打开
         import webbrowser
         webbrowser.open('file://' + str(report_file))
-        print("🌐 报告已在浏览器中打开")
+        print("报告已在浏览器中打开")
     except Exception as e:
-        print(f"⚠️  无法自动打开浏览器，请手动打开: {report_file}")
+        print(f"无法自动打开浏览器，请手动打开: {report_file}")
 
 if __name__ == "__main__":
     main()
