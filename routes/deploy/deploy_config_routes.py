@@ -13,6 +13,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +67,35 @@ NGINX_PORT = config.get('nginx_port', DEFAULT_CONFIG['nginx_port'])
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 # 部署状态存储（生产环境应使用Redis）
+# 日志持久化文件路径
+DEPLOY_LOGS_FILE = PROJECT_ROOT / 'logs' / 'deploy_logs.json'
+
+# 确保日志目录存在
+DEPLOY_LOGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+def load_deploy_logs():
+    """从文件加载部署日志"""
+    try:
+        if DEPLOY_LOGS_FILE.exists():
+            with open(DEPLOY_LOGS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        logger.error(f"加载部署日志失败: {e}")
+    return []
+
+def save_deploy_logs(logs):
+    """保存部署日志到文件"""
+    try:
+        with open(DEPLOY_LOGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(logs, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"保存部署日志失败: {e}")
+
 deploy_status = {
     'is_deploying': False,
     'current_step': '',
     'progress': 0,
-    'logs': [],
+    'logs': [],  # 将在 add_log 定义后初始化
     'last_deploy_time': None,
     'last_deploy_status': None
 }
@@ -134,9 +159,30 @@ def add_log(message, level='info'):
         'level': level
     }
     deploy_status['logs'].append(log_entry)
-    # 只保留最近100条日志
-    if len(deploy_status['logs']) > 100:
-        deploy_status['logs'] = deploy_status['logs'][-100:]
+    # 只保留最近200条日志（增加容量）
+    if len(deploy_status['logs']) > 200:
+        deploy_status['logs'] = deploy_status['logs'][-200:]
+    # 持久化到文件
+    save_deploy_logs(deploy_status['logs'])
+
+
+# 初始化部署日志（从文件加载或创建初始日志）
+def init_deploy_logs():
+    """初始化部署日志"""
+    persisted_logs = load_deploy_logs()
+    if persisted_logs:
+        deploy_status['logs'] = persisted_logs
+        logger.info(f"已加载 {len(persisted_logs)} 条历史部署日志")
+    else:
+        # 如果日志为空，添加初始提示日志
+        add_log('📦 部署管理服务已启动', 'info')
+        add_log('   版本: 1.0.0', 'info')
+        add_log('   状态: 就绪', 'success')
+        add_log('', 'info')
+        add_log('💡 提示: 点击"快速部署"或"完整部署"开始部署流程', 'info')
+
+# 调用初始化函数
+init_deploy_logs()
 
 
 @deploy_config_bp.route('/status')
@@ -994,16 +1040,25 @@ def get_server_logs():
     参数：
         type: 日志类型 (backend/nginx_access/nginx_error)
         preset: 预设行数 (100|1000|10000)，默认 100
+        level: 日志级别筛选 (ERROR/WARNING/INFO/DEBUG/ALL)，默认 ALL
     """
     preset = request.args.get('preset', '100')
     log_type = request.args.get('type', 'backend')
+    level = request.args.get('level', 'ALL').upper()
 
     PRESET_LINES = {'100': 100, '1000': 1000, '10000': 10000}
+    LOG_LEVELS = {'ERROR', 'WARNING', 'INFO', 'DEBUG', 'ALL'}
 
     if preset not in PRESET_LINES:
         return jsonify({
             'success': False,
             'message': f'预设参数错误，支持的 preset: 100, 1000, 10000'
+        }), 400
+
+    if level not in LOG_LEVELS:
+        return jsonify({
+            'success': False,
+            'message': f'日志级别参数错误，支持的 level: ERROR, WARNING, INFO, DEBUG, ALL'
         }), 400
 
     lines_count = PRESET_LINES[preset]
@@ -1023,15 +1078,22 @@ def get_server_logs():
 
         if success:
             log_lines = stdout.split('\n') if stdout else []
+            
+            # 解析日志并添加级别和颜色信息
+            parsed_logs = parse_log_levels(log_lines, level)
+            
             return jsonify({
                 'success': True,
                 'data': {
                     'logs': stdout,
-                    'lines_count': len(log_lines),
+                    'parsed_logs': parsed_logs,
+                    'lines_count': len(parsed_logs),
                     'requested_lines': lines_count,
                     'preset': preset,
                     'type': log_type,
-                    'type_name': get_log_type_name(log_type)
+                    'type_name': get_log_type_name(log_type),
+                    'level': level,
+                    'level_name': get_log_level_name(level)
                 }
             })
         else:
@@ -1045,9 +1107,81 @@ def get_server_logs():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+def parse_log_levels(log_lines, filter_level='ALL'):
+    """解析日志级别并添加颜色信息
+    
+    Args:
+        log_lines: 日志行列表
+        filter_level: 筛选级别 (ERROR/WARNING/INFO/DEBUG/ALL)
+    
+    Returns:
+        解析后的日志列表，每条包含: line, level, color
+    """
+    import re
+    
+    # 日志级别颜色映射
+    level_colors = {
+        'ERROR': '#ef4444',      # 红色
+        'WARNING': '#f59e0b',    # 橙色
+        'INFO': '#3b82f6',       # 蓝色
+        'DEBUG': '#8b5cf6',      # 紫色
+        'SUCCESS': '#22c55e',    # 绿色
+        'DEFAULT': '#6b7280'     # 灰色
+    }
+    
+    # 日志级别正则匹配模式
+    level_patterns = [
+        (re.compile(r'\bERROR\b', re.IGNORECASE), 'ERROR'),
+        (re.compile(r'\bWARNING\b|\bWARN\b', re.IGNORECASE), 'WARNING'),
+        (re.compile(r'\bINFO\b', re.IGNORECASE), 'INFO'),
+        (re.compile(r'\bDEBUG\b', re.IGNORECASE), 'DEBUG'),
+        (re.compile(r'\bSUCCESS\b|\bOK\b', re.IGNORECASE), 'SUCCESS'),
+    ]
+    
+    # 级别优先级（用于筛选）
+    level_priority = {'ERROR': 4, 'WARNING': 3, 'INFO': 2, 'DEBUG': 1, 'ALL': 0}
+    
+    parsed = []
+    
+    for line in log_lines:
+        if not line.strip():
+            continue
+            
+        # 检测日志级别
+        detected_level = 'DEFAULT'
+        for pattern, level in level_patterns:
+            if pattern.search(line):
+                detected_level = level
+                break
+        
+        # 应用筛选
+        if filter_level != 'ALL':
+            if level_priority.get(detected_level, 0) < level_priority.get(filter_level, 0):
+                continue
+        
+        parsed.append({
+            'line': line,
+            'level': detected_level,
+            'color': level_colors.get(detected_level, level_colors['DEFAULT'])
+        })
+    
+    return parsed
+
+
 def get_log_type_name(log_type):
     """获取日志类型的中文名称"""
     return {'backend': '后端日志', 'nginx_access': 'Nginx 访问日志', 'nginx_error': 'Nginx 错误日志'}.get(log_type, '日志')
+
+
+def get_log_level_name(level):
+    """获取日志级别的中文名称"""
+    return {
+        'ERROR': '错误',
+        'WARNING': '警告',
+        'INFO': '信息',
+        'DEBUG': '调试',
+        'ALL': '全部'
+    }.get(level, '全部')
 
 
 

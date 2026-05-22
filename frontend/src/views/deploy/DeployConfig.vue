@@ -175,6 +175,47 @@
               <el-option label="Nginx访问" value="nginx" />
               <el-option label="Nginx错误" value="error" />
             </el-select>
+            <div class="level-buttons">
+              <el-button 
+                size="small" 
+                :type="logLevel === 'ALL' ? 'primary' : 'default'"
+                @click="setLogLevel('ALL')"
+              >
+                全部
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'ERROR' ? 'danger' : 'default'"
+                @click="setLogLevel('ERROR')"
+                style="color: #ef4444;"
+              >
+                错误
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'WARNING' ? 'warning' : 'default'"
+                @click="setLogLevel('WARNING')"
+                style="color: #f59e0b;"
+              >
+                警告
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'INFO' ? 'primary' : 'default'"
+                @click="setLogLevel('INFO')"
+                style="color: #3b82f6;"
+              >
+                信息
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'DEBUG' ? 'default' : 'default'"
+                @click="setLogLevel('DEBUG')"
+                style="color: #8b5cf6;"
+              >
+                调试
+              </el-button>
+            </div>
             <el-select
               v-model="logLines"
               size="small"
@@ -201,8 +242,18 @@
         </div>
       </template>
 
-      <div class="server-logs-content">
+      <div class="server-logs-content" v-if="parsedServerLogs.length === 0">
         <pre>{{ serverLogs }}</pre>
+      </div>
+      <div class="server-logs-content" v-else>
+        <div 
+          v-for="(log, index) in parsedServerLogs" 
+          :key="index"
+          class="log-item"
+          :style="{ color: log.color }"
+        >
+          {{ log.line }}
+        </div>
       </div>
     </el-card>
 
@@ -417,7 +468,9 @@ let eventSource = null
 
 // 服务器日志
 const serverLogs = ref('')
+const parsedServerLogs = ref([])
 const serverLogType = ref('backend')
+const logLevel = ref('ALL')
 const logLines = ref(100) // 默认显示100行
 const autoRefresh = ref(false)
 const refreshInterval = ref(10000) // 默认 10 秒
@@ -573,13 +626,20 @@ const updateRefreshInterval = () => {
   }
 }
 
+// 设置日志级别
+const setLogLevel = (level) => {
+  logLevel.value = level
+  loadServerLogs()
+}
+
 // 加载服务器日志
 const loadServerLogs = async () => {
   try {
-    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}`)
+    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}&level=${logLevel.value}`)
     const result = await response.json()
     if (result.success) {
       serverLogs.value = result.data.logs
+      parsedServerLogs.value = result.data.parsed_logs || []
     } else {
       if (!autoRefresh.value) {
         ElMessage.error(result.message)
@@ -597,7 +657,7 @@ const loadServerLogs = async () => {
 const downloadServerLogs = async () => {
   try {
     const downloadLines = logLines.value * 10 // 下载更多行数
-    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}`
+    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}&level=${logLevel.value}`
 
     // 创建隐藏的a标签进行下载
     const link = document.createElement('a')
@@ -607,7 +667,7 @@ const downloadServerLogs = async () => {
     link.click()
     document.body.removeChild(link)
 
-    ElMessage.success(`正在下载最近 ${downloadLines} 行日志...`)
+    ElMessage.success(`正在下载最近 ${downloadLines} 行${logLevel.value !== 'ALL' ? `（${logLevel.value}级别）` : ''}日志...`)
   } catch (error) {
     console.error('下载日志失败:', error)
     ElMessage.error('下载失败')
@@ -1002,6 +1062,11 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+.level-buttons {
+  display: flex;
+  gap: 6px;
+}
+
 .log-entry {
   margin-bottom: 5px;
   line-height: 1.6;
@@ -1045,7 +1110,7 @@ onUnmounted(() => {
   border-radius: 8px;
   padding: 15px;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: #d4d4d4;
 }
@@ -1060,5 +1125,14 @@ onUnmounted(() => {
 
 .mb-3 {
   margin-bottom: 15px;
+}
+
+.log-item {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+  padding: 3px 0;
 }
 </style>
