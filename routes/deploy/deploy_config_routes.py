@@ -4,7 +4,7 @@
 部署管理路由 - Web化部署接口
 提供部署、备份、恢复、日志查看等功能
 """
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, send_file
 import subprocess
 import json
 import os
