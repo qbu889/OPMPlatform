@@ -5288,3 +5288,6 @@
 /downloads/
 /uploads/
 /logs/
+routes/deploy/__pycache__/deploy_config_routes.cpython-313.pyc
+test_reports/.DS_Store
+routes/deploy/__pycache__/deploy_config_routes.cpython-313.pyc

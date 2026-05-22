@@ -1110,7 +1110,7 @@ onUnmounted(() => {
   border-radius: 8px;
   padding: 15px;
   font-family: 'Courier New', monospace;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.6;
   color: #d4d4d4;
 }
@@ -1129,10 +1129,10 @@ onUnmounted(() => {
 
 .log-item {
   font-family: 'Courier New', monospace;
-  font-size: 14px;
+  font-size: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  line-height: 1.6;
-  padding: 3px 0;
+  line-height: 1.5;
+  padding: 2px 0;
 }
 </style>

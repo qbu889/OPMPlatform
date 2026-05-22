@@ -1,0 +1,11 @@
+[     295ms] [WARNING] [Vue warn]: Failed to resolve component: Plus
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <KafkaGenerator onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouterView> 
+  at <App> @ http://localhost:5200/@vite/client:509
+[     295ms] [WARNING] [Vue warn]: Failed to resolve component: ChatDotSquare
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <KafkaGenerator onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > > 
+  at <RouterView> 
+  at <App> @ http://localhost:5200/@vite/client:509
+[     472ms] [LOG] 已加载字段缓存（字段值已清空） @ http://localhost:5200/src/views/tools/KafkaGenerator.vue:2077
