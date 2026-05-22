@@ -2008,6 +2008,21 @@ const saveDictItem = async () => {
   }
 }
 
+// 从 ES _source 数据中按 ES 字段路径提取值（支持点号分隔的嵌套路径）
+const getESValue = (esData, esFieldPath) => {
+  if (!esData || !esFieldPath) return null
+  const keys = esFieldPath.split('.')
+  let current = esData
+  for (const key of keys) {
+    if (current && typeof current === 'object' && key in current) {
+      current = current[key]
+    } else {
+      return null
+    }
+  }
+  return current
+}
+
 // 生成消息
 const generateMessage = async () => {
   if (!esSourceData.value.trim()) {
@@ -2032,7 +2047,8 @@ const generateMessage = async () => {
     const customFields = {}
     allFields.value.forEach(field => {
       const inputValue = fieldValues[field.name]  // 输入框的值
-      const esValue = esData ? esData[field.name] : null  // 从 ES 提取的值
+      // 使用 ES 字段名（field.esField）从 ES 源数据中提取值，而非 Kafka 字段名
+      const esValue = getESValue(esData, field.esField)
       
       // 优先使用输入框的值，如果为空则使用 ES 中的值
       const baseValue = inputValue || esValue

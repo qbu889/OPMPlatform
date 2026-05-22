@@ -2199,10 +2199,14 @@ def generate_kafka_message():
             logger.info(f"[FIELD_COMPARISON] {field}: 输入={input_val} -> 输出={output_val} {match}")
         logger.info("[FIELD_COMPARISON] ====================================")
 
+        # 加载字段映射配置（用于后续自定义字段合并判断）
+        field_meta = load_field_meta_from_mysql() or FIELD_META
+
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
             if field in kafka_message and value:
                 old_val = kafka_message[field]
+                # 直接使用用户自定义的值，不做自动合并
                 kafka_message[field] = value
                 logger.info(f"[CUSTOM_FIELD] 字段覆盖: {field} = {old_val} -> {value}")
 

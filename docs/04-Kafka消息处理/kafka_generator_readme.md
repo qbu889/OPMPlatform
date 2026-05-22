@@ -1,7 +1,7 @@
 # Kafka消息生成器使用说明
 
 ## 功能概述
-该工具可以根据ES数据自动生成对应的Kafka消息，支持字段映射、自定义覆盖、历史记录管理和一键复制功能。
+该工具可以根据ES数据自动生成对应的Kafka消息，支持字段映射、自定义覆盖、唯一值生成、历史记录管理、推送消息生成和一键复制功能。
 
 ## 使用方法
 
@@ -10,7 +10,9 @@
 
 1. **输入ES数据**：在文本框中粘贴ES `_source` 对象的JSON数据
 2. **自定义字段**（可选）：在自定义字段面板中覆盖特定字段值
-   - 支持置顶常用字段（点击置顶按钮，显示图标）
+   - 支持置顶常用字段（点击置顶按钮，显示📌图标）
+   - **唯一值功能**：开启后可自动为字段值添加时间戳+随机字符后缀，确保唯一性
+   - **ES字段自动提取**：对于配置了 `es_field` 映射的字段，自动从ES源数据中提取对应值作为基准，再拼接唯一后缀
    - **有值字段显示✓标识**，字段位置保持不变，不自动跳至顶部
    - 支持查看字段字典（枚举值说明）
    - 支持查看和选择历史输入值
@@ -23,6 +25,8 @@
 8. **添加备注**：为生成的消息添加备注信息，便于后续追溯
 
 ### 2. API接口调用
+
+#### 2.1 生成 Kafka 消息
 ```bash
 POST /kafka-generator/generate
 Content-Type: application/json
@@ -31,10 +35,11 @@ Content-Type: application/json
     "es_source_raw": "{ ... }",  // ES _source 数据的JSON字符串
     "custom_fields": {            // 自定义字段覆盖（可选）
         "EQP_LABEL": "自定义网元名称",
-        "DELAY_TIME": 720
+        "TITLE_TEXT": "告警标题_20260522153000123abc"
     },
     "delay_time": 15,             // 延迟时间（分钟），用于计算时间字段
-    "add_test_prefix": false      // 是否添加【测试】前缀
+    "add_test_prefix": false,     // 是否添加【测试】前缀
+    "auto_detect_missing": false  // 是否自动检测缺失字段映射
 }
 ```
 
@@ -46,12 +51,73 @@ Content-Type: application/json
         "ID": "uuid...",
         "FP0_FP1_FP2_FP3": "1745900000_1234567890_9876543210_1111111111_12345",
         "EVENT_TIME": "2026-04-29 10:30:00",
+        "TITLE_TEXT": "泉州德化县传输外线光缆中断事件",
         ...
     },
-    "history_id": 123,  // 历史记录ID
+    "history_id": 123,
     "delay_time": 15
 }
 ```
+
+#### 2.2 生成推送消息
+```bash
+POST /kafka-generator/generate-push-message
+Content-Type: application/json
+
+{
+    "fp_value": "1745900000_1234567890_9876543210_1111111111_12345",
+    "event_time": "2026-04-29 10:30:00",
+    "active_status": "3"
+}
+```
+
+#### 2.3 字段映射管理 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/field-meta` | 获取全部字段元数据（字典格式） |
+| GET/POST | `/field-meta/list` | 获取字段映射列表（分页+搜索） |
+| POST | `/field-meta` | 新增字段映射 |
+| PUT | `/field-meta/<id>` | 更新字段映射 |
+| DELETE | `/field-meta/<id>` | 删除字段映射 |
+| GET | `/field-order` | 获取字段顺序列表 |
+| POST | `/batch-import-fields` | 批量导入字段映射 |
+
+#### 2.4 字段字典管理 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/field-options?kafka_field=xxx` | 查询字段字典选项 |
+| GET | `/field-dict` | 获取字典列表（分页） |
+| POST | `/field-dict` | 新增字典项 |
+| PUT | `/field-dict/<id>` | 更新字典项 |
+| DELETE | `/field-dict/<id>` | 删除字典项 |
+| POST | `/field-dict/batch-import` | 批量导入字典 |
+
+#### 2.5 字段缓存与历史 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/field-cache` | 获取所有字段缓存 |
+| POST | `/field-cache` | 保存单个字段缓存 |
+| POST | `/field-cache/batch` | 批量保存字段缓存 |
+| POST | `/field-history` | 保存字段历史值 |
+| DELETE | `/field-history` | 删除字段历史值 |
+| GET | `/field-values` | 获取所有有值的字段列表 |
+
+#### 2.6 历史记录 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/history?page=1&keyword=xxx` | 获取生成历史（分页+搜索） |
+| GET | `/history/<id>` | 获取历史记录详情 |
+| PUT | `/history/<id>/remark` | 更新历史记录备注 |
+
+#### 2.7 配置 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/config` | 获取应用端口配置 |
 
 ## 字段映射规则
 
@@ -138,6 +204,7 @@ ALARM_NAME                 → TITLE_TEXT（告警标题）
    - 支持数据库动态配置字段映射关系
    - 内置90+字段的默认映射规则作为兜底
    - 特殊字段（时间、FP、业务关键字段）强制使用生成逻辑，确保数据正确性
+   - **后端ES值防御合并**：当 custom_fields 中的值不包含 ES 源数据值（如纯唯一值后缀），后端自动合并为 `{ES源值}_{后缀}`
 
 2. **灵活覆盖**：
    - 支持前端自定义任意字段值
@@ -150,6 +217,8 @@ ALARM_NAME                 → TITLE_TEXT（告警标题）
    - FP相关字段在单次生成中使用同一个随机值
    - 确保 `FP0_FP1_FP2_FP3`、`CFP0_CFP1_CFP2_CFP3` 等字段完全一致
    - 每次重新生成都会产生新的唯一值
+   - **唯一值功能**：支持为任意字段开启唯一值开关，自动在字段值后追加 `_时间戳随机字符` 后缀
+   - **ES字段自动提取**：开启唯一值时，前端通过 `field.esField` 从ES源数据中提取对应值，再拼接唯一后缀
 
 4. **时间处理**：
    - 自动从ES数据中提取 `DELAY_TIME` 进行时间计算
@@ -167,10 +236,15 @@ ALARM_NAME                 → TITLE_TEXT（告警标题）
    - 支持查看字段的合法取值和说明
    - 涵盖15+个枚举字段（如告警级别、专业类型等）
 
-7. **错误处理**：
+7. **推送消息**：
+   - 支持基于FP值生成简化的推送消息
+   - 包含 ACTIVE_STATUS、CFP/FP 等关键字段
+
+8. **错误处理**：
    - 完善的JSON格式校验和错误提示
    - 数据库异常自动降级到内置规则
    - 详细的日志记录便于问题排查
+   - 预处理管道修复常见JSON格式问题（三重引号、非法转义、控制字符、尾随逗号等）
 
 ## 部署说明
 
