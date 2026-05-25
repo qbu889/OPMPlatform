@@ -93,21 +93,24 @@
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
         <el-form-item label="Kafka 字段" prop="kafka_field">
-          <el-select 
+          <el-input 
             v-model="form.kafka_field" 
-            placeholder="选择字段"
-            filterable
-            allow-create
+            placeholder="输入字段名称"
             :disabled="isEdit"
             style="width: 100%"
-          >
-            <el-option
-              v-for="field in fieldOptions"
-              :key="field"
-              :label="field"
-              :value="field"
-            />
-          </el-select>
+          />
+          <div v-if="fieldOptions.length > 0" class="field-suggestions">
+            <span class="suggestions-label">常用字段：</span>
+            <el-tag 
+              v-for="field in fieldOptions" 
+              :key="field" 
+              size="small"
+              @click="form.kafka_field = field"
+              class="suggestion-tag"
+            >
+              {{ field }}
+            </el-tag>
+          </div>
         </el-form-item>
         <el-form-item label="字典键" prop="dict_key">
           <el-input 
@@ -338,12 +341,44 @@ const showEditDialog = (row) => {
   dialogVisible.value = true
 }
 
+// 检查是否存在重复的字典项
+const checkDuplicate = async () => {
+  try {
+    const res = await axios.get('/kafka-generator/field-dict', {
+      params: {
+        page: 1,
+        page_size: 1,
+        kafka_field: form.kafka_field,
+        dict_key: form.dict_key
+      }
+    })
+    if (res.data.success && res.data.data.total > 0) {
+      return true
+    }
+  } catch (error) {
+    console.error('检查重复失败:', error)
+  }
+  return false
+}
+
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return
   
   await formRef.value.validate(async (valid) => {
     if (!valid) return
+
+    // 新增时检查重复
+    if (!isEdit.value) {
+      submitting.value = true
+      const isDuplicate = await checkDuplicate()
+      submitting.value = false
+      
+      if (isDuplicate) {
+        ElMessage.warning(`已存在相同的字典项: ${form.kafka_field}.${form.dict_key}`)
+        return
+      }
+    }
 
     submitting.value = true
     try {
@@ -533,5 +568,27 @@ onMounted(() => {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.field-suggestions {
+  margin-top: 8px;
+}
+
+.suggestions-label {
+  font-size: 12px;
+  color: #909399;
+  margin-right: 8px;
+}
+
+.suggestion-tag {
+  cursor: pointer;
+  margin-right: 6px;
+  margin-bottom: 4px;
+  transition: all 0.2s;
+}
+
+.suggestion-tag:hover {
+  background-color: #1890ff;
+  color: white;
 }
 </style>

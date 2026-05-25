@@ -1445,8 +1445,8 @@ def get_field_dict_list():
         
         try:
             with conn.cursor() as cur:
-                # 构建查询条件
-                where_clause = "WHERE 1=1"
+                # 构建查询条件（只查询启用的记录）
+                where_clause = "WHERE is_enabled = 1"
                 params = []
                 
                 if kafka_field:

@@ -186,6 +186,8 @@
             v-model="fieldValues[field.name]"
             :placeholder="field.placeholder || '请输入'"
             size="small"
+            clearable
+            @clear="clearField(field.name)"
             @change="onFieldChange(field.name, fieldValues[field.name])"
           >
             <template #append>
@@ -1701,6 +1703,20 @@ const historyDialogTitle = computed(() => {
   }
   return '历史生成记录'
 })
+
+// 清除字段值
+const clearField = (fieldName) => {
+  // 清除字段值
+  fieldValues[fieldName] = ''
+  
+  // 从高亮集合中移除
+  newlyValuedFields.value.delete(fieldName)
+  
+  // 更新显示列表
+  updateDisplayFields()
+  
+  ElMessage.success(`已清除 ${fieldName}`)
+}
 
 // 生成唯一值（添加时间戳后缀）
 const generateUniqueValue = (fieldName) => {
