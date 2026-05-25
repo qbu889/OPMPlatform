@@ -168,7 +168,6 @@ def health_check():
     健康检查接口
     """
     try:
-        # 尝试连接 LM Studio
         response = requests.get(
             f"{LMSTUDIO_BASE_URL}/v1/models",
             headers={"Authorization": f"Bearer {LMSTUDIO_API_KEY}"},
@@ -199,9 +198,6 @@ def health_check():
 
 @app.route('/', methods=['GET'])
 def index():
-    """
-    服务信息页面
-    """
     return jsonify({
         "service": "LM Studio Bridge",
         "version": "1.0.0",
