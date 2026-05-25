@@ -1,0 +1,94 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]:
+        - img "NOKIA" [ref=e7]
+        - generic [ref=e8]: OPM 系统
+      - menubar [ref=e9]:
+        - menuitem "首页" [ref=e10] [cursor=pointer]:
+          - img [ref=e12]
+          - generic [ref=e14]: 首页
+        - menuitem "文档" [ref=e15]:
+          - generic [ref=e16] [cursor=pointer]:
+            - img [ref=e18]
+            - generic [ref=e20]: 文档
+            - img [ref=e22]
+        - menuitem "智能系统" [ref=e24]:
+          - generic [ref=e25] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e29]: 智能系统
+            - img [ref=e31]
+        - menuitem "高效工具" [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e40]: 高效工具
+            - img [ref=e42]
+      - generic [ref=e44]:
+        - button "登录" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]: 登录
+        - button "注册" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e56]: 注册
+  - generic [ref=e57]:
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Kafka 消息生成器" [level=2] [ref=e61]:
+          - img [ref=e63]
+          - text: Kafka 消息生成器
+        - paragraph [ref=e65]: 根据 ES 数据生成 Kafka 消息
+      - generic [ref=e66]:
+        - button "字段映射管理" [ref=e67] [cursor=pointer]:
+          - generic [ref=e68]:
+            - img [ref=e70]
+            - text: 字段映射管理
+        - button "字段字典管理" [ref=e72] [cursor=pointer]:
+          - generic [ref=e73]:
+            - img [ref=e75]
+            - text: 字段字典管理
+        - button "新增字典项" [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]: 新增字典项
+    - generic [ref=e81]:
+      - generic [ref=e83]:
+        - img [ref=e85]
+        - generic [ref=e87]: ES 源数据
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - textbox "请输入 ES 查询结果的 JSON 数据" [ref=e91]
+          - generic [ref=e92]:
+            - button "历史数据" [ref=e93] [cursor=pointer]:
+              - generic [ref=e94]:
+                - img [ref=e96]
+                - text: 历史数据
+            - button "强制格式化" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]:
+                - img [ref=e103]
+                - text: 强制格式化
+        - generic [ref=e105]:
+          - button "生成 Kafka 消息" [ref=e106] [cursor=pointer]:
+            - generic [ref=e107]:
+              - img [ref=e109]
+              - text: 生成 Kafka 消息
+          - button "加载示例数据" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e115]
+              - text: 加载示例数据
+          - button "清除所有字段" [ref=e117] [cursor=pointer]:
+            - generic [ref=e118]:
+              - img [ref=e120]
+              - text: 清除所有字段
+          - generic "开启后，将自动检测并添加未配置的字段映射" [ref=e122]:
+            - switch
+          - generic [ref=e126]:
+            - switch [checked]
+            - generic [ref=e130] [cursor=pointer]: 【测试】前缀
+    - generic [ref=e134]:
+      - generic [ref=e135]:
+        - img [ref=e137]
+        - text: 自定义字段
+      - button "显示所有字段" [ref=e140] [cursor=pointer]:
+        - generic [ref=e141]:
+          - img [ref=e143]
+          - text: 显示所有字段

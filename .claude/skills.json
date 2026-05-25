@@ -29,6 +29,26 @@
       "name": "agent-browser",
       "description": "Browser automation and web interaction",
       "source": "npm:agent-browser"
+    },
+    {
+      "name": "openspec-playwright",
+      "description": "E2E 测试自动化 - Playwright + OpenSpec，支持浏览器自动化和 UI 测试",
+      "source": "npm:openspec-playwright"
+    },
+    {
+      "name": "claude-puppeteer-tester-skill",
+      "description": "Web E2E 测试自动化 - Puppeteer MCP，支持 Web 应用端到端测试",
+      "source": "npm:claude-puppeteer-tester-skill"
+    },
+    {
+      "name": "cdp-skill",
+      "description": "Chrome DevTools Protocol 浏览器自动化 - 支持 Web 测试和调试",
+      "source": "npm:cdp-skill"
+    },
+    {
+      "name": "@glubean/skill",
+      "description": "API 测试编写指导 - 提供 API 测试用例生成和审查能力",
+      "source": "npm:@glubean/skill"
     }
   ]
 }
