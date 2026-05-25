@@ -1225,7 +1225,7 @@ def kafka_field_order():
 
 @kafka_generator_bp.route('/field-options')
 def kafka_field_options():
-    """返回某个 Kafka 字段对应的字典选项
+    """返回某个 Kafka 字段对应的字典选项（统一查询 schedule.kafka_field_dict）
 
     请求参数:
       - kafka_field: 如 BUSINESS_LAYER / CIRCUIT_LEVEL 等
@@ -1258,7 +1258,7 @@ def kafka_field_options():
 
     try:
         with conn.cursor() as cur:
-            # 优先从通用字典表查询
+            # 统一从 schedule.kafka_field_dict 表查询
             query = """
                 SELECT dict_key, dict_value, remark
                 FROM kafka_field_dict
@@ -1269,47 +1269,6 @@ def kafka_field_options():
             logger.info(f"[INFO] 执行 SQL: {query}, 参数: {kafka_field}")
             cur.execute(query, (kafka_field,))
             rows = cur.fetchall() or []
-            
-            # 如果通用字典表没有数据，回退到旧的维表方式（兼容旧数据）
-            if not rows and kafka_field in FIELD_DICT_TABLES:
-                table = FIELD_DICT_TABLES[kafka_field]
-                logger.info(f"[INFO] 通用字典表无数据，回退到维表：{table}")
-                
-                table_escaped = table.replace("`", "``")
-                query_legacy = f"SELECT * FROM `{table_escaped}` LIMIT 500"
-                logger.info(f"[INFO] 执行 SQL: {query_legacy}")
-                cur.execute(query_legacy)
-                legacy_rows = cur.fetchall() or []
-                
-                if legacy_rows:
-                    # 将旧格式转换为新格式
-                    columns = list(legacy_rows[0].keys()) if legacy_rows else []
-                    # 尝试找到合适的 key 和 value 字段
-                    key_col = None
-                    value_col = None
-                    for col in columns:
-                        col_lower = col.lower()
-                        if 'id' in col_lower or 'code' in col_lower or 'key' in col_lower:
-                            key_col = col
-                        elif 'name' in col_lower or 'value' in col_lower or 'desc' in col_lower:
-                            value_col = col
-                    
-                    # 如果没找到，使用第一列和第二列
-                    if not key_col and len(columns) > 0:
-                        key_col = columns[0]
-                    if not value_col and len(columns) > 1:
-                        value_col = columns[1]
-                    
-                    # 转换数据格式
-                    rows = []
-                    for row in legacy_rows:
-                        rows.append({
-                            'dict_key': str(row.get(key_col, '')),
-                            'dict_value': str(row.get(value_col, '')),
-                            'remark': ''
-                        })
-                    
-                    logger.info(f"[INFO] 从维表转换得到 {len(rows)} 行数据")
             
             logger.info(f"[INFO] 查询成功，返回 {len(rows)} 行数据")
             if rows:
