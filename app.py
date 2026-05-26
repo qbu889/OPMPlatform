@@ -189,7 +189,7 @@ def create_app(config_name='development'):
     app = Flask(
         __name__,
         static_folder='static',
-        template_folder='templates（弃用）'
+        template_folder='templates'
     )
     
     # 启用 CORS（允许跨域请求）

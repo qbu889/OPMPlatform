@@ -126,6 +126,10 @@ def parse_json_format(file_path):
     
 def _process_json_data(data):
     """处理已解析的 JSON 数据 - 支持多种格式"""
+    # 检测是否为简单 JSON 数组格式（直接包含对象数组）
+    if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+        return _process_simple_json_array(data)
+    
     # 验证数据结构
     if not isinstance(data, dict):
         raise ValueError(f"JSON 数据格式错误：期望字典类型，实际为 {type(data).__name__}")
@@ -144,9 +148,37 @@ def _process_json_data(data):
     error_msg += f"可用字段: {', '.join(available_keys)}\n\n"
     error_msg += "💡 支持的格式：\n"
     error_msg += "1. ES SQL 查询结果：{\"columns\": [...], \"rows\": [...]}\n"
-    error_msg += "2. ES _search 查询结果：{\"hits\": {\"hits\": [{\"_source\": {...}}]}}\n\n"
+    error_msg += "2. ES _search 查询结果：{\"hits\": {\"hits\": [{\"_source\": {...}}]}}\n"
+    error_msg += "3. 简单 JSON 数组：[{\"field1\": \"value1\", \"field2\": \"value2\"}, ...]\n\n"
     error_msg += "✅ 建议使用 POST /_sql?format=json 或 POST /_search 接口获取数据"
     raise ValueError(error_msg)
+
+
+def _process_simple_json_array(data):
+    """处理简单的 JSON 数组格式（直接包含对象数组）"""
+    if not data:
+        raise ValueError("JSON 数组为空")
+    
+    # 从第一个对象提取所有字段名
+    first_item = data[0]
+    columns = list(first_item.keys())
+    
+    # 提取数据
+    rows = []
+    for item in data:
+        row = [item.get(col, '') for col in columns]
+        rows.append(row)
+    
+    # 创建 DataFrame
+    df_result = pd.DataFrame(rows, columns=columns)
+    df_result = df_result.fillna("")
+    
+    # 格式化时间字段
+    _format_time_columns(df_result)
+    
+    print(f"✅ [简单 JSON 数组] 共 {len(data)} 条记录，{len(columns)} 个字段")
+    print(f"   字段列表: {', '.join(columns[:10])}{'...' if len(columns) > 10 else ''}")
+    return df_result
 
 
 def _process_es_sql_json(data):
