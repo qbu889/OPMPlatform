@@ -2163,6 +2163,12 @@ def generate_kafka_message():
         # 加载字段映射配置（用于后续自定义字段合并判断）
         field_meta = load_field_meta_from_mysql() or FIELD_META
 
+        # FP字段由后端统一生成，不允许被自定义字段覆盖
+        fp_fields = ["FP0_FP1_FP2_FP3", "CFP0_CFP1_CFP2_CFP3", "ORIG_ALARM_FP", "ORIG_ALARM_CLEAR_FP", 
+                     "EVENT_FP", "EVENT_CLEAR_FP", "SRC_ORG_ID"]
+        for fp_field in fp_fields:
+            custom_fields.pop(fp_field, None)  # 从custom_fields中移除，避免被覆盖
+
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
             if field in kafka_message and value:
@@ -2173,6 +2179,11 @@ def generate_kafka_message():
 
         # 强制设置某些字段的固定值（不受前端custom_fields影响）
         kafka_message["TOPIC_PARTITION"] = 7  # 固定分区值
+        
+        # 强制重新生成所有FP字段，确保它们是动态生成的
+        fp_value = generate_consistent_fp()
+        for fp_field in fp_fields:
+            kafka_message[fp_field] = fp_value
 
         # 按照标准字段顺序重新排列返回数据
         ordered_data = {}
