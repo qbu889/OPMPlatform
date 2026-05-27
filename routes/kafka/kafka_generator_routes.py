@@ -259,13 +259,16 @@ def generate_unique_fp():
 
 def generate_consistent_fp():
     """生成一致的FP值，确保同一请求中所有FP字段相同"""
-    # 使用固定的格式生成FP值，确保一致性
+    # 使用UUID生成唯一值，避免random模块初始化问题
     from datetime import timezone
-    timestamp = str(int((datetime.now(timezone.utc) - timedelta(minutes=15)).timestamp()))
-    random_part1 = str(random.randint(1000000000, 9999999999))
-    random_part2 = str(random.randint(1000000000, 9999999999))
-    random_part3 = str(random.randint(1000000000, 9999999999))
-    random_part4 = str(random.randint(10000, 99999))
+    # 使用微秒级时间戳确保唯一性
+    timestamp = str(int(datetime.now(timezone.utc).timestamp() * 1000000))
+    # 使用UUID生成随机部分，确保每次都不同
+    uuid_value = uuid.uuid4().hex
+    random_part1 = uuid_value[:10]
+    random_part2 = uuid_value[10:20]
+    random_part3 = uuid_value[20:30]
+    random_part4 = uuid_value[30:]
     return f"{timestamp}_{random_part1}_{random_part2}_{random_part3}_{random_part4}"
 
 
@@ -2125,9 +2128,8 @@ def generate_kafka_message():
                     error_msg += f" (第{line_num}行附近: '{context}')"
 
             # 记录错误日志（生产环境可以改为 logger.error）
-            import sys
             logger.error(f"\n❌【JSON_ERROR】JSON 解析失败！")
-            logger.error(f"完整错误：{error_msg}\n", file=sys.stderr)
+            logger.error(f"完整错误：{error_msg}\n")
 
             return jsonify({
                 "success": False,
