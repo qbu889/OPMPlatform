@@ -126,6 +126,10 @@
               <el-icon><Bottom /></el-icon>
               滚动到底部
             </el-button>
+            <el-button size="small" type="primary" @click="fetchLogs">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
           </div>
         </div>
       </template>
@@ -434,7 +438,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Upload, Monitor, Operation, Cpu, Refresh, FolderAdd,
   SwitchButton, Download, Document, Delete, Bottom,
-  View, Folder, Setting
+  View, Folder, Setting, Search
 } from '@element-plus/icons-vue'
 
 // 配置
@@ -593,6 +597,35 @@ const scrollToBottom = () => {
       logsContainer.value.scrollTop = logsContainer.value.scrollHeight
     }
   })
+}
+
+// 查询日志
+const fetchLogs = async () => {
+  try {
+    const response = await fetch('/deploy-config/logs', {
+      method: 'GET',
+      headers: {
+        'Accept': '*/*',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success) {
+        logs.value = data.data || []
+        ElMessage.success('日志查询成功')
+      } else {
+        ElMessage.error(data.message || '查询失败')
+      }
+    } else {
+      ElMessage.error('查询失败')
+    }
+  } catch (error) {
+    console.error('查询日志失败:', error)
+    ElMessage.error('查询日志失败：' + error.message)
+  }
 }
 
 // 切换自动刷新

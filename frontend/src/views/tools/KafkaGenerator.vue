@@ -75,6 +75,10 @@
           <el-icon><Delete /></el-icon>
           清除所有字段
         </el-button>
+        <el-button type="success" @click="showInputValues">
+          <el-icon><View /></el-icon>
+          查看输入值
+        </el-button>
         <!-- 自动检测缺失字段 -->
         <el-switch
           v-model="autoDetectMissing"
@@ -3266,6 +3270,42 @@ const clearAllFields = async () => {
       console.error('清除失败:', error)
     }
   }
+}
+
+// 查看输入值（只展示有值的字段）
+const showInputValues = () => {
+  // 筛选出有值的字段
+  const filledFields = Object.entries(fieldValues).filter(
+    ([key, value]) => value && value.trim() !== ''
+  )
+  
+  if (filledFields.length === 0) {
+    ElMessage.info('没有已填写的字段')
+    return
+  }
+  
+  // 构建显示内容
+  let content = `<div style="max-height: 400px; overflow-y: auto;">`
+  content += `<h4 style="margin-bottom: 12px;">已填写的字段（共 ${filledFields.length} 个）</h4>`
+  content += `<table style="width: 100%; border-collapse: collapse;">`
+  content += `<thead><tr><th style="border-bottom: 1px solid #e4e7ed; padding: 8px; text-align: left;">字段名</th><th style="border-bottom: 1px solid #e4e7ed; padding: 8px; text-align: left;">值</th></tr></thead>`
+  content += `<tbody>`
+  
+  filledFields.forEach(([name, value]) => {
+    content += `<tr>`
+    content += `<td style="border-bottom: 1px solid #f2f6fc; padding: 8px; font-family: monospace;">${name}</td>`
+    content += `<td style="border-bottom: 1px solid #f2f6fc; padding: 8px; word-break: break-all; max-width: 400px;">${value}</td>`
+    content += `</tr>`
+  })
+  
+  content += `</tbody></table></div>`
+  
+  // 显示弹窗
+  ElMessageBox.alert(content, '输入值预览', {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: '关闭',
+    width: '600px',
+  })
 }
 
 // 从数据库加载缓存（自定义字段默认全部为空，不恢复缓存值）

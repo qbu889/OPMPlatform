@@ -9,7 +9,7 @@ import json
 
 sys.path.insert(0, '/Users/linziwang/PycharmProjects/wordToWord')
 
-from routes.kafka.kafka_generator_routes import generate_es_to_kafka_mapping
+
 
 def test_with_input_json():
     """使用输入json.json文件进行测试"""
