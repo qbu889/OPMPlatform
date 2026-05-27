@@ -62,7 +62,7 @@ wordToWord/
 │   ├── knowledge_base.py      # 知识库模型
 │   └── visit_log.py           # 访问日志模型
 │
-├── test/                       # 测试用例
+├── tests/                       # 测试用例
 ├── logs/                       # 日志目录
 └── docs/                       # 文档目录
 ```
