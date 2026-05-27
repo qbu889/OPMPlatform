@@ -430,6 +430,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         'STANDARD_FLAG',
         'REDEFINE_SEVERITY',
         'OBJECT_CLASS',
+        'TIME_STAMP',  # 必须是数字时间戳
     }
     
     # 按照标准字段顺序处理每个字段
@@ -559,12 +560,15 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
         # 特殊字段强制使用默认规则，忽略数据库配置
         if kafka_field in SPECIAL_FIELDS:
             field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+            logger.debug(f"[SPECIAL_FIELD] {kafka_field} 使用默认映射规则")
         elif es_field:
             # 如果数据库中配置了 es_field，优先使用
             field_mapping[kafka_field] = f"_source.{es_field}"
+            logger.debug(f"[DB_CONFIG] {kafka_field} 使用数据库配置: {es_field}")
         else:
             # 否则使用内置的默认映射规则
             field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+            logger.debug(f"[DEFAULT_RULE] {kafka_field} 使用内置默认规则")
     
     # 2. 再处理数据库中配置但不在 STANDARD_FIELD_ORDER 中的额外字段
     for kafka_field, meta in field_meta.items():
@@ -631,7 +635,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",
         "EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time),
-        "TIME_STAMP": lambda: str(int(datetime.strptime(get_nested_value(es_data, "EVENT_TIME"), "%Y-%m-%d %H:%M:%S").timestamp())) if get_nested_value(es_data, "EVENT_TIME") else str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
+        "TIME_STAMP": lambda: int(datetime.strptime(generate_creation_event_time(es_data, user_delay_time), "%Y-%m-%d %H:%M:%S").timestamp()),
         "FP0_FP1_FP2_FP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "MACHINE_ROOM_INFO": "_source.NE_TAG.MACHINE_ROOM_INFO",
@@ -856,13 +860,14 @@ def generate_creation_event_time(es_data, user_delay_time=None):
         - 从 ES 数据中提取 DELAY_TIME 字段（单位：分钟）
         - 将 DELAY_TIME 转换为小时数（DELAY_TIME / 60）
         - 使用当前时间减去小时数得到 CREATION_EVENT_TIME
-        - 如果没有 DELAY_TIME，默认使用 15 小时
+        - 如果没有 DELAY_TIME，默认使用 15 分钟
 
     示例:
+        DELAY_TIME = 15 -> 15/60 = 0.25 小时 -> 当前时间 - 15 分钟
         DELAY_TIME = 720 -> 720/60 = 12 小时 -> 当前时间 - 12 小时
     """
-    # 默认延迟 15 小时
-    delay_hours = 15
+    # 默认延迟 15 分钟（转换为小时）
+    delay_hours = 15 / 60  # 0.25 小时
 
     # 优先使用用户输入的值
     if user_delay_time is not None:
@@ -870,7 +875,7 @@ def generate_creation_event_time(es_data, user_delay_time=None):
             delay_hours = int(user_delay_time) / 60
             logger.info(f"使用用户输入的 DELAY_TIME: {user_delay_time} 分钟，转换为 {delay_hours} 小时")
         except (ValueError, TypeError) as e:
-            logger.warning(f"用户输入的 DELAY_TIME 无效，使用默认值 15 小时：{e}")
+            logger.warning(f"用户输入的 DELAY_TIME 无效，使用默认值 15 分钟：{e}")
     else:
         # 尝试从 ES 数据中提取 DELAY_TIME
         if isinstance(es_data, dict):
@@ -896,9 +901,8 @@ def generate_creation_event_time(es_data, user_delay_time=None):
                     logger.warning(f"DELAY_TIME 转换失败，使用默认值 15 小时：{e}")
 
     # 计算时间：当前时间 - DELAY_TIME 小时
-    # 使用 UTC 时间以确保测试一致性
-    from datetime import timezone
-    creation_time = (datetime.now(timezone.utc) - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
+    # 使用本地时间（东八区）
+    creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"使用 DELAY_TIME: {delay_hours} 小时计算 CREATION_EVENT_TIME: {creation_time}")
     return creation_time
 
@@ -2184,6 +2188,18 @@ def generate_kafka_message():
         fp_value = generate_consistent_fp()
         for fp_field in fp_fields:
             kafka_message[fp_field] = fp_value
+        
+        # 强制重新生成时间字段，确保它们是根据delay_time计算的
+        from datetime import datetime, timedelta
+        # 使用 delay_time 参数，如果没有则使用默认值15分钟
+        current_delay_time = delay_time if delay_time is not None else 15
+        delay_hours = int(current_delay_time) / 60
+        creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
+        kafka_message["EVENT_TIME"] = creation_time
+        kafka_message["CREATION_EVENT_TIME"] = creation_time
+        kafka_message["EVENT_ARRIVAL_TIME"] = creation_time
+        kafka_message["TIME_STAMP"] = int(datetime.strptime(creation_time, "%Y-%m-%d %H:%M:%S").timestamp())
+        logger.info(f"[FORCE_TIME] 强制重新生成时间字段: delay_time={current_delay_time}分钟, EVENT_TIME={creation_time}")
 
         # 按照标准字段顺序重新排列返回数据
         ordered_data = {}
