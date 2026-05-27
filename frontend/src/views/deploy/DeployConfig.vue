@@ -614,7 +614,7 @@ const fetchLogs = async () => {
     if (response.ok) {
       const data = await response.json()
       if (data.success) {
-        logs.value = data.data || []
+        logs.value = data.data.logs || []
         ElMessage.success('日志查询成功')
       } else {
         ElMessage.error(data.message || '查询失败')
