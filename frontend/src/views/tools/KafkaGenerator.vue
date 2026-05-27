@@ -2836,7 +2836,7 @@ const getFieldValueFromJson = (jsonData, fieldName) => {
   }
 }
 
-// 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式）
+// 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式，并美化输出）
 const forceFormatJson = () => {
   if (!esSourceData.value.trim()) {
     ElMessage.warning('请先输入 ES 源数据')
@@ -2845,30 +2845,123 @@ const forceFormatJson = () => {
 
   try {
     let text = esSourceData.value
-    
-    // 匹配 Python 三引号字符串："""内容"""
-    // 替换为转义后的 JSON 字符串："内容"
-    const tripleQuoteRegex = /"""([\s\S]*?)"""/g
-    
     let hasChanges = false
-    const formattedText = text.replace(tripleQuoteRegex, (match, content) => {
+    let changeDetails = []
+    const originalText = text
+    
+    // ========== 阶段1：修复转义问题 ==========
+    
+    // 策略：先保护合法的转义，然后修复非法的
+    
+    // 1. 临时替换合法的转义序列
+    const placeholders = {}
+    const validEscapes = ['\\\\', '\\"', '\\/', '\\b', '\\f', '\\n', '\\r', '\\t']
+    
+    for (let i = 0; i < validEscapes.length; i++) {
+      const placeholder = `__VALID_ESCAPE_${i}__`
+      placeholders[placeholder] = validEscapes[i]
+      text = text.split(validEscapes[i]).join(placeholder)
+    }
+    
+    // 2. 保护 Unicode 转义 \uXXXX
+    text = text.replace(/\\u[0-9a-fA-F]{4}/g, (match) => {
+      return `__UNICODE_${match.slice(1)}__`
+    })
+    
+    // 3. 匹配 Python 三引号字符串："""内容"""
+    const tripleQuoteRegex = /"""([\s\S]*?)"""/g
+    text = text.replace(tripleQuoteRegex, (match, content) => {
       hasChanges = true
+      changeDetails.push('处理了 Python 三引号字符串')
       // 转义内容中的双引号和反斜杠
       const escaped = content
-        .replace(/\\/g, '\\\\')  // 先转义反斜杠
-        .replace(/"/g, '\\"')     // 再转义双引号
-        .replace(/\n/g, '\\n')    // 转义换行符
-        .replace(/\r/g, '\\r')    // 转义回车符
-        .replace(/\t/g, '\\t')    // 转义制表符
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
       return `"${escaped}"`
     })
     
-    if (hasChanges) {
-      esSourceData.value = formattedText
-      ElMessage.success('格式化成功！已将 Python 三引号字符串转换为标准 JSON 格式')
-    } else {
-      ElMessage.info('未检测到需要格式化的内容')
+    // 4. 【关键】处理单个反斜杠 + 非法字符（此时剩下的单个反斜杠都是非法的）
+    const invalidEscapeMatches = text.match(/\\([^nrtbf\\"/u])/g) || []
+    if (invalidEscapeMatches.length > 0) {
+      hasChanges = true
+      changeDetails.push(`修复了 ${invalidEscapeMatches.length} 处无效转义字符`)
+      text = text.replace(/\\([^nrtbf\\"/u])/g, '\\\\$1')
     }
+    
+    // 5. 恢复合法的转义序列
+    for (const placeholder in placeholders) {
+      text = text.split(placeholder).join(placeholders[placeholder])
+    }
+    
+    // 6. 恢复 Unicode 转义（注意：占位符格式是 __UNICODE_uXXXX__，包含字母u）
+    text = text.replace(/__UNICODE_u([0-9a-fA-F]{4})__/g, '\\u$1')
+    
+    // 7. 处理控制字符
+    const controlChars = text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g) || []
+    if (controlChars.length > 0) {
+      hasChanges = true
+      changeDetails.push(`移除了 ${controlChars.length} 个控制字符`)
+      text = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    }
+    
+    // ========== 阶段2：处理特定字段中的双重反斜杠 ==========
+    
+    let parsedData
+    try {
+      parsedData = JSON.parse(text)
+    } catch (parseError) {
+      throw new Error(`JSON 解析失败: ${parseError.message}`)
+    }
+    
+    // 处理 ALARM_TEXT 字段中的反斜杠（JSON文件中显示的\\在内存中是单个\）
+    if (parsedData.ALARM_TEXT && typeof parsedData.ALARM_TEXT === 'string') {
+      const originalAlarmText = parsedData.ALARM_TEXT
+      // 移除单个反斜杠（JSON中显示为\\）
+      const backslashCount = (parsedData.ALARM_TEXT.match(/\\/g) || []).length
+      parsedData.ALARM_TEXT = parsedData.ALARM_TEXT.replace(/\\/g, '')
+      if (parsedData.ALARM_TEXT !== originalAlarmText) {
+        hasChanges = true
+        changeDetails.push(`移除了 ALARM_TEXT 字段中的 ${backslashCount} 个反斜杠`)
+      }
+    }
+    
+    // 处理 ORG_TEXT 字段中的反斜杠
+    if (parsedData.ORG_TEXT && typeof parsedData.ORG_TEXT === 'string') {
+      const originalOrgText = parsedData.ORG_TEXT
+      // 移除单个反斜杠（JSON中显示为\\）
+      const backslashCount = (parsedData.ORG_TEXT.match(/\\/g) || []).length
+      parsedData.ORG_TEXT = parsedData.ORG_TEXT.replace(/\\/g, '')
+      if (parsedData.ORG_TEXT !== originalOrgText) {
+        hasChanges = true
+        changeDetails.push(`移除了 ORG_TEXT 字段中的 ${backslashCount} 个反斜杠`)
+      }
+    }
+    
+    // ========== 阶段3：JSON 美化格式化 ==========
+    
+    changeDetails.push('JSON 格式验证通过')
+    
+    // 使用 2 空格缩进重新格式化
+    const beautifiedText = JSON.stringify(parsedData, null, 2)
+    changeDetails.push('JSON 美化格式化完成')
+    
+    // 检查是否有变化（包括格式变化）
+    if (beautifiedText !== originalText) {
+      hasChanges = true
+    }
+    
+    // 更新内容
+    esSourceData.value = beautifiedText
+    
+    // 显示结果消息
+    const message = changeDetails.length > 0 
+      ? `格式化成功！\n${changeDetails.join('\n')}`
+      : '格式化成功！'
+    ElMessage.success(message)
+    
   } catch (error) {
     console.error('格式化失败:', error)
     ElMessage.error('格式化失败：' + error.message)
