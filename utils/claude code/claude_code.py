@@ -125,10 +125,36 @@ def chat_completions():
         
         messages = payload.get('messages', [])
         lmstudio_messages = []
+        system_content = ""
         
         for msg in messages:
             role = msg.get('role', 'user')
             content = msg.get('content', '')
+            
+            if role == 'system':
+                if isinstance(content, list):
+                    for part in content:
+                        if part.get('type') == 'text':
+                            system_content += part.get('text', '') + "\n"
+                else:
+                    system_content += content + "\n"
+                continue
+            
+            if role not in ['user', 'assistant']:
+                if isinstance(content, list):
+                    tool_result_text = ""
+                    for part in content:
+                        if part.get('type') == 'tool_result':
+                            tool_result_text += f"工具调用结果[{part.get('tool_name', '')}]: {part.get('content', '')}\n"
+                        elif part.get('type') == 'text':
+                            tool_result_text += part.get('text', '') + "\n"
+                    
+                    if tool_result_text and len(lmstudio_messages) > 0:
+                        lmstudio_messages.append({
+                            "role": "assistant",
+                            "content": tool_result_text
+                        })
+                continue
             
             if isinstance(content, list):
                 text_content = ""
@@ -143,6 +169,10 @@ def chat_completions():
                             'arguments': part.get('input', {})
                         })
                 
+                if system_content and role == 'user' and len(lmstudio_messages) == 0:
+                    text_content = f"以下是系统提示，请按照要求执行：\n{system_content}\n\n{text_content}"
+                    system_content = ""
+                
                 if text_content:
                     lmstudio_messages.append({"role": role, "content": text_content})
                 
@@ -152,6 +182,10 @@ def chat_completions():
                         "content": json.dumps(tc)
                     })
             else:
+                if system_content and role == 'user' and len(lmstudio_messages) == 0:
+                    content = f"以下是系统提示，请按照要求执行：\n{system_content}\n\n{content}"
+                    system_content = ""
+                
                 lmstudio_messages.append({"role": role, "content": content})
         
         payload['messages'] = lmstudio_messages

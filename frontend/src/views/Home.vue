@@ -80,6 +80,15 @@
             <p>智能对比 JSON 数据差异，忽略字段顺序，高亮显示不同</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/content-to-excel')">
+            <div class="feature-icon" style="background: #e8f5e9">
+              <el-icon size="40" color="#67c23a"><Document /></el-icon>
+            </div>
+            <h3>内容转 Excel 工具</h3>
+            <p>根据 Markdown 内容生成 Excel 表格</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 

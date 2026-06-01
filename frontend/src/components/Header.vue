@@ -169,6 +169,14 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/content-to-excel" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/content-to-excel">
+                <el-icon><Document /></el-icon>
+                <span>内容转 Excel</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 

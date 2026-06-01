@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class OllamaClient:
     """Ollama AI 客户端"""
     
-    def __init__(self, base_url: str = None, model: str = None, use_omlx: bool = False):
+    def __init__(self, base_url: str = None, model: str = None, use_omlx: bool = False, use_lmstudio: bool = False):
         """
         初始化 Ollama 客户端
         
@@ -26,6 +26,7 @@ class OllamaClient:
             base_url: Ollama API 基础 URL
             model: 默认使用的模型名称（如果为 None 则从.env 读取）
             use_omlx: 是否使用 OMLX 模型（Qwen3.5-4B-OptiQ-4bit）
+            use_lmstudio: 是否使用 LM Studio Bridge（OpenAI 兼容接口）
         """
         # 显式加载 .env 文件
         env_path = Path('.env')
@@ -33,8 +34,14 @@ class OllamaClient:
             load_dotenv()
             logger.debug(f"[OLLAMA_ENV] 已加载 .env 文件：{env_path.absolute()}")
         
-        # 根据 use_omlx 参数选择配置源
-        if use_omlx:
+        # 根据参数选择配置源
+        if use_lmstudio:
+            # 使用 LM Studio Bridge 配置
+            self.base_url = (base_url or os.getenv("LMSTUDIO_BASE_URL", "http://localhost:8081/v1")).rstrip('/')
+            self.model = (model or os.getenv("LMSTUDIO_MODEL", "qwen3.6-35b-a3b-mlx"))
+            self.api_key = os.getenv("LMSTUDIO_API_KEY", "sk-lm-studio")
+            logger.info(f"[OLLAMA_INIT] 使用 LM Studio 配置 - URL: {self.base_url}, Model: {self.model}")
+        elif use_omlx:
             # 使用 OMLX 模型配置
             self.base_url = (base_url or os.getenv("OMLX_BASE_URL", "https://omlx.cn")).rstrip('/')
             self.model = (model or os.getenv("OMLX_MODEL", "gpt-oss-20b-MXFP4-Q8"))
@@ -51,11 +58,17 @@ class OllamaClient:
         # 移除末尾的斜杠
         self.base_url = self.base_url.rstrip('/')
         
-        # 先保存 use_omlx 参数
+        # 保存模式参数
         self.use_omlx = use_omlx
+        self.use_lmstudio = use_lmstudio
         
-        # 根据 use_omlx 选择 API 端点
-        if self.use_omlx:
+        # 根据模式选择 API 端点
+        if use_lmstudio:
+            # LM Studio 使用 OpenAI 兼容接口
+            self.api_endpoint = f"{self.base_url}/chat/completions"
+            self.chat_endpoint = f"{self.base_url}/chat/completions"
+            logger.info(f"[OLLAMA_INIT] LM Studio 模式 - 使用 OpenAI 兼容接口：{self.api_endpoint}")
+        elif self.use_omlx:
             # OMLX 使用 OpenAI 兼容接口
             self.api_endpoint = f"{self.base_url}/chat/completions"
             self.chat_endpoint = f"{self.base_url}/chat/completions"
@@ -157,9 +170,9 @@ class OllamaClient:
         
         while attempt <= retry:
             try:
-                # 根据 use_omlx 选择不同的 API 格式
-                if self.use_omlx:
-                    # OMLX 使用 OpenAI 兼容接口
+                # 根据模式选择不同的 API 格式
+                if self.use_lmstudio or self.use_omlx:
+                    # LM Studio 或 OMLX 使用 OpenAI 兼容接口
                     payload = {
                         "model": model or self.model,
                         "messages": [
@@ -189,8 +202,13 @@ class OllamaClient:
                 logger.info(f"[OLLAMA_REQUEST] Prompt length: {len(prompt)} chars")
                 logger.info(f"[OLLAMA_REQUEST] Attempt: {attempt + 1}/{retry + 1}")
                 
-                # 如果使用的是 OMLX，特别标注
-                if self.use_omlx:
+                # 根据模式输出不同的日志
+                if self.use_lmstudio:
+                    logger.info(f"[LMSTUDIO_REQUEST] 🚀 正在请求 LM Studio Bridge...")
+                    logger.info(f"[LMSTUDIO_REQUEST]    - Base URL: {self.base_url}")
+                    logger.info(f"[LMSTUDIO_REQUEST]    - Model: {self.model}")
+                    logger.info(f"[LMSTUDIO_REQUEST]    - Endpoint: /v1/chat/completions (OpenAI compatible)")
+                elif self.use_omlx:
                     logger.info(f"[OMLX_REQUEST] 🌐 正在请求 OMLX 在线模型...")
                     logger.info(f"[OMLX_REQUEST]    - Base URL: {self.base_url}")
                     logger.info(f"[OMLX_REQUEST]    - Model: {self.model}")
@@ -209,9 +227,11 @@ class OllamaClient:
                 curl_cmd += f'\n  -d \'{json_payload}\''
                 logger.info(f"[OLLAMA_CURL]\n{curl_cmd}")
                 
-                # 实际请求时也要添加 API Key（仅 OMLX）
+                # 实际请求时添加 API Key
                 headers = {}
-                if self.use_omlx:
+                if self.use_lmstudio:
+                    headers['Authorization'] = f'Bearer {self.api_key}'
+                elif self.use_omlx:
                     headers['Authorization'] = 'Bearer 666666'
                 
                 response = self.session.post(
@@ -235,7 +255,15 @@ class OllamaClient:
                 else:
                     result = response.json()
                     # 根据 API 类型解析不同的响应格式
-                    if self.use_omlx:
+                    if self.use_lmstudio:
+                        # LM Studio Bridge 使用 Anthropic 格式
+                        content = ""
+                        content_list = result.get("content", [])
+                        for part in content_list:
+                            if part.get("type") == "text":
+                                content += part.get("text", "")
+                        return content
+                    elif self.use_omlx:
                         # OpenAI 兼容格式
                         return result.get("choices", [{}])[0].get("message", {}).get("content", "")
                     else:
@@ -337,9 +365,17 @@ class OllamaClient:
                 logger.info(f"[OLLAMA_CHAT] Messages: {len(messages)}条")
                 logger.info(f"[OLLAMA_CHAT] Attempt: {attempt + 1}/{retry + 1}")
                 
+                # 添加认证头
+                headers = {}
+                if self.use_lmstudio:
+                    headers['Authorization'] = f'Bearer {self.api_key}'
+                elif self.use_omlx:
+                    headers['Authorization'] = 'Bearer 666666'
+                
                 response = self.session.post(
                     self.chat_endpoint,
                     json=payload,
+                    headers=headers,
                     stream=stream,
                     timeout=300  # 增加到 5 分钟
                 )
@@ -351,11 +387,37 @@ class OllamaClient:
                 
                 response.raise_for_status()
                 
+                # 记录响应内容用于调试
+                response_text = response.text
+                logger.info(f"[OLLAMA_CHAT_RESPONSE] 响应长度: {len(response_text)} 字符")
+                logger.info(f"[OLLAMA_CHAT_RESPONSE] 响应内容（前500字符）: {response_text[:500]}")
+                
                 if stream:
                     return self._parse_stream_response(response)
                 else:
                     result = response.json()
-                    return result.get("message", {}).get("content", "")
+                    logger.info(f"[OLLAMA_CHAT_PARSED] 解析后的 JSON 结构: {json.dumps({k: type(v).__name__ for k, v in result.items()}, ensure_ascii=False)}")
+                    
+                    # 根据模式解析不同的响应格式
+                    if self.use_lmstudio:
+                        # LM Studio Bridge 使用 Anthropic 格式
+                        content = ""
+                        content_list = result.get("content", [])
+                        for part in content_list:
+                            if part.get("type") == "text":
+                                content += part.get("text", "")
+                        logger.info(f"[OLLAMA_CHAT_CONTENT] 提取的内容长度: {len(content) if content else 0}")
+                        return content
+                    elif self.use_omlx:
+                        # OMLX 使用 OpenAI 兼容格式
+                        content = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        logger.info(f"[OLLAMA_CHAT_CONTENT] 提取的内容长度: {len(content) if content else 0}")
+                        return content
+                    else:
+                        # 本地 Ollama 使用原生格式
+                        content = result.get("message", {}).get("content", "")
+                        logger.info(f"[OLLAMA_CHAT_CONTENT] 提取的内容长度: {len(content) if content else 0}")
+                        return content
                     
             except requests.exceptions.ConnectionError as e:
                 last_error = e
@@ -465,6 +527,7 @@ class OllamaClient:
 # 全局客户端实例（延迟初始化）
 _ollama_client = None
 _omlx_client = None  # OMLX 专用客户端
+_lmstudio_client = None  # LM Studio 专用客户端
 
 
 def init_ollama_service(use_omlx: bool = None) -> OllamaClient:
@@ -610,52 +673,73 @@ def get_ollama_client_for_fpa() -> Optional[OllamaClient]:
         return None
 
 
-def get_ollama_client(base_url: str = None, model: str = None, use_omlx: bool = None) -> OllamaClient:
+def get_ollama_client(base_url: str = None, model: str = None, use_omlx: bool = None, use_lmstudio: bool = None) -> OllamaClient:
     """
-    获取 Ollama 客户端单例（支持 OMLX 和本地 Ollama）
+    获取 Ollama 客户端单例（支持 LM Studio、OMLX 和本地 Ollama）
     
     Args:
         base_url: Ollama API 地址
         model: 默认模型
         use_omlx: 是否使用 OMLX（如果为 None，则从环境变量读取）
+        use_lmstudio: 是否使用 LM Studio（如果为 None，则从环境变量读取）
         
     Returns:
         OllamaClient 实例
     """
-    global _ollama_client, _omlx_client
+    global _ollama_client, _omlx_client, _lmstudio_client
     
     # 确定使用哪个服务
-    if use_omlx is None:
+    if use_lmstudio is None:
         import os
-        use_omlx = os.getenv("USE_OMLX_FOR_CHATBOT", "true").lower() == "true"
+        use_lmstudio = os.getenv("USE_LMSTUDIO", "false").lower() == "true"
     
-    try:
-        if use_omlx:
-            # 使用 OMLX 服务
-            if _omlx_client is None:
-                import os
-                omlx_url = base_url or os.getenv("OMLX_BASE_URL", "http://localhost:11434/v1")
-                omlx_model = model or os.getenv("OMLX_MODEL", "Qwen3.5-9B-MLX-4bit")
+    if use_lmstudio:
+        # 使用 LM Studio Bridge
+        try:
+            if _lmstudio_client is None:
+                lmstudio_url = base_url or os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1")
+                lmstudio_model = model or os.getenv("LMSTUDIO_MODEL", "qwen3.6-35b-a3b-mlx")
                 
-                _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
-                logger.info(f"[OLLAMA_INIT] ✅ 使用 OMLX 服务 - URL: {omlx_url} | Model: {omlx_model}")
-                logger.info(f"[OLLAMA_INIT]    OMLX 是本地部署的模型服务，不是远程 API")
+                _lmstudio_client = OllamaClient(base_url=lmstudio_url, model=lmstudio_model, use_lmstudio=True)
+                logger.info(f"[OLLAMA_INIT] ✅ 使用 LM Studio Bridge - URL: {lmstudio_url} | Model: {lmstudio_model}")
             
-            return _omlx_client
-        else:
-            # 使用本地 Ollama 服务
-            if _ollama_client is None:
-                import os
-                ollama_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-                ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3:4b")
+            return _lmstudio_client
+        except Exception as e:
+            logger.error(f"[OLLAMA_INIT] LM Studio 初始化失败：{e}")
+            raise
+    else:
+        # 原来的 OMLX/Ollama 逻辑
+        if use_omlx is None:
+            import os
+            use_omlx = os.getenv("USE_OMLX_FOR_CHATBOT", "true").lower() == "true"
+        
+        try:
+            if use_omlx:
+                # 使用 OMLX 服务
+                if _omlx_client is None:
+                    import os
+                    omlx_url = base_url or os.getenv("OMLX_BASE_URL", "http://localhost:11434/v1")
+                    omlx_model = model or os.getenv("OMLX_MODEL", "Qwen3.5-9B-MLX-4bit")
+                    
+                    _omlx_client = OllamaClient(base_url=omlx_url, model=omlx_model, use_omlx=True)
+                    logger.info(f"[OLLAMA_INIT] ✅ 使用 OMLX 服务 - URL: {omlx_url} | Model: {omlx_model}")
+                    logger.info(f"[OLLAMA_INIT]    OMLX 是本地部署的模型服务，不是远程 API")
                 
-                _ollama_client = OllamaClient(base_url=ollama_url, model=ollama_model, use_omlx=False)
-                logger.info(f"[OLLAMA_INIT] 💻 使用本地 Ollama 服务 - URL: {ollama_url} | Model: {ollama_model}")
-            
-            return _ollama_client
-    except Exception as e:
-        logger.error(f"[OLLAMA_INIT] 初始化失败：{e}")
-        raise
+                return _omlx_client
+            else:
+                # 使用本地 Ollama 服务
+                if _ollama_client is None:
+                    import os
+                    ollama_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+                    ollama_model = model or os.getenv("OLLAMA_MODEL", "qwen3:4b")
+                    
+                    _ollama_client = OllamaClient(base_url=ollama_url, model=ollama_model, use_omlx=False)
+                    logger.info(f"[OLLAMA_INIT] 💻 使用本地 Ollama 服务 - URL: {ollama_url} | Model: {ollama_model}")
+                
+                return _ollama_client
+        except Exception as e:
+            logger.error(f"[OLLAMA_INIT] 初始化失败：{e}")
+            raise
 
 
 def reset_ollama_client():

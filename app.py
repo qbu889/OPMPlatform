@@ -83,6 +83,9 @@ from routes.deploy.deploy_config_routes import deploy_config_bp
 # JSON对比工具
 from routes.diff.diff_routes import diff_bp
 
+# 内容转 Excel 工具
+from routes.document_convert.content_to_excel_routes import content_to_excel_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -281,7 +284,10 @@ def create_app(config_name='development'):
         
         # JSON对比工具
         diff_bp,
-        
+
+        # 内容转 Excel 工具
+        content_to_excel_bp,
+
         # Swagger API 文档
         swagger_bp,
     ]

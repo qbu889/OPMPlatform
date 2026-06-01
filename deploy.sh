@@ -220,7 +220,16 @@ server {
     location /spreadsheet { proxy_pass http://127.0.0.1:5004; }
     
     location /swagger { proxy_pass http://127.0.0.1:5004; }
-    
+
+    # Content To Excel API
+    location /api/content-to-excel/ {
+        proxy_pass http://127.0.0.1:5004;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
     }

@@ -199,6 +199,13 @@ const routes = [
     component: () => import('../views/tools/JsonDiff.vue'),
     meta: { title: 'JSON 对比工具', hidden: true }
   },
+  // 内容转 Excel 工具
+  {
+    path: '/content-to-excel',
+    name: 'ContentToExcel',
+    component: () => import('../views/tools/ContentToExcel.vue'),
+    meta: { title: '内容转 Excel', hidden: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',
