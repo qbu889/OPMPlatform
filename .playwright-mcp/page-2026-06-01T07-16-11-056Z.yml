@@ -1,0 +1,217 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]:
+        - img "NOKIA" [ref=e7]
+        - generic [ref=e8]: OPM 系统
+      - menubar [ref=e9]:
+        - menuitem "首页" [ref=e10] [cursor=pointer]:
+          - img [ref=e12]
+          - generic [ref=e14]: 首页
+        - menuitem "文档" [ref=e15]:
+          - generic [ref=e16] [cursor=pointer]:
+            - img [ref=e18]
+            - generic [ref=e20]: 文档
+            - img [ref=e22]
+        - menuitem "智能系统" [ref=e24]:
+          - generic [ref=e25] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e29]: 智能系统
+            - img [ref=e31]
+        - menuitem "高效工具" [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e40]: 高效工具
+            - img [ref=e42]
+      - generic [ref=e44]:
+        - button "登录" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]: 登录
+        - button "注册" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e56]: 注册
+  - generic [ref=e57]:
+    - generic [ref=e58]:
+      - heading "内容转 Excel 工具" [level=2] [ref=e59]:
+        - img [ref=e61]
+        - text: 内容转 Excel 工具
+      - paragraph [ref=e63]: 上传升级申请文档，自动生成标准化 Excel 装载记录表
+    - generic [ref=e64]:
+      - generic [ref=e68]: 文件上传与生成
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - button "拖拽文件到此处，或 点击选择" [ref=e71] [cursor=pointer]:
+            - generic [ref=e72]:
+              - img [ref=e74]
+              - generic [ref=e76]:
+                - text: 拖拽文件到此处，或
+                - emphasis [ref=e77]: 点击选择
+          - generic [ref=e78]: 支持 .md / .txt 格式，单个文件不超过 5MB
+          - list
+        - generic [ref=e79]:
+          - button "预览解析结果" [disabled] [ref=e80]:
+            - generic [ref=e81]:
+              - img [ref=e83]
+              - text: 预览解析结果
+          - button "生成并下载 Excel" [disabled] [ref=e85]:
+            - generic [ref=e86]:
+              - img [ref=e88]
+              - text: 生成并下载 Excel
+          - button "重置" [ref=e90] [cursor=pointer]:
+            - generic [ref=e91]:
+              - img [ref=e93]
+              - text: 重置
+        - separator [ref=e95]:
+          - generic [ref=e96]:
+            - img [ref=e98]
+            - text: 使用说明
+        - table [ref=e102]:
+          - rowgroup [ref=e103]:
+            - row "输入格式 升级申请文档（.md / .txt），每条记录以\"监控综合应用平台YYYY年M月D日功能升级申请\"开头" [ref=e104]:
+              - cell "输入格式" [ref=e105]
+              - cell "升级申请文档（.md / .txt），每条记录以\"监控综合应用平台YYYY年M月D日功能升级申请\"开头" [ref=e106]
+            - row "输出内容 包含 4 个 Sheet 的 .xlsx 文件：主表、版本号计算、初始版本号、软件名称和目标IP" [ref=e107]:
+              - cell "输出内容" [ref=e108]
+              - cell "包含 4 个 Sheet 的 .xlsx 文件：主表、版本号计算、初始版本号、软件名称和目标IP" [ref=e109]
+            - row "软件匹配 3月升级仅匹配「智能调服务」，4月及之后匹配「省内工单服务」+「智能调服务」" [ref=e110]:
+              - cell "软件匹配" [ref=e111]
+              - cell "3月升级仅匹配「智能调服务」，4月及之后匹配「省内工单服务」+「智能调服务」" [ref=e112]
+            - row "日期修正 原始文档中\"3月2日\"自动修正为\"3月11日\"（历史约定）" [ref=e113]:
+              - cell "日期修正" [ref=e114]
+              - cell "原始文档中\"3月2日\"自动修正为\"3月11日\"（历史约定）" [ref=e115]
+    - generic [ref=e116]:
+      - generic [ref=e118]:
+        - img [ref=e120]
+        - generic [ref=e122]: 关键字库管理
+      - generic [ref=e124]:
+        - tablist [ref=e128]:
+          - tab "软件名称和目标IP" [ref=e129]
+          - tab "初始版本号" [active] [selected] [ref=e130] [cursor=pointer]
+        - tabpanel "初始版本号" [ref=e378]:
+          - generic [ref=e379]:
+            - button "新增版本" [ref=e380] [cursor=pointer]:
+              - generic [ref=e381]:
+                - img [ref=e383]
+                - text: 新增版本
+            - button "刷新" [ref=e385] [cursor=pointer]:
+              - generic [ref=e386]:
+                - img [ref=e388]
+                - text: 刷新
+          - generic [ref=e391]:
+            - table [ref=e393]:
+              - rowgroup [ref=e398]:
+                - row "软件名称 初始化基准版本 操作" [ref=e399]:
+                  - columnheader "软件名称" [ref=e400]:
+                    - generic [ref=e401]: 软件名称
+                  - columnheader "初始化基准版本" [ref=e402]:
+                    - generic [ref=e403]: 初始化基准版本
+                  - columnheader "操作" [ref=e404]:
+                    - generic [ref=e405]: 操作
+            - table [ref=e410]:
+              - rowgroup [ref=e415]:
+                - row "省内工单服务 1.4.6 编辑" [ref=e416]:
+                  - cell "省内工单服务" [ref=e417]:
+                    - generic [ref=e418]: 省内工单服务
+                  - cell "1.4.6" [ref=e419]:
+                    - generic [ref=e420]: 1.4.6
+                  - cell "编辑" [ref=e421]:
+                    - button "编辑" [ref=e423] [cursor=pointer]:
+                      - generic [ref=e424]: 编辑
+                - row "告警数据采集 1.1.5 编辑" [ref=e425]:
+                  - cell "告警数据采集" [ref=e426]:
+                    - generic [ref=e427]: 告警数据采集
+                  - cell "1.1.5" [ref=e428]:
+                    - generic [ref=e429]: 1.1.5
+                  - cell "编辑" [ref=e430]:
+                    - button "编辑" [ref=e432] [cursor=pointer]:
+                      - generic [ref=e433]: 编辑
+                - row "重定义服务 1.1.5 编辑" [ref=e434]:
+                  - cell "重定义服务" [ref=e435]:
+                    - generic [ref=e436]: 重定义服务
+                  - cell "1.1.5" [ref=e437]:
+                    - generic [ref=e438]: 1.1.5
+                  - cell "编辑" [ref=e439]:
+                    - button "编辑" [ref=e441] [cursor=pointer]:
+                      - generic [ref=e442]: 编辑
+                - row "产品重定义服务 1.1.5 编辑" [ref=e443]:
+                  - cell "产品重定义服务" [ref=e444]:
+                    - generic [ref=e445]: 产品重定义服务
+                  - cell "1.1.5" [ref=e446]:
+                    - generic [ref=e447]: 1.1.5
+                  - cell "编辑" [ref=e448]:
+                    - button "编辑" [ref=e450] [cursor=pointer]:
+                      - generic [ref=e451]: 编辑
+                - row "实例化 es 入库 1.1.5 编辑" [ref=e452]:
+                  - cell "实例化 es 入库" [ref=e453]:
+                    - generic [ref=e454]: 实例化 es 入库
+                  - cell "1.1.5" [ref=e455]:
+                    - generic [ref=e456]: 1.1.5
+                  - cell "编辑" [ref=e457]:
+                    - button "编辑" [ref=e459] [cursor=pointer]:
+                      - generic [ref=e460]: 编辑
+                - row "规则匹配服务 1.1.5 编辑" [ref=e461]:
+                  - cell "规则匹配服务" [ref=e462]:
+                    - generic [ref=e463]: 规则匹配服务
+                  - cell "1.1.5" [ref=e464]:
+                    - generic [ref=e465]: 1.1.5
+                  - cell "编辑" [ref=e466]:
+                    - button "编辑" [ref=e468] [cursor=pointer]:
+                      - generic [ref=e469]: 编辑
+                - row "事件查询服务 1.1.5 编辑" [ref=e470]:
+                  - cell "事件查询服务" [ref=e471]:
+                    - generic [ref=e472]: 事件查询服务
+                  - cell "1.1.5" [ref=e473]:
+                    - generic [ref=e474]: 1.1.5
+                  - cell "编辑" [ref=e475]:
+                    - button "编辑" [ref=e477] [cursor=pointer]:
+                      - generic [ref=e478]: 编辑
+                - row "分级调服务 1.1.7 编辑" [ref=e479]:
+                  - cell "分级调服务" [ref=e480]:
+                    - generic [ref=e481]: 分级调服务
+                  - cell "1.1.7" [ref=e482]:
+                    - generic [ref=e483]: 1.1.7
+                  - cell "编辑" [ref=e484]:
+                    - button "编辑" [ref=e486] [cursor=pointer]:
+                      - generic [ref=e487]: 编辑
+                - row "智能调服务 1.1.7 编辑" [ref=e488]:
+                  - cell "智能调服务" [ref=e489]:
+                    - generic [ref=e490]: 智能调服务
+                  - cell "1.1.7" [ref=e491]:
+                    - generic [ref=e492]: 1.1.7
+                  - cell "编辑" [ref=e493]:
+                    - button "编辑" [ref=e495] [cursor=pointer]:
+                      - generic [ref=e496]: 编辑
+                - row "移动易运维 1.1.1 编辑" [ref=e497]:
+                  - cell "移动易运维" [ref=e498]:
+                    - generic [ref=e499]: 移动易运维
+                  - cell "1.1.1" [ref=e500]:
+                    - generic [ref=e501]: 1.1.1
+                  - cell "编辑" [ref=e502]:
+                    - button "编辑" [ref=e504] [cursor=pointer]:
+                      - generic [ref=e505]: 编辑
+                - row "nacos 2.5.2 编辑" [ref=e506]:
+                  - cell "nacos" [ref=e507]:
+                    - generic [ref=e508]: nacos
+                  - cell "2.5.2" [ref=e509]:
+                    - generic [ref=e510]: 2.5.2
+                  - cell "编辑" [ref=e511]:
+                    - button "编辑" [ref=e513] [cursor=pointer]:
+                      - generic [ref=e514]: 编辑
+                - row "集团工单服务 1.1.1 编辑" [ref=e515]:
+                  - cell "集团工单服务" [ref=e516]:
+                    - generic [ref=e517]: 集团工单服务
+                  - cell "1.1.1" [ref=e518]:
+                    - generic [ref=e519]: 1.1.1
+                  - cell "编辑" [ref=e520]:
+                    - button "编辑" [ref=e522] [cursor=pointer]:
+                      - generic [ref=e523]: 编辑
+                - row "复盘服务 1.1.0 编辑" [ref=e524]:
+                  - cell "复盘服务" [ref=e525]:
+                    - generic [ref=e526]: 复盘服务
+                  - cell "1.1.0" [ref=e527]:
+                    - generic [ref=e528]: 1.1.0
+                  - cell "编辑" [ref=e529]:
+                    - button "编辑" [ref=e531] [cursor=pointer]:
+                      - generic [ref=e532]: 编辑

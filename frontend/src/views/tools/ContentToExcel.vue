@@ -129,7 +129,7 @@
         </div>
       </template>
 
-      <el-tabs v-model="keywordTab" type="border-card">
+      <el-tabs v-model="keywordTab" type="border-card" @tab-click="handleTabClick">
         <!-- 软件-IP映射管理 -->
         <el-tab-pane label="软件名称和目标IP" name="software-ip">
           <div class="keyword-actions">
@@ -584,6 +584,18 @@ async function handleDeleteVersion(softwareName) {
 }
 
 // ============================================================================
+// Tab 切换处理
+// ============================================================================
+function handleTabClick(event) {
+  const tabName = event.paneName
+  if (tabName === 'initial-version') {
+    loadVersionList()
+  } else if (tabName === 'software-ip') {
+    loadSoftwareList()
+  }
+}
+
+// ============================================================================
 // 工具函数
 // ============================================================================
 function isBuiltinSoftware(name) {
@@ -600,6 +612,7 @@ function isBuiltinVersion(name) {
 onMounted(() => {
   loadSoftwareList()
   loadBuiltinSoftwareList()
+  loadVersionList()  // 自动加载版本列表
 })
 </script>
 

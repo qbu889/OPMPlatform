@@ -1,0 +1,301 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]:
+        - img "NOKIA" [ref=e7]
+        - generic [ref=e8]: OPM 系统
+      - menubar [ref=e9]:
+        - menuitem "首页" [ref=e10] [cursor=pointer]:
+          - img [ref=e12]
+          - generic [ref=e14]: 首页
+        - menuitem "文档" [ref=e15]:
+          - generic [ref=e16] [cursor=pointer]:
+            - img [ref=e18]
+            - generic [ref=e20]: 文档
+            - img [ref=e22]
+        - menuitem "智能系统" [ref=e24]:
+          - generic [ref=e25] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e29]: 智能系统
+            - img [ref=e31]
+        - menuitem "高效工具" [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e40]: 高效工具
+            - img [ref=e42]
+      - generic [ref=e44]:
+        - button "登录" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]: 登录
+        - button "注册" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e56]: 注册
+  - generic [ref=e57]:
+    - generic [ref=e58]:
+      - heading "内容转 Excel 工具" [level=2] [ref=e59]:
+        - img [ref=e61]
+        - text: 内容转 Excel 工具
+      - paragraph [ref=e63]: 上传升级申请文档，自动生成标准化 Excel 装载记录表
+    - generic [ref=e64]:
+      - generic [ref=e68]: 文件上传与生成
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - button "拖拽文件到此处，或 点击选择" [ref=e71] [cursor=pointer]:
+            - generic [ref=e72]:
+              - img [ref=e74]
+              - generic [ref=e76]:
+                - text: 拖拽文件到此处，或
+                - emphasis [ref=e77]: 点击选择
+          - generic [ref=e78]: 支持 .md / .txt 格式，单个文件不超过 5MB
+          - list
+        - generic [ref=e79]:
+          - button "预览解析结果" [disabled] [ref=e80]:
+            - generic [ref=e81]:
+              - img [ref=e83]
+              - text: 预览解析结果
+          - button "生成并下载 Excel" [disabled] [ref=e85]:
+            - generic [ref=e86]:
+              - img [ref=e88]
+              - text: 生成并下载 Excel
+          - button "重置" [ref=e90] [cursor=pointer]:
+            - generic [ref=e91]:
+              - img [ref=e93]
+              - text: 重置
+        - separator [ref=e95]:
+          - generic [ref=e96]:
+            - img [ref=e98]
+            - text: 使用说明
+        - table [ref=e102]:
+          - rowgroup [ref=e103]:
+            - row "输入格式 升级申请文档（.md / .txt），每条记录以\"监控综合应用平台YYYY年M月D日功能升级申请\"开头" [ref=e104]:
+              - cell "输入格式" [ref=e105]
+              - cell "升级申请文档（.md / .txt），每条记录以\"监控综合应用平台YYYY年M月D日功能升级申请\"开头" [ref=e106]
+            - row "输出内容 包含 4 个 Sheet 的 .xlsx 文件：主表、版本号计算、初始版本号、软件名称和目标IP" [ref=e107]:
+              - cell "输出内容" [ref=e108]
+              - cell "包含 4 个 Sheet 的 .xlsx 文件：主表、版本号计算、初始版本号、软件名称和目标IP" [ref=e109]
+            - row "软件匹配 3月升级仅匹配「智能调服务」，4月及之后匹配「省内工单服务」+「智能调服务」" [ref=e110]:
+              - cell "软件匹配" [ref=e111]
+              - cell "3月升级仅匹配「智能调服务」，4月及之后匹配「省内工单服务」+「智能调服务」" [ref=e112]
+            - row "日期修正 原始文档中\"3月2日\"自动修正为\"3月11日\"（历史约定）" [ref=e113]:
+              - cell "日期修正" [ref=e114]
+              - cell "原始文档中\"3月2日\"自动修正为\"3月11日\"（历史约定）" [ref=e115]
+    - generic [ref=e116]:
+      - generic [ref=e118]:
+        - img [ref=e120]
+        - generic [ref=e122]: 关键字库管理
+      - generic [ref=e124]:
+        - tablist [ref=e128]:
+          - tab "软件名称和目标IP" [selected] [ref=e129]
+          - tab "初始版本号" [ref=e130]
+        - tabpanel "软件名称和目标IP" [ref=e132]:
+          - generic [ref=e133]:
+            - button "新增软件" [ref=e134] [cursor=pointer]:
+              - generic [ref=e135]:
+                - img [ref=e137]
+                - text: 新增软件
+            - button "刷新" [ref=e139] [cursor=pointer]:
+              - generic [ref=e140]:
+                - img [ref=e142]
+                - text: 刷新
+          - generic [ref=e145]:
+            - table [ref=e147]:
+              - rowgroup [ref=e155]:
+                - row "软件名称 目标IP 操作人员 验证人员 初始版本 操作" [ref=e156]:
+                  - columnheader "软件名称" [ref=e157]:
+                    - generic [ref=e158]: 软件名称
+                  - columnheader "目标IP" [ref=e159]:
+                    - generic [ref=e160]: 目标IP
+                  - columnheader "操作人员" [ref=e161]:
+                    - generic [ref=e162]: 操作人员
+                  - columnheader "验证人员" [ref=e163]:
+                    - generic [ref=e164]: 验证人员
+                  - columnheader "初始版本" [ref=e165]:
+                    - generic [ref=e166]: 初始版本
+                  - columnheader "操作" [ref=e167]:
+                    - generic [ref=e168]: 操作
+            - table [ref=e173]:
+              - rowgroup [ref=e181]:
+                - row "省内工单服务 10.44.225.197、10.43.118.48、10.43.118.47、10.44.225.30、10.44.225.31、10.44.225.33 姚翔 林子旺 1.4.6 编辑" [ref=e182]:
+                  - cell "省内工单服务" [ref=e183]:
+                    - generic [ref=e184]: 省内工单服务
+                  - cell "10.44.225.197、10.43.118.48、10.43.118.47、10.44.225.30、10.44.225.31、10.44.225.33" [ref=e185]:
+                    - generic [ref=e186]: 10.44.225.197、10.43.118.48、10.43.118.47、10.44.225.30、10.44.225.31、10.44.225.33
+                  - cell "姚翔" [ref=e187]:
+                    - generic [ref=e188]: 姚翔
+                  - cell "林子旺" [ref=e189]:
+                    - generic [ref=e190]: 林子旺
+                  - cell "1.4.6" [ref=e191]:
+                    - generic [ref=e192]: 1.4.6
+                  - cell "编辑" [ref=e193]:
+                    - button "编辑" [ref=e195] [cursor=pointer]:
+                      - generic [ref=e196]: 编辑
+                - row "告警数据采集 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e197]:
+                  - cell "告警数据采集" [ref=e198]:
+                    - generic [ref=e199]: 告警数据采集
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e200]:
+                    - generic [ref=e201]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e202]:
+                    - generic [ref=e203]: 高胜永
+                  - cell "林子旺" [ref=e204]:
+                    - generic [ref=e205]: 林子旺
+                  - cell "1.1.5" [ref=e206]:
+                    - generic [ref=e207]: 1.1.5
+                  - cell "编辑" [ref=e208]:
+                    - button "编辑" [ref=e210] [cursor=pointer]:
+                      - generic [ref=e211]: 编辑
+                - row "重定义服务 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e212]:
+                  - cell "重定义服务" [ref=e213]:
+                    - generic [ref=e214]: 重定义服务
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e215]:
+                    - generic [ref=e216]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e217]:
+                    - generic [ref=e218]: 高胜永
+                  - cell "林子旺" [ref=e219]:
+                    - generic [ref=e220]: 林子旺
+                  - cell "1.1.5" [ref=e221]:
+                    - generic [ref=e222]: 1.1.5
+                  - cell "编辑" [ref=e223]:
+                    - button "编辑" [ref=e225] [cursor=pointer]:
+                      - generic [ref=e226]: 编辑
+                - row "产品重定义服务 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e227]:
+                  - cell "产品重定义服务" [ref=e228]:
+                    - generic [ref=e229]: 产品重定义服务
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e230]:
+                    - generic [ref=e231]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e232]:
+                    - generic [ref=e233]: 高胜永
+                  - cell "林子旺" [ref=e234]:
+                    - generic [ref=e235]: 林子旺
+                  - cell "1.1.5" [ref=e236]:
+                    - generic [ref=e237]: 1.1.5
+                  - cell "编辑" [ref=e238]:
+                    - button "编辑" [ref=e240] [cursor=pointer]:
+                      - generic [ref=e241]: 编辑
+                - row "实例化 es 入库 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e242]:
+                  - cell "实例化 es 入库" [ref=e243]:
+                    - generic [ref=e244]: 实例化 es 入库
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e245]:
+                    - generic [ref=e246]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e247]:
+                    - generic [ref=e248]: 高胜永
+                  - cell "林子旺" [ref=e249]:
+                    - generic [ref=e250]: 林子旺
+                  - cell "1.1.5" [ref=e251]:
+                    - generic [ref=e252]: 1.1.5
+                  - cell "编辑" [ref=e253]:
+                    - button "编辑" [ref=e255] [cursor=pointer]:
+                      - generic [ref=e256]: 编辑
+                - row "规则匹配服务 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e257]:
+                  - cell "规则匹配服务" [ref=e258]:
+                    - generic [ref=e259]: 规则匹配服务
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e260]:
+                    - generic [ref=e261]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e262]:
+                    - generic [ref=e263]: 高胜永
+                  - cell "林子旺" [ref=e264]:
+                    - generic [ref=e265]: 林子旺
+                  - cell "1.1.5" [ref=e266]:
+                    - generic [ref=e267]: 1.1.5
+                  - cell "编辑" [ref=e268]:
+                    - button "编辑" [ref=e270] [cursor=pointer]:
+                      - generic [ref=e271]: 编辑
+                - row "事件查询服务 10.43.118.45、10.43.118.46、10.44.225.116 高胜永 林子旺 1.1.5 编辑" [ref=e272]:
+                  - cell "事件查询服务" [ref=e273]:
+                    - generic [ref=e274]: 事件查询服务
+                  - cell "10.43.118.45、10.43.118.46、10.44.225.116" [ref=e275]:
+                    - generic [ref=e276]: 10.43.118.45、10.43.118.46、10.44.225.116
+                  - cell "高胜永" [ref=e277]:
+                    - generic [ref=e278]: 高胜永
+                  - cell "林子旺" [ref=e279]:
+                    - generic [ref=e280]: 林子旺
+                  - cell "1.1.5" [ref=e281]:
+                    - generic [ref=e282]: 1.1.5
+                  - cell "编辑" [ref=e283]:
+                    - button "编辑" [ref=e285] [cursor=pointer]:
+                      - generic [ref=e286]: 编辑
+                - row "分级调服务 10.43.52.51、10.43.52.52、10.43.52.53、10.43.52.54 高胜永 林子旺 1.1.7 编辑" [ref=e287]:
+                  - cell "分级调服务" [ref=e288]:
+                    - generic [ref=e289]: 分级调服务
+                  - cell "10.43.52.51、10.43.52.52、10.43.52.53、10.43.52.54" [ref=e290]:
+                    - generic [ref=e291]: 10.43.52.51、10.43.52.52、10.43.52.53、10.43.52.54
+                  - cell "高胜永" [ref=e292]:
+                    - generic [ref=e293]: 高胜永
+                  - cell "林子旺" [ref=e294]:
+                    - generic [ref=e295]: 林子旺
+                  - cell "1.1.7" [ref=e296]:
+                    - generic [ref=e297]: 1.1.7
+                  - cell "编辑" [ref=e298]:
+                    - button "编辑" [ref=e300] [cursor=pointer]:
+                      - generic [ref=e301]: 编辑
+                - row "智能调服务 10.46.102.85、10.46.102.86 李金山 林子旺 1.1.7 编辑" [ref=e302]:
+                  - cell "智能调服务" [ref=e303]:
+                    - generic [ref=e304]: 智能调服务
+                  - cell "10.46.102.85、10.46.102.86" [ref=e305]:
+                    - generic [ref=e306]: 10.46.102.85、10.46.102.86
+                  - cell "李金山" [ref=e307]:
+                    - generic [ref=e308]: 李金山
+                  - cell "林子旺" [ref=e309]:
+                    - generic [ref=e310]: 林子旺
+                  - cell "1.1.7" [ref=e311]:
+                    - generic [ref=e312]: 1.1.7
+                  - cell "编辑" [ref=e313]:
+                    - button "编辑" [ref=e315] [cursor=pointer]:
+                      - generic [ref=e316]: 编辑
+                - row "移动易运维 10.43.52.58、10.43.52.59、10.43.149.199 张保全 林子旺 1.1.1 编辑" [ref=e317]:
+                  - cell "移动易运维" [ref=e318]:
+                    - generic [ref=e319]: 移动易运维
+                  - cell "10.43.52.58、10.43.52.59、10.43.149.199" [ref=e320]:
+                    - generic [ref=e321]: 10.43.52.58、10.43.52.59、10.43.149.199
+                  - cell "张保全" [ref=e322]:
+                    - generic [ref=e323]: 张保全
+                  - cell "林子旺" [ref=e324]:
+                    - generic [ref=e325]: 林子旺
+                  - cell "1.1.1" [ref=e326]:
+                    - generic [ref=e327]: 1.1.1
+                  - cell "编辑" [ref=e328]:
+                    - button "编辑" [ref=e330] [cursor=pointer]:
+                      - generic [ref=e331]: 编辑
+                - row "nacos 10.43.52.58、10.43.52.59、10.43.149.199 张保全 林子旺 2.5.2 编辑" [ref=e332]:
+                  - cell "nacos" [ref=e333]:
+                    - generic [ref=e334]: nacos
+                  - cell "10.43.52.58、10.43.52.59、10.43.149.199" [ref=e335]:
+                    - generic [ref=e336]: 10.43.52.58、10.43.52.59、10.43.149.199
+                  - cell "张保全" [ref=e337]:
+                    - generic [ref=e338]: 张保全
+                  - cell "林子旺" [ref=e339]:
+                    - generic [ref=e340]: 林子旺
+                  - cell "2.5.2" [ref=e341]:
+                    - generic [ref=e342]: 2.5.2
+                  - cell "编辑" [ref=e343]:
+                    - button "编辑" [ref=e345] [cursor=pointer]:
+                      - generic [ref=e346]: 编辑
+                - row "集团工单服务 10.44.225.32、10.44.225.39、10.46.102.90、10.46.102.91、10.46.102.92 金文辉 林子旺 1.1.1 编辑" [ref=e347]:
+                  - cell "集团工单服务" [ref=e348]:
+                    - generic [ref=e349]: 集团工单服务
+                  - cell "10.44.225.32、10.44.225.39、10.46.102.90、10.46.102.91、10.46.102.92" [ref=e350]:
+                    - generic [ref=e351]: 10.44.225.32、10.44.225.39、10.46.102.90、10.46.102.91、10.46.102.92
+                  - cell "金文辉" [ref=e352]:
+                    - generic [ref=e353]: 金文辉
+                  - cell "林子旺" [ref=e354]:
+                    - generic [ref=e355]: 林子旺
+                  - cell "1.1.1" [ref=e356]:
+                    - generic [ref=e357]: 1.1.1
+                  - cell "编辑" [ref=e358]:
+                    - button "编辑" [ref=e360] [cursor=pointer]:
+                      - generic [ref=e361]: 编辑
+                - row "复盘服务 10.44.225.30、10.44.225.31、10.44.225.33、10.46.102.83、10.46.102.84 金文辉 林子旺 1.1.0 编辑" [ref=e362]:
+                  - cell "复盘服务" [ref=e363]:
+                    - generic [ref=e364]: 复盘服务
+                  - cell "10.44.225.30、10.44.225.31、10.44.225.33、10.46.102.83、10.46.102.84" [ref=e365]:
+                    - generic [ref=e366]: 10.44.225.30、10.44.225.31、10.44.225.33、10.46.102.83、10.46.102.84
+                  - cell "金文辉" [ref=e367]:
+                    - generic [ref=e368]: 金文辉
+                  - cell "林子旺" [ref=e369]:
+                    - generic [ref=e370]: 林子旺
+                  - cell "1.1.0" [ref=e371]:
+                    - generic [ref=e372]: 1.1.0
+                  - cell "编辑" [ref=e373]:
+                    - button "编辑" [ref=e375] [cursor=pointer]:
+                      - generic [ref=e376]: 编辑

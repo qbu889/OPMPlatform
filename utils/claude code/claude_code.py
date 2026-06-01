@@ -141,19 +141,29 @@ def chat_completions():
                 continue
             
             if role not in ['user', 'assistant']:
+                tool_result_text = ""
+                
                 if isinstance(content, list):
-                    tool_result_text = ""
                     for part in content:
                         if part.get('type') == 'tool_result':
                             tool_result_text += f"工具调用结果[{part.get('tool_name', '')}]: {part.get('content', '')}\n"
                         elif part.get('type') == 'text':
                             tool_result_text += part.get('text', '') + "\n"
-                    
-                    if tool_result_text and len(lmstudio_messages) > 0:
-                        lmstudio_messages.append({
-                            "role": "assistant",
-                            "content": tool_result_text
-                        })
+                        elif isinstance(part, dict) and 'content' in part:
+                            tool_result_text += str(part.get('content', '')) + "\n"
+                elif isinstance(content, dict):
+                    if 'content' in content:
+                        tool_result_text = str(content['content'])
+                    elif content.get('type') == 'tool_result':
+                        tool_result_text = f"工具调用结果: {content.get('content', '')}"
+                elif isinstance(content, str):
+                    tool_result_text = content
+                
+                if tool_result_text.strip() and len(lmstudio_messages) > 0:
+                    lmstudio_messages.append({
+                        "role": "assistant",
+                        "content": tool_result_text.strip()
+                    })
                 continue
             
             if isinstance(content, list):

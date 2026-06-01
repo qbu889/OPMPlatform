@@ -1,0 +1,121 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6] [cursor=pointer]:
+        - img "NOKIA" [ref=e7]
+        - generic [ref=e8]: OPM 系统
+      - menubar [ref=e9]:
+        - menuitem "首页" [ref=e10] [cursor=pointer]:
+          - img [ref=e12]
+          - generic [ref=e14]: 首页
+        - menuitem "文档" [ref=e15]:
+          - generic [ref=e16] [cursor=pointer]:
+            - img [ref=e18]
+            - generic [ref=e20]: 文档
+            - img [ref=e22]
+        - menuitem "智能系统" [ref=e24]:
+          - generic [ref=e25] [cursor=pointer]:
+            - img [ref=e27]
+            - generic [ref=e29]: 智能系统
+            - img [ref=e31]
+        - menuitem "高效工具" [ref=e33]:
+          - generic [ref=e34] [cursor=pointer]:
+            - img [ref=e36]
+            - generic [ref=e40]: 高效工具
+            - img [ref=e42]
+      - generic [ref=e44]:
+        - button "登录" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]: 登录
+        - button "注册" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - generic [ref=e56]: 注册
+  - generic [ref=e57]:
+    - generic [ref=e60]:
+      - heading "🚀 诺基亚 OPM 系统" [level=1] [ref=e61]
+      - paragraph [ref=e62]: 一站式文档处理与管理系统
+    - generic [ref=e63]:
+      - generic [ref=e65]:
+        - img [ref=e67]
+        - generic [ref=e71]: 高效工具
+      - generic [ref=e73]:
+        - generic [ref=e76] [cursor=pointer]:
+          - img [ref=e79]
+          - heading "内容转 Excel 工具" [level=3] [ref=e81]
+          - paragraph [ref=e82]: 根据 Markdown 内容生成 Excel 表格
+        - generic [ref=e85] [cursor=pointer]:
+          - img [ref=e88]
+          - heading "SQL ID 格式化" [level=3] [ref=e92]
+          - paragraph [ref=e93]: 快速格式化 ID 列表用于 SQL 查询
+        - generic [ref=e96] [cursor=pointer]:
+          - img [ref=e99]
+          - heading "Kafka 消息生成" [level=3] [ref=e101]
+          - paragraph [ref=e102]: 根据 ES 数据生成 Kafka 消息
+        - generic [ref=e105] [cursor=pointer]:
+          - img [ref=e108]
+          - heading "ES 查询结果转 Excel" [level=3] [ref=e110]
+          - paragraph [ref=e111]: 将 ES 查询结果转换为标准 Excel 格式
+        - generic [ref=e114] [cursor=pointer]:
+          - img [ref=e117]
+          - heading "图片水印清除" [level=3] [ref=e120]
+          - paragraph [ref=e121]: 智能去除图片水印，支持手动框选和自动识别
+        - generic [ref=e124] [cursor=pointer]:
+          - img [ref=e127]
+          - heading "SQL 智能生成" [level=3] [ref=e130]
+          - paragraph [ref=e131]: AI 驱动的智能 SQL 生成器，支持复杂查询和多表关联
+        - generic [ref=e134] [cursor=pointer]:
+          - img [ref=e137]
+          - heading "JSON 对比工具" [level=3] [ref=e139]
+          - paragraph [ref=e140]: 智能对比 JSON 数据差异，忽略字段顺序，高亮显示不同
+    - generic [ref=e141]:
+      - generic [ref=e143]:
+        - img [ref=e145]
+        - generic [ref=e147]: 文档
+      - generic [ref=e149]:
+        - generic [ref=e152] [cursor=pointer]:
+          - img [ref=e155]
+          - heading "Word 转 Markdown" [level=3] [ref=e157]
+          - paragraph [ref=e158]: 将 Word 文档转换为 Markdown 格式
+        - generic [ref=e161] [cursor=pointer]:
+          - img [ref=e164]
+          - heading "Markdown 转 Word" [level=3] [ref=e166]
+          - paragraph [ref=e167]: 将 Markdown 文件转换为业务需求 Word 文档
+        - generic [ref=e170] [cursor=pointer]:
+          - img [ref=e173]
+          - heading "FPA 预估表生成" [level=3] [ref=e175]
+          - paragraph [ref=e176]: 从需求文档自动生成 FPA 功能点估算表
+        - generic [ref=e179] [cursor=pointer]:
+          - img [ref=e182]
+          - heading "Word 转 Excel" [level=3] [ref=e184]
+          - paragraph [ref=e185]: 解析技术规范书生成软件资产清单
+        - generic [ref=e188] [cursor=pointer]:
+          - img [ref=e191]
+          - heading "表格转COSMIC" [level=3] [ref=e193]
+          - paragraph [ref=e194]: Excel 转 Word (COSMIC格式)
+    - generic [ref=e195]:
+      - generic [ref=e197]:
+        - img [ref=e199]
+        - generic [ref=e201]: 智能系统
+      - generic [ref=e203]:
+        - generic [ref=e206] [cursor=pointer]:
+          - img [ref=e209]
+          - heading "在线表格" [level=3] [ref=e211]
+          - paragraph [ref=e212]: 类似飞书表格的在线协作系统
+        - generic [ref=e215] [cursor=pointer]:
+          - img [ref=e218]
+          - heading "智能客服" [level=3] [ref=e221]
+          - paragraph [ref=e222]: 基于 Ollama AI 的智能问答系统
+        - generic [ref=e225] [cursor=pointer]:
+          - img [ref=e228]
+          - heading "排班配置管理" [level=3] [ref=e230]
+          - paragraph [ref=e231]: 智能排班系统,自动化人员调度
+        - generic [ref=e234] [cursor=pointer]:
+          - img [ref=e237]
+          - heading "钉钉推送管理" [level=3] [ref=e241]
+          - paragraph [ref=e242]: 智能推送平台,支持定时调度和实时预览
+        - generic [ref=e245] [cursor=pointer]:
+          - img [ref=e248]
+          - heading "部署配置管理" [level=3] [ref=e250]
+          - paragraph [ref=e251]: 动态配置部署参数，无需改代码即可修改服务器、备份等设置
