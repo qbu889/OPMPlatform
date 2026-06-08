@@ -13,14 +13,14 @@ def test_format_time_columns_with_duplicate_columns():
     print("测试 _format_time_columns 修复")
     print("="*60)
     
-    # 创建一个有重复列名的 DataFrame
-    data = {
-        'name': ['test1', 'test2', 'test3'],
-        'time': ['2024-01-01T12:00:00Z', '2024-01-02T13:00:00Z', '2024-01-03T14:00:00+08:00'],
-        'time': ['2024-01-01T10:00:00Z', '2024-01-02T11:00:00Z', '2024-01-03T12:00:00+08:00']  # 重复列名
-    }
+    # 创建一个有重复列名的 DataFrame（使用列表方式创建）
+    data = [
+        ['test1', '2024-01-01T12:00:00Z', '2024-01-01T10:00:00Z'],
+        ['test2', '2024-01-02T13:00:00Z', '2024-01-02T11:00:00Z'],
+        ['test3', '2024-01-03T14:00:00+08:00', '2024-01-03T12:00:00+08:00']
+    ]
+    df = pd.DataFrame(data, columns=['name', 'time', 'time'])  # 重复列名
     
-    df = pd.DataFrame(data)
     print(f"DataFrame 列名: {list(df.columns)}")
     print(f"列名是否有重复: {len(df.columns) != len(set(df.columns))}")
     print(f"df['time'] 类型: {type(df['time'])}")

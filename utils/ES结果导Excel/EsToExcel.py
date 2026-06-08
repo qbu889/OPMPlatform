@@ -345,12 +345,10 @@ def parse_es_sql_table(file_path):
 def _format_time_columns(df):
     """格式化 DataFrame 中的时间字段（ISO 8601 -> 标准格式）"""
     time_columns_count = 0
-    for col in df.columns:
-        col_dtype = str(df.dtypes[col])
+    for i, col in enumerate(df.columns):
+        col_dtype = str(df.dtypes.iloc[i])
         if col_dtype in ['object', 'str']:
-            col_data = df[col]
-            if isinstance(col_data, pd.DataFrame):
-                col_data = col_data.iloc[:, 0]
+            col_data = df.iloc[:, i]
             sample = col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else None
             if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
                 try:
@@ -362,7 +360,7 @@ def _format_time_columns(df):
                             time_str = time_str.split('.')[0]
                         return time_str
                     
-                    df[col] = col_data.apply(format_time)
+                    df.iloc[:, i] = col_data.apply(format_time)
                     time_columns_count += 1
                 except Exception:
                     pass

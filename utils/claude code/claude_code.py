@@ -22,6 +22,12 @@ LMSTUDIO_API_KEY = os.getenv("LMSTUDIO_API_KEY", "sk-lm-6DRaG7rN:ZXtTmkXmVj9DBFz
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "qwen3.5-35b-a3b")
 PROXY_PORT = int(os.getenv("PROXY_PORT", "8081"))
 
+# DeepSeek 配置
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "sk-ab5234cc03554de9b8a539b7bfbe1835")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
+USE_DEEPSEEK = os.getenv("USE_DEEPSEEK", "false").lower() == "true"
+
 
 def parse_anthropic_tool_call(content: str) -> Dict[str, Any]:
     """
@@ -202,13 +208,23 @@ def chat_completions():
         
         stream = payload.get('stream', False)
         
-        headers = {
-            "Authorization": f"Bearer {LMSTUDIO_API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        url = f"{LMSTUDIO_BASE_URL}/v1/chat/completions"
-        logger.info(f"转发请求到 LM Studio: POST {url}")
+        if USE_DEEPSEEK:
+            headers = {
+                "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            url = f"{DEEPSEEK_BASE_URL}/chat/completions"
+            payload['model'] = DEEPSEEK_MODEL
+            payload['reasoning_effort'] = "high"
+            payload['extra_body'] = {"thinking": {"type": "enabled"}}
+            logger.info(f"转发请求到 DeepSeek: POST {url}, 模型: {DEEPSEEK_MODEL}")
+        else:
+            headers = {
+                "Authorization": f"Bearer {LMSTUDIO_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            url = f"{LMSTUDIO_BASE_URL}/v1/chat/completions"
+            logger.info(f"转发请求到 LM Studio: POST {url}")
 
         if stream:
             response = requests.post(
@@ -353,6 +369,23 @@ def completions():
 
 @app.route('/v1/models', methods=['GET'])
 def list_models():
+    if USE_DEEPSEEK:
+        anthropic_models = [{
+            "id": DEEPSEEK_MODEL,
+            "name": DEEPSEEK_MODEL,
+            "description": "DeepSeek v4 Pro",
+            "created": datetime.now().isoformat(),
+            "model": DEEPSEEK_MODEL,
+            "max_tokens": 4096,
+            "context_window": 8192,
+            "type": "text_completion"
+        }]
+        logger.info(f"DeepSeek 模式: 返回模型 {DEEPSEEK_MODEL}")
+        return jsonify({
+            "data": anthropic_models,
+            "object": "list"
+        })
+    
     try:
         url = f"{LMSTUDIO_BASE_URL}/v1/models"
         headers = {"Authorization": f"Bearer {LMSTUDIO_API_KEY}"}
@@ -405,6 +438,15 @@ def get_model(model_id: str):
 
 @app.route('/health', methods=['GET'])
 def health_check():
+    if USE_DEEPSEEK:
+        return jsonify({
+            "status": "healthy",
+            "backend": "deepseek",
+            "model": DEEPSEEK_MODEL,
+            "timestamp": datetime.now().isoformat(),
+            "deepseek_url": DEEPSEEK_BASE_URL
+        }), 200
+    
     try:
         response = requests.get(
             f"{LMSTUDIO_BASE_URL}/v1/models",
@@ -415,13 +457,14 @@ def health_check():
         if response.status_code == 200:
             return jsonify({
                 "status": "healthy",
-                "lmstudio": "connected",
+                "backend": "lmstudio",
                 "timestamp": datetime.now().isoformat(),
                 "lmstudio_url": LMSTUDIO_BASE_URL
             }), 200
         else:
             return jsonify({
                 "status": "degraded",
+                "backend": "lmstudio",
                 "lmstudio": f"unreachable (status: {response.status_code})",
                 "timestamp": datetime.now().isoformat()
             }), 503
@@ -429,13 +472,37 @@ def health_check():
     except Exception as e:
         return jsonify({
             "status": "unhealthy",
+            "backend": "lmstudio",
             "lmstudio": f"error: {str(e)}",
             "timestamp": datetime.now().isoformat()
         }), 503
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'HEAD'])
 def index():
+    if request.method == 'HEAD':
+        return '', 200
+    
+    if USE_DEEPSEEK:
+        return jsonify({
+            "service": "DeepSeek Bridge",
+            "version": "1.1.0",
+            "description": "将 Claude Code 请求转发到 DeepSeek",
+            "endpoints": [
+                "POST /v1/chat/completions - 聊天补全",
+                "POST /v1/completions - 文本补全",
+                "GET /v1/models - 列出模型",
+                "GET /v1/models/<model_id> - 获取模型信息",
+                "GET /health - 健康检查"
+            ],
+            "config": {
+                "backend": "deepseek",
+                "deepseek_url": DEEPSEEK_BASE_URL,
+                "default_model": DEEPSEEK_MODEL,
+                "port": PROXY_PORT
+            }
+        })
+    
     return jsonify({
         "service": "LM Studio Bridge",
         "version": "1.1.0",
@@ -448,6 +515,7 @@ def index():
             "GET /health - 健康检查"
         ],
         "config": {
+            "backend": "lmstudio",
             "lmstudio_url": LMSTUDIO_BASE_URL,
             "default_model": DEFAULT_MODEL,
             "port": PROXY_PORT

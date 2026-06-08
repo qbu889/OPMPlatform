@@ -16,6 +16,31 @@ if [ ! -f "$BRIDGE_SCRIPT" ]; then
     exit 1
 fi
 
+# 加载项目配置（必须在启动 Bridge 之前加载，确保环境变量生效）
+cd "$SCRIPT_DIR"
+if [ -f .env.claude ]; then
+    echo "📋 加载配置文件: .env.claude"
+    set -a
+    source .env.claude
+    set +a
+else
+    echo "⚠️  未找到 .env.claude 配置文件"
+fi
+
+# 设置 Bridge 环境变量
+export ANTHROPIC_BASE_URL=http://localhost:8081/v1
+export ANTHROPIC_API_KEY=sk-lm-studio
+
+# 检查是否使用 DeepSeek
+if [ "$USE_DEEPSEEK" = "true" ]; then
+    echo "🔄 使用 DeepSeek 后端..."
+    export DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-"sk-ab5234cc03554de9b8a539b7bfbe1835"}
+    export DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-"https://api.deepseek.com"}
+    export DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-"deepseek-v4-pro"}
+else
+    echo "🔄 使用 LM Studio 后端..."
+fi
+
 # 启动 LM Studio Bridge（后台）
 echo "🚀 步骤 1: 启动 LM Studio Bridge..."
 cd "$SCRIPT_DIR/utils/claude code"
@@ -37,18 +62,6 @@ fi
 echo ""
 echo "🚀 步骤 2: 启动 Claude Code..."
 echo ""
-
-# 加载项目配置
-cd "$SCRIPT_DIR"
-if [ -f .env.claude ]; then
-    set -a
-    source .env.claude
-    set +a
-fi
-
-# 设置 Bridge 环境变量
-export ANTHROPIC_BASE_URL=http://localhost:8081/v1
-export ANTHROPIC_API_KEY=sk-lm-studio
 
 # 启动 Claude Code（带清理逻辑）
 trap "kill $BRIDGE_PID 2>/dev/null; echo ''; echo '✅ Bridge 服务已停止'; exit" INT TERM EXIT
