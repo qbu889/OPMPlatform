@@ -71,6 +71,12 @@ jobs:
         
         # 安装测试依赖
         pip install pytest pytest-cov pytest-flask
+        
+        # 安装 playwright 浏览器
+        if pip show playwright > /dev/null 2>&1; then
+          echo "Installing playwright browsers..."
+          playwright install --with-deps chromium
+        fi
     
     - name: Create .env file for testing
       run: |
