@@ -336,6 +336,12 @@ def create_app(config_name='development'):
     def init_omlx_async():
         """在后台线程中异步初始化 AI 服务"""
         try:
+            # 检查是否为测试环境，测试环境跳过AI服务初始化
+            import os
+            if os.getenv("FLASK_ENV", "").lower() == "testing":
+                app_logger.info("[TEST MODE] 跳过 AI 服务初始化")
+                return
+            
             app_logger.info("=" * 80)
             app_logger.info("🚀 正在异步初始化 AI 服务...")
             app_logger.info("=" * 80)
@@ -352,10 +358,17 @@ def create_app(config_name='development'):
                 app_logger.error("❌ AI 服务验证失败！请检查服务是否正常运行")
                 app_logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
         except Exception as e:
-            app_logger.error(f"❌ AI 服务异步初始化异常：{e}")
-            app_logger.error("   应用将继续运行，但 AI 功能可能不可用")
+            try:
+                app_logger.error(f"❌ AI 服务异步初始化异常：{e}")
+                app_logger.error("   应用将继续运行，但 AI 功能可能不可用")
+            except Exception:
+                # 忽略日志写入错误（可能是流已关闭）
+                pass
         finally:
-            app_logger.info("=" * 80)
+            try:
+                app_logger.info("=" * 80)
+            except Exception:
+                pass
     
     # 启动后台线程进行异步初始化
     omlx_init_thread = threading.Thread(target=init_omlx_async, daemon=True)
