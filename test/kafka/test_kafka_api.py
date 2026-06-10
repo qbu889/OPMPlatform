@@ -175,7 +175,7 @@ class TestKafkaGeneratorAPI:
     
     def test_dict_data_endpoint(self, client):
         """测试字典数据接口"""
-        response = client.get('/kafka-generator/dict-data?field_name=NETWORK_TYPE_TOP')
+        response = client.get('/kafka-generator/field-dict?kafka_field=NETWORK_TYPE_TOP')
         
         # 接口应该存在
         assert response.status_code != 404

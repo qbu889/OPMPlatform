@@ -268,7 +268,8 @@ def generate_consistent_fp():
     random_part1 = uuid_value[:10]
     random_part2 = uuid_value[10:20]
     random_part3 = uuid_value[20:30]
-    random_part4 = uuid_value[30:]
+    # UUID hex是32位，取最后5位（索引27-32）
+    random_part4 = uuid_value[27:]
     return f"{timestamp}_{random_part1}_{random_part2}_{random_part3}_{random_part4}"
 
 
@@ -860,14 +861,14 @@ def generate_creation_event_time(es_data, user_delay_time=None):
         - 从 ES 数据中提取 DELAY_TIME 字段（单位：分钟）
         - 将 DELAY_TIME 转换为小时数（DELAY_TIME / 60）
         - 使用当前时间减去小时数得到 CREATION_EVENT_TIME
-        - 如果没有 DELAY_TIME，默认使用 15 分钟
+        - 如果没有 DELAY_TIME，默认使用 15 小时
 
     示例:
         DELAY_TIME = 15 -> 15/60 = 0.25 小时 -> 当前时间 - 15 分钟
         DELAY_TIME = 720 -> 720/60 = 12 小时 -> 当前时间 - 12 小时
     """
-    # 默认延迟 15 分钟（转换为小时）
-    delay_hours = 15 / 60  # 0.25 小时
+    # 默认延迟 15 小时
+    delay_hours = 15
 
     # 优先使用用户输入的值
     if user_delay_time is not None:
