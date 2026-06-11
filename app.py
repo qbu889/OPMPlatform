@@ -92,6 +92,9 @@ from routes.house_design.house_design_routes import house_design_bp
 # CityColor 颜色提取模块（MySQL 持久化）
 from routes.city_color.city_color_routes import city_color_bp, init_city_color
 
+# 彩色抽奖转盘模块
+from routes.wheel_lottery.wheel_lottery_routes import wheel_lottery_bp, init_wheel_config
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -300,6 +303,9 @@ def create_app(config_name='development'):
         # CityColor 颜色提取模块（MySQL 持久化）
         city_color_bp,
 
+        # 彩色抽奖转盘模块
+        wheel_lottery_bp,
+
         # Swagger API 文档
         swagger_bp,
     ]
@@ -332,6 +338,12 @@ def create_app(config_name='development'):
         app_logger.info("✅ CityColor 模块初始化完成")
     except Exception as e:
         app_logger.error(f"⚠️  CityColor 模块初始化失败: {e}")
+
+    try:
+        init_wheel_config(app)
+        app_logger.info("✅ 转盘抽奖模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  转盘抽奖模块初始化失败: {e}")
 
     # ==========================================================================
     # 注册中间件
@@ -505,6 +517,15 @@ def city_color_spa():
             return send_from_directory(FRONTEND_DIST, 'index.html')
     return jsonify({'error': 'Frontend not built'}), 404
 
+@app.route('/wheel-lottery')
+def wheel_lottery_spa():
+    """彩色抽奖转盘页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
 @app.route('/vue')
 @app.route('/vue/<path:path>')
 def vue_app(path=None):
@@ -565,6 +586,7 @@ def handle_404(error):
        request.path.startswith('/markdown-upload/') or \
        request.path.startswith('/spreadsheet/') or \
        request.path.startswith('/city-color') or \
+       request.path.startswith('/wheel-lottery') or \
        request.path.startswith('/login') or \
        request.path.startswith('/register') or \
        request.path.startswith('/forgot-password') or \

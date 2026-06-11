@@ -98,6 +98,15 @@
             <p>输入内容智能提取专属配色方案，支持保存与导出</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/wheel-lottery')">
+            <div class="feature-icon" style="background: #fff3e0">
+              <el-icon size="40" color="#ff9800"><Operation /></el-icon>
+            </div>
+            <h3>彩色抽奖转盘</h3>
+            <p>可视化配置分区，点击抽奖触发流畅动画，体验随机乐趣</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 

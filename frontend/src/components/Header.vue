@@ -193,6 +193,14 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/wheel-lottery" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/wheel-lottery">
+                <el-icon><Operation /></el-icon>
+                <span>彩色抽奖转盘</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 
@@ -329,6 +337,7 @@ const handleMenuSelect = (index) => {
     'kafka-generator': '/kafka-generator',
     'house-design': '/house-design',
     'city-color': '/city-color',
+    'wheel-lottery': '/wheel-lottery',
   }
 
   if (pathMap[index]) {

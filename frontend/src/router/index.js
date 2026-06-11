@@ -220,6 +220,13 @@ const routes = [
     component: () => import('../views/citycolor/CityColor.vue'),
     meta: { title: 'CityColor 颜色提取', hidden: true }
   },
+  // 彩色抽奖转盘
+  {
+    path: '/wheel-lottery',
+    name: 'WheelLottery',
+    component: () => import('../views/tools/WheelLottery.vue'),
+    meta: { title: '彩色抽奖转盘', hidden: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',
