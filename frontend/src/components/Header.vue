@@ -177,6 +177,22 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/house-design" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/house-design">
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>户型设计</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/city-color" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/city-color">
+                <el-icon><Picture /></el-icon>
+                <span>CityColor 颜色提取</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
       </el-menu>
 
@@ -311,6 +327,8 @@ const handleMenuSelect = (index) => {
     'clean-event': '/clean-event',
     'sql-formatter': '/sql-formatter',
     'kafka-generator': '/kafka-generator',
+    'house-design': '/house-design',
+    'city-color': '/city-color',
   }
 
   if (pathMap[index]) {

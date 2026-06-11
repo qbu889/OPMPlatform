@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "updated_at": "2026-06-11T15:45:40.780304",
+  "cells": [
+    {
+      "name": "主卧",
+      "desc": "父亲 & 母亲",
+      "color": "#e0f2fe",
+      "text": "#0369a1"
+    },
+    {
+      "name": "次卧",
+      "desc": "正北方位",
+      "color": "#f3f4f6",
+      "text": "#374151"
+    },
+    {
+      "name": "客厅",
+      "desc": "东北方位",
+      "color": "#fef9c3",
+      "text": "#a16207"
+    },
+    {
+      "name": "",
+      "desc": "西中方位",
+      "color": "#e0e7ff",
+      "text": "#3730a3"
+    },
+    {
+      "name": "中心",
+      "desc": "核心区域",
+      "color": "#ffffff",
+      "text": "#9ca3af"
+    },
+    {
+      "name": "长子房",
+      "desc": "正东方位",
+      "color": "#dcfce7",
+      "text": "#15803d"
+    },
+    {
+      "name": "次卧（要有）",
+      "desc": "西南方位",
+      "color": "#f3f4f6",
+      "text": "#374151"
+    },
+    {
+      "name": "卫生间",
+      "desc": "正南方位",
+      "color": "#fee2e2",
+      "text": "#b91c1c"
+    },
+    {
+      "name": "长女房（次优先）",
+      "desc": "东南方位",
+      "color": "#fce7f3",
+      "text": "#be185d"
+    }
+  ]
+}

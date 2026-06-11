@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+  <html lang="zh-CN">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>专业户型设计系统 - 支持导出PDF</title>
+      <!-- 引入 Vue 3, Tailwind CSS -->
+      <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <!-- 引入导出 PDF 所需的库 -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+      <style>
+          .house-grid {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              grid-template-rows: repeat(3, 1fr);
+              gap: 4px;
+              width: 500px;
+              height: 500px;
+              background-color: #1f2937;
+              padding: 4px;
+          }
+          .room-cell {
+              position: relative;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              border-radius: 2px;
+              cursor: pointer;
+          }
+          .compass {
+              position: absolute;
+              font-size: 10px;
+              color: #9ca3af;
+              font-weight: bold;
+          }
+      </style>
+  </head>
+  <body class="bg-gray-100 font-sans">
+
+  <div id="app" class="min-h-screen flex flex-col items-center py-10">
+      <div class="text-center mb-8">
+          <h1 class="text-4xl font-black text-gray-800">智能户型设计系统</h1>
+          <p class="text-gray-500 mt-2">支持实时编辑与 PDF 报告导出</p>
+      </div>
+
+      <div class="flex flex-row gap-10 items-start">
+          <!-- 左侧：画布区域 (这是将被导出的核心部分) -->
+          <div id="capture-area" class="relative bg-white p-8 rounded-2xl shadow-2xl">
+              <div class="house-grid">
+                  <div v-for="(cell, index) in gridCells"
+                       :key="index"
+                       class="room-cell"
+                       :style="{ backgroundColor: cell.color }"
+                       @click="selectRoom(index)">
+                      <div class="compass top-1 left-1">{{ directions[index] }}</div>
+                      <div class="text-center">
+                          <div class="font-bold text-lg" :style="{ color: cell.text }">{{ cell.name }}</div>
+                          <div class="text-xs opacity-70" :style="{ color: cell.text }">{{ cell.desc }}</div>
+                      </div>
+                      <div v-if="selectedRoomIndex === index" class="absolute inset-0 border-4 border-blue-500 rounded animate-pulse"></div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- 右侧：控制面板 -->
+          <div class="w-80 bg-white rounded-2xl shadow-xl p-6">
+              <h2 class="text-xl font-bold mb-4 border-b pb-2">设计属性</h2>
+
+              <div v-if="selectedRoomIndex !== null" class="space-y-4">
+                  <!-- 最后更新时间 -->
+                  <div v-if="lastUpdated" class="text-xs text-gray-400 text-right">
+                      最后更新: {{ lastUpdated }}
+                  </div>
+                  <div>
+                      <label class="block text-sm font-medium text-gray-700">房间名称</label>
+                      <input type="text" v-model="selectedRoom.name" @change="saveRoom" class="mt-1 block w-full border rounded-md p-2 text-sm">
+                  </div>
+                  <div>
+                      <label class="block text-sm font-medium text-gray-700">功能描述</label>
+                      <textarea v-model="selectedRoom.desc" @change="saveRoom" class="mt-1 block w-full border rounded-md p-2 text-sm"></textarea>
+                  </div>
+              </div>
+
+              <div v-else class="text-gray-400 text-center py-20">请选择一个房间</div>
+
+              <div class="mt-10 pt-6 border-t">
+                  <h3 class="text-sm font-bold text-gray-800 mb-4">合规性检查</h3>
+                  <div class="space-y-2 text-sm text-gray-600">
+                      <div class="flex items-center"><span class="text-green-500 mr-2">✔</span> 西北区域无厨房/厕所</div>
+                      <div class="flex items-center"><span class="text-green-500 mr-2">✔</span> 正东区域无厨房/厕所</div>
+                      <div class="flex items-center"><span class="text-green-500 mr-2">✔</span> 东南区域无厨房/厕所</div>
+                  </div>
+              </div>
+
+              <!-- 导出按钮 -->
+              <div class="mt-8">
+                  <button @click="exportToPDF"
+                          class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition flex items-center justify-center
+  gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2l-2 2v6H5v-6l2-2m2-10V4a1 1 0 00-1-1H5a1 1 0 00-1 1v12a1
+  1 0 001 1h2m2-4l-4-4m0 0L9 9m4-4v12" />
+                      </svg>
+                      导出为 PDF 报告
+                  </button>
+              </div>
+
+              <!-- 重置按钮 -->
+              <div class="mt-4">
+                  <button @click="resetData"
+                          class="w-full bg-gray-200 text-gray-700 py-2 rounded-xl font-bold hover:bg-gray-300 transition">
+                      重置为默认数据
+                  </button>
+              </div>
+          </div>
+      </div>
+
+      <!-- 加载状态 -->
+      <div v-if="isExporting" class="fixed inset-0 bg-black/50 flex items-center justify-center text-white z-50">
+          <div class="text-xl font-bold">正在生成 PDF，请稍候...</div>
+      </div>
+  </div>
+
+  <script>
+  const { createApp, ref, computed, onMounted } = Vue;
+
+  // API 基础路径（根据当前页面所在目录动态计算）
+  const API_BASE = window.location.pathname.includes('/house-design')
+      ? '/house-design' : '/house-design';
+
+  createApp({
+      setup() {
+          const directions = ['西北', '正北', '东北', '西中', '中心', '正东', '西南', '正南', '东南'];
+          const selectedRoomIndex = ref(null);
+          const isExporting = ref(false);
+          const isLoading = ref(false);
+          const lastUpdated = ref('');
+
+          // 从后端加载数据
+          const gridCells = ref([]);
+
+          // 加载户型数据
+          const loadHouseData = async () => {
+              isLoading.value = true;
+              try {
+                  const resp = await fetch(`${API_BASE}/data`);
+                  const result = await resp.json();
+                  if (result.success) {
+                      gridCells.value = result.data.cells;
+                      lastUpdated.value = result.data.updated_at
+                          ? new Date(result.data.updated_at).toLocaleString('zh-CN')
+                          : '';
+                  } else {
+                      alert('加载数据失败: ' + result.msg);
+                  }
+              } catch (error) {
+                  console.error('加载数据失败:', error);
+                  alert('无法连接到后端服务，请检查服务是否启动。');
+              } finally {
+                  isLoading.value = false;
+              }
+          };
+
+          // 保存单个房间到后端
+          const saveCellToBackend = async (index, cell) => {
+              try {
+                  await fetch(`${API_BASE}/data/${index}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(cell)
+                  });
+              } catch (error) {
+                  console.error('保存失败:', error);
+              }
+          };
+
+          const selectedRoom = computed(() => {
+              return selectedRoomIndex.value !== null ? gridCells.value[selectedRoomIndex.value] : null;
+          });
+
+          const selectRoom = (index) => { selectedRoomIndex.value = index; };
+
+          // 监听房间编辑，自动保存到后端
+          const saveRoom = async () => {
+              if (selectedRoomIndex.value !== null && selectedRoom.value) {
+                  await saveCellToBackend(selectedRoomIndex.value, selectedRoom.value);
+              }
+          };
+
+          // 重置为默认数据
+          const resetData = async () => {
+              if (!confirm('确定要重置为默认数据吗？当前修改将丢失。')) return;
+              try {
+                  const resp = await fetch(`${API_BASE}/data/reset`, { method: 'POST' });
+                  const result = await resp.json();
+                  if (result.success) {
+                      await loadHouseData();
+                      alert('已重置为默认数据');
+                  } else {
+                      alert('重置失败: ' + result.msg);
+                  }
+              } catch (error) {
+                  console.error('重置失败:', error);
+                  alert('无法连接到后端服务。');
+              }
+          };
+
+          // 导出 PDF 的核心函数
+          const exportToPDF = async () => {
+              isExporting.value = true;
+              const captureArea = document.getElementById('capture-area');
+
+              try {
+                  // 1. 使用 html2canvas 将 HTML 转为 Canvas 图片
+                  const canvas = await html2canvas(captureArea, {
+                      scale: 3, // 高清缩放
+                      useCORS: true,
+                      backgroundColor: '#ffffff'
+                  });
+
+                  // 2. 使用 jsPDF 创建 PDF 文档
+                  const imgData = canvas.toDataURL('image/png');
+                  const { jsPDF } = window.jspdf;
+                  const pdf = new jsPDF('l', 'mm', 'a4'); // 横向 A4 纸
+
+                  // 计算图片在 PDF 中的尺寸
+                  const imgWidth = pdf.internal.pageSize.getWidth() - 20; // 留边距
+                  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                  // 3. 添加标题和图片到 PDF
+                  pdf.setFontSize(20);
+                  pdf.text("房屋户型设计报告", 10, 20);
+                  pdf.setFontSize(10);
+                  pdf.text(`生成时间: ${new Date().toLocaleString()}`, 10, 28);
+                  pdf.addImage(imgData, 'PNG', 10, 35, imgWidth, imgHeight);
+
+                  // 4. 保存文件
+                  pdf.save("house_design_report.pdf");
+              } catch (error) {
+                  console.error("导出失败:", error);
+                  alert("导出 PDF 时发生错误，请重试。");
+              } finally {
+                  isExporting.value = false;
+              }
+          };
+
+          // 组件挂载时加载数据
+          onMounted(() => { loadHouseData(); });
+
+          return {
+              gridCells, directions, selectedRoomIndex, selectedRoom,
+              selectRoom, exportToPDF, isExporting, isLoading, lastUpdated, saveRoom, resetData
+          };
+      }
+  }).mount('#app');
+  </script>
+
+  </body>
+  </html>

@@ -1,8 +1,8 @@
 # 👑 诺基亚 OPM 综合业务系统 - 核心开发规范手册 (V3.0)
 
 **目的**: 本文档是所有新功能开发的唯一、强制性参考指南。所有代码的编写、测试和部署流程，必须严格遵循本文档的要求。
-**版本**: v3.2
-**上次更新**: 2026-05-29
+**版本**: v3.3
+**上次更新**: 2026-06-11
 **适用范围**: 系统所有模块（前端/后端）的开发人员。
 
 ---
@@ -18,6 +18,7 @@
 *   **排班管理**: 定时推送、钉钉集成。
 *   **在线表格**: 协同编辑、数据导出。
 *   **图片水印清除**: AI 智能去水印。
+*   **CityColor 颜色提取**: 输入内容智能提取专属配色方案，支持保存、导出 PNG。
 
 ### 1.2 技术栈与环境配置
 | 类别 | 技术 | 版本 (推荐) | 用途 |
@@ -216,20 +217,321 @@ location /api/content-to-excel/ {
 }
 ```
 
+#### 4.6.5 CityColor 专项开发规范（颜色提取模块）
+
+CityColor 是 OPM 系统的**颜色智能提取工具**，开发此类型页面时需特别注意以下模式：
+
+**4.6.5.1 页面结构模板（固定布局）**
+```vue
+<template>
+  <div class="city-color-container">
+    <!-- 顶部导航栏（独立 Header，非全局） -->
+    <el-header class="header">
+      <div class="header-content">
+        <div class="logo" @click="$router.push('/')">
+          <img src="/nokia-06.png" alt="NOKIA" class="logo-icon" />
+          <span class="logo-text">OPM 系统</span>
+        </div>
+        <el-button size="small" @click="$router.back()">
+          <el-icon><ArrowLeft /></el-icon> 返回
+        </el-button>
+      </div>
+    </el-header>
+
+    <!-- 主内容区：左右分栏 Grid 布局 -->
+    <div class="main-content">
+      <h1 class="page-title">CityColor 颜色提取器</h1>
+      <p class="page-subtitle">输入内容，智能提取专属配色方案</p>
+
+      <div class="content-wrapper" v-loading="isLoading">
+        <!-- 左侧面板：输入 + 色板展示 -->
+        <div class="left-panel">
+          <!-- 输入区域：模式选择 + 内容输入 + 颜色数量 -->
+          <el-card class="input-section" shadow="hover">
+            <!-- 模式选择：auto/city/brand/random -->
+            <el-radio-group v-model="inputForm.mode">
+              <el-radio-button value="auto">智能识别</el-radio-button>
+              <el-radio-button value="city">城市色彩</el-radio-button>
+              <el-radio-button value="brand">品牌色系</el-radio-button>
+              <el-radio-button value="random">随机配色</el-radio-button>
+            </el-radio-group>
+            <!-- 内容输入：textarea -->
+            <el-input v-model="inputForm.content" type="textarea" :rows="4" />
+            <!-- 颜色数量：slider (3-12) -->
+            <el-slider v-model="inputForm.count" :min="3" :max="12" />
+            <!-- 提取按钮 -->
+            <el-button type="primary" @click="extractColors">提取颜色</el-button>
+          </el-card>
+
+          <!-- 色板展示区（有结果时显示） -->
+          <el-card class="palette-section" v-if="resultColors.length > 0">
+            <!-- 渐变预览 -->
+            <div class="gradient-preview" :style="{ background: resultGradient }" />
+            <!-- 色板列表：点击显示详情弹窗 -->
+            <div class="color-swatches">
+              <div v-for="(color, index) in resultColors" class="swatch-item">
+                <div class="swatch-color" :style="{ backgroundColor: color.hex }" />
+                <span>{{ color.name }}</span>
+                <span>{{ color.hex }}</span>
+              </div>
+            </div>
+            <!-- 操作按钮：保存 / 导出PNG / 重新提取 -->
+          </el-card>
+
+          <!-- 空状态（无结果时显示） -->
+          <el-empty v-else description="输入内容后点击'提取颜色'" />
+        </div>
+
+        <!-- 右侧面板：已保存方案列表 -->
+        <div class="right-panel">
+          <el-card>
+            <!-- 方案列表 + 分页 -->
+            <div class="scheme-list">
+              <div v-for="scheme in schemes" class="scheme-item">
+                <!-- 迷你色板 -->
+                <div class="mini-palette" v-for="hex in getSchemeHexes(scheme)" />
+                <span>{{ scheme.title }}</span>
+              </div>
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗：颜色详情 + 保存方案 -->
+    <el-dialog v-model="detailVisible" title="颜色详情" />
+    <el-dialog v-model="saveVisible" title="保存颜色方案">
+      <el-input v-model="saveForm.title" placeholder="输入方案名称" />
+    </el-dialog>
+  </div>
+</template>
+```
+
+**4.6.3.2 API 接口约定（前端调用）**
+
+| 方法 | 路径 | 参数 | 说明 |
+|------|------|------|------|
+| POST | `/api/city-color/extract` | `{ content, mode, count }` | 提取颜色，返回 `colors[]`, `gradient`, `palette_type` |
+| POST | `/api/city-color/schemes` | `{ title, colors[], gradient, palette_type, source_text, extract_mode }` | 保存方案 |
+| GET | `/api/city-color/schemes?page=N&page_size=M` | 分页参数 | 获取已保存方案列表 |
+| GET | `/api/city-color/schemes/{id}` | 方案ID | 获取单个方案详情（加载到当前页面） |
+| DELETE | `/api/city-color/schemes/{id}` | 方案ID | 删除方案 |
+| POST | `/api/city-color/export/png` | `{ colors[], title }` | 导出为 PNG 图片（返回 blob） |
+
+**4.6.3.3 状态变量命名约定**
+```js
+// 输入表单（reactive）
+const inputForm = reactive({ content: '', mode: 'auto', count: 5 })
+
+// 提取结果（ref）
+const resultColors = ref([])           // [{ name, hex, rgb, ratio }]
+const resultGradient = ref('')         // 渐变 CSS 字符串
+const resultPaletteType = ref('')      // 'auto' | 'city' | 'brand' | 'random'
+
+// 选中状态（ref）
+const selectedResultIndex = ref(null)  // 当前选中的色板索引
+
+// 已保存方案（ref）
+const schemes = ref([])               // 方案列表
+const totalSchemes = ref(0)           // 总数（分页用）
+const currentPage = ref(1)            // 当前页码
+const pageSize = ref(20)              // 每页条数
+
+// 弹窗状态（ref）
+const detailVisible = ref(false)      // 颜色详情弹窗
+const saveVisible = ref(false)        // 保存方案弹窗
+const saveForm = reactive({ title: '' })
+
+// 加载状态（ref）
+const isLoading = ref(false)          // 通用 loading
+const isExtracting = ref(false)       // 提取中 loading
+```
+
+**4.6.3.4 计算属性（computed）使用规范**
+- 选中的颜色详情必须用 `computed`，不可用函数：
+```js
+// ✅ 正确
+const selectedResultColor = computed(() => resultColors.value[selectedResultIndex.value] || null)
+
+// ❌ 错误：函数声明不能有空格，且模板中无法直接调用
+function get selectedResultColor() { ... }
+```
+
+**4.6.3.5 工具函数模板**
+```js
+// 色板 HEX 提取（兼容 JSON 字符串和数组两种格式）
+function getSchemeHexes(scheme) {
+  const colors = typeof scheme.colors === 'string' ? JSON.parse(scheme.colors) : scheme.colors
+  return colors.map(c => typeof c === 'string' ? c : (c.hex || '#000000'))
+}
+
+// 调色板类型标签映射（用于 el-tag type）
+function getPaletteTypeTag(type) {
+  const map = { 'auto': '', 'city': 'success', 'brand': 'warning', 'random': 'info' }
+  return map[type] || ''
+}
+
+// 调色板类型名称映射（用于显示）
+function getPaletteTypeName(type) {
+  const map = { 'auto': '智能识别', 'city': '城市色彩', 'brand': '品牌色系' }
+  return map[type] || type
+}
+
+// 日期格式化
+function formatDate(isoString) {
+  return isoString ? new Date(isoString).toLocaleDateString('zh-CN') : ''
+}
+
+// 复制颜色（带 fallback）
+function copyColor(hex) {
+  navigator.clipboard.writeText(hex).then(() => {
+    ElMessage.success(`已复制 ${hex}`)
+  }).catch(() => {
+    // fallback: textarea + execCommand('copy')
+  })
+}
+```
+
 #### 4.6.3 完成标准
 
 新功能开发完成后，必须确认以下全部通过：
 - [ ] `router/index.js` 中已注册路由（含 `meta.title`）
 - [ ] `Home.vue` 对应分类区域有功能卡片，点击可跳转
-- [ ] `Header.vue` 对应菜单下有导航入口
+- [ ] `Header.vue` 对应菜单下有导航入口（含 `pathMap` 映射）
 - [ ] Nginx 配置文件中有对应的 `location` 代理块
 - [ ] 前后端联调测试通过
 
 > ⚠️ **Agent 注意**: 每次生成新页面时，请主动检查以上三项是否已配置。如果缺失，请在本次提交中一并补全，不要等待后续单独处理。
 
+#### 4.6.4 前端构建与部署规范（强制）
+
+**每次修改前端页面后，必须重新构建并验证产物。** 这是防止 404 和运行时错误的唯一手段。
+
+| 步骤 | 命令 | 说明 |
+|------|------|------|
+| 1. 构建前端 | `cd frontend && npm run build` | 必须成功返回，无编译错误 |
+| 2. 验证产物 | `ls dist/assets/ \| grep -i <模块名>` | 确认新页面 JS/CSS chunk 已生成 |
+| 3. 验证路由 | `curl -s -o /dev/null -w "%{http_code}" http://<host>:5004/<路由>` | 必须返回 `200` |
+| 4. 验证 chunk 引用 | `curl -s http://<host>:5004/<路由> \| grep '<modulepreload.*<模块名>'` | 确认 JS chunk 被正确引用 |
+
+> ⚠️ **Agent 注意**: 每次前端代码修改后，**必须执行 `npm run build`**。不构建直接部署会导致 404。
+
 ---
 
-## 📈 五、 参考命令速查表
+## 🚨 六、前端开发常见陷阱与规避 (Frontend Pitfalls)
+
+**目的**: 记录历史踩坑经验，形成可查询的陷阱清单。每次开发新页面前必须通读本节，避免重复犯错。**所有错误都应在编码阶段通过构建验证发现，而非运行时。**
+
+### 6.1 Element Plus 图标陷阱
+
+**问题**: `@element-plus/icons-vue` 中不存在所有可能的图标名，使用不存在的图标会导致构建失败。
+
+**已验证可用的图标清单（按分类）**：
+
+| 分类 | 可用图标名 |
+|------|-----------|
+| 文档类 | `Document`, `Files`, `Edit`, `EditPen` |
+| 数据类 | `DataBoard`, `DataAnalysis`, `Grid` |
+| 操作类 | `Operation`, `Download`, `Filter`, `Setting`, `ArrowLeft` |
+| 用户类 | `UserFilled`, `Avatar`, `HomeFilled`, `Key` |
+| 其他 | `Platform`, `OfficeBuilding`, `ChatDotRound`, `Calendar`, `Bell`, `Cpu`, `Picture` |
+
+**不可用的图标名（禁止使用）**：
+- ❌ `ColorSwitch` — 不存在，颜色相关用 `Picture` 替代
+- ❌ `Save` — 不存在，保存操作用 `Check` 替代
+- ❌ `Refresh` — 不存在，刷新操作用 `RefreshLeft` 替代
+
+**排查方法**:
+```bash
+# 查看当前项目已安装的所有可用图标名
+grep -oE '[A-Z][a-zA-Z]+' node_modules/@element-plus/icons-vue/dist/index.cjs | sort -u
+```
+
+**修复策略**: 当构建报错 `Missing export: XXXX` 时，先确认图标是否存在，再替换为可用图标。
+
+### 6.2 Vue 模板语法陷阱
+
+**问题**: `<script setup>` 中函数声明的命名和调用方式有严格限制。
+
+| 错误写法 | 正确写法 | 原因 |
+|---------|---------|------|
+| `function get selectedResultColor() {}` | `const selectedResultColor = computed(() => ...)` | 函数名不能含空格；模板中调用计算属性更简洁 |
+| `const getSchemeHexes = function(scheme) {}` | `function getSchemeHexes(scheme) {}` | 函数声明比箭头函数更清晰（可选） |
+| `v-model="inputForm.mode"` 在 `<el-radio-group>` 外 | 必须在组件内部使用 | Vue 3 响应式限制 |
+
+**嵌套引号陷阱**:
+```vue
+<!-- ❌ 错误：模板中字符串包含双引号导致解析失败 -->
+<el-button title="提取颜色">"提取颜色"</el-button>
+
+<!-- ✅ 正确：使用单引号或纯文本 -->
+<el-button title="提取颜色">提取颜色</el-button>
+```
+
+### 6.3 响应式状态陷阱
+
+**问题**: `reactive` 和 `ref` 混用时的常见错误。
+
+| 场景 | 推荐方式 | 示例 |
+|------|---------|------|
+| 表单对象（多个字段） | `reactive` | `const inputForm = reactive({ content: '', mode: 'auto' })` |
+| 单个值（列表、布尔） | `ref` | `const resultColors = ref([])` |
+| 派生值（从其他状态计算） | `computed` | `const selectedResultColor = computed(() => ...)` |
+
+**常见错误**:
+```js
+// ❌ 错误：reactive 对象解构丢失响应性
+const { content, mode } = inputForm  // content 和 mode 不再是响应式的
+
+// ✅ 正确：直接通过对象访问
+inputForm.content = 'new value'  // 保持响应式
+```
+
+### 6.4 API 调用陷阱
+
+**问题**: 前端直接 `fetch` 调用后端接口时的常见错误。
+
+| 场景 | 正确做法 |
+|------|---------|
+| JSON 请求体 | `headers: { 'Content-Type': 'application/json' }` + `JSON.stringify(body)` |
+| 文件下载（blob） | `res.blob()` → `URL.createObjectURL(blob)` → `<a>` 标签触发下载 |
+| 错误处理 | 检查 `res.ok`，解析 `error.json()` 获取后端错误信息 |
+| 分页参数 | GET 请求通过 URL query string: `/api/xxx?page=1&page_size=20` |
+
+### 6.5 构建与部署陷阱
+
+**问题**: 前端代码修改后未重新构建，导致线上 404。
+
+| 错误现象 | 原因 | 解决方案 |
+|---------|------|---------|
+| 访问新页面返回 404 | 未执行 `npm run build`，旧产物中无新路由 | 每次修改前端后必须构建 |
+| `Missing export: XXXX` 构建失败 | 使用了不存在的图标或组件名 | 检查可用图标清单，替换为有效名称 |
+| `Unexpected token` 构建失败 | 模板中有语法错误（嵌套引号、函数名含空格） | 检查构建日志中的行号和错误类型 |
+| chunk 文件过大 (>500KB) | 单页面功能过多，未做代码分割 | 使用动态 `import()` 或调整 chunkSizeWarningLimit |
+
+**构建验证流程（强制执行）**：
+```bash
+# 1. 执行构建
+cd frontend && npm run build
+
+# 2. 检查是否有错误（exit code != 0）
+echo $?  # 必须为 0
+
+# 3. 验证新页面产物是否存在
+ls dist/assets/ | grep -i <模块名>
+
+# 4. 验证路由可访问
+curl -s -o /dev/null -w "%{http_code}" http://<host>:5004/<路由>
+# 必须返回 200
+
+# 5. 验证 JS chunk 被正确引用
+curl -s http://<host>:5004/<路由> | grep '<modulepreload.*<模块名>'
+# 必须返回匹配的 chunk 路径
+```
+
+---
+
+## 📈 七、参考命令速查表
 
 **目的**: 所有生产环境和测试环境的对外服务，必须通过 Nginx 进行反向代理和负载均衡。
 
@@ -348,8 +650,6 @@ server {
 - [ ] 安全加固：禁用不安全的协议和加密套件
 
 ---
-
-## 📈 五、 参考命令速查表
 
 | 目的          | 命令 (Linux/Mac) | Notes |
 |:------------| :--- | :--- |

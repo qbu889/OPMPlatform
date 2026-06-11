@@ -86,6 +86,12 @@ from routes.diff.diff_routes import diff_bp
 # 内容转 Excel 工具
 from routes.document_convert.content_to_excel_routes import content_to_excel_bp
 
+# 户型设计模块
+from routes.house_design.house_design_routes import house_design_bp
+
+# CityColor 颜色提取模块（MySQL 持久化）
+from routes.city_color.city_color_routes import city_color_bp, init_city_color
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -288,6 +294,12 @@ def create_app(config_name='development'):
         # 内容转 Excel 工具
         content_to_excel_bp,
 
+        # 户型设计模块
+        house_design_bp,
+
+        # CityColor 颜色提取模块（MySQL 持久化）
+        city_color_bp,
+
         # Swagger API 文档
         swagger_bp,
     ]
@@ -304,7 +316,23 @@ def create_app(config_name='development'):
         app_logger.info("✅ ES 字段映射初始化完成")
     except Exception as e:
         app_logger.error(f"⚠️  ES 字段映射初始化失败: {e}")
+
+    # ==========================================================================
+    # 初始化内容转Excel模块（创建数据库表）
+    # ==========================================================================
+    from routes.document_convert.content_to_excel_routes import init_content_to_excel
+    try:
+        init_content_to_excel(app)
+        app_logger.info("✅ 内容转Excel模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  内容转Excel模块初始化失败: {e}")
     
+    try:
+        init_city_color(app)
+        app_logger.info("✅ CityColor 模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  CityColor 模块初始化失败: {e}")
+
     # ==========================================================================
     # 注册中间件
     # ==========================================================================
@@ -456,6 +484,27 @@ def index():
             return send_from_directory(FRONTEND_DIST, 'index.html')
     return jsonify({'error': 'Frontend not built'}), 404
 
+# ============================================================================
+# 户型设计 - Vue SPA 入口（精确匹配 /house-design，不拦截 API）
+# ============================================================================
+@app.route('/house-design')
+def house_design_spa():
+    """户型设计页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
+@app.route('/city-color')
+def city_color_spa():
+    """CityColor 页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
 @app.route('/vue')
 @app.route('/vue/<path:path>')
 def vue_app(path=None):
@@ -505,7 +554,7 @@ def handle_404(error):
     # 注意：/kafka-generator/ 是前端页面，只有 /kafka-generator/xxx 才是 API
     if '/api/' in request.path or \
        request.path.startswith('/dingtalk-push/') or \
-       (request.path.startswith('/kafka-generator/') and request.path != '/kafka-generator/' and request.path != '/kafka-generator') or \
+       request.path.startswith('/kafka-generator/') or \
        request.path.startswith('/fpa-generator/') or \
        request.path.startswith('/fpa-rules') or \
        request.path.startswith('/adjustment') or \
@@ -515,6 +564,7 @@ def handle_404(error):
        request.path.startswith('/schedule-config/') or \
        request.path.startswith('/markdown-upload/') or \
        request.path.startswith('/spreadsheet/') or \
+       request.path.startswith('/city-color') or \
        request.path.startswith('/login') or \
        request.path.startswith('/register') or \
        request.path.startswith('/forgot-password') or \

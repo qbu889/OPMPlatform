@@ -80,6 +80,24 @@
             <p>智能对比 JSON 数据差异，忽略字段顺序，高亮显示不同</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/house-design')">
+            <div class="feature-icon" style="background: #e8f5e9">
+              <el-icon size="40" color="#38a169"><OfficeBuilding /></el-icon>
+            </div>
+            <h3>户型设计</h3>
+            <p>智能户型设计系统，支持实时编辑与 PDF 报告导出</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/city-color')">
+            <div class="feature-icon" style="background: #fce4ec">
+              <el-icon size="40" color="#e91e63"><Picture /></el-icon>
+            </div>
+            <h3>CityColor 颜色提取</h3>
+            <p>输入内容智能提取专属配色方案，支持保存与导出</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 

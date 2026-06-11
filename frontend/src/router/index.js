@@ -206,6 +206,20 @@ const routes = [
     component: () => import('../views/tools/ContentToExcel.vue'),
     meta: { title: '内容转 Excel', hidden: true }
   },
+  // 户型设计模块
+  {
+    path: '/house-design',
+    name: 'HouseDesign',
+    component: () => import('../views/house/HouseDesign.vue'),
+    meta: { title: '户型设计', hidden: true }
+  },
+  // CityColor 颜色提取系统
+  {
+    path: '/city-color',
+    name: 'CityColor',
+    component: () => import('../views/citycolor/CityColor.vue'),
+    meta: { title: 'CityColor 颜色提取', hidden: true }
+  },
   // 文档模块
   {
     path: '/fpa-category-rules',
