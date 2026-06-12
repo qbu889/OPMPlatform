@@ -1,0 +1,19 @@
+# API 接口测试依赖
+pytest>=7.4.0
+requests>=2.31.0
+
+# UI 自动化测试依赖
+selenium>=4.15.0
+webdriver-manager>=4.8.0
+
+# 测试工具
+pytest-timeout>=2.2.0
+pytest-xdist>=3.4.0  # 并行测试
+pytest-html>=4.1.0  # HTML 报告
+
+# 代码覆盖率
+coverage>=7.3.0
+pytest-cov>=4.1.0
+
+# 数据验证
+jsonschema>=4.19.0

@@ -126,6 +126,10 @@
               <el-icon><Bottom /></el-icon>
               滚动到底部
             </el-button>
+            <el-button size="small" type="primary" @click="fetchLogs">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
           </div>
         </div>
       </template>
@@ -175,6 +179,47 @@
               <el-option label="Nginx访问" value="nginx" />
               <el-option label="Nginx错误" value="error" />
             </el-select>
+            <div class="level-buttons">
+              <el-button 
+                size="small" 
+                :type="logLevel === 'ALL' ? 'primary' : 'default'"
+                @click="setLogLevel('ALL')"
+              >
+                全部
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'ERROR' ? 'danger' : 'default'"
+                @click="setLogLevel('ERROR')"
+                style="color: #ef4444;"
+              >
+                错误
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'WARNING' ? 'warning' : 'default'"
+                @click="setLogLevel('WARNING')"
+                style="color: #f59e0b;"
+              >
+                警告
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'INFO' ? 'primary' : 'default'"
+                @click="setLogLevel('INFO')"
+                style="color: #3b82f6;"
+              >
+                信息
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="logLevel === 'DEBUG' ? 'default' : 'default'"
+                @click="setLogLevel('DEBUG')"
+                style="color: #8b5cf6;"
+              >
+                调试
+              </el-button>
+            </div>
             <el-select
               v-model="logLines"
               size="small"
@@ -201,8 +246,18 @@
         </div>
       </template>
 
-      <div class="server-logs-content">
+      <div class="server-logs-content" v-if="parsedServerLogs.length === 0">
         <pre>{{ serverLogs }}</pre>
+      </div>
+      <div class="server-logs-content" v-else>
+        <div 
+          v-for="(log, index) in parsedServerLogs" 
+          :key="index"
+          class="log-item"
+          :style="{ color: log.color }"
+        >
+          {{ log.line }}
+        </div>
       </div>
     </el-card>
 
@@ -222,7 +277,7 @@
         <el-table-column prop="display_name" label="备份名称" min-width="200" />
         <el-table-column prop="date" label="备份时间" width="180" />
         <el-table-column prop="size" label="大小" width="120" />
-        <el-table-column label="操作" width="150" align="center">
+        <el-table-column label="操作" width="250" align="center">
           <template #default="{ row }">
             <el-button
               size="small"
@@ -230,6 +285,22 @@
               @click="restoreBackup(row.filename)"
             >
               恢复
+            </el-button>
+            <el-button
+              size="small"
+              type="success"
+              @click="downloadBackup(row.filename)"
+            >
+              <el-icon><Download /></el-icon>
+              下载
+            </el-button>
+            <el-button
+              size="small"
+              type="danger"
+              @click="deleteBackup(row.filename)"
+            >
+              <el-icon><Delete /></el-icon>
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -367,7 +438,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Upload, Monitor, Operation, Cpu, Refresh, FolderAdd,
   SwitchButton, Download, Document, Delete, Bottom,
-  View, Folder, Setting
+  View, Folder, Setting, Search
 } from '@element-plus/icons-vue'
 
 // 配置
@@ -401,7 +472,9 @@ let eventSource = null
 
 // 服务器日志
 const serverLogs = ref('')
+const parsedServerLogs = ref([])
 const serverLogType = ref('backend')
+const logLevel = ref('ALL')
 const logLines = ref(100) // 默认显示100行
 const autoRefresh = ref(false)
 const refreshInterval = ref(10000) // 默认 10 秒
@@ -526,6 +599,35 @@ const scrollToBottom = () => {
   })
 }
 
+// 查询日志
+const fetchLogs = async () => {
+  try {
+    const response = await fetch('/deploy-config/logs', {
+      method: 'GET',
+      headers: {
+        'Accept': '*/*',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success) {
+        logs.value = data.data.logs || []
+        ElMessage.success('日志查询成功')
+      } else {
+        ElMessage.error(data.message || '查询失败')
+      }
+    } else {
+      ElMessage.error('查询失败')
+    }
+  } catch (error) {
+    console.error('查询日志失败:', error)
+    ElMessage.error('查询日志失败：' + error.message)
+  }
+}
+
 // 切换自动刷新
 const toggleAutoRefresh = (enabled) => {
   if (enabled) {
@@ -557,13 +659,20 @@ const updateRefreshInterval = () => {
   }
 }
 
+// 设置日志级别
+const setLogLevel = (level) => {
+  logLevel.value = level
+  loadServerLogs()
+}
+
 // 加载服务器日志
 const loadServerLogs = async () => {
   try {
-    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}`)
+    const response = await fetch(`/deploy-config/server-logs?type=${serverLogType.value}&lines=${logLines.value}&level=${logLevel.value}`)
     const result = await response.json()
     if (result.success) {
       serverLogs.value = result.data.logs
+      parsedServerLogs.value = result.data.parsed_logs || []
     } else {
       if (!autoRefresh.value) {
         ElMessage.error(result.message)
@@ -581,7 +690,7 @@ const loadServerLogs = async () => {
 const downloadServerLogs = async () => {
   try {
     const downloadLines = logLines.value * 10 // 下载更多行数
-    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}`
+    const url = `/deploy-config/server-logs/download?type=${serverLogType.value}&lines=${downloadLines}&level=${logLevel.value}`
 
     // 创建隐藏的a标签进行下载
     const link = document.createElement('a')
@@ -591,7 +700,7 @@ const downloadServerLogs = async () => {
     link.click()
     document.body.removeChild(link)
 
-    ElMessage.success(`正在下载最近 ${downloadLines} 行日志...`)
+    ElMessage.success(`正在下载最近 ${downloadLines} 行${logLevel.value !== 'ALL' ? `（${logLevel.value}级别）` : ''}日志...`)
   } catch (error) {
     console.error('下载日志失败:', error)
     ElMessage.error('下载失败')
@@ -774,6 +883,72 @@ const confirmRestore = async () => {
   }
 }
 
+// 下载备份
+const downloadBackup = async (filename) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要下载备份文件 "${filename}" 吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    )
+
+    // 创建隐藏的 iframe 来触发下载
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = `/deploy-config/backups/${encodeURIComponent(filename)}/download`
+    document.body.appendChild(iframe)
+    
+    // 5秒后移除 iframe
+    setTimeout(() => {
+      document.body.removeChild(iframe)
+    }, 5000)
+    
+    ElMessage.success('开始下载备份文件')
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('下载失败:', error)
+      ElMessage.error('下载失败')
+    }
+  }
+}
+
+// 删除备份
+const deleteBackup = async (filename) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除备份 "${filename}" 吗？此操作不可恢复！`,
+      '警告',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const response = await fetch(`/deploy-config/backups/${encodeURIComponent(filename)}`, {
+      method: 'DELETE'
+    })
+
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('备份已删除')
+      // 刷新备份列表
+      loadBackups()
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
 // 开始状态轮询
 let statusPollingInterval = null
 const startStatusPolling = () => {
@@ -920,6 +1095,11 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+.level-buttons {
+  display: flex;
+  gap: 6px;
+}
+
 .log-entry {
   margin-bottom: 5px;
   line-height: 1.6;
@@ -978,5 +1158,14 @@ onUnmounted(() => {
 
 .mb-3 {
   margin-bottom: 15px;
+}
+
+.log-item {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+  padding: 2px 0;
 }
 </style>

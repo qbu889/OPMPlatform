@@ -18,12 +18,12 @@
       </template>
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :lg="8">
-          <el-card class="feature-card" shadow="hover" @click="goTo('/clean-event')">
-            <div class="feature-icon" style="background: #e1f3ff">
-              <el-icon size="40" color="#409eff"><Filter /></el-icon>
+          <el-card class="feature-card" shadow="hover" @click="goTo('/content-to-excel')">
+            <div class="feature-icon" style="background: #e8f5e9">
+              <el-icon size="40" color="#67c23a"><Document /></el-icon>
             </div>
-            <h3>事件数据清洗</h3>
-            <p>处理 ES 查询结果，提取 EVENT_FP 并生成推送消息（支持新旧功能切换）</p>
+            <h3>内容转 Excel 工具</h3>
+            <p>根据 Markdown 内容生成 Excel 表格</p>
           </el-card>
         </el-col>
         <el-col :xs="24" :sm="12" :lg="8">
@@ -69,6 +69,42 @@
             </div>
             <h3>SQL 智能生成</h3>
             <p>AI 驱动的智能 SQL 生成器，支持复杂查询和多表关联</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/json-diff')">
+            <div class="feature-icon" style="background: #fff9c4">
+              <el-icon size="40" color="#fbc02d"><DataAnalysis /></el-icon>
+            </div>
+            <h3>JSON 对比工具</h3>
+            <p>智能对比 JSON 数据差异，忽略字段顺序，高亮显示不同</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/house-design')">
+            <div class="feature-icon" style="background: #e8f5e9">
+              <el-icon size="40" color="#38a169"><OfficeBuilding /></el-icon>
+            </div>
+            <h3>户型设计</h3>
+            <p>智能户型设计系统，支持实时编辑与 PDF 报告导出</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/city-color')">
+            <div class="feature-icon" style="background: #fce4ec">
+              <el-icon size="40" color="#e91e63"><Picture /></el-icon>
+            </div>
+            <h3>CityColor 颜色提取</h3>
+            <p>输入内容智能提取专属配色方案，支持保存与导出</p>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/wheel-lottery')">
+            <div class="feature-icon" style="background: #fff3e0">
+              <el-icon size="40" color="#ff9800"><Operation /></el-icon>
+            </div>
+            <h3>彩色抽奖转盘</h3>
+            <p>可视化配置分区，点击抽奖触发流畅动画，体验随机乐趣</p>
           </el-card>
         </el-col>
       </el-row>

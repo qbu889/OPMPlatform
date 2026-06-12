@@ -58,6 +58,20 @@ check_and_free_port() {
     fi
 }
 
+# 清理 app.py 进程（防止僵尸进程）
+cleanup_app_py_processes() {
+    echo "🔍 检查 app.py 进程..."
+    APP_PIDS=$(ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}')
+    if [ -n "$APP_PIDS" ]; then
+        echo "  发现 app.py 进程，强制清理..."
+        echo "$APP_PIDS" | xargs kill -9 2>/dev/null
+        sleep 1
+        echo "✅ app.py 进程已清理"
+    else
+        echo "✅ 无残留 app.py 进程"
+    fi
+}
+
 # 启动后端服务
 start_backend() {
     echo "=========================================="
@@ -67,6 +81,9 @@ start_backend() {
     
     # 进入项目根目录
     cd "$(dirname "$0")"
+    
+    # 清理旧进程
+    cleanup_app_py_processes
     
     # 激活虚拟环境
     if [ -d ".venv" ]; then

@@ -131,8 +131,10 @@ const scrollToBottom = async () => {
 <style scoped>
 .chatbot-container {
   padding: 20px;
-  max-width: 900px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .card-header {

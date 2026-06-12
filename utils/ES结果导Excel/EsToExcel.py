@@ -126,6 +126,10 @@ def parse_json_format(file_path):
     
 def _process_json_data(data):
     """处理已解析的 JSON 数据 - 支持多种格式"""
+    # 检测是否为简单 JSON 数组格式（直接包含对象数组）
+    if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+        return _process_simple_json_array(data)
+    
     # 验证数据结构
     if not isinstance(data, dict):
         raise ValueError(f"JSON 数据格式错误：期望字典类型，实际为 {type(data).__name__}")
@@ -144,9 +148,37 @@ def _process_json_data(data):
     error_msg += f"可用字段: {', '.join(available_keys)}\n\n"
     error_msg += "💡 支持的格式：\n"
     error_msg += "1. ES SQL 查询结果：{\"columns\": [...], \"rows\": [...]}\n"
-    error_msg += "2. ES _search 查询结果：{\"hits\": {\"hits\": [{\"_source\": {...}}]}}\n\n"
+    error_msg += "2. ES _search 查询结果：{\"hits\": {\"hits\": [{\"_source\": {...}}]}}\n"
+    error_msg += "3. 简单 JSON 数组：[{\"field1\": \"value1\", \"field2\": \"value2\"}, ...]\n\n"
     error_msg += "✅ 建议使用 POST /_sql?format=json 或 POST /_search 接口获取数据"
     raise ValueError(error_msg)
+
+
+def _process_simple_json_array(data):
+    """处理简单的 JSON 数组格式（直接包含对象数组）"""
+    if not data:
+        raise ValueError("JSON 数组为空")
+    
+    # 从第一个对象提取所有字段名
+    first_item = data[0]
+    columns = list(first_item.keys())
+    
+    # 提取数据
+    rows = []
+    for item in data:
+        row = [item.get(col, '') for col in columns]
+        rows.append(row)
+    
+    # 创建 DataFrame
+    df_result = pd.DataFrame(rows, columns=columns)
+    df_result = df_result.fillna("")
+    
+    # 格式化时间字段
+    _format_time_columns(df_result)
+    
+    print(f"✅ [简单 JSON 数组] 共 {len(data)} 条记录，{len(columns)} 个字段")
+    print(f"   字段列表: {', '.join(columns[:10])}{'...' if len(columns) > 10 else ''}")
+    return df_result
 
 
 def _process_es_sql_json(data):
@@ -313,10 +345,11 @@ def parse_es_sql_table(file_path):
 def _format_time_columns(df):
     """格式化 DataFrame 中的时间字段（ISO 8601 -> 标准格式）"""
     time_columns_count = 0
-    for col in df.columns:
-        col_dtype = str(df[col].dtype)
+    for i, col in enumerate(df.columns):
+        col_dtype = str(df.dtypes.iloc[i])
         if col_dtype in ['object', 'str']:
-            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            col_data = df.iloc[:, i]
+            sample = col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else None
             if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
                 try:
                     def format_time(x):
@@ -327,7 +360,7 @@ def _format_time_columns(df):
                             time_str = time_str.split('.')[0]
                         return time_str
                     
-                    df[col] = df[col].apply(format_time)
+                    df.iloc[:, i] = col_data.apply(format_time)
                     time_columns_count += 1
                 except Exception:
                     pass
@@ -388,12 +421,15 @@ def parse_vertical_txt(file_path):
     # 例如：2026-04-09T10:37:30.000Z -> 2026-04-09 10:37:30（去掉毫秒）
     time_columns_count = 0
     for col in df.columns:
-        col_dtype = str(df[col].dtype)
+        col_dtype = str(df.dtypes[col])
         
         # 支持 object 和 str 类型
         if col_dtype in ['object', 'str']:
+            col_data = df[col]
+            if isinstance(col_data, pd.DataFrame):
+                col_data = col_data.iloc[:, 0]
             # 检测是否为时间格式（包含 T 和 Z）
-            sample = df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else None
+            sample = col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else None
             if sample and isinstance(sample, str) and 'T' in sample and ('Z' in sample or '+' in sample):
                 try:
                     print(f"⏰ 检测到时间列: {col}，示例值: {sample}")
@@ -408,9 +444,9 @@ def parse_vertical_txt(file_path):
                             time_str = time_str.split('.')[0]
                         return time_str
                     
-                    df[col] = df[col].apply(format_time)
+                    df[col] = col_data.apply(format_time)
                     time_columns_count += 1
-                    print(f"✅ 时间列 {col} 已格式化，示例: {df[col].dropna().iloc[0] if len(df[col].dropna()) > 0 else 'N/A'}")
+                    print(f"✅ 时间列 {col} 已格式化，示例: {col_data.dropna().iloc[0] if len(col_data.dropna()) > 0 else 'N/A'}")
                 except Exception as e:
                     print(f"❌ 时间列 {col} 格式化失败: {e}")
                     pass  # 如果转换失败，保持原样

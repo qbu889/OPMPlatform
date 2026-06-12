@@ -80,6 +80,21 @@ from routes.tools.sql_generator_routes import sql_generator_bp
 # 部署配置管理
 from routes.deploy.deploy_config_routes import deploy_config_bp
 
+# JSON对比工具
+from routes.diff.diff_routes import diff_bp
+
+# 内容转 Excel 工具
+from routes.document_convert.content_to_excel_routes import content_to_excel_bp
+
+# 户型设计模块
+from routes.house_design.house_design_routes import house_design_bp
+
+# CityColor 颜色提取模块（MySQL 持久化）
+from routes.city_color.city_color_routes import city_color_bp, init_city_color
+
+# 彩色抽奖转盘模块
+from routes.wheel_lottery.wheel_lottery_routes import wheel_lottery_bp, init_wheel_config
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -186,7 +201,7 @@ def create_app(config_name='development'):
     app = Flask(
         __name__,
         static_folder='static',
-        template_folder='templates（弃用）'
+        template_folder='templates'
     )
     
     # 启用 CORS（允许跨域请求）
@@ -276,6 +291,21 @@ def create_app(config_name='development'):
         # 部署配置管理
         deploy_config_bp,
         
+        # JSON对比工具
+        diff_bp,
+
+        # 内容转 Excel 工具
+        content_to_excel_bp,
+
+        # 户型设计模块
+        house_design_bp,
+
+        # CityColor 颜色提取模块（MySQL 持久化）
+        city_color_bp,
+
+        # 彩色抽奖转盘模块
+        wheel_lottery_bp,
+
         # Swagger API 文档
         swagger_bp,
     ]
@@ -292,7 +322,29 @@ def create_app(config_name='development'):
         app_logger.info("✅ ES 字段映射初始化完成")
     except Exception as e:
         app_logger.error(f"⚠️  ES 字段映射初始化失败: {e}")
+
+    # ==========================================================================
+    # 初始化内容转Excel模块（创建数据库表）
+    # ==========================================================================
+    from routes.document_convert.content_to_excel_routes import init_content_to_excel
+    try:
+        init_content_to_excel(app)
+        app_logger.info("✅ 内容转Excel模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  内容转Excel模块初始化失败: {e}")
     
+    try:
+        init_city_color(app)
+        app_logger.info("✅ CityColor 模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  CityColor 模块初始化失败: {e}")
+
+    try:
+        init_wheel_config(app)
+        app_logger.info("✅ 转盘抽奖模块初始化完成")
+    except Exception as e:
+        app_logger.error(f"⚠️  转盘抽奖模块初始化失败: {e}")
+
     # ==========================================================================
     # 注册中间件
     # ==========================================================================
@@ -324,6 +376,12 @@ def create_app(config_name='development'):
     def init_omlx_async():
         """在后台线程中异步初始化 AI 服务"""
         try:
+            # 检查是否为测试环境，测试环境跳过AI服务初始化
+            import os
+            if os.getenv("FLASK_ENV", "").lower() == "testing":
+                app_logger.info("[TEST MODE] 跳过 AI 服务初始化")
+                return
+            
             app_logger.info("=" * 80)
             app_logger.info("🚀 正在异步初始化 AI 服务...")
             app_logger.info("=" * 80)
@@ -340,10 +398,17 @@ def create_app(config_name='development'):
                 app_logger.error("❌ AI 服务验证失败！请检查服务是否正常运行")
                 app_logger.error("   虽然服务不可用，但应用将继续运行，AI 相关功能将受到影响")
         except Exception as e:
-            app_logger.error(f"❌ AI 服务异步初始化异常：{e}")
-            app_logger.error("   应用将继续运行，但 AI 功能可能不可用")
+            try:
+                app_logger.error(f"❌ AI 服务异步初始化异常：{e}")
+                app_logger.error("   应用将继续运行，但 AI 功能可能不可用")
+            except Exception:
+                # 忽略日志写入错误（可能是流已关闭）
+                pass
         finally:
-            app_logger.info("=" * 80)
+            try:
+                app_logger.info("=" * 80)
+            except Exception:
+                pass
     
     # 启动后台线程进行异步初始化
     omlx_init_thread = threading.Thread(target=init_omlx_async, daemon=True)
@@ -431,6 +496,36 @@ def index():
             return send_from_directory(FRONTEND_DIST, 'index.html')
     return jsonify({'error': 'Frontend not built'}), 404
 
+# ============================================================================
+# 户型设计 - Vue SPA 入口（精确匹配 /house-design，不拦截 API）
+# ============================================================================
+@app.route('/house-design')
+def house_design_spa():
+    """户型设计页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
+@app.route('/city-color')
+def city_color_spa():
+    """CityColor 页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
+@app.route('/wheel-lottery')
+def wheel_lottery_spa():
+    """彩色抽奖转盘页面 - 返回 Vue SPA HTML"""
+    if os.path.exists(FRONTEND_DIST):
+        index_html = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_html):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+    return jsonify({'error': 'Frontend not built'}), 404
+
 @app.route('/vue')
 @app.route('/vue/<path:path>')
 def vue_app(path=None):
@@ -477,6 +572,7 @@ def handle_404(error):
     404 错误处理 - 如果是前端路由，返回 index.html
     """
     # 如果是 API 请求，返回 JSON 404
+    # 注意：/kafka-generator/ 是前端页面，只有 /kafka-generator/xxx 才是 API
     if '/api/' in request.path or \
        request.path.startswith('/dingtalk-push/') or \
        request.path.startswith('/kafka-generator/') or \
@@ -489,6 +585,8 @@ def handle_404(error):
        request.path.startswith('/schedule-config/') or \
        request.path.startswith('/markdown-upload/') or \
        request.path.startswith('/spreadsheet/') or \
+       request.path.startswith('/city-color') or \
+       request.path.startswith('/wheel-lottery') or \
        request.path.startswith('/login') or \
        request.path.startswith('/register') or \
        request.path.startswith('/forgot-password') or \

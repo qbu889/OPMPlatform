@@ -50,18 +50,48 @@ echo "✅ 文件上传完成"
 echo ""
 
 # SSH 执行远程重启
-echo "🔄 重启远程服务..."
+echo " 重启远程服务..."
 ssh ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
     cd /project/wordToWord
     
-    echo "1️⃣ 停止现有进程..."
-    pkill -f "python app.py" || true
-    pkill -f "vite" || true
-    pkill -f "npm run" || true
+    echo "0️⃣ 检查并清理旧进程..."
+    # 检查端口占用
+    PORT_PIDS=$(lsof -ti:5004 2>/dev/null)
+    if [ -n "$PORT_PIDS" ]; then
+        echo "   ⚠️  发现端口 5004 被占用，强制清理..."
+        echo "$PORT_PIDS" | xargs kill -9 2>/dev/null
+        sleep 1
+        echo "   ✅ 端口进程已清理"
+    else
+        echo "   ✅ 端口 5004 空闲"
+    fi
+    
+    # 检查 app.py 进程
+    APP_PIDS=$(ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}')
+    if [ -n "$APP_PIDS" ]; then
+        echo "   ️  发现 app.py 进程，强制清理..."
+        echo "$APP_PIDS" | xargs kill -9 2>/dev/null
+        sleep 1
+        echo "   ✅ app.py 进程已清理"
+    else
+        echo "   ✅ 无残留 app.py 进程"
+    fi
+    
+    echo "1️ 停止现有进程（二次确认）..."
+    # 更严格的进程清理，避免僵尸进程
+    pkill -9 -f "python app.py" || true
+    pkill -9 -f "vite" || true
+    pkill -9 -f "npm run" || true
     sleep 2
     
-    echo "2️⃣ 清理进程..."
-    ps -ef | grep -E "python|vite|node" | grep wordToWord | grep -v grep || echo "   所有进程已停止"
+    echo "2️⃣ 验证进程已清理..."
+    REMAINING=$(ps aux | grep 'python app.py' | grep -v grep | wc -l)
+    if [ "$REMAINING" -gt 0 ]; then
+        echo "   ⚠️  发现 $REMAINING 个残留进程，强制清理..."
+        ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+        sleep 1
+    fi
+    ps -ef | grep -E "python|vite|node" | grep wordToWord | grep -v grep || echo "   ✅ 所有进程已停止"
     
     echo "3️⃣ 激活虚拟环境..."
     source .venv/bin/activate
@@ -190,7 +220,16 @@ server {
     location /spreadsheet { proxy_pass http://127.0.0.1:5004; }
     
     location /swagger { proxy_pass http://127.0.0.1:5004; }
-    
+
+    # Content To Excel API
+    location /api/content-to-excel/ {
+        proxy_pass http://127.0.0.1:5004;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
     }

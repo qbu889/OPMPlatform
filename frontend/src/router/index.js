@@ -151,6 +151,12 @@ const routes = [
     meta: { title: 'Kafka 字段映射管理', hidden: true }
   },
   {
+    path: '/kafka-field-dict',
+    name: 'KafkaFieldDictManager',
+    component: () => import('../views/kafka/KafkaFieldDictManager.vue'),
+    meta: { title: 'Kafka 字段字典管理', hidden: true }
+  },
+  {
     path: '/es-to-excel',
     name: 'EsToExcel',
     component: () => import('../views/tools/EsToExcel.vue'),
@@ -185,6 +191,41 @@ const routes = [
     name: 'SqlGenerator',
     component: () => import('../views/tools/SqlGenerator.vue'),
     meta: { title: 'SQL 智能生成器', hidden: true }
+  },
+  // JSON对比工具
+  {
+    path: '/json-diff',
+    name: 'JsonDiff',
+    component: () => import('../views/tools/JsonDiff.vue'),
+    meta: { title: 'JSON 对比工具', hidden: true }
+  },
+  // 内容转 Excel 工具
+  {
+    path: '/content-to-excel',
+    name: 'ContentToExcel',
+    component: () => import('../views/tools/ContentToExcel.vue'),
+    meta: { title: '内容转 Excel', hidden: true }
+  },
+  // 户型设计模块
+  {
+    path: '/house-design',
+    name: 'HouseDesign',
+    component: () => import('../views/house/HouseDesign.vue'),
+    meta: { title: '户型设计', hidden: true }
+  },
+  // CityColor 颜色提取系统
+  {
+    path: '/city-color',
+    name: 'CityColor',
+    component: () => import('../views/citycolor/CityColor.vue'),
+    meta: { title: 'CityColor 颜色提取', hidden: true }
+  },
+  // 彩色抽奖转盘
+  {
+    path: '/wheel-lottery',
+    name: 'WheelLottery',
+    component: () => import('../views/tools/WheelLottery.vue'),
+    meta: { title: '彩色抽奖转盘', hidden: true }
   },
   // 文档模块
   {

@@ -464,9 +464,24 @@ def restore_backup():
         # 异步恢复操作（在后台执行）
         def do_restore():
             try:
-                # 1. 停止当前服务
-                subprocess.run('pkill -f "python app.py"', shell=True, timeout=10)
-                subprocess.run('pkill -f "vite"', shell=True, timeout=10)
+                # 1. 强制停止当前服务，避免僵尸进程
+                subprocess.run('pkill -9 -f "python app.py"', shell=True, timeout=10)
+                subprocess.run('pkill -9 -f "vite"', shell=True, timeout=10)
+                time.sleep(2)
+                
+                # 验证清理
+                result = subprocess.run(
+                    'ps aux | grep "python app.py" | grep -v grep | wc -l',
+                    shell=True, capture_output=True, text=True
+                )
+                remaining = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+                if remaining > 0:
+                    print(f'发现 {remaining} 个残留进程，强制清理...')
+                    subprocess.run(
+                        'ps aux | grep "python app.py" | grep -v grep | awk \'{print $2}\' | xargs kill -9 2>/dev/null || true',
+                        shell=True, timeout=10
+                    )
+                    time.sleep(1)
                 
                 # 2. 解压备份文件
                 # 备份到临时目录

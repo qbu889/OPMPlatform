@@ -62,6 +62,14 @@
                   </el-input>
                   <div class="form-hint">例如：2026-04-13 14:30:00，留空则使用 ES 数据中的 EVENT_TIME</div>
                 </el-form-item>
+                
+                <el-form-item label="反追单时间">
+                  <el-button type="warning" @click="applyRetroactiveTime" :disabled="!customEventTime">
+                    <el-icon><Clock /></el-icon>
+                    反追单（-2天）
+                  </el-button>
+                  <div class="form-hint">将自定义事件时间减去2天，用于反追单场景</div>
+                </el-form-item>
               </el-form>
             </el-card>
 
@@ -271,7 +279,43 @@ const insertCurrentTime = () => {
   const minutes = String(now.getMinutes()).padStart(2, '0')
   const seconds = String(now.getSeconds()).padStart(2, '0')
   
-  customEventTime.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  customEventTime.value = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+}
+
+// 应用反追单时间（-2天）
+const applyRetroactiveTime = () => {
+  if (!customEventTime.value) {
+    ElMessage.warning('请先设置自定义事件时间')
+    return
+  }
+  
+  try {
+    // 解析当前时间（支持 YYYY-MM-DD 和 YYYY/MM/DD 格式）
+    const date = new Date(customEventTime.value.replace(/-/g, '/'))
+    
+    if (isNaN(date.getTime())) {
+      ElMessage.error('时间格式不正确，请使用 YYYY-MM-DD HH:mm:ss 或 YYYY/MM/DD HH:mm:ss 格式')
+      return
+    }
+    
+    // 减去2天
+    date.setDate(date.getDate() - 2)
+    
+    // 格式化回字符串（使用与单条一致的格式：YYYY/MM/DD HH:MM:SS）
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    
+    customEventTime.value = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+    
+    ElMessage.success(`已应用反追单时间：${customEventTime.value}`)
+  } catch (error) {
+    console.error('应用反追单时间失败:', error)
+    ElMessage.error('时间转换失败，请检查时间格式')
+  }
 }
 
 // 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式）

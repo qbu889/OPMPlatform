@@ -7,10 +7,20 @@
           <h2><el-icon :size="28" color="#667eea"><Operation /></el-icon> Kafka 消息生成器</h2>
           <p class="subtitle">根据 ES 数据生成 Kafka 消息</p>
         </div>
-        <el-button type="primary" @click="goToFieldMetaManager">
-          <el-icon><Setting /></el-icon>
-          字段映射管理
-        </el-button>
+        <div class="header-buttons">
+          <el-button type="primary" @click="goToFieldMetaManager">
+            <el-icon><Setting /></el-icon>
+            字段映射管理
+          </el-button>
+          <el-button type="success" @click="goToFieldDictManager">
+            <el-icon><Collection /></el-icon>
+            字段字典管理
+          </el-button>
+          <el-button type="warning" @click="openAddDictDialog">
+            <el-icon><Plus /></el-icon>
+            新增字典项
+          </el-button>
+        </div>
       </div>
     </div>
 
@@ -65,6 +75,10 @@
           <el-icon><Delete /></el-icon>
           清除所有字段
         </el-button>
+        <el-button type="success" @click="showInputValues">
+          <el-icon><View /></el-icon>
+          查看输入值
+        </el-button>
         <!-- 自动检测缺失字段 -->
         <el-switch
           v-model="autoDetectMissing"
@@ -106,10 +120,18 @@
           v-for="field in displayFields" 
           :key="field.name"
           class="field-item"
-          :class="{ 'filled': fieldValues[field.name] }"
+          :class="{ 
+            'filled': fieldValues[field.name],
+            'newly-valued': newlyValuedFields.has(field.name),
+            'unique-enabled': uniqueFields.has(field.name)
+          }"
         >
           <div class="field-header">
-            <label>{{ field.name }}（{{ field.label }}）:</label>
+            <label>
+              <span v-if="pinnedFields.has(field.name)" class="pin-icon" title="已置顶">📌 </span>
+              <span v-else-if="fieldValues[field.name]" class="value-icon" title="有值">✓ </span>
+              {{ field.name }}（{{ field.label }}）:
+            </label>
             <div class="field-actions">
               <el-button 
                 size="small" 
@@ -118,6 +140,22 @@
                 title="置顶/取消置顶"
               >
                 <el-icon><Top /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="fixedFields.has(field.name) ? 'success' : 'info'"
+                @click="toggleFieldFixed(field.name)"
+                title="固定/取消固定"
+              >
+                <el-icon><Lock /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                :type="uniqueFields.has(field.name) ? 'warning' : 'info'"
+                @click="toggleUniqueField(field.name)"
+                title="开启/关闭唯一值"
+              >
+                <el-icon><MagicStick /></el-icon>
               </el-button>
               <el-button 
                 v-if="DICT_FIELDS.has(field.name)"
@@ -152,40 +190,90 @@
             v-model="fieldValues[field.name]"
             :placeholder="field.placeholder || '请输入'"
             size="small"
+            clearable
+            @clear="clearField(field.name)"
             @change="onFieldChange(field.name, fieldValues[field.name])"
           >
             <template #append>
-              <el-select 
-                v-if="historyValues[field.name] && historyValues[field.name].length > 0"
-                v-model="fieldValues[field.name]"
-                placeholder="历史值"
+              <el-button
                 size="small"
-                style="width: 120px"
-                @change="onFieldChange(field.name, fieldValues[field.name])"
+                type="success"
+                @click="generateUniqueValue(field.name)"
+                title="为当前字段值添加唯一后缀"
+                class="unique-value-btn"
               >
-                <el-option
-                  v-for="val in historyValues[field.name]"
-                  :key="val"
-                  :label="val"
-                  :value="val"
-                >
-                  <span style="float: left">{{ val }}</span>
-                  <el-button
-                    size="small"
-                    type="danger"
-                    link
-                    @click.stop="deleteHistoryValue(field.name, val)"
-                    style="float: right; margin-right: 10px"
-                  >
-                    <el-icon><Close /></el-icon>
-                  </el-button>
-                </el-option>
-              </el-select>
+                <el-icon><MagicStick /></el-icon>
+                唯一值
+              </el-button>
             </template>
           </el-input>
+          <el-select
+            v-if="historyValues[field.name] && historyValues[field.name].length > 0"
+            v-model="fieldValues[field.name]"
+            placeholder="历史值"
+            size="small"
+            class="history-select-standalone"
+            @change="onFieldChange(field.name, fieldValues[field.name])"
+            style="margin-top: 5px; width: 100%;"
+          >
+            <el-option
+              v-for="val in historyValues[field.name]"
+              :key="val"
+              :label="val"
+              :value="val"
+            >
+              <span style="float: left">{{ val }}</span>
+              <el-button
+                size="small"
+                type="danger"
+                link
+                @click.stop="deleteHistoryValue(field.name, val)"
+                style="float: right; margin-right: 10px"
+              >
+                <el-icon><Close /></el-icon>
+              </el-button>
+            </el-option>
+          </el-select>
           
           <div v-if="field.esField" class="field-meta">
-            ES字段: <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+            <div class="meta-row">
+              <span class="meta-label">Kafka字段:</span>
+              <span class="kafka-field" :title="field.name">{{ field.name }}</span>
+              <el-button 
+                size="small" 
+                type="success" 
+                link
+                @click="copyText(field.name, 'Kafka字段')"
+                style="margin-left: 4px"
+                title="复制 Kafka 字段"
+              >
+                <el-icon><CopyDocument /></el-icon>
+              </el-button>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">ES字段:</span>
+              <span class="es-field" :title="field.esField">{{ field.esField }}</span>
+              <el-button 
+                size="small" 
+                type="primary" 
+                link
+                @click="copyText(field.esField, 'ES字段')"
+                style="margin-left: 4px"
+                title="复制 ES 字段"
+              >
+                <el-icon><CopyDocument /></el-icon>
+              </el-button>
+              <el-button 
+                size="small" 
+                type="primary"
+                circle
+                @click="openMappingEditDialog(field)"
+                style="margin-left: 8px"
+                title="编辑映射"
+              >
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
           </div>
           <div v-if="fieldRemarkMap[field.name]" class="field-remark" :title="fieldRemarkMap[field.name]">
             <el-icon><ChatDotSquare /></el-icon>
@@ -217,6 +305,65 @@
         <el-button @click="fieldRemarkDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveFieldRemark" :loading="savingFieldRemark">
           保存
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 字段映射编辑对话框 -->
+    <el-dialog
+      v-model="mappingEditDialogVisible"
+      title="编辑映射"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="mappingEditForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="mappingEditForm.kafka_field" disabled />
+        </el-form-item>
+        
+        <el-form-item label="ES 字段">
+          <el-input 
+            v-model="mappingEditForm.es_field" 
+            placeholder="例如：ALARM_STANDARD_ID"
+          />
+          <div class="form-tip">输入 ES 中的原始字段名，留空则使用默认映射</div>
+        </el-form-item>
+        
+        <el-form-item label="字段中文解释">
+          <el-input 
+            v-model="mappingEditForm.label_cn" 
+            placeholder="例如：网管告警ID"
+          />
+        </el-form-item>
+        
+        <el-form-item label="数据库中文">
+          <el-input 
+            v-model="mappingEditForm.db_cn" 
+            placeholder="例如：告警标准化ID"
+          />
+        </el-form-item>
+        
+        <el-form-item label="备注">
+          <el-input 
+            v-model="mappingEditForm.remark" 
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+        
+        <el-form-item label="状态">
+          <el-radio-group v-model="mappingEditForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="mappingEditDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveMappingEdit" :loading="savingMapping">
+          确定
         </el-button>
       </template>
     </el-dialog>
@@ -314,7 +461,7 @@
           </el-button>
           <el-button type="primary" @click="openRemarkDialog">
             <el-icon><Edit /></el-icon>
-            添加备注
+            {{ currentGeneratedRemark ? '修改备注' : '添加备注' }}
           </el-button>
         </div>
         <el-button type="danger" @click="regenerateMessage">
@@ -346,6 +493,13 @@
       width="80%"
       :close-on-click-modal="false"
     >
+      <div class="dict-actions mb-3">
+        <el-button type="primary" size="small" @click="openAddDictFromField">
+          <el-icon><Plus /></el-icon>
+          新增字典项
+        </el-button>
+        <span class="dict-field-label">当前字段：{{ currentDictField }}</span>
+      </div>
       <el-table
         :data="dictData"
         border
@@ -353,14 +507,120 @@
         max-height="500"
         @row-click="selectDictValue"
       >
-        <el-table-column prop="field_name" label="字段名" width="150" />
-        <el-table-column prop="field_value" label="字段值" min-width="200" />
-        <el-table-column prop="description" label="说明" min-width="250" />
-        <el-table-column prop="source" label="来源" width="120" />
+        <el-table-column prop="dict_key" label="字典键" width="150" />
+        <el-table-column prop="dict_value" label="字典值" min-width="200" />
+        <el-table-column prop="remark" label="说明" min-width="250" />
+        <el-table-column prop="sort_order" label="排序" width="80" />
       </el-table>
 
       <template #footer>
         <el-button @click="dictDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新增/编辑字典项对话框 -->
+    <el-dialog
+      v-model="addDictDialogVisible"
+      :title="editingDictId ? '编辑字典项' : '新增字典项'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="addDictForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="addDictForm.kafka_field" placeholder="例如：SEVERITY" />
+          <div class="form-tip">输入 Kafka 字段名，如 SEVERITY、EVENT_TYPE 等</div>
+        </el-form-item>
+
+        <el-form-item label="字典键" required>
+          <el-input v-model="addDictForm.dict_key" placeholder="例如：1" />
+          <div class="form-tip">字典的键值，通常是数字或代码</div>
+        </el-form-item>
+
+        <el-form-item label="字典值" required>
+          <el-input v-model="addDictForm.dict_value" placeholder="例如：紧急" />
+          <div class="form-tip">字典的显示值，通常是中文描述</div>
+        </el-form-item>
+
+        <el-form-item label="排序">
+          <el-input-number v-model="addDictForm.sort_order" :min="0" :max="9999" style="width: 100%" />
+          <div class="form-tip">数字越小越靠前</div>
+        </el-form-item>
+
+        <el-form-item label="备注">
+          <el-input
+            v-model="addDictForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-radio-group v-model="addDictForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="addDictDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDictItem" :loading="savingDict">
+          {{ editingDictId ? '更新' : '新增' }}
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新增/编辑字典项对话框 -->
+    <el-dialog
+      v-model="addDictDialogVisible"
+      :title="editingDictId ? '编辑字典项' : '新增字典项'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="addDictForm" label-width="120px">
+        <el-form-item label="Kafka 字段" required>
+          <el-input v-model="addDictForm.kafka_field" placeholder="例如：SEVERITY" />
+          <div class="form-tip">输入 Kafka 字段名，如 SEVERITY、EVENT_TYPE 等</div>
+        </el-form-item>
+
+        <el-form-item label="字典键" required>
+          <el-input v-model="addDictForm.dict_key" placeholder="例如：1" />
+          <div class="form-tip">字典的键值，通常是数字或代码</div>
+        </el-form-item>
+
+        <el-form-item label="字典值" required>
+          <el-input v-model="addDictForm.dict_value" placeholder="例如：紧急" />
+          <div class="form-tip">字典的显示值，通常是中文描述</div>
+        </el-form-item>
+
+        <el-form-item label="排序">
+          <el-input-number v-model="addDictForm.sort_order" :min="0" :max="9999" style="width: 100%" />
+          <div class="form-tip">数字越小越靠前</div>
+        </el-form-item>
+
+        <el-form-item label="备注">
+          <el-input
+            v-model="addDictForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="可选的备注信息"
+          />
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-radio-group v-model="addDictForm.is_enabled">
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="addDictDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDictItem" :loading="savingDict">
+          {{ editingDictId ? '更新' : '新增' }}
+        </el-button>
       </template>
     </el-dialog>
 
@@ -424,7 +684,7 @@
     <!-- 备注编辑弹窗 -->
     <el-dialog
       v-model="remarkDialogVisible"
-      title="添加备注"
+      :title="currentGeneratedRemark ? '修改备注' : '添加备注'"
       width="50%"
       :close-on-click-modal="false"
     >
@@ -466,7 +726,10 @@
           <el-input v-model="pushMessageEventTime" placeholder="请输入事件时间 (YYYY-MM-DD HH:mm:ss)">
             <template #append>
               <el-button @click="subtractPushMessageEventTime(15)">-15分钟</el-button>
-              <el-button @click="subtractPushMessageEventYear(1)" type="warning">-1年</el-button>
+              <el-button @click="subtractPushMessageEventYear(1)" type="warning">
+                <el-icon><Clock /></el-icon>
+                反追单（-1年）
+              </el-button>
             </template>
           </el-input>
         </el-form-item>
@@ -867,6 +1130,9 @@ import {
   MagicStick,
   Edit,
   Setting,
+  Collection,
+  InfoFilled,
+  Lock,
 } from '@element-plus/icons-vue'
 
 // ES 源数据
@@ -938,6 +1204,9 @@ const loadFieldMeta = async () => {
         { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
       ]
     }
+    
+    // 字段加载完成后，立即更新显示列表
+    updateDisplayFields()
   } catch (error) {
     console.error('加载字段配置失败:', error)
     // 回退到默认配置
@@ -951,6 +1220,9 @@ const loadFieldMeta = async () => {
       { name: 'EVENT_TYPE', label: '事件类型', esField: 'event_type', placeholder: '请输入事件类型' },
       { name: 'RESOURCE_TYPE', label: '资源类型', esField: 'resource_type', placeholder: '请输入资源类型' },
     ]
+    
+    // 字段加载完成后，立即更新显示列表
+    updateDisplayFields()
   }
 }
 
@@ -960,40 +1232,80 @@ const fieldValues = reactive({})
 // 置顶字段集合
 const pinnedFields = ref(new Set())
 
+// 固定字段集合
+const fixedFields = ref(new Set())
+
+// 唯一值字段集合（开启唯一值的字段）
+const uniqueFields = ref(new Set())
+
 // 历史值缓存
 const historyValues = ref({})
 
+// 新有值的字段集合（用于高亮显示）
+const newlyValuedFields = ref(new Set())
+
+// 防抖定时器
+let sortDebounceTimer = null
+const SORT_DEBOUNCE_DELAY = 1000 // 1秒后重新排序
+
 // 显示所有字段
 const showAllFields = ref(false)  // 默认只显示常用字段
+
+// 显示所有备注信息
+const showAllRemarks = ref(true)  // 默认展开备注面板
 
 // 切换显示/隐藏所有字段
 const toggleAllFields = () => {
   showAllFields.value = !showAllFields.value
 }
 
-// 显示字段(置顶的优先,且可选择是否显示空字段)
-const displayFields = computed(() => {
+// 稳定的字段列表（用于输入过程中保持位置不变）
+const displayFields = ref([])
+
+// 计算并更新显示字段列表
+const updateDisplayFields = () => {
   let fields = [...allFields.value]
   
-  // 排序优先级: 1. 有值的字段 2. 置顶字段
+  // 排序优先级: 1. 手动置顶字段 2. 固定字段 3. 有值的字段 4. 无值的字段
   fields.sort((a, b) => {
-    const aFilled = fieldValues[a.name] ? 0 : 1
-    const bFilled = fieldValues[b.name] ? 0 : 1
-    if (aFilled !== bFilled) return aFilled - bFilled
-    
     const aPinned = pinnedFields.value.has(a.name) ? 0 : 1
     const bPinned = pinnedFields.value.has(b.name) ? 0 : 1
-    return aPinned - bPinned
+    if (aPinned !== bPinned) return aPinned - bPinned
+    
+    // 如果都不是置顶，检查是否是固定字段
+    const aFixed = fixedFields.value.has(a.name) ? 0 : 1
+    const bFixed = fixedFields.value.has(b.name) ? 0 : 1
+    if (aFixed !== bFixed) return aFixed - bFixed
+    
+    // 如果都不是固定，检查是否有值
+    const aHasValue = fieldValues[a.name] ? 0 : 1
+    const bHasValue = fieldValues[b.name] ? 0 : 1
+    if (aHasValue !== bHasValue) return aHasValue - bHasValue
+    
+    // 其他字段保持原始顺序
+    return 0
   })
   
-  // 如果不显示所有字段,过滤掉空值且未置顶的字段
+  // 如果不显示所有字段,过滤掉空值且未置顶/未固定的字段
   if (!showAllFields.value) {
     fields = fields.filter(f => {
-      return pinnedFields.value.has(f.name) || fieldValues[f.name]
+      return pinnedFields.value.has(f.name) || fixedFields.value.has(f.name) || fieldValues[f.name]
     })
   }
   
-  return fields
+  displayFields.value = fields
+}
+
+// 备注表格数据（计算属性）
+const remarkTableData = computed(() => {
+  return allFields.value
+    .filter(field => fieldRemarkMap[field.name])  // 只显示有备注的字段
+    .map(field => ({
+      fieldName: field.name,
+      fieldLabel: field.label,
+      currentValue: fieldValues[field.name] || '-',
+      remark: fieldRemarkMap[field.name]
+    }))
 })
 
 // 生成结果
@@ -1052,6 +1364,19 @@ const dictDialogVisible = ref(false)
 const dictData = ref([])
 const currentDictField = ref('')
 
+// 新增/编辑字典项相关
+const addDictDialogVisible = ref(false)
+const editingDictId = ref(null)
+const savingDict = ref(false)
+const addDictForm = ref({
+  kafka_field: '',
+  dict_key: '',
+  dict_value: '',
+  sort_order: 0,
+  remark: '',
+  is_enabled: 1
+})
+
 // 推送消息弹窗
 const pushMessageDialogVisible = ref(false)
 const pushMessageFp = ref('')
@@ -1089,6 +1414,7 @@ const remarkDialogVisible = ref(false)
 const remarkContent = ref('')
 const savingRemark = ref(false)
 const lastGeneratedHistoryId = ref(null)  // 保存最近一次生成的历史记录ID
+const currentGeneratedRemark = ref('')  // 保存当前生成记录的备注
 
 // 字段备注编辑相关
 const fieldRemarkDialogVisible = ref(false)
@@ -1096,6 +1422,19 @@ const currentFieldRemarkName = ref('')
 const currentFieldRemarkMetaId = ref(null)
 const fieldRemarkDialogValue = ref('')
 const savingFieldRemark = ref(false)
+
+// 字段映射编辑相关
+const mappingEditDialogVisible = ref(false)
+const mappingEditForm = ref({
+  kafka_field: '',
+  es_field: '',
+  label_cn: '',
+  db_cn: '',
+  remark: '',
+  is_enabled: 1,
+  meta_id: null
+})
+const savingMapping = ref(false)
 
 // 打开字段备注编辑对话框
 const openRemarkEditDialog = async (fieldName) => {
@@ -1195,6 +1534,107 @@ const saveFieldRemark = async () => {
   }
 }
 
+// 打开映射编辑对话框
+const openMappingEditDialog = async (field) => {
+  // 从 allFields 中找到完整的字段信息
+  const fullField = allFields.value.find(f => f.name === field.name)
+  
+  if (!fullField) {
+    ElMessage.error('未找到字段信息')
+    return
+  }
+  
+  // 填充表单
+  mappingEditForm.value = {
+    kafka_field: fullField.name,
+    es_field: fullField.esField || '',
+    label_cn: fullField.label || '',
+    db_cn: fullField.dbCn || '',
+    remark: fieldRemarkMap[field.name] || '',
+    is_enabled: 1,
+    meta_id: null
+  }
+  
+  // 获取字段元数据ID
+  try {
+    const response = await fetch('/kafka-generator/field-meta/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        keyword: field.name,
+        page: 1,
+        per_page: 100
+      })
+    })
+    const result = await response.json()
+    if (result.success) {
+      const meta = result.data.list.find(f => f.kafka_field === field.name)
+      if (meta) {
+        mappingEditForm.value.meta_id = meta.id
+        mappingEditForm.value.is_enabled = meta.is_enabled || 1
+      }
+    }
+  } catch (error) {
+    console.error('获取字段元数据失败:', error)
+  }
+  
+  mappingEditDialogVisible.value = true
+}
+
+// 保存映射编辑
+const saveMappingEdit = async () => {
+  if (!mappingEditForm.value.meta_id) {
+    ElMessage.error('未找到字段元数据记录')
+    return
+  }
+  
+  // 二次确认
+  try {
+    await ElMessageBox.confirm(
+      `确定要更新字段 "${mappingEditForm.value.kafka_field}" 的映射配置吗？`,
+      '确认保存',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return // 用户取消
+  }
+  
+  savingMapping.value = true
+  try {
+    const response = await fetch(`/kafka-generator/field-meta/${mappingEditForm.value.meta_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        es_field: mappingEditForm.value.es_field || null,
+        label_cn: mappingEditForm.value.label_cn || null,
+        db_cn: mappingEditForm.value.db_cn || null,
+        remark: mappingEditForm.value.remark || null,
+        is_enabled: mappingEditForm.value.is_enabled
+      })
+    })
+    
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success('映射配置保存成功')
+      mappingEditDialogVisible.value = false
+      
+      // 重新加载字段元数据以刷新显示
+      await loadFieldMeta()
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存映射配置失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    savingMapping.value = false
+  }
+}
+
 // 内容查看弹窗相关
 const contentDialogVisible = ref(false)
 const contentDialogTitle = ref('')
@@ -1268,11 +1708,87 @@ const historyDialogTitle = computed(() => {
   return '历史生成记录'
 })
 
+// 清除字段值
+const clearField = (fieldName) => {
+  // 清除字段值
+  fieldValues[fieldName] = ''
+  
+  // 从高亮集合中移除
+  newlyValuedFields.value.delete(fieldName)
+  
+  // 更新显示列表
+  updateDisplayFields()
+  
+  ElMessage.success(`已清除 ${fieldName}`)
+}
+
+// 生成唯一值（添加时间戳后缀）
+const generateUniqueValue = (fieldName) => {
+  const currentValue = fieldValues[fieldName] || ''
+
+  // 生成时间戳：年月日时分秒毫秒
+  const now = new Date()
+  const timestamp = now.getFullYear().toString() +
+    String(now.getMonth() + 1).padStart(2, '0') +
+    String(now.getDate()).padStart(2, '0') +
+    String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0') +
+    String(now.getSeconds()).padStart(2, '0') +
+    String(now.getMilliseconds()).padStart(3, '0')
+
+  let uniqueValue
+  
+  // 检查是否已经有时间戳后缀（格式：_YYYYMMDDHHmmssSSS，17位数字）
+  const timestampPattern = /_\d{17}$/
+  if (timestampPattern.test(currentValue)) {
+    // 如果已有时间戳，只替换后面的时间戳部分
+    uniqueValue = currentValue.replace(timestampPattern, `_${timestamp}`)
+  } else {
+    // 如果没有时间戳，添加新的时间戳后缀
+    uniqueValue = currentValue ? `${currentValue}_${timestamp}` : timestamp
+  }
+
+  // 更新字段值
+  fieldValues[fieldName] = uniqueValue
+
+  // 保存到历史记录
+  onFieldChange(fieldName, uniqueValue)
+
+  ElMessage.success(`已为 ${fieldName} 生成唯一值: ${uniqueValue}`)
+}
+
 // 字段值改变
 const onFieldChange = async (field, value) => {
+  // 记录之前的状态
+  const hadValueBefore = !!fieldValues[field]
+  
   if (value && value.trim()) {
     await saveHistoryToDB(field, value)
+    
+    // 如果之前没有值，现在有值了，标记为新有值的字段
+    if (!hadValueBefore) {
+      newlyValuedFields.value.add(field)
+      
+      // 5秒后移除高亮
+      setTimeout(() => {
+        newlyValuedFields.value.delete(field)
+      }, 5000)
+    }
+  } else {
+    // 值被清空，从高亮集合中移除
+    newlyValuedFields.value.delete(field)
   }
+  
+  // 清除之前的定时器
+  if (sortDebounceTimer) {
+    clearTimeout(sortDebounceTimer)
+  }
+  
+  // 设置防抖定时器，1秒后重新排序
+  sortDebounceTimer = setTimeout(() => {
+    updateDisplayFields()
+    sortDebounceTimer = null
+  }, SORT_DEBOUNCE_DELAY)
 }
 
 // 保存历史值到数据库
@@ -1349,10 +1865,32 @@ const toggleFieldPin = async (field) => {
   await saveFieldValue(field, fieldValues[field] || '')
 }
 
+// 切换字段固定
+const toggleFieldFixed = async (field) => {
+  if (fixedFields.value.has(field)) {
+    fixedFields.value.delete(field)
+  } else {
+    fixedFields.value.add(field)
+  }
+  
+  // 保存到数据库
+  await saveFieldValue(field, fieldValues[field] || '')
+}
+
+// 切换唯一值字段
+const toggleUniqueField = (field) => {
+  if (uniqueFields.value.has(field)) {
+    uniqueFields.value.delete(field)
+  } else {
+    uniqueFields.value.add(field)
+  }
+}
+
 // 保存字段值
 const saveFieldValue = async (field, value) => {
   try {
     const isPinned = pinnedFields.value.has(field)
+    const isFixed = fixedFields.value.has(field)
     const response = await fetch('/kafka-generator/field-cache', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1360,6 +1898,7 @@ const saveFieldValue = async (field, value) => {
         field_name: field,
         field_value: value,
         is_pinned: isPinned,
+        is_fixed: isFixed,
       }),
     })
     const result = await response.json()
@@ -1407,11 +1946,101 @@ const openFieldDict = async (field) => {
 // 选择字典值
 const selectDictValue = (row) => {
   if (currentDictField.value) {
-    fieldValues[currentDictField.value] = row.field_value
-    onFieldChange(currentDictField.value, row.field_value)
+    fieldValues[currentDictField.value] = row.dict_value || row.dict_key
+    onFieldChange(currentDictField.value, row.dict_value || row.dict_key)
     dictDialogVisible.value = false
     ElMessage.success('已填充字段值')
   }
+}
+
+// 打开新增字典对话框（从页面顶部）
+const openAddDictDialog = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value || '',
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 从字段字典弹窗中打开新增（自动填充当前字段）
+const openAddDictFromField = () => {
+  editingDictId.value = null
+  addDictForm.value = {
+    kafka_field: currentDictField.value,
+    dict_key: '',
+    dict_value: '',
+    sort_order: 0,
+    remark: '',
+    is_enabled: 1
+  }
+  addDictDialogVisible.value = true
+}
+
+// 保存字典项
+const saveDictItem = async () => {
+  // 校验必填字段
+  if (!addDictForm.value.kafka_field || !addDictForm.value.dict_key || !addDictForm.value.dict_value) {
+    ElMessage.warning('请填写必填字段')
+    return
+  }
+
+  savingDict.value = true
+  try {
+    let url, method
+    if (editingDictId.value) {
+      // 编辑模式
+      url = `/kafka-generator/field-dict/${editingDictId.value}`
+      method = 'PUT'
+    } else {
+      // 新增模式
+      url = '/kafka-generator/field-dict'
+      method = 'POST'
+    }
+
+    const response = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addDictForm.value)
+    })
+
+    const result = await response.json()
+    if (result.success) {
+      ElMessage.success(editingDictId.value ? '更新成功' : '新增成功')
+      addDictDialogVisible.value = false
+
+      // 如果当前打开了字典弹窗，刷新字典数据
+      if (dictDialogVisible.value && currentDictField.value) {
+        openFieldDict(currentDictField.value)
+      }
+    } else {
+      ElMessage.error(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存字典项失败:', error)
+    ElMessage.error('网络错误，请稍后重试')
+  } finally {
+    savingDict.value = false
+  }
+}
+
+// 从 ES _source 数据中按 ES 字段路径提取值（支持点号分隔的嵌套路径）
+const getESValue = (esData, esFieldPath) => {
+  if (!esData || !esFieldPath) return null
+  const keys = esFieldPath.split('.')
+  let current = esData
+  for (const key of keys) {
+    if (current && typeof current === 'object' && key in current) {
+      current = current[key]
+    } else {
+      return null
+    }
+  }
+  return current
 }
 
 // 生成消息
@@ -1422,11 +2051,41 @@ const generateMessage = async () => {
   }
 
   try {
+    // 先解析 ES 数据，提取字段值
+    let esData = null
+    try {
+      esData = JSON.parse(esSourceData.value)
+      // 如果包含 _source，使用 _source 中的数据
+      if (esData && esData._source) {
+        esData = esData._source
+      }
+    } catch (e) {
+      console.warn('ES 数据解析失败，将只使用输入框的值:', e)
+    }
+
     // 收集自定义字段
     const customFields = {}
     allFields.value.forEach(field => {
-      if (fieldValues[field.name]) {
-        customFields[field.name] = fieldValues[field.name]
+      const inputValue = fieldValues[field.name]  // 输入框的值
+      // 使用 ES 字段名（field.esField）从 ES 源数据中提取值，而非 Kafka 字段名
+      const esValue = getESValue(esData, field.esField)
+      
+      // 优先使用输入框的值，如果为空则使用 ES 中的值
+      const baseValue = inputValue || esValue
+      
+      // 如果开启了唯一值，为字段值添加唯一后缀
+      if (uniqueFields.value.has(field.name)) {
+        const timestamp = Date.now().toString().slice(-6) // 取后6位时间戳
+        const random = Math.random().toString(36).substring(2, 5) // 3位随机字符
+        const uniqueSuffix = `${timestamp}${random}`
+        
+        // 如果基础值为空，直接使用唯一后缀；否则追加到基础值后面
+        customFields[field.name] = baseValue 
+          ? `${baseValue}_${uniqueSuffix}`
+          : uniqueSuffix
+      } else if (baseValue) {
+        // 未开启唯一值且有值时才添加
+        customFields[field.name] = baseValue
       }
     })
 
@@ -1467,6 +2126,8 @@ const generateMessage = async () => {
       // 保存历史记录ID
       if (result.history_id) {
         lastGeneratedHistoryId.value = result.history_id
+        // 获取当前记录的备注
+        currentGeneratedRemark.value = result.remark || ''
       }
 
       // 处理测试前缀
@@ -1503,6 +2164,8 @@ const generateMessage = async () => {
 
 // 重新生成
 const regenerateMessage = () => {
+  // 清空当前备注，因为会生成新的记录
+  currentGeneratedRemark.value = ''
   generateMessage()
 }
 
@@ -1574,6 +2237,41 @@ const copyFPValue = async () => {
       try {
         document.execCommand('copy')
         ElMessage.success('FP 值已复制')
+      } catch (err) {
+        console.error('复制失败:', err)
+        ElMessage.error('复制失败，请手动选择文本复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败')
+  }
+}
+
+// 通用复制文本方法
+const copyText = async (text, label) => {
+  if (!text) {
+    ElMessage.warning(`${label}为空`)
+    return
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      ElMessage.success(`${label}已复制`)
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      
+      try {
+        document.execCommand('copy')
+        ElMessage.success(`${label}已复制`)
       } catch (err) {
         console.error('复制失败:', err)
         ElMessage.error('复制失败，请手动选择文本复制')
@@ -1966,13 +2664,14 @@ const useEsSourceHistory = (record) => {
       customClass: 'sync-confirm-dialog'
     }
   ).then(() => {
-    // 用户选择"是" - 同步自定义字段
+    // 用户选择“是” - 同步自定义字段
     if (record.custom_fields) {
       try {
         const customFields = typeof record.custom_fields === 'string' 
           ? JSON.parse(record.custom_fields) 
           : record.custom_fields
         Object.assign(fieldValues, customFields)
+        updateDisplayFields() // 触发排序更新
         ElMessage.success('已加载 ES 源数据并同步自定义字段')
       } catch (e) {
         console.error('同步自定义字段失败:', e)
@@ -1980,6 +2679,7 @@ const useEsSourceHistory = (record) => {
         Object.keys(fieldValues).forEach(key => {
           fieldValues[key] = ''
         })
+        updateDisplayFields() // 触发排序更新
         ElMessage.warning('加载 ES 源数据成功，但自定义字段同步失败，已清空字段值')
       }
     } else {
@@ -1987,6 +2687,7 @@ const useEsSourceHistory = (record) => {
       Object.keys(fieldValues).forEach(key => {
         fieldValues[key] = ''
       })
+      updateDisplayFields() // 触发排序更新
       ElMessage.success('已加载 ES 源数据，自定义字段已清空')
     }
     esSourceData.value = typeof record.es_source_raw === 'string' 
@@ -1994,11 +2695,12 @@ const useEsSourceHistory = (record) => {
       : JSON.stringify(record.es_source_raw, null, 2)
     esSourceHistoryDialogVisible.value = false
   }).catch((action) => {
-    // 用户选择"否" - 清空自定义字段并加载数据
-    console.log('用户选择"否"（action:', action, '），清空自定义字段并加载数据')
+    // 用户选择“否” - 清空自定义字段并加载数据
+    console.log('用户选择“否”（action:', action, '），清空自定义字段并加载数据')
     Object.keys(fieldValues).forEach(key => {
       fieldValues[key] = ''
     })
+    updateDisplayFields() // 触发排序更新
     esSourceData.value = typeof record.es_source_raw === 'string' 
       ? record.es_source_raw 
       : JSON.stringify(record.es_source_raw, null, 2)
@@ -2056,7 +2758,8 @@ const openRemarkDialog = () => {
     ElMessage.warning('请先生成 Kafka 消息')
     return
   }
-  remarkContent.value = ''
+  // 如果已有备注，则填充到输入框
+  remarkContent.value = currentGeneratedRemark.value || ''
   remarkDialogVisible.value = true
 }
 
@@ -2083,6 +2786,8 @@ const saveRemarkFromResult = async () => {
     const result = await response.json()
     if (result.success) {
       ElMessage.success('备注已保存')
+      // 更新当前备注
+      currentGeneratedRemark.value = remarkContent.value
       remarkDialogVisible.value = false
       remarkContent.value = ''
     } else {
@@ -2135,46 +2840,7 @@ const getFieldValueFromJson = (jsonData, fieldName) => {
   }
 }
 
-// 复制文本
-const copyText = async (text, label) => {
-  if (!text) {
-    ElMessage.warning('没有可复制的内容')
-    return
-  }
-  
-  try {
-    const textToCopy = typeof text === 'string' ? text : JSON.stringify(text, null, 2)
-    
-    // 尝试使用现代 Clipboard API
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(textToCopy)
-      ElMessage.success(`${label}已复制`)
-    } else {
-      // 降级方案：使用 execCommand
-      const textarea = document.createElement('textarea')
-      textarea.value = textToCopy
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-      
-      try {
-        document.execCommand('copy')
-        ElMessage.success(`${label}已复制`)
-      } catch (err) {
-        console.error('复制失败:', err)
-        ElMessage.error('复制失败，请手动选择文本复制')
-      } finally {
-        document.body.removeChild(textarea)
-      }
-    }
-  } catch (error) {
-    console.error('复制失败:', error)
-    ElMessage.error('复制失败')
-  }
-}
-
-// 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式）
+// 强制格式化 JSON（将 Python 三引号字符串转换为标准 JSON 格式，并美化输出）
 const forceFormatJson = () => {
   if (!esSourceData.value.trim()) {
     ElMessage.warning('请先输入 ES 源数据')
@@ -2183,30 +2849,123 @@ const forceFormatJson = () => {
 
   try {
     let text = esSourceData.value
-    
-    // 匹配 Python 三引号字符串："""内容"""
-    // 替换为转义后的 JSON 字符串："内容"
-    const tripleQuoteRegex = /"""([\s\S]*?)"""/g
-    
     let hasChanges = false
-    const formattedText = text.replace(tripleQuoteRegex, (match, content) => {
+    let changeDetails = []
+    const originalText = text
+    
+    // ========== 阶段1：修复转义问题 ==========
+    
+    // 策略：先保护合法的转义，然后修复非法的
+    
+    // 1. 临时替换合法的转义序列
+    const placeholders = {}
+    const validEscapes = ['\\\\', '\\"', '\\/', '\\b', '\\f', '\\n', '\\r', '\\t']
+    
+    for (let i = 0; i < validEscapes.length; i++) {
+      const placeholder = `__VALID_ESCAPE_${i}__`
+      placeholders[placeholder] = validEscapes[i]
+      text = text.split(validEscapes[i]).join(placeholder)
+    }
+    
+    // 2. 保护 Unicode 转义 \uXXXX
+    text = text.replace(/\\u[0-9a-fA-F]{4}/g, (match) => {
+      return `__UNICODE_${match.slice(1)}__`
+    })
+    
+    // 3. 匹配 Python 三引号字符串："""内容"""
+    const tripleQuoteRegex = /"""([\s\S]*?)"""/g
+    text = text.replace(tripleQuoteRegex, (match, content) => {
       hasChanges = true
+      changeDetails.push('处理了 Python 三引号字符串')
       // 转义内容中的双引号和反斜杠
       const escaped = content
-        .replace(/\\/g, '\\\\')  // 先转义反斜杠
-        .replace(/"/g, '\\"')     // 再转义双引号
-        .replace(/\n/g, '\\n')    // 转义换行符
-        .replace(/\r/g, '\\r')    // 转义回车符
-        .replace(/\t/g, '\\t')    // 转义制表符
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
       return `"${escaped}"`
     })
     
-    if (hasChanges) {
-      esSourceData.value = formattedText
-      ElMessage.success('格式化成功！已将 Python 三引号字符串转换为标准 JSON 格式')
-    } else {
-      ElMessage.info('未检测到需要格式化的内容')
+    // 4. 【关键】处理单个反斜杠 + 非法字符（此时剩下的单个反斜杠都是非法的）
+    const invalidEscapeMatches = text.match(/\\([^nrtbf\\"/u])/g) || []
+    if (invalidEscapeMatches.length > 0) {
+      hasChanges = true
+      changeDetails.push(`修复了 ${invalidEscapeMatches.length} 处无效转义字符`)
+      text = text.replace(/\\([^nrtbf\\"/u])/g, '\\\\$1')
     }
+    
+    // 5. 恢复合法的转义序列
+    for (const placeholder in placeholders) {
+      text = text.split(placeholder).join(placeholders[placeholder])
+    }
+    
+    // 6. 恢复 Unicode 转义（注意：占位符格式是 __UNICODE_uXXXX__，包含字母u）
+    text = text.replace(/__UNICODE_u([0-9a-fA-F]{4})__/g, '\\u$1')
+    
+    // 7. 处理控制字符
+    const controlChars = text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g) || []
+    if (controlChars.length > 0) {
+      hasChanges = true
+      changeDetails.push(`移除了 ${controlChars.length} 个控制字符`)
+      text = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    }
+    
+    // ========== 阶段2：处理特定字段中的双重反斜杠 ==========
+    
+    let parsedData
+    try {
+      parsedData = JSON.parse(text)
+    } catch (parseError) {
+      throw new Error(`JSON 解析失败: ${parseError.message}`)
+    }
+    
+    // 处理 ALARM_TEXT 字段中的反斜杠（JSON文件中显示的\\在内存中是单个\）
+    if (parsedData.ALARM_TEXT && typeof parsedData.ALARM_TEXT === 'string') {
+      const originalAlarmText = parsedData.ALARM_TEXT
+      // 移除单个反斜杠（JSON中显示为\\）
+      const backslashCount = (parsedData.ALARM_TEXT.match(/\\/g) || []).length
+      parsedData.ALARM_TEXT = parsedData.ALARM_TEXT.replace(/\\/g, '')
+      if (parsedData.ALARM_TEXT !== originalAlarmText) {
+        hasChanges = true
+        changeDetails.push(`移除了 ALARM_TEXT 字段中的 ${backslashCount} 个反斜杠`)
+      }
+    }
+    
+    // 处理 ORG_TEXT 字段中的反斜杠
+    if (parsedData.ORG_TEXT && typeof parsedData.ORG_TEXT === 'string') {
+      const originalOrgText = parsedData.ORG_TEXT
+      // 移除单个反斜杠（JSON中显示为\\）
+      const backslashCount = (parsedData.ORG_TEXT.match(/\\/g) || []).length
+      parsedData.ORG_TEXT = parsedData.ORG_TEXT.replace(/\\/g, '')
+      if (parsedData.ORG_TEXT !== originalOrgText) {
+        hasChanges = true
+        changeDetails.push(`移除了 ORG_TEXT 字段中的 ${backslashCount} 个反斜杠`)
+      }
+    }
+    
+    // ========== 阶段3：JSON 美化格式化 ==========
+    
+    changeDetails.push('JSON 格式验证通过')
+    
+    // 使用 2 空格缩进重新格式化
+    const beautifiedText = JSON.stringify(parsedData, null, 2)
+    changeDetails.push('JSON 美化格式化完成')
+    
+    // 检查是否有变化（包括格式变化）
+    if (beautifiedText !== originalText) {
+      hasChanges = true
+    }
+    
+    // 更新内容
+    esSourceData.value = beautifiedText
+    
+    // 显示结果消息
+    const message = changeDetails.length > 0 
+      ? `格式化成功！\n${changeDetails.join('\n')}`
+      : '格式化成功！'
+    ElMessage.success(message)
+    
   } catch (error) {
     console.error('格式化失败:', error)
     ElMessage.error('格式化失败：' + error.message)
@@ -2345,6 +3104,11 @@ const loadSampleData = () => {
 // 跳转到字段映射管理页面
 const goToFieldMetaManager = () => {
   window.location.href = '/kafka-field-meta'
+}
+
+// 跳转到字段字典管理页面
+const goToFieldDictManager = () => {
+  window.location.href = '/kafka-field-dict'
 }
 
 // 复制 ES 查询
@@ -2489,12 +3253,14 @@ const clearAllFields = async () => {
     
     // 批量清除数据库记录
     const pinnedFieldsArray = Array.from(pinnedFields.value)
+    const fixedFieldsArray = Array.from(fixedFields.value)
     await fetch('/kafka-generator/field-cache/batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         field_cache: {},
         pinned_fields: pinnedFieldsArray,
+        fixed_fields: fixedFieldsArray,
       }),
     })
     
@@ -2506,6 +3272,42 @@ const clearAllFields = async () => {
   }
 }
 
+// 查看输入值（只展示有值的字段）
+const showInputValues = () => {
+  // 筛选出有值的字段
+  const filledFields = Object.entries(fieldValues).filter(
+    ([key, value]) => value && value.trim() !== ''
+  )
+  
+  if (filledFields.length === 0) {
+    ElMessage.info('没有已填写的字段')
+    return
+  }
+  
+  // 构建显示内容
+  let content = `<div style="max-height: 400px; overflow-y: auto;">`
+  content += `<h4 style="margin-bottom: 12px;">已填写的字段（共 ${filledFields.length} 个）</h4>`
+  content += `<table style="width: 100%; border-collapse: collapse;">`
+  content += `<thead><tr><th style="border-bottom: 1px solid #e4e7ed; padding: 8px; text-align: left;">字段名</th><th style="border-bottom: 1px solid #e4e7ed; padding: 8px; text-align: left;">值</th></tr></thead>`
+  content += `<tbody>`
+  
+  filledFields.forEach(([name, value]) => {
+    content += `<tr>`
+    content += `<td style="border-bottom: 1px solid #f2f6fc; padding: 8px; font-family: monospace;">${name}</td>`
+    content += `<td style="border-bottom: 1px solid #f2f6fc; padding: 8px; word-break: break-all; max-width: 400px;">${value}</td>`
+    content += `</tr>`
+  })
+  
+  content += `</tbody></table></div>`
+  
+  // 显示弹窗
+  ElMessageBox.alert(content, '输入值预览', {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: '关闭',
+    width: '600px',
+  })
+}
+
 // 从数据库加载缓存（自定义字段默认全部为空，不恢复缓存值）
 const loadFieldCache = async () => {
   try {
@@ -2514,8 +3316,9 @@ const loadFieldCache = async () => {
     
     if (result.success && result.data) {
       // 【需求3】自定义字段默认全部为空，不恢复缓存的字段值
-      // 只加载置顶字段和历史值
+      // 只加载置顶字段、固定字段和历史值
       pinnedFields.value = new Set(result.data.pinned_fields || [])
+      fixedFields.value = new Set(result.data.fixed_fields || [])
       historyValues.value = result.data.history_values || {}
       
       console.log('已加载字段缓存（字段值已清空）')
@@ -2603,6 +3406,20 @@ onMounted(() => {
   loadFieldMeta()
   loadFieldCache()
 })
+
+// 监听相关状态变化，自动更新显示字段
+watch(
+  [showAllFields, pinnedFields, fixedFields],
+  () => {
+    // 清除之前的定时器
+    if (sortDebounceTimer) {
+      clearTimeout(sortDebounceTimer)
+    }
+    // 立即更新（不防抖）
+    updateDisplayFields()
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
@@ -2631,6 +3448,26 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+.header-content > div:first-child {
+  flex-shrink: 0;
+}
+
+.header-content > .el-button {
+  margin: 0;
+}
+
+/* 右侧按钮组样式 */
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.header-buttons .el-button {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
 .page-header h2 {
   font-size: 32px;
   margin: 0 0 10px 0;
@@ -2644,6 +3481,31 @@ onMounted(() => {
   font-size: 16px;
   color: #666;
   margin: 0;
+}
+
+/* 字段信息汇总面板 */
+.field-summary-panel {
+  margin-bottom: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  overflow: hidden;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid #e4e7ed;
+  font-weight: 600;
+  color: #409eff;
+}
+
+.summary-content {
+  padding: 12px;
+  background: white;
 }
 
 .input-card,
@@ -2676,8 +3538,13 @@ onMounted(() => {
 
 .button-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+}
+
+.button-group .el-button {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 .mt-3 {
@@ -2708,10 +3575,48 @@ onMounted(() => {
   border-color: #67c23a;
 }
 
+.field-item.newly-valued {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border-color: #ffc107;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+  animation: newlyValuedPulse 1s ease-in-out;
+}
+
+@keyframes newlyValuedPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.field-item.pinned {
+  background: linear-gradient(135deg, #fff9e6 0%, #fef0b8 100%);
+  border-color: #f56c6c;
+}
+
+.field-item.unique-enabled {
+  background: linear-gradient(135deg, #ffe6f0 0%, #ffd6e7 100%);
+  border-color: #e6a23c;
+  box-shadow: 0 0 0 2px rgba(230, 162, 60, 0.2);
+}
+
 .field-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   border-color: #667eea;
+}
+
+/* 聚焦状态 - 最高优先级 */
+.field-item:focus-within {
+  border-color: #409eff !important;
+  box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.3) !important;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%) !important;
+  transform: translateY(-2px);
 }
 
 .field-header {
@@ -2725,18 +3630,64 @@ onMounted(() => {
   font-weight: 600;
   font-size: 14px;
   color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pin-icon {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+.value-icon {
+  font-size: 16px;
+  color: #67c23a;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .field-actions {
   display: flex;
   gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .field-meta {
   font-size: 12px;
   color: #6c757d;
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.meta-label {
   font-style: italic;
+  font-weight: 500;
+}
+
+.kafka-field {
+  color: #67c23a;
+  cursor: help;
+  text-decoration: underline dotted;
+  font-weight: 500;
 }
 
 .es-field {
@@ -3025,5 +3976,21 @@ onMounted(() => {
 
 .text-muted {
   color: #909399;
+}
+
+/* 字段输入框 append 区域样式 */
+.field-append-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unique-value-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.history-select {
+  width: 120px;
 }
 </style>

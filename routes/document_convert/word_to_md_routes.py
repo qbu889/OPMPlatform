@@ -24,7 +24,13 @@ def run_to_md(run):
     if not text:
         return ''
     
-    # 处理加粗和斜体
+    # 处理下划线和删除线
+    if run.underline:
+        text = f"<u>{text}</u>"
+    if run.strikethrough:
+        text = f"~~{text}~~"
+    
+    # 处理加粗和斜体（需在其他格式之后）
     if run.bold and run.italic:
         text = f"***{text}***"
     elif run.bold:
@@ -54,6 +60,26 @@ def detect_heading_level(paragraph):
         # 可能的变体
         'title': 1,
         'subtitle': 2,
+        # 中文样式名称
+        '标题': 1,
+        '标题 1': 1,
+        '标题 2': 2,
+        '标题 3': 3,
+        '标题 4': 4,
+        '标题 5': 5,
+        '标题 6': 6,
+        '一级标题': 1,
+        '二级标题': 2,
+        '三级标题': 3,
+        '四级标题': 4,
+        '五级标题': 5,
+        '六级标题': 6,
+        'heading1': 1,
+        'heading2': 2,
+        'heading3': 3,
+        'heading4': 4,
+        'heading5': 5,
+        'heading6': 6,
     }
     
     for key, level in heading_map.items():
@@ -63,31 +89,52 @@ def detect_heading_level(paragraph):
                 logger.debug(f"检测到标准标题 [Level {level}]: {text[:50]}")
                 return level, text
     
-    # 方法2: 启发式检测 - 基于 Normal 样式的潜在标题
+    # 方法2: 启发式检测 - 基于样式的潜在标题
     text_runs = [run for run in paragraph.runs if run.text.strip()]
     full_text = ''.join(run.text for run in text_runs).strip()
     
     if not full_text:
         return None
     
-    # 检查是否为 Normal 样式（排除已经处理的 Heading 样式）
-    is_normal_style = style_lower in ['normal', 'normal0', 'body text', '']
+    # 检查是否为正文样式（排除已经处理的 Heading 样式）
+    normal_styles = ['normal', 'normal0', 'body text', '', '正文', '正文文本', '默认段落字体']
+    is_normal_style = style_lower in normal_styles
+    
+    # 方法3: 通过段落属性检测标题（间距、字体大小等）
+    try:
+        # 检查段落是否有特殊的间距属性（通常标题会有更大的段后间距）
+        paragraph_format = paragraph.paragraph_format
+        if paragraph_format:
+            # 段后间距大于12磅可能是标题
+            if paragraph_format.space_after and paragraph_format.space_after > 120:
+                # 结合加粗判断
+                if any(run.bold for run in text_runs):
+                    text = ''.join(run_to_md(run) for run in paragraph.runs).strip()
+                    if text and not text.endswith(('。', '.', '；', ';', '：', ':', '）', ')')):
+                        level = 3  # 假设是三级标题
+                        logger.debug(f"间距检测标题 [Level {level}]: {text[:50]}")
+                        return level, text
+    except:
+        pass
     
     if not is_normal_style:
         return None
     
-    # 启发式规则1: 短文本且大部分加粗 → 可能是标题
+    # 启发式规则1: 短文本且全部加粗 → 可能是标题
     bold_runs = [run for run in text_runs if run.bold]
     bold_ratio = len(bold_runs) / len(text_runs) if text_runs else 0
     
-    # 如果超过 70% 的 run 是加粗的，且文本较短，认为是标题
-    if bold_ratio >= 0.7 and len(full_text) < 100:
-        # 根据文本长度和是否以标点结尾判断层级
-        if not full_text.endswith(('。', '.', '；', ';', '：', ':', '）', ')')):
-            # 更短的文本可能是更高层级的标题
-            if len(full_text) < 20:
+    # 如果超过 80% 的 run 是加粗的，且文本较短，认为是标题
+    if bold_ratio >= 0.8 and len(full_text) < 120:
+        if not full_text.endswith(('。', '.', '；', ';', '：', ':', '）', ')', '？', '!', '！')):
+            # 根据文本长度判断层级
+            if len(full_text) < 15:
+                level = 2  # ##
+            elif len(full_text) < 30:
+                level = 3  # ###
+            elif len(full_text) < 50:
                 level = 4  # ####
-            elif len(full_text) < 40:
+            elif len(full_text) < 80:
                 level = 5  # #####
             else:
                 level = 6  # ######
@@ -96,10 +143,24 @@ def detect_heading_level(paragraph):
             return level, full_text
     
     # 启发式规则2: 单个 run 且加粗 → 很可能是标题
-    if len(text_runs) == 1 and text_runs[0].bold and len(full_text) < 80:
-        if not full_text.endswith(('。', '.', '；', ';', '：', ':')):
-            level = 5  # #####
+    if len(text_runs) == 1 and text_runs[0].bold and len(full_text) < 100:
+        if not full_text.endswith(('。', '.', '；', ';', '：', ':', '？', '!', '！')):
+            # 根据文本长度判断层级
+            if len(full_text) < 20:
+                level = 3  # ###
+            elif len(full_text) < 50:
+                level = 4  # ####
+            else:
+                level = 5  # #####
             logger.debug(f"单 run 加粗标题 [Level {level}]: {full_text[:50]}")
+            return level, full_text
+    
+    # 启发式规则3: 以数字+顿号开头且短 → 可能是标题（如"1、背景"）
+    if len(full_text) < 80 and (full_text.startswith(('一、', '二、', '三、', '四、', '五、', '六、', '七、', '八、', '九、', '十、')) or
+                                 (full_text[0].isdigit() and len(full_text) > 1 and full_text[1] in ['、', '.', '．'])):
+        if any(run.bold for run in text_runs):
+            level = 4
+            logger.debug(f"序号开头标题 [Level {level}]: {full_text[:50]}")
             return level, full_text
     
     return None
@@ -172,6 +233,65 @@ def list_item_to_md(paragraph, is_numbered=False):
     return prefix + text
 
 
+def is_list_paragraph(paragraph):
+    """检测段落是否为列表项"""
+    # 方法1: 通过样式名称检测
+    if paragraph.style and 'list' in paragraph.style.name.lower():
+        return True
+    
+    # 方法2: 通过 XML 元素检测编号属性
+    if paragraph._element.xpath('.//w:numPr'):
+        return True
+    
+    # 方法3: 通过段落格式属性检测
+    try:
+        if hasattr(paragraph, 'style') and paragraph.style:
+            style_id = paragraph.style.id
+            if style_id and ('list' in style_id.lower() or 'num' in style_id.lower()):
+                return True
+    except:
+        pass
+    
+    return False
+
+
+def get_list_level(paragraph):
+    """获取列表项的层级（从0开始）"""
+    try:
+        # 尝试从段落的编号属性中获取层级
+        num_pr = paragraph._element.xpath('.//w:numPr')
+        if num_pr:
+            # 查找 w:ilvl 元素
+            ilvl = num_pr[0].xpath('.//w:ilvl')
+            if ilvl:
+                # 获取层级值
+                val = ilvl[0].xpath('.//w:val')
+                if val:
+                    return int(val[0].text) if val[0].text else 0
+        return 0
+    except:
+        return 0
+
+
+def is_numbered_list(paragraph):
+    """检测是否为有序列表"""
+    try:
+        num_pr = paragraph._element.xpath('.//w:numPr')
+        if num_pr:
+            # 查找编号格式类型
+            num_fmt = num_pr[0].xpath('.//w:numFmt')
+            if num_fmt:
+                val = num_fmt[0].xpath('.//w:val')
+                if val and val[0].text:
+                    # 如果是数字格式，则为有序列表
+                    return val[0].text in ['decimal', 'lowerRoman', 'upperRoman', 'lowerLetter', 'upperLetter']
+            # 默认认为有编号属性的是有序列表
+            return True
+        return False
+    except:
+        return False
+
+
 def docx_to_markdown(docx_path):
     """将 Word 文档转换为 Markdown 格式"""
     logger.info(f"开始转换 Word 文档: {docx_path}")
@@ -185,21 +305,42 @@ def docx_to_markdown(docx_path):
     heading_count = 0
     list_count = 0
     
+    # 追踪列表状态
+    in_list = False
+    
     # 处理段落
     for para in doc.paragraphs:
+        # 检查是否为列表项
+        if is_list_paragraph(para):
+            # 获取列表层级和类型
+            level = get_list_level(para)
+            is_numbered = is_numbered_list(para)
+            text = ''.join(run_to_md(run) for run in para.runs).strip()
+            
+            if text:
+                # 添加缩进（每级2个空格）
+                indent = '  ' * level
+                prefix = '1. ' if is_numbered else '- '
+                md_line = indent + prefix + text
+                md_lines.append(md_line)
+                list_count += 1
+                in_list = True
+                continue
+        
+        # 普通段落或标题处理
         md_line = para_to_md(para)
         if md_line:
+            # 如果之前是列表，现在不是，添加空行分隔
+            if in_list:
+                md_lines.append('')
+                in_list = False
+            
             md_lines.append(md_line)
             para_count += 1
             
             # 统计标题数量
             if md_line.startswith('#'):
                 heading_count += 1
-            
-            # 检测是否为列表项（通过编号或项目符号）
-            if para.style and ('list' in para.style.name.lower() or 
-                              para._element.xpath('.//w:numPr')):
-                list_count += 1
     
     # 处理表格
     for table in doc.tables:
@@ -212,9 +353,19 @@ def docx_to_markdown(docx_path):
             md_lines.append('')
             table_count += 1
     
+    # 处理段落中的换行符（保留合理的换行）
+    final_lines = []
+    for line in md_lines:
+        # 将多个连续换行合并为两个（Markdown段落分隔）
+        if line.strip():
+            final_lines.append(line)
+        elif final_lines and final_lines[-1]:
+            # 只在非空行后添加一个空行
+            final_lines.append('')
+    
     logger.info(f"转换完成: {para_count} 个段落, {table_count} 个表格, {heading_count} 个标题, {list_count} 个列表项")
     
-    return '\n\n'.join(md_lines)
+    return '\n'.join(final_lines)
 
 
 # ============================================================================

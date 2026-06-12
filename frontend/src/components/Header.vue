@@ -90,6 +90,22 @@
               </el-menu-item>
             </a>
           </router-link>
+          <router-link to="/dingtalk-push" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/dingtalk-push">
+                <el-icon><Bell /></el-icon>
+                <span>钉钉推送管理</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/deploy-config" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/deploy-config">
+                <el-icon><Setting /></el-icon>
+                <span>部署配置管理</span>
+              </el-menu-item>
+            </a>
+          </router-link>
         </el-sub-menu>
 
         <el-sub-menu index="tools">
@@ -142,6 +158,46 @@
               <el-menu-item index="/sql-generator">
                 <el-icon><Cpu /></el-icon>
                 <span>SQL 智能生成</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/json-diff" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/json-diff">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>JSON 对比工具</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/content-to-excel" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/content-to-excel">
+                <el-icon><Document /></el-icon>
+                <span>内容转 Excel</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/house-design" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/house-design">
+                <el-icon><OfficeBuilding /></el-icon>
+                <span>户型设计</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/city-color" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/city-color">
+                <el-icon><Picture /></el-icon>
+                <span>CityColor 颜色提取</span>
+              </el-menu-item>
+            </a>
+          </router-link>
+          <router-link to="/wheel-lottery" custom v-slot="{ navigate, href }">
+            <a :href="href" class="menu-link" @click="navigate">
+              <el-menu-item index="/wheel-lottery">
+                <el-icon><Operation /></el-icon>
+                <span>彩色抽奖转盘</span>
               </el-menu-item>
             </a>
           </router-link>
@@ -240,6 +296,7 @@ import {
   ArrowLeft,
   Picture,
   Cpu,
+  Bell,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { changePassword, logout } from '@/api/auth'
@@ -278,6 +335,9 @@ const handleMenuSelect = (index) => {
     'clean-event': '/clean-event',
     'sql-formatter': '/sql-formatter',
     'kafka-generator': '/kafka-generator',
+    'house-design': '/house-design',
+    'city-color': '/city-color',
+    'wheel-lottery': '/wheel-lottery',
   }
 
   if (pathMap[index]) {

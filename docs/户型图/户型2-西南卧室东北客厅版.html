@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>户型2：西南卧室+东北客厅版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            padding: 30px;
+            background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .main-title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .rule-desc {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* 房屋外框 */
+        .house-box {
+            width: 800px;
+            height: 600px;
+            border: 4px solid #34495e;
+            background-color: #fff;
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        /* 方位标注 */
+        .dir-north { 
+            position: absolute; 
+            top: -30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #e74c3c; 
+        }
+        .dir-south { 
+            position: absolute; 
+            bottom: -30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #e74c3c; 
+        }
+        .dir-west { 
+            position: absolute; 
+            left: -30px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #e74c3c; 
+        }
+        .dir-east { 
+            position: absolute; 
+            right: -30px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #e74c3c; 
+        }
+        /* 中心十字线 */
+        .center-line-h { 
+            width: 100%; 
+            height: 2px; 
+            background: #999; 
+            position: absolute; 
+            top: 50%; 
+            left: 0; 
+            z-index: 1;
+        }
+        .center-line-v { 
+            width: 2px; 
+            height: 100%; 
+            background: #999; 
+            position: absolute; 
+            left: 50%; 
+            top: 0; 
+            z-index: 1;
+        }
+        .center-point { 
+            position: absolute; 
+            left: 50%; 
+            top: 50%; 
+            transform: translate(-50%, -50%); 
+            z-index: 10; 
+        }
+        .center-text { 
+            background: #2c3e50; 
+            color: #fff; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            white-space: nowrap; 
+        }
+        /* 房间通用样式 */
+        .room { 
+            position: absolute; 
+            border: 1px solid #95a5a6; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 15px; 
+            font-weight: 500;
+            z-index: 2;
+        }
+        .bed-room { background-color: #e8f4fd; }
+        .living-room { background-color: #fff9e6; }
+        .kitchen { background-color: #ffeedd; }
+        .toilet { background-color: #eceff1; }
+        /* 入户门 */
+        .door {
+            position: absolute;
+            left: 0;
+            top: 250px;
+            width: 50px;
+            height: 100px;
+            background-color: #8B4513;
+            border: 2px solid #5D3A1A;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* ========== 户型2房间布局 ========== */
+        /* 父母卧室（西北） */
+        .room-parent { width: 227px; height: 280px; top: 10px; left: 10px; }
+        /* 长子卧室（正东 - 水平居中） */
+        .room-son { width: 180px; height: 140px; top: 230px; right: 10px; }
+        /* 长女卧室（东南） */
+        .room-daughter { width: 180px; height: 140px; bottom: 10px; right: 10px; }
+        /* 西南卧室（新增） */
+        .room-southwest-bed { width: 180px; height: 140px; bottom: 10px; left: 240px; }
+        /* 东北客厅（新增） */
+        .room-living { width: 180px; height: 140px; top: 10px; left: 240px; }
+        /* 厨房（正北偏东） */
+        .room-kitchen { width: 180px; height: 140px; top: 10px; left: 400px; }
+        /* 卫生间（正南偏东） */
+        .room-toilet { width: 180px; height: 140px; bottom: 10px; left: 400px; }
+    </style>
+</head>
+<body>
+    <h1 class="main-title">户型2：西南卧室+东北客厅版</h1>
+    <div class="rule-desc">
+        方位规则：上北下南 · 左西右东<br>
+        西南=卧室 | 东北=客厅 | 保留长子/长女/父母卧室方位
+    </div>
+    <div class="house-box">
+        <div class="dir-north">北</div>
+        <div class="dir-south">南</div>
+        <div class="dir-west">西</div>
+        <div class="dir-east">东</div>
+
+        <div class="center-line-h"></div>
+        <div class="center-line-v"></div>
+        <div class="center-point"><div class="center-text">房屋中心点</div></div>
+
+        <!-- 入户门 -->
+        <div class="door">入户门</div>
+
+        <!-- 卧室（含西南新增卧室） -->
+        <div class="room bed-room room-parent">
+            <div>父母卧室</div>
+            <div style="font-size:12px;">（中心西北）</div>
+        </div>
+        <div class="room bed-room room-son">
+            <div>长子卧室</div>
+            <div style="font-size:12px;color:red;font-weight:bold;">✅ 中心正东</div>
+        </div>
+        <div class="room bed-room room-daughter">
+            <div>长女卧室</div>
+            <div style="font-size:12px;">（中心东南）</div>
+        </div>
+        <div class="room bed-room room-southwest-bed">
+            <div>卧室</div>
+            <div style="font-size:12px;color:green;font-weight:bold;">✅ 西南</div>
+        </div>
+
+        <!-- 功能区（东北客厅） -->
+        <div class="room living-room room-living">
+            <div>客厅</div>
+            <div style="font-size:12px;color:green;font-weight:bold;">✅ 东北</div>
+        </div>
+        <div class="room kitchen room-kitchen">
+            <div>厨房</div>
+            <div style="font-size:12px;">（正北偏东）</div>
+        </div>
+        <div class="room toilet room-toilet">
+            <div>卫生间</div>
+            <div style="font-size:12px;">（正南偏东）</div>
+        </div>
+    </div>
+</body>
+</html>

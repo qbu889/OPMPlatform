@@ -4,7 +4,7 @@
 部署管理路由 - Web化部署接口
 提供部署、备份、恢复、日志查看等功能
 """
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, send_file
 import subprocess
 import json
 import os
@@ -13,6 +13,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -62,14 +63,39 @@ REMOTE_PATH = config.get('remote_path', DEFAULT_CONFIG['remote_path'])
 BACKUP_DIR = config.get('backup_dir', DEFAULT_CONFIG['backup_dir'])
 LOCAL_PORT = config.get('local_port', DEFAULT_CONFIG['local_port'])
 NGINX_PORT = config.get('nginx_port', DEFAULT_CONFIG['nginx_port'])
-PROJECT_ROOT = Path(__file__).parent.parent
+# PROJECT_ROOT 指向项目根目录（deploy.py 所在位置）
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 # 部署状态存储（生产环境应使用Redis）
+# 日志持久化文件路径
+DEPLOY_LOGS_FILE = PROJECT_ROOT / 'logs' / 'deploy_logs.json'
+
+# 确保日志目录存在
+DEPLOY_LOGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+def load_deploy_logs():
+    """从文件加载部署日志"""
+    try:
+        if DEPLOY_LOGS_FILE.exists():
+            with open(DEPLOY_LOGS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        logger.error(f"加载部署日志失败: {e}")
+    return []
+
+def save_deploy_logs(logs):
+    """保存部署日志到文件"""
+    try:
+        with open(DEPLOY_LOGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(logs, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"保存部署日志失败: {e}")
+
 deploy_status = {
     'is_deploying': False,
     'current_step': '',
     'progress': 0,
-    'logs': [],
+    'logs': [],  # 将在 add_log 定义后初始化
     'last_deploy_time': None,
     'last_deploy_status': None
 }
@@ -133,9 +159,30 @@ def add_log(message, level='info'):
         'level': level
     }
     deploy_status['logs'].append(log_entry)
-    # 只保留最近100条日志
-    if len(deploy_status['logs']) > 100:
-        deploy_status['logs'] = deploy_status['logs'][-100:]
+    # 只保留最近200条日志（增加容量）
+    if len(deploy_status['logs']) > 200:
+        deploy_status['logs'] = deploy_status['logs'][-200:]
+    # 持久化到文件
+    save_deploy_logs(deploy_status['logs'])
+
+
+# 初始化部署日志（从文件加载或创建初始日志）
+def init_deploy_logs():
+    """初始化部署日志"""
+    persisted_logs = load_deploy_logs()
+    if persisted_logs:
+        deploy_status['logs'] = persisted_logs
+        logger.info(f"已加载 {len(persisted_logs)} 条历史部署日志")
+    else:
+        # 如果日志为空，添加初始提示日志
+        add_log('📦 部署管理服务已启动', 'info')
+        add_log('   版本: 1.0.0', 'info')
+        add_log('   状态: 就绪', 'success')
+        add_log('', 'info')
+        add_log('💡 提示: 点击"快速部署"或"完整部署"开始部署流程', 'info')
+
+# 调用初始化函数
+init_deploy_logs()
 
 
 @deploy_config_bp.route('/status')
@@ -221,6 +268,74 @@ def list_backups():
         })
     except Exception as e:
         logger.error(f"获取备份列表失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@deploy_config_bp.route('/backups/<filename>', methods=['DELETE'])
+def delete_backup(filename):
+    """删除备份文件"""
+    try:
+        backup_path = f"{BACKUP_DIR}/{filename}"
+        
+        # 验证文件存在
+        _, check, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'not found'")
+        if 'exists' not in check:
+            return jsonify({
+                'success': False,
+                'message': f'备份文件不存在: {filename}'
+            }), 404
+        
+        # 删除文件
+        ssh_command(f"rm -f {backup_path}")
+        
+        # 验证删除成功
+        _, verify, _ = ssh_command(f"test -f {backup_path} && echo 'exists' || echo 'deleted'")
+        if 'deleted' in verify:
+            add_log(f'🗑️ 已删除备份: {filename}', 'info')
+            return jsonify({
+                'success': True,
+                'message': f'备份 {filename} 已删除'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '删除失败'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"删除备份失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@deploy_config_bp.route('/backups/<filename>/download', methods=['GET'])
+def download_backup(filename):
+    """下载备份文件（从当前服务器直接下载）"""
+    try:
+        backup_path = f"{BACKUP_DIR}/{filename}"
+        
+        # 验证文件存在（直接在当前服务器检查）
+        if not os.path.exists(backup_path):
+            return jsonify({
+                'success': False,
+                'message': f'备份文件不存在: {filename}'
+            }), 404
+        
+        # 直接返回文件
+        return send_file(
+            backup_path,
+            mimetype='application/gzip',
+            as_attachment=True,
+            download_name=filename
+        )
+            
+    except Exception as e:
+        logger.error(f"下载备份失败: {e}")
         return jsonify({
             'success': False,
             'message': str(e)
@@ -493,10 +608,18 @@ def execute_fast_deploy(skip_initial_steps=False):
     add_log('', 'info')
     add_log('📝 步骤 5: 重启后端服务', 'info')
 
-    # 5.1 停止旧进程
+    # 5.1 停止旧进程（强制清理，避免僵尸进程）
     add_log('   5.1 停止现有服务...', 'info')
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+    ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
+    
+    # 验证进程已清理
+    _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+    if remaining and int(remaining.strip()) > 0:
+        add_log(f'   ⚠️ 发现 {remaining.strip()} 个残留进程，强制清理...', 'warning')
+        ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+        time.sleep(1)
+    
     add_log('   ✅ 进程已停止', 'success')
 
     # 5.2 启动新服务
@@ -550,14 +673,14 @@ def execute_fast_deploy(skip_initial_steps=False):
 
 
 def execute_full_deploy():
-    """执行完整部署"""
-    add_log('🚀 开始完整部署...', 'info')
+    """执行完整部署（调用 deploy.py 脚本）"""
+    add_log('🚀 开始完整部署（使用 deploy.py）...', 'info')
     add_log('=' * 50, 'info')
 
     # ====== 步骤 1: Git 提交与推送 ======
     deploy_status['current_step'] = 'Git提交'
     deploy_status['progress'] = 5
-    add_log(' 步骤 1: Git 提交与推送', 'info')
+    add_log('📝 步骤 1: Git 提交与推送', 'info')
 
     # 检查是否有未提交的更改
     _, status, _ = run_local_command("git status --porcelain", cwd=str(PROJECT_ROOT))
@@ -573,7 +696,7 @@ def execute_full_deploy():
     # Git推送
     deploy_status['current_step'] = 'Git推送'
     deploy_status['progress'] = 15
-    add_log(' Git推送到远程仓库...', 'info')
+    add_log('   📤 Git推送到远程仓库...', 'info')
 
     # 增加超时时间到 120 秒
     success, stdout, stderr = run_local_command("git push origin q/dev", cwd=str(PROJECT_ROOT), timeout=120)
@@ -585,8 +708,123 @@ def execute_full_deploy():
         add_log('   ⚠️ 继续执行后续部署步骤...', 'warning')
         deploy_status['progress'] = 20
 
-    # 执行快速部署的剩余步骤（跳过前面的检测步骤）
-    execute_fast_deploy(skip_initial_steps=True)
+    # ====== 步骤 2: 调用 deploy.py 进行完整部署 ======
+    deploy_status['current_step'] = '执行完整部署'
+    deploy_status['progress'] = 25
+    add_log('', 'info')
+    add_log('📝 步骤 2: 调用 deploy.py 进行完整部署', 'info')
+    add_log('   这将包括：', 'info')
+    add_log('   - 检测变更文件', 'info')
+    add_log('   - 前端构建', 'info')
+    add_log('   - 创建备份', 'info')
+    add_log('   - 上传文件', 'info')
+    add_log('   - 重启服务', 'info')
+    add_log('   - 自动执行 SQL（如有）', 'info')
+
+    # 执行 deploy.py（完整部署，不使用 --fast）
+    deploy_script = PROJECT_ROOT / 'deploy.py'
+    if not deploy_script.exists():
+        add_log(f'   ❌ deploy.py 不存在: {deploy_script}', 'error')
+        return
+
+    add_log('   正在执行 python deploy.py ...', 'info')
+    
+    # 设置进度回调（通过子进程输出监控）
+    import subprocess
+    import threading
+    
+    def monitor_progress(proc):
+        """监控子进程输出并更新进度"""
+        import re
+        for line in iter(proc.stdout.readline, ''):
+            if line:
+                line = line.strip()
+                # 过滤 ANSI 颜色代码
+                line = re.sub(r'\033\[[0-9;]*m', '', line)
+                # 过滤其他 ANSI 转义序列
+                line = re.sub(r'\033\[[0-9;]*[a-zA-Z]', '', line)
+                line = line.strip()
+                
+                if not line:  # 跳过空行
+                    continue
+                    
+                # 根据输出内容更新进度
+                if '步骤 1:' in line or 'Git' in line:
+                    deploy_status['progress'] = 30
+                elif '步骤 2:' in line or '检测' in line:
+                    deploy_status['progress'] = 40
+                elif '步骤 3:' in line or '前端' in line or '构建' in line:
+                    deploy_status['progress'] = 50
+                elif '步骤 4:' in line or '备份' in line:
+                    deploy_status['progress'] = 60
+                elif '步骤 5:' in line or '上传' in line:
+                    deploy_status['progress'] = 70
+                elif '步骤 6:' in line or '重启' in line or '启动' in line:
+                    deploy_status['progress'] = 85
+                
+                # 添加日志（过滤掉过长的行）
+                if len(line) < 300:
+                    add_log(f'   {line}', 'info')
+    
+    try:
+        # 执行 deploy.py（完整部署）
+        add_log(f'   脚本路径: {deploy_script}', 'info')
+        add_log(f'   工作目录: {PROJECT_ROOT}', 'info')
+        
+        proc = subprocess.Popen(
+            ['python', str(deploy_script)],  # 不使用 --fast 参数
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            cwd=str(PROJECT_ROOT),
+            env=os.environ.copy(),
+            bufsize=1,  # 行缓冲
+            universal_newlines=True
+        )
+        
+        add_log(f'   进程 PID: {proc.pid}', 'info')
+        add_log('   开始执行，等待输出...', 'info')
+        
+        # 启动监控线程
+        monitor_thread = threading.Thread(target=monitor_progress, args=(proc,), daemon=True)
+        monitor_thread.start()
+        
+        # 等待完成（最多 10 分钟）
+        add_log('   部署中，请稍候...', 'info')
+        proc.wait(timeout=600)
+        
+        if proc.returncode == 0:
+            add_log('   ✅ deploy.py 执行成功', 'success')
+            deploy_status['progress'] = 95
+        else:
+            add_log(f'   ❌ deploy.py 执行失败，返回码: {proc.returncode}', 'error')
+            # 尝试获取最后几行输出
+            remaining_output = proc.stdout.read()
+            if remaining_output:
+                for line in remaining_output.split('\n')[-10:]:
+                    if line.strip():
+                        add_log(f'   {line.strip()}', 'error')
+            else:
+                add_log('   ⚠️ 无法获取错误输出', 'warning')
+                
+    except subprocess.TimeoutExpired:
+        add_log('   ❌ deploy.py 执行超时（超过10分钟）', 'error')
+        try:
+            proc.kill()
+            add_log('   已终止进程', 'warning')
+        except:
+            pass
+    except Exception as e:
+        add_log(f'   ❌ 执行 deploy.py 时出错: {str(e)}', 'error')
+        import traceback
+        add_log(f'   错误详情: {traceback.format_exc()}', 'error')
+    finally:
+        # 确保读取所有剩余输出
+        try:
+            if proc:
+                proc.stdout.close()
+        except:
+            pass
 
 
 def execute_restore(backup_file):
@@ -608,8 +846,18 @@ def execute_restore(backup_file):
     deploy_status['current_step'] = '停止服务'
     deploy_status['progress'] = 20
     add_log('⏹️ 步骤 1: 停止当前服务...', 'info')
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+    
+    # 强制清理所有相关进程
+    ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
     time.sleep(2)
+    
+    # 验证清理
+    _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+    if remaining and int(remaining.strip()) > 0:
+        add_log(f'   ⚠️ 发现残留进程，二次清理...', 'warning')
+        ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+        time.sleep(1)
+    
     add_log('   ✅ 服务已停止', 'success')
 
     deploy_status['current_step'] = '恢复备份'
@@ -749,9 +997,16 @@ def restart_service():
     try:
         add_log('🔄 手动重启服务...', 'info')
 
-        # 停止
-        ssh_command(f"cd {REMOTE_PATH} && pkill -f '.venv/bin/python.*app.py' || true")
+        # 停止（强制清理）
+        ssh_command(f"cd {REMOTE_PATH} && pkill -9 -f '.venv/bin/python.*app.py' || true")
         time.sleep(2)
+        
+        # 验证清理
+        _, remaining, _ = ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | wc -l")
+        if remaining and int(remaining.strip()) > 0:
+            add_log(f'   ⚠️ 发现残留进程，强制清理...', 'warning')
+            ssh_command("ps aux | grep '.venv/bin/python.*app.py' | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true")
+            time.sleep(1)
 
         # 启动
         start_cmd = f"""
@@ -780,123 +1035,211 @@ def restart_service():
 
 @deploy_config_bp.route('/server-logs', methods=['GET'])
 def get_server_logs():
-    """获取服务器日志"""
-    lines = request.args.get('lines', 100, type=int)
-    log_type = request.args.get('type', 'backend')  # backend, nginx, error
+    """获取服务器日志
 
-    # 限制最大行数，防止性能问题
-    MAX_LINES = 10000
-    if lines > MAX_LINES:
+    参数：
+        type: 日志类型 (backend/nginx_access/nginx_error)
+        preset: 预设行数 (100|1000|10000)，默认 100
+        level: 日志级别筛选 (ERROR/WARNING/INFO/DEBUG/ALL)，默认 ALL
+    """
+    preset = request.args.get('preset', '100')
+    log_type = request.args.get('type', 'backend')
+    level = request.args.get('level', 'ALL').upper()
+
+    PRESET_LINES = {'100': 100, '1000': 1000, '10000': 10000}
+    LOG_LEVELS = {'ERROR', 'WARNING', 'INFO', 'DEBUG', 'ALL'}
+
+    if preset not in PRESET_LINES:
         return jsonify({
             'success': False,
-            'message': f'查询行数不能超过{MAX_LINES}行'
+            'message': f'预设参数错误，支持的 preset: 100, 1000, 10000'
         }), 400
+
+    if level not in LOG_LEVELS:
+        return jsonify({
+            'success': False,
+            'message': f'日志级别参数错误，支持的 level: ERROR, WARNING, INFO, DEBUG, ALL'
+        }), 400
+
+    lines_count = PRESET_LINES[preset]
 
     try:
         if log_type == 'backend':
-            cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
-        elif log_type == 'nginx':
-            cmd = f"tail -n {lines} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
-        elif log_type == 'error':
-            cmd = f"tail -n {lines} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
+            cmd = f"cd {REMOTE_PATH} && tail -n {lines_count} logs/backend.log"
+        elif log_type == 'nginx_access':
+            cmd = f"tail -n {lines_count} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
+        elif log_type == 'nginx_error':
+            cmd = f"tail -n {lines_count} {REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
         else:
-            cmd = f"cd {REMOTE_PATH} && tail -n {lines} logs/backend.log"
+            cmd = f"cd {REMOTE_PATH} && tail -n {lines_count} logs/backend.log"
+            log_type = 'backend'
 
-        success, stdout, stderr = ssh_command(cmd, timeout=30)
+        success, stdout, stderr = ssh_command(cmd, timeout=60)
 
         if success:
+            log_lines = stdout.split('\n') if stdout else []
+            
+            # 解析日志并添加级别和颜色信息
+            parsed_logs = parse_log_levels(log_lines, level)
+            
             return jsonify({
                 'success': True,
                 'data': {
                     'logs': stdout,
-                    'lines': len(stdout.split('\n')) if stdout else 0,
-                    'requested_lines': lines,
-                    'type': log_type
+                    'parsed_logs': parsed_logs,
+                    'lines_count': len(parsed_logs),
+                    'requested_lines': lines_count,
+                    'preset': preset,
+                    'type': log_type,
+                    'type_name': get_log_type_name(log_type),
+                    'level': level,
+                    'level_name': get_log_level_name(level)
                 }
             })
         else:
             return jsonify({
                 'success': False,
-                'message': f'获取日志失败: {stderr}'
+                'message': f'获取日志失败：{stderr}'
             }), 500
 
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
+        logger.error(f"查询日志失败：{e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+def parse_log_levels(log_lines, filter_level='ALL'):
+    """解析日志级别并添加颜色信息
+    
+    Args:
+        log_lines: 日志行列表
+        filter_level: 筛选级别 (ERROR/WARNING/INFO/DEBUG/ALL)
+    
+    Returns:
+        解析后的日志列表，每条包含: line, level, color
+    """
+    import re
+    
+    # 日志级别颜色映射
+    level_colors = {
+        'ERROR': '#ef4444',      # 红色
+        'WARNING': '#f59e0b',    # 橙色
+        'INFO': '#3b82f6',       # 蓝色
+        'DEBUG': '#8b5cf6',      # 紫色
+        'SUCCESS': '#22c55e',    # 绿色
+        'DEFAULT': '#6b7280'     # 灰色
+    }
+    
+    # 日志级别正则匹配模式
+    level_patterns = [
+        (re.compile(r'\bERROR\b', re.IGNORECASE), 'ERROR'),
+        (re.compile(r'\bWARNING\b|\bWARN\b', re.IGNORECASE), 'WARNING'),
+        (re.compile(r'\bINFO\b', re.IGNORECASE), 'INFO'),
+        (re.compile(r'\bDEBUG\b', re.IGNORECASE), 'DEBUG'),
+        (re.compile(r'\bSUCCESS\b|\bOK\b', re.IGNORECASE), 'SUCCESS'),
+    ]
+    
+    # 级别优先级（用于筛选）
+    level_priority = {'ERROR': 4, 'WARNING': 3, 'INFO': 2, 'DEBUG': 1, 'ALL': 0}
+    
+    parsed = []
+    
+    for line in log_lines:
+        if not line.strip():
+            continue
+            
+        # 检测日志级别
+        detected_level = 'DEFAULT'
+        for pattern, level in level_patterns:
+            if pattern.search(line):
+                detected_level = level
+                break
+        
+        # 应用筛选
+        if filter_level != 'ALL':
+            if level_priority.get(detected_level, 0) < level_priority.get(filter_level, 0):
+                continue
+        
+        parsed.append({
+            'line': line,
+            'level': detected_level,
+            'color': level_colors.get(detected_level, level_colors['DEFAULT'])
+        })
+    
+    return parsed
+
+
+def get_log_type_name(log_type):
+    """获取日志类型的中文名称"""
+    return {'backend': '后端日志', 'nginx_access': 'Nginx 访问日志', 'nginx_error': 'Nginx 错误日志'}.get(log_type, '日志')
+
+
+def get_log_level_name(level):
+    """获取日志级别的中文名称"""
+    return {
+        'ERROR': '错误',
+        'WARNING': '警告',
+        'INFO': '信息',
+        'DEBUG': '调试',
+        'ALL': '全部'
+    }.get(level, '全部')
+
 
 
 @deploy_config_bp.route('/server-logs/download', methods=['GET'])
 def download_server_logs():
-    """下载服务器日志文件"""
-    log_type = request.args.get('type', 'backend')  # backend, nginx, error
-    lines = request.args.get('lines', 1000, type=int)
-
-    # 限制最大行数
-    MAX_LINES = 50000
-    if lines > MAX_LINES:
-        return jsonify({
-            'success': False,
-            'message': f'下载行数不能超过{MAX_LINES}行'
-        }), 400
+    """下载完整的服务器日志文件"""
+    log_type = request.args.get('type', 'backend')
 
     try:
         import tempfile
+        import shutil
 
-        # 确定日志文件路径
+        # 确定日志文件路径和前缀
         if log_type == 'backend':
             log_file = f"{REMOTE_PATH}/logs/backend.log"
             filename_prefix = "backend"
-        elif log_type == 'nginx':
+        elif log_type == 'nginx_access':
             log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_access.log"
             filename_prefix = "nginx_access"
-        elif log_type == 'error':
+        elif log_type == 'nginx_error':
             log_file = f"{REMOTE_PATH}/logs/nginx_{NGINX_PORT}_error.log"
             filename_prefix = "nginx_error"
         else:
             log_file = f"{REMOTE_PATH}/logs/backend.log"
             filename_prefix = "backend"
 
-        # 创建临时文件
+        # 创建临时目录和文件
         temp_dir = tempfile.mkdtemp()
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         temp_file = os.path.join(temp_dir, f"{filename_prefix}_{timestamp}.log")
 
-        # 从远程服务器获取日志并保存到临时文件
-        if lines > 0:
-            cmd = f"tail -n {lines} {log_file} > {temp_file}"
-        else:
-            cmd = f"cp {log_file} {temp_file}"
+        try:
+            # 从远程服务器复制完整日志文件到临时文件
+            cmd = f"cat {log_file} > {temp_file}"
+            success, stdout, stderr = ssh_command(cmd, timeout=120)
 
-        success, stdout, stderr = ssh_command(cmd, timeout=60)
+            if success and os.path.exists(temp_file):
+                from flask import send_file
+                return send_file(
+                    temp_file,
+                    as_attachment=True,
+                    download_name=f"{filename_prefix}_{timestamp}.log",
+                    mimetype='text/plain'
+                )
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'下载日志失败：{stderr}'
+                }), 500
 
-        if success and os.path.exists(temp_file):
-            # 返回文件供下载
-            from flask import send_file
-            return send_file(
-                temp_file,
-                as_attachment=True,
-                download_name=f"{filename_prefix}_{timestamp}.log",
-                mimetype='text/plain'
-            )
-        else:
+        finally:
             # 清理临时文件
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
-            os.rmdir(temp_dir)
-
-            return jsonify({
-                'success': False,
-                'message': f'下载日志失败: {stderr}'
-            }), 500
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
     except Exception as e:
-        logger.error(f"下载日志失败: {e}")
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
+        logger.error(f"下载日志失败：{e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 
 def run_local_command(cmd, cwd=None, timeout=60):

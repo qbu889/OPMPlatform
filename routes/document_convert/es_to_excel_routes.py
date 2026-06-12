@@ -26,7 +26,7 @@ es_to_excel_bp = Blueprint('es_to_excel', __name__, url_prefix='/api/es-to-excel
 # 配置上传和输出目录
 UPLOAD_FOLDER = Path('uploads/es_to_excel')
 OUTPUT_FOLDER = Path('downloads/es_to_excel')
-ALLOWED_EXTENSIONS = {'txt'}
+ALLOWED_EXTENSIONS = {'txt', 'json'}
 
 # 确保目录存在
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)

@@ -1199,10 +1199,14 @@ def build_dingtalk_message(message_type, content, at_mobiles=None, at_all=False,
     is_at_all = bool(at_all) if at_all is not None else False
     
     # Markdown 消息类型特殊处理：需要在文本中添加 @手机号 语法
-    if message_type == 'markdown' and at_mobiles and not is_at_all:
-        # 在消息开头添加 @手机号
-        at_text = ' '.join([f'@{mobile}' for mobile in at_mobiles])
-        content = f"{at_text}\n\n{content}"
+    if message_type == 'markdown':
+        # Markdown 不支持 isAtAll，需要在文本中手动添加 @所有人
+        if is_at_all:
+            content = f"@所有人\n\n{content}"
+        elif at_mobiles:
+            # 在消息开头添加 @手机号
+            at_text = ' '.join([f'@{mobile}' for mobile in at_mobiles])
+            content = f"{at_text}\n\n{content}"
     
     base_at = {
         "atMobiles": at_mobiles,

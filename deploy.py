@@ -81,7 +81,10 @@ def ssh_command(cmd, timeout=60):
     """执行SSH远程命令"""
     full_cmd = f"ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no {REMOTE_USER}@{REMOTE_HOST} \"{cmd}\""
     success, stdout, stderr = run_command(full_cmd, timeout=timeout)
-    if not success and stderr:
+    # 特殊处理 grep 命令：退出码 1 表示未找到匹配项（不是错误）
+    is_grep_no_match = 'grep' in cmd and not success and not stdout
+    # 只在真正失败时显示警告（返回码非0且没有stdout输出且不是grep无匹配）
+    if not success and not stdout and stderr and not is_grep_no_match:
         print_warning(f"SSH命令警告: {stderr[:200]}")
     return success, stdout, stderr
 
@@ -148,7 +151,7 @@ def detect_changed_files():
     # 方法4: 使用默认核心文件
     if not changed_files:
         print_warning("未检测到任何变更，将上传核心文件...")
-        changed_files = "app.py config.py routes/kafka/kafka_generator_routes.py"
+        changed_files = "app.py config.py routes/kafka/kafka_generator_routes.py routes/diff/diff_routes.py utils/json_diff_utils.py"
     
     # 解析文件列表
     files = [f.strip() for f in changed_files.split('\n') if f.strip()]
@@ -357,12 +360,13 @@ def generate_nginx_config():
     location = /dingtalk-push/view-checkin {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     
     # Kafka Generator API
-    location = /kafka-generator/field-meta {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
+    location /kafka-generator/field-meta {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-meta/list {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-cache {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-order {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-options {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-values {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
+    location /kafka-generator/field-dict {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/generate {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location /kafka-generator/history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
     location = /kafka-generator/field-history {{ proxy_pass http://127.0.0.1:{LOCAL_PORT}; }}
@@ -482,9 +486,89 @@ def update_nginx_config():
         os.unlink(local_nginx_conf)
         ssh_command(f"rm -f {remote_nginx_conf}")
 
+def stop_old_processes():
+    """停止旧的进程（端口和任务）"""
+    print_header("步骤 0: 清理旧进程")
+    
+    # 1. 清理占用后端端口的进程
+    print_info(f"检查端口 {LOCAL_PORT}...")
+    check_cmd = f"lsof -ti:{LOCAL_PORT}"
+    success, pids, _ = ssh_command(check_cmd)
+    
+    if success and pids:
+        pid_list = pids.strip().split('\n')
+        print_warning(f"发现 {len(pid_list)} 个进程占用端口 {LOCAL_PORT}，强制清理...")
+        for pid in pid_list:
+            ssh_command(f"kill -9 {pid}")
+            print(f"   - 已终止进程 PID: {pid}")
+        time.sleep(1)
+    else:
+        print_success(f"端口 {LOCAL_PORT} 空闲")
+    
+    # 2. 清理 app.py 进程（防止僵尸进程）
+    print_info("检查 app.py 进程...")
+    check_cmd = "ps aux | grep 'python app.py' | grep -v grep | awk '{print $2}'"
+    success, pids, _ = ssh_command(check_cmd)
+    
+    if success and pids:
+        pid_list = pids.strip().split('\n')
+        print_warning(f"发现 {len(pid_list)} 个 app.py 进程，强制清理...")
+        for pid in pid_list:
+            ssh_command(f"kill -9 {pid}")
+            print(f"   - 已终止进程 PID: {pid}")
+        time.sleep(1)
+    else:
+        print_success("无残留 app.py 进程")
+
+def execute_sql_file(sql_file_path, db_name="schedule"):
+    """在远程服务器执行 SQL 文件
+    
+    Args:
+        sql_file_path: 本地 SQL 文件路径
+        db_name: 数据库名称
+    """
+    if not sql_file_path.exists():
+        print_warning(f"SQL 文件不存在: {sql_file_path}")
+        return False
+    
+    print_info(f"上传并执行 SQL 文件: {sql_file_path.name}")
+    
+    # 读取 SQL 文件内容
+    try:
+        with open(sql_file_path, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+    except Exception as e:
+        print_error(f"读取 SQL 文件失败: {e}")
+        return False
+    
+    # 在远程执行 SQL（使用管道，避免密码明文）
+    # 使用 base64 编码避免特殊字符问题
+    import base64
+    sql_encoded = base64.b64encode(sql_content.encode('utf-8')).decode('utf-8')
+    
+    exec_cmd = f"""
+    echo '{sql_encoded}' | base64 -d | mysql -u root {db_name}
+    """
+    
+    success, stdout, stderr = ssh_command(exec_cmd, timeout=60)
+    
+    if success:
+        print_success(f"SQL 文件 {sql_file_path.name} 执行成功")
+        if stdout:
+            # 显示最后几行输出
+            lines = stdout.split('\n')
+            print_info("执行结果:")
+            for line in lines[-5:]:
+                if line.strip():
+                    print(f"   {line}")
+        return True
+    else:
+        print_error(f"SQL 文件执行失败: {stderr[:200]}")
+        return False
+
 def restart_services():
     """重启服务"""
-    print_header("步骤 5: 远程备份并重启服务")
+    print_header("步骤 5: 清理旧进程并重启服务")
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
@@ -510,13 +594,7 @@ def restart_services():
     
     # 2. 停止旧进程
     print_info("步骤 5.2: 停止现有服务")
-    stop_cmd = f"""
-    cd {REMOTE_PATH}
-    pkill -f "python app.py" 2>/dev/null || true
-    sleep 2
-    echo "进程已停止"
-    """
-    ssh_command(stop_cmd)
+    stop_old_processes()
     print_success("进程已停止")
     
     # 3. 启动新服务
@@ -525,38 +603,155 @@ def restart_services():
     # 更新Nginx配置
     update_nginx_config()
     
-    # 启动后端
-    start_cmd = f"""
-    cd {REMOTE_PATH}
-    source .venv/bin/activate
-    export PORT={LOCAL_PORT}
-    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
-    echo "后端已启动 (PID: $!)"
-    """
+    # 备份旧日志（不清空，保留历史）
+    print_info("备份旧日志...")
+    today = datetime.now().strftime('%Y%m%d')
+    ssh_command(f"cd {REMOTE_PATH}/logs && [ -f app_{today}.log ] && mv app_{today}.log app_{today}.log.bak || true")
     
-    success, stdout, stderr = ssh_command(start_cmd)
-    print_success("后端服务已启动")
+    # 启动后端（简化命令，避免SSH转义问题）
+    start_cmd = f"cd {REMOTE_PATH} && source .venv/bin/activate && PORT={LOCAL_PORT} nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 &"
     
-    # 4. 验证服务状态
-    print_info("步骤 5.4: 验证服务状态")
+    success, pid_output, stderr = ssh_command(start_cmd)
     
-    # 检查进程
-    _, processes, _ = ssh_command("ps -ef | grep 'python app.py' | grep -v grep")
+    if success:
+        print_success("后端服务已启动")
+        if pid_output:
+            print_info(f"启动输出: {pid_output}")
+    else:
+        print_error(f"启动命令执行失败: {stderr[:200]}")
+    
+    # 等待进程启动
+    time.sleep(3)
+    
+    # 4. 等待服务启动
+    print_info("步骤 5.4: 等待服务启动...")
+    time.sleep(7)  # 总共等待10秒（3+7）
+    
+    # 5. 验证服务状态
+    print_info("步骤 5.5: 验证服务状态")
+    
+    # 方法1: 检查进程（使用更宽松的匹配）
+    _, processes, _ = ssh_command(f"ps aux | grep '[p]ython.*app.py'")
     if processes:
-        print_success("后端进程运行中:")
-        print(f"   {processes}")
+        print_success("后端进程运行中")
+        for line in processes.split('\n')[:2]:
+            print(f"   {line.strip()}")
+    else:
+        print_warning("未检测到进程，尝试其他验证方式...")
     
-    # 检查端口
-    _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -3")
-    if port_check:
-        print_success(f"端口 {LOCAL_PORT} 监听正常")
+    # 方法2: 直接测试端口连通性（最可靠）
+    print_info("测试端口连通性...")
+    test_port_cmd = f"timeout 3 bash -c 'echo > /dev/tcp/127.0.0.1/{LOCAL_PORT}' 2>/dev/null && echo 'OK' || echo 'FAIL'"
+    _, port_result, _ = ssh_command(test_port_cmd)
     
-    # 查看日志
-    _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -10 logs/backend.log")
-    if logs:
-        print_info("后端日志（最后10行）:")
-        for line in logs.split('\n')[-10:]:
-            print(f"   {line}")
+    if port_result.strip() == 'OK':
+        print_success(f"✅ 端口 {LOCAL_PORT} 可访问（服务已就绪）")
+    else:
+        print_warning(f"端口 {LOCAL_PORT} 暂时不可访问，继续等待...")
+        time.sleep(5)
+        _, port_result_retry, _ = ssh_command(test_port_cmd)
+        if port_result_retry.strip() == 'OK':
+            print_success(f"✅ 端口 {LOCAL_PORT} 已就绪（延迟启动）")
+        else:
+            print_error(f"❌ 端口 {LOCAL_PORT} 仍不可访问")
+    
+    # 方法3: 尝试 curl 本地测试
+    print_info("本地 HTTP 测试...")
+    _, http_result, _ = ssh_command(f"curl -s -o /dev/null -w '%{{http_code}}' http://127.0.0.1:{LOCAL_PORT}/ 2>/dev/null || echo 'FAILED'")
+    if http_result.strip() in ['200', '302', '404']:
+        print_success(f"HTTP 响应码: {http_result.strip()} (服务正常)")
+    else:
+        print_warning(f"HTTP 测试结果: {http_result.strip()}")
+    
+    # 查看最新日志
+    print_info("查看启动日志:")
+    time.sleep(3)  # 再等待一下，确保日志已写入
+    
+    # 检查今天的日志文件
+    today = datetime.now().strftime('%Y%m%d')
+    log_file = f"app_{today}.log"
+    
+    _, log_size, _ = ssh_command(f"test -f {REMOTE_PATH}/logs/{log_file} && wc -c < {REMOTE_PATH}/logs/{log_file} || echo '0'")
+    
+    if log_size and int(log_size.strip()) > 0:
+        # 查找关键启动信息
+        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && grep -E '(Running on|Started|Listening|ERROR|Exception|Traceback)' logs/{log_file} | tail -10")
+        
+        if not logs:
+            # 如果没有关键日志，显示最后15行
+            _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -15 logs/{log_file}")
+        
+        if logs:
+            print_info(f"服务启动日志 (from {log_file}):")
+            for line in logs.split('\n'):
+                if line.strip():
+                    print(f"   {line}")
+        else:
+            print_warning("日志文件为空或无内容")
+    else:
+        print_error(f"日志文件 {log_file} 不存在或为空！")
+        # 尝试查看是否有其他日志
+        _, alt_logs, _ = ssh_command(f"ls -lht {REMOTE_PATH}/logs/app_*.log 2>/dev/null | head -5")
+        if alt_logs:
+            print_info("最近的日志文件:")
+            for line in alt_logs.split('\n'):
+                if line.strip():
+                    print(f"   {line}")
+    
+    # 执行 SQL 文件（创建缺失的表）
+    print_info("检查并创建数据库表...")
+    sql_file = PROJECT_ROOT / "sql" / "create_kafka_field_dict.sql"
+    if sql_file.exists():
+        execute_sql_file(sql_file, "schedule")
+    else:
+        print_warning(f"SQL 文件不存在: {sql_file}")
+
+
+# def update_kafka_field_meta():
+#     """远程执行Kafka字段元数据更新脚本"""
+#     print_header("步骤 7: 更新Kafka字段元数据")
+#
+#     # 检查本地脚本是否存在
+#     local_script = PROJECT_ROOT / "scripts" / "update_kafka_field_meta.py"
+#     if not local_script.exists():
+#         print_warning("本地更新脚本不存在，跳过")
+#         return False
+#
+#     print_info("上传更新脚本到远程服务器...")
+#
+#     # 上传脚本
+#     remote_script = f"{REMOTE_PATH}/scripts/update_kafka_field_meta.py"
+#     success = scp_upload(str(local_script), remote_script)
+#
+#     if not success:
+#         print_error("脚本上传失败")
+#         return False
+#
+#     print_success("脚本上传成功")
+#
+#     # 在远程执行脚本
+#     print_info("在远程服务器执行更新脚本...")
+#     exec_cmd = f"""
+#     cd {REMOTE_PATH}
+#     source .venv/bin/activate
+#     python scripts/update_kafka_field_meta.py
+#     """
+#
+#     success, stdout, stderr = ssh_command(exec_cmd, timeout=120)
+#
+#     if success:
+#         print_success("Kafka字段元数据更新完成")
+#         if stdout:
+#             # 显示最后几行输出
+#             lines = stdout.split('\n')
+#             print_info("更新结果:")
+#             for line in lines[-10:]:
+#                 if line.strip():
+#                     print(f"   {line}")
+#         return True
+#     else:
+#         print_error(f"更新脚本执行失败: {stderr[:200]}")
+#         return False
 
 def test_api():
     """测试API接口"""
@@ -636,15 +831,26 @@ def fast_deploy(specific_files=None):
     # 分类文件
     backend_files = []
     frontend_files = []
+    skipped_files = []
     
     for file in specific_files:
-        if file.startswith('frontend/src/') or file.endswith('.vue') or file.endswith('.js'):
+        # 跳过 __pycache__ 目录和编译文件
+        if '__pycache__' in file or file.endswith('.pyc'):
+            skipped_files.append(file)
+            continue
+        
+        # 判断是否为前端源码文件（需要构建）
+        if file.startswith('frontend/src/') and (file.endswith('.vue') or file.endswith('.js') or file.endswith('.ts')):
             frontend_files.append(file)
         elif file.endswith('.py'):
             backend_files.append(file)
         else:
             # 其他文件当作后端文件处理
             backend_files.append(file)
+    
+    # 显示跳过的文件
+    if skipped_files:
+        print_info(f"已跳过 {len(skipped_files)} 个非部署文件（__pycache__/编译文件）")
     
     # 上传后端文件（直接SCP，不打包）
     if backend_files:
@@ -659,16 +865,26 @@ def fast_deploy(specific_files=None):
     
     # 上传前端文件（需要重新构建）
     if frontend_files:
-        print_warning("检测到前端文件变更，需要重新构建")
-        print_info("建议使用完整部署模式: python deploy.py")
-        return False
+        print_warning(f"检测到 {len(frontend_files)} 个前端源码文件变更，开始重新构建")
+        for f in frontend_files[:5]:
+            print(f"   - {f}")
+        if len(frontend_files) > 5:
+            print(f"   ... 还有 {len(frontend_files) - 5} 个文件")
+        
+        # 执行前端构建并上传
+        if not build_and_upload_frontend(need_frontend_build=True):
+            print_error("前端构建或上传失败")
+            return False
     
     # 重启后端服务（可选）
     print("\n是否重启后端服务？(y/n): ", end="", flush=True)
     try:
         choice = input().strip().lower()
         if choice == 'y':
-            restart_backend_only()
+            if restart_backend_only():
+                print_success("后端服务重启成功")
+            else:
+                print_error("后端服务重启失败，请检查日志")
     except:
         pass
     
@@ -679,34 +895,40 @@ def restart_backend_only():
     """仅重启后端服务（不影响Nginx和前端）"""
     print_info("重启后端服务...")
     
-    # 停止旧进程
-    ssh_command(f"cd {REMOTE_PATH} && pkill -f 'python app.py' || true")
+    # 停止旧进程（使用更可靠的方式，避免 pkill 返回码问题）
+    ssh_command(f"cd {REMOTE_PATH} && ps -ef | grep 'python app.py' | grep -v grep | awk '{{print $2}}' | xargs -r kill")
     time.sleep(2)
     
-    # 启动新进程
-    start_cmd = f"""
-    cd {REMOTE_PATH}
-    source .venv/bin/activate
-    export PORT={LOCAL_PORT}
-    nohup python app.py --host 0.0.0.0 > logs/backend.log 2>&1 &
-    echo $!
-    """
+    # 确认旧进程已停止
+    _, processes, _ = ssh_command(f"ps -ef | grep 'python app.py' | grep -v grep")
+    if processes:
+        print_warning("检测到仍有进程运行，强制终止...")
+        ssh_command(f"pkill -9 -f 'python app.py'")
+        time.sleep(1)
     
-    success, pid, _ = ssh_command(start_cmd)
-    if success and pid.strip().isdigit():
-        print_success(f"后端服务已重启 (PID: {pid.strip()})")
-        
-        # 等待启动
-        time.sleep(3)
-        
-        # 验证
-        _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
-        if port_check:
-            print_success(f"端口 {LOCAL_PORT} 监听正常")
-        else:
-            print_warning("端口未监听，请检查日志")
+    # 启动新进程
+    start_cmd = f"""cd {REMOTE_PATH} && source .venv/bin/activate && export PORT={LOCAL_PORT} && nohup python app.py --host 0.0.0.0 >> logs/backend.log 2>&1 & echo $!"""
+    
+    success, pid, stderr = ssh_command(start_cmd)
+    
+    # 等待启动
+    time.sleep(5)
+    
+    # 验证端口是否监听
+    _, port_check, _ = ssh_command(f"lsof -i:{LOCAL_PORT} | head -2")
+    if port_check:
+        print_success(f"后端服务已重启 (端口 {LOCAL_PORT} 监听正常)")
+        return True
     else:
-        print_error("重启失败")
+        print_error("端口未监听，服务启动失败")
+        # 显示最新日志帮助排查
+        _, logs, _ = ssh_command(f"cd {REMOTE_PATH} && tail -20 logs/backend.log")
+        if logs:
+            print_info("最新日志:")
+            for line in logs.split('\n')[-10:]:
+                if line.strip():
+                    print(f"   {line}")
+        return False
 
 def main():
     """主函数"""
@@ -715,6 +937,7 @@ def main():
     parser.add_argument('--fast', action='store_true', help='快速部署模式（跳过Git和前端构建）')
     parser.add_argument('--file', nargs='+', help='指定要部署的文件列表')
     parser.add_argument('--no-restart', action='store_true', help='不重启服务')
+    parser.add_argument('--update-kafka-field-meta', action='store_true', help='更新Kafka字段元数据')
     args = parser.parse_args()
     
     print_header("🚀 Python智能部署脚本")
@@ -723,6 +946,13 @@ def main():
     print()
     
     try:
+        # 仅更新Kafka字段元数据模式
+        if args.update_kafka_field_meta:
+            if update_kafka_field_meta():
+                sys.exit(0)
+            else:
+                sys.exit(1)
+        
         # 快速部署模式
         if args.fast or args.file:
             specific_files = args.file if args.file else None
@@ -758,12 +988,13 @@ def main():
         if not args.no_restart:
             restart_services()
         
-        # 7. 等待服务完全启动
-        print_info("等待服务完全启动...")
-        time.sleep(5)
-        
-        # 8. 测试API
+        # 7. 测试API
+        print_info("测试 API 接口...")
+        time.sleep(2)
         test_api()
+        
+        # 9. 更新Kafka字段元数据（已禁用）
+        # update_kafka_field_meta()
         
         print_header("✅ 部署完成！")
         print(f"{Colors.GREEN}📍 访问地址:{Colors.END}")

@@ -22,7 +22,7 @@ kafka_generator_bp = Blueprint('kafka_generator_bp', __name__, url_prefix='/kafk
 FIELD_META = {
     "NETWORK_TYPE_TOP": {
         "label_cn": "一级专业分类",
-        "es_field": "NETWORK_TYPE_ID",
+        "es_field": "ROOT_NETWORK_TYPE_ID",
         "db_cn": "一级专业ID"
     },
     "ORG_SEVERITY": {
@@ -259,12 +259,17 @@ def generate_unique_fp():
 
 def generate_consistent_fp():
     """生成一致的FP值，确保同一请求中所有FP字段相同"""
-    # 使用固定的格式生成FP值，确保一致性
-    timestamp = str(int((datetime.now() - timedelta(minutes=15)).timestamp()))
-    random_part1 = str(random.randint(1000000000, 9999999999))
-    random_part2 = str(random.randint(1000000000, 9999999999))
-    random_part3 = str(random.randint(1000000000, 9999999999))
-    random_part4 = str(random.randint(10000, 99999))
+    # 使用UUID生成唯一值，避免random模块初始化问题
+    from datetime import timezone
+    # 使用微秒级时间戳确保唯一性
+    timestamp = str(int(datetime.now(timezone.utc).timestamp() * 1000000))
+    # 使用UUID生成随机部分，确保每次都不同
+    uuid_value = uuid.uuid4().hex
+    random_part1 = uuid_value[:10]
+    random_part2 = uuid_value[10:20]
+    random_part3 = uuid_value[20:30]
+    # UUID hex是32位，取最后5位（索引27-32）
+    random_part4 = uuid_value[27:]
     return f"{timestamp}_{random_part1}_{random_part2}_{random_part3}_{random_part4}"
 
 
@@ -310,6 +315,7 @@ STANDARD_FIELD_ORDER = [
     "ALARM_EXPLANATION",
     "ALARM_EXPLANATION_ADDITION",
     "MAINTAIN_GROUP",
+    "ASSIGN_TENANCE_GROUP",
     "SITE_TYPE",
     "SUB_ALARM_TYPE",
     "EVENT_CAT",
@@ -425,6 +431,7 @@ def generate_es_to_kafka_mapping(es_data, user_delay_time=None):
         'STANDARD_FLAG',
         'REDEFINE_SEVERITY',
         'OBJECT_CLASS',
+        'TIME_STAMP',  # 必须是数字时间戳
     }
     
     # 按照标准字段顺序处理每个字段
@@ -554,12 +561,15 @@ def build_dynamic_field_mapping(es_data, field_meta, user_delay_time=None):
         # 特殊字段强制使用默认规则，忽略数据库配置
         if kafka_field in SPECIAL_FIELDS:
             field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+            logger.debug(f"[SPECIAL_FIELD] {kafka_field} 使用默认映射规则")
         elif es_field:
             # 如果数据库中配置了 es_field，优先使用
             field_mapping[kafka_field] = f"_source.{es_field}"
+            logger.debug(f"[DB_CONFIG] {kafka_field} 使用数据库配置: {es_field}")
         else:
             # 否则使用内置的默认映射规则
             field_mapping[kafka_field] = get_default_mapping_rule(kafka_field, es_data, user_delay_time)
+            logger.debug(f"[DEFAULT_RULE] {kafka_field} 使用内置默认规则")
     
     # 2. 再处理数据库中配置但不在 STANDARD_FIELD_ORDER 中的额外字段
     for kafka_field, meta in field_meta.items():
@@ -626,7 +636,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "PROBABLE_CAUSE_TXT": "_source.EVENT_PROBABLE_CAUSE_TXT",
         "PREPROCESS_MANNER": "",
         "EVENT_TIME": lambda: generate_creation_event_time(es_data, user_delay_time),
-        "TIME_STAMP": lambda: str(int(datetime.strptime(get_nested_value(es_data, "EVENT_TIME"), "%Y-%m-%d %H:%M:%S").timestamp())) if get_nested_value(es_data, "EVENT_TIME") else str(int((datetime.now() - timedelta(minutes=15)).timestamp())),
+        "TIME_STAMP": lambda: int(datetime.strptime(generate_creation_event_time(es_data, user_delay_time), "%Y-%m-%d %H:%M:%S").timestamp()),
         "FP0_FP1_FP2_FP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "CFP0_CFP1_CFP2_CFP3": lambda: generate_es_to_kafka_mapping.consistent_fp,
         "MACHINE_ROOM_INFO": "_source.NE_TAG.MACHINE_ROOM_INFO",
@@ -637,6 +647,7 @@ def get_default_mapping_rule(kafka_field, es_data, user_delay_time=None):
         "ALARM_EXPLANATION": "_source.EVENT_EXPLANATION",
         "ALARM_EXPLANATION_ADDITION": "传输节点",
         "MAINTAIN_GROUP": "_source.MAINTAIN_TEAM",
+        "ASSIGN_TENANCE_GROUP": "_source.ASSIGN_TENANCE_GROUP",
         "SITE_TYPE": "_source.SITE_TYPE",
         "SUB_ALARM_TYPE": "",
         "EVENT_CAT": "_source.EVENT_CAT",
@@ -796,6 +807,7 @@ def generate_org_text(kafka_data):
         "TIME_STAMP", "FP0_FP1_FP2_FP3", "CFP0_CFP1_CFP2_CFP3", "MACHINE_ROOM_INFO",
         "INT_ID", "REDEFINE_SEVERITY", "TYPE_KEYCODE", "NE_LOCATION",
         "ALARM_EXPLANATION", "ALARM_EXPLANATION_ADDITION", "MAINTAIN_GROUP",
+        "ASSIGN_TENANCE_GROUP",
         "SITE_TYPE", "SUB_ALARM_TYPE", "EVENT_CAT", "NMS_NAME",
         "CITY_ID", "REMOTE_EQP_LABEL", "REMOTE_RESOURCE_STATUS",
         "REMOTE_PROJ_SUB_STATUS", "REMOTE_INT_ID", "PROJ_NAME",
@@ -852,6 +864,7 @@ def generate_creation_event_time(es_data, user_delay_time=None):
         - 如果没有 DELAY_TIME，默认使用 15 小时
 
     示例:
+        DELAY_TIME = 15 -> 15/60 = 0.25 小时 -> 当前时间 - 15 分钟
         DELAY_TIME = 720 -> 720/60 = 12 小时 -> 当前时间 - 12 小时
     """
     # 默认延迟 15 小时
@@ -863,7 +876,7 @@ def generate_creation_event_time(es_data, user_delay_time=None):
             delay_hours = int(user_delay_time) / 60
             logger.info(f"使用用户输入的 DELAY_TIME: {user_delay_time} 分钟，转换为 {delay_hours} 小时")
         except (ValueError, TypeError) as e:
-            logger.warning(f"用户输入的 DELAY_TIME 无效，使用默认值 15 小时：{e}")
+            logger.warning(f"用户输入的 DELAY_TIME 无效，使用默认值 15 分钟：{e}")
     else:
         # 尝试从 ES 数据中提取 DELAY_TIME
         if isinstance(es_data, dict):
@@ -889,6 +902,7 @@ def generate_creation_event_time(es_data, user_delay_time=None):
                     logger.warning(f"DELAY_TIME 转换失败，使用默认值 15 小时：{e}")
 
     # 计算时间：当前时间 - DELAY_TIME 小时
+    # 使用本地时间（东八区）
     creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"使用 DELAY_TIME: {delay_hours} 小时计算 CREATION_EVENT_TIME: {creation_time}")
     return creation_time
@@ -921,7 +935,7 @@ def kafka_field_meta():
     })
 
 
-@kafka_generator_bp.route('/field-meta/list', methods=['GET'])
+@kafka_generator_bp.route('/field-meta/list', methods=['GET', 'POST'])
 def get_field_meta_list():
     """获取字段映射列表（支持分页和搜索）
     
@@ -933,9 +947,16 @@ def get_field_meta_list():
     from utils.mysql_helper import get_mysql_conn_dict_cursor
     
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        keyword = request.args.get('keyword', '').strip()
+        # 支持从查询参数或JSON body中获取参数
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            page = data.get('page', 1)
+            per_page = data.get('per_page', 50)
+            keyword = data.get('keyword', '').strip()
+        else:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 50, type=int)
+            keyword = request.args.get('keyword', '').strip()
         
         conn = get_mysql_conn_dict_cursor()
         if not conn:
@@ -1212,10 +1233,22 @@ def kafka_field_order():
 
 @kafka_generator_bp.route('/field-options')
 def kafka_field_options():
-    """返回某个 Kafka 字段对应维表中的所有配置项
+    """返回某个 Kafka 字段对应的字典选项（统一查询 schedule.kafka_field_dict）
 
     请求参数:
       - kafka_field: 如 BUSINESS_LAYER / CIRCUIT_LEVEL 等
+    
+    返回格式:
+      {
+        "success": true,
+        "data": {
+          "columns": ["dict_key", "dict_value", "remark"],
+          "rows": [
+            {"dict_key": "1", "dict_value": "核心层", "remark": "..."},
+            ...
+          ]
+        }
+      }
     """
     from utils.mysql_helper import get_mysql_conn_dict_cursor
     import traceback
@@ -1224,12 +1257,7 @@ def kafka_field_options():
     if not kafka_field:
         return jsonify({"success": False, "message": "缺少 kafka_field 参数"}), 400
 
-    table = FIELD_DICT_TABLES.get(kafka_field)
-    if not table:
-        logger.error(f"[ERROR] 字段 {kafka_field} 未配置维表。可用配置：{list(FIELD_DICT_TABLES.keys())}")
-        return jsonify({"success": False, "message": f"字段 {kafka_field} 未配置维表"}), 400
-
-    logger.info(f"[INFO] 查询维表：{table}, 字段：{kafka_field}")
+    logger.info(f"[INFO] 查询字段字典：{kafka_field}")
 
     conn = get_mysql_conn_dict_cursor()
     if not conn:
@@ -1237,13 +1265,19 @@ def kafka_field_options():
         return jsonify({"success": False, "message": "MySQL 未配置或不可用"}), 500
 
     try:
-        table_escaped = table.replace("`", "``")
         with conn.cursor() as cur:
-            # 简单限制一下返回行数，避免维表过大
-            query = f"SELECT * FROM `{table_escaped}` LIMIT 500"
-            logger.info(f"[INFO] 执行 SQL: {query}")
-            cur.execute(query)
+            # 统一从 schedule.kafka_field_dict 表查询
+            query = """
+                SELECT dict_key, dict_value, remark
+                FROM kafka_field_dict
+                WHERE kafka_field = %s AND is_enabled = 1
+                ORDER BY sort_order ASC, dict_key ASC
+                LIMIT 500
+            """
+            logger.info(f"[INFO] 执行 SQL: {query}, 参数: {kafka_field}")
+            cur.execute(query, (kafka_field,))
             rows = cur.fetchall() or []
+            
             logger.info(f"[INFO] 查询成功，返回 {len(rows)} 行数据")
             if rows:
                 logger.info(f"[INFO] 第一行数据示例：{rows[0]}")
@@ -1253,14 +1287,13 @@ def kafka_field_options():
         return jsonify({
             "success": False,
             "message": f"数据库查询失败：{str(e)}",
-            "table": table,
             "field": kafka_field
         }), 500
     finally:
         conn.close()
 
-    # rows 为字典列表：[{col: val, ...}, ...]
-    columns = list(rows[0].keys()) if rows else []
+    # 构造返回数据
+    columns = ["dict_key", "dict_value", "remark"] if rows else []
 
     logger.info(f"[INFO] 返回数据：{len(columns)} 列，{len(rows)} 行")
 
@@ -1344,6 +1377,372 @@ def get_all_field_values():
             conn.close()
     except Exception as e:
         logger.error(f"获取字段值列表失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+# ============================================================================
+# 字段字典管理 API
+# ============================================================================
+
+@kafka_generator_bp.route('/field-dict', methods=['GET'])
+def get_field_dict_list():
+    """获取字段字典列表
+    
+    请求参数:
+      - kafka_field: 可选，筛选特定字段的字典
+      - page: 页码（默认1）
+      - page_size: 每页数量（默认50）
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    kafka_field = request.args.get('kafka_field', '').strip().upper()
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 50, type=int)
+    
+    # 限制 page_size 范围
+    page_size = min(max(page_size, 1), 200)
+    offset = (page - 1) * page_size
+    
+    try:
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 构建查询条件（只查询启用的记录）
+                where_clause = "WHERE is_enabled = 1"
+                params = []
+                
+                if kafka_field:
+                    where_clause += " AND kafka_field = %s"
+                    params.append(kafka_field)
+                
+                # 查询总数
+                count_query = f"SELECT COUNT(*) as total FROM kafka_field_dict {where_clause}"
+                cur.execute(count_query, tuple(params))
+                total = cur.fetchone()['total']
+                
+                # 查询数据
+                data_query = f"""
+                    SELECT id, kafka_field, dict_key, dict_value, sort_order, is_enabled, remark, created_at, updated_at
+                    FROM kafka_field_dict
+                    {where_clause}
+                    ORDER BY kafka_field ASC, sort_order ASC, dict_key ASC
+                    LIMIT %s OFFSET %s
+                """
+                cur.execute(data_query, tuple(params) + (page_size, offset))
+                rows = cur.fetchall() or []
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        "items": rows,
+                        "total": total,
+                        "page": page,
+                        "page_size": page_size,
+                        "total_pages": (total + page_size - 1) // page_size
+                    }
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"获取字段字典列表失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/field-dict', methods=['POST'])
+def add_field_dict():
+    """新增字段字典项
+    
+    请求体:
+    {
+        "kafka_field": "NETWORK_TYPE_TOP",
+        "dict_key": "TEST_KEY",
+        "dict_value": "测试值",
+        "sort_order": 0,
+        "remark": "备注说明"
+    }
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "message": "请求体不能为空"}), 400
+        
+        kafka_field = (data.get('kafka_field') or '').strip().upper()
+        dict_key = (data.get('dict_key') or '').strip()
+        dict_value = (data.get('dict_value') or '').strip()
+        sort_order = data.get('sort_order', 0)
+        remark = data.get('remark', '')
+        
+        if not kafka_field or not dict_key or not dict_value:
+            return jsonify({"success": False, "message": "kafka_field、dict_key、dict_value 不能为空"}), 400
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 检查是否已存在
+                cur.execute(
+                    "SELECT id FROM kafka_field_dict WHERE kafka_field = %s AND dict_key = %s",
+                    (kafka_field, dict_key)
+                )
+                if cur.fetchone():
+                    return jsonify({"success": False, "message": f"字段 {kafka_field} 的键 {dict_key} 已存在"}), 409
+                
+                # 插入新记录
+                cur.execute(
+                    """
+                    INSERT INTO kafka_field_dict (kafka_field, dict_key, dict_value, sort_order, remark, is_enabled)
+                    VALUES (%s, %s, %s, %s, %s, 1)
+                    """,
+                    (kafka_field, dict_key, dict_value, sort_order, remark)
+                )
+                conn.commit()
+                
+                new_id = cur.lastrowid
+                logger.info(f"新增字段字典：{kafka_field}.{dict_key} (ID: {new_id})")
+                
+                return jsonify({
+                    "success": True,
+                    "message": "新增成功",
+                    "data": {"id": new_id}
+                }), 201
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"新增字段字典失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/field-dict/<int:dict_id>', methods=['PUT'])
+def update_field_dict(dict_id):
+    """更新字段字典项
+    
+    请求体:
+    {
+        "dict_value": "新的显示值",
+        "sort_order": 10,
+        "is_enabled": 1,
+        "remark": "更新的备注"
+    }
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "message": "请求体不能为空"}), 400
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 检查是否存在
+                cur.execute("SELECT id FROM kafka_field_dict WHERE id = %s", (dict_id,))
+                if not cur.fetchone():
+                    return jsonify({"success": False, "message": f"字典项 ID {dict_id} 不存在"}), 404
+                
+                # 构建更新语句
+                update_fields = []
+                params = []
+                
+                if 'dict_value' in data:
+                    update_fields.append("dict_value = %s")
+                    params.append(data['dict_value'])
+                
+                if 'sort_order' in data:
+                    update_fields.append("sort_order = %s")
+                    params.append(data['sort_order'])
+                
+                if 'is_enabled' in data:
+                    update_fields.append("is_enabled = %s")
+                    params.append(1 if data['is_enabled'] else 0)
+                
+                if 'remark' in data:
+                    update_fields.append("remark = %s")
+                    params.append(data['remark'])
+                
+                if not update_fields:
+                    return jsonify({"success": False, "message": "没有要更新的字段"}), 400
+                
+                params.append(dict_id)
+                update_sql = f"UPDATE kafka_field_dict SET {', '.join(update_fields)} WHERE id = %s"
+                cur.execute(update_sql, tuple(params))
+                conn.commit()
+                
+                logger.info(f"更新字段字典 ID: {dict_id}")
+                
+                return jsonify({
+                    "success": True,
+                    "message": "更新成功"
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"更新字段字典失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/field-dict/<int:dict_id>', methods=['DELETE'])
+def delete_field_dict(dict_id):
+    """删除字段字典项（软删除，设置 is_enabled=0）"""
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        try:
+            with conn.cursor() as cur:
+                # 检查是否存在
+                cur.execute("SELECT id, kafka_field, dict_key FROM kafka_field_dict WHERE id = %s", (dict_id,))
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({"success": False, "message": f"字典项 ID {dict_id} 不存在"}), 404
+                
+                # 软删除
+                cur.execute("UPDATE kafka_field_dict SET is_enabled = 0 WHERE id = %s", (dict_id,))
+                conn.commit()
+                
+                logger.info(f"删除字段字典：{row['kafka_field']}.{row['dict_key']} (ID: {dict_id})")
+                
+                return jsonify({
+                    "success": True,
+                    "message": "删除成功"
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"删除字段字典失败：{e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@kafka_generator_bp.route('/field-dict/batch-import', methods=['POST'])
+def batch_import_field_dict():
+    """批量导入字段字典
+    
+    请求体:
+    {
+        "kafka_field": "NETWORK_TYPE_TOP",
+        "items": [
+            {"dict_key": "KEY1", "dict_value": "值1", "sort_order": 0, "remark": "备注1"},
+            {"dict_key": "KEY2", "dict_value": "值2", "sort_order": 1, "remark": "备注2"}
+        ],
+        "overwrite": false  // 是否覆盖已存在的项
+    }
+    """
+    from utils.mysql_helper import get_mysql_conn_dict_cursor
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "message": "请求体不能为空"}), 400
+        
+        kafka_field = (data.get('kafka_field') or '').strip().upper()
+        items = data.get('items', [])
+        overwrite = data.get('overwrite', False)
+        
+        if not kafka_field or not items:
+            return jsonify({"success": False, "message": "kafka_field 和 items 不能为空"}), 400
+        
+        if not isinstance(items, list):
+            return jsonify({"success": False, "message": "items 必须是数组"}), 400
+        
+        conn = get_mysql_conn_dict_cursor()
+        if not conn:
+            return jsonify({"success": False, "message": "MySQL 未配置"}), 500
+        
+        success_count = 0
+        skip_count = 0
+        error_count = 0
+        errors = []
+        
+        try:
+            with conn.cursor() as cur:
+                for idx, item in enumerate(items):
+                    try:
+                        dict_key = (item.get('dict_key') or '').strip()
+                        dict_value = (item.get('dict_value') or '').strip()
+                        sort_order = item.get('sort_order', idx)
+                        remark = item.get('remark', '')
+                        
+                        if not dict_key or not dict_value:
+                            errors.append(f"第 {idx+1} 项：dict_key 和 dict_value 不能为空")
+                            error_count += 1
+                            continue
+                        
+                        # 检查是否已存在
+                        cur.execute(
+                            "SELECT id FROM kafka_field_dict WHERE kafka_field = %s AND dict_key = %s",
+                            (kafka_field, dict_key)
+                        )
+                        existing = cur.fetchone()
+                        
+                        if existing:
+                            if overwrite:
+                                # 覆盖更新
+                                cur.execute(
+                                    """
+                                    UPDATE kafka_field_dict 
+                                    SET dict_value = %s, sort_order = %s, remark = %s, is_enabled = 1
+                                    WHERE kafka_field = %s AND dict_key = %s
+                                    """,
+                                    (dict_value, sort_order, remark, kafka_field, dict_key)
+                                )
+                                success_count += 1
+                            else:
+                                # 跳过
+                                skip_count += 1
+                        else:
+                            # 新增
+                            cur.execute(
+                                """
+                                INSERT INTO kafka_field_dict (kafka_field, dict_key, dict_value, sort_order, remark, is_enabled)
+                                VALUES (%s, %s, %s, %s, %s, 1)
+                                """,
+                                (kafka_field, dict_key, dict_value, sort_order, remark)
+                            )
+                            success_count += 1
+                    except Exception as e:
+                        errors.append(f"第 {idx+1} 项：{str(e)}")
+                        error_count += 1
+                
+                conn.commit()
+                
+                logger.info(f"批量导入字段字典：{kafka_field}, 成功:{success_count}, 跳过:{skip_count}, 失败:{error_count}")
+                
+                return jsonify({
+                    "success": True,
+                    "message": f"导入完成：成功 {success_count} 项，跳过 {skip_count} 项，失败 {error_count} 项",
+                    "data": {
+                        "success_count": success_count,
+                        "skip_count": skip_count,
+                        "error_count": error_count,
+                        "errors": errors[:10]  # 最多返回10个错误
+                    }
+                })
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.error(f"批量导入字段字典失败：{e}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
@@ -1734,9 +2133,8 @@ def generate_kafka_message():
                     error_msg += f" (第{line_num}行附近: '{context}')"
 
             # 记录错误日志（生产环境可以改为 logger.error）
-            import sys
             logger.error(f"\n❌【JSON_ERROR】JSON 解析失败！")
-            logger.error(f"完整错误：{error_msg}\n", file=sys.stderr)
+            logger.error(f"完整错误：{error_msg}\n")
 
             return jsonify({
                 "success": False,
@@ -1767,15 +2165,42 @@ def generate_kafka_message():
             logger.info(f"[FIELD_COMPARISON] {field}: 输入={input_val} -> 输出={output_val} {match}")
         logger.info("[FIELD_COMPARISON] ====================================")
 
+        # 加载字段映射配置（用于后续自定义字段合并判断）
+        field_meta = load_field_meta_from_mysql() or FIELD_META
+
+        # FP字段由后端统一生成，不允许被自定义字段覆盖
+        fp_fields = ["FP0_FP1_FP2_FP3", "CFP0_CFP1_CFP2_CFP3", "ORIG_ALARM_FP", "ORIG_ALARM_CLEAR_FP", 
+                     "EVENT_FP", "EVENT_CLEAR_FP", "SRC_ORG_ID"]
+        for fp_field in fp_fields:
+            custom_fields.pop(fp_field, None)  # 从custom_fields中移除，避免被覆盖
+
         # 应用自定义字段覆盖
         for field, value in custom_fields.items():
             if field in kafka_message and value:
                 old_val = kafka_message[field]
+                # 直接使用用户自定义的值，不做自动合并
                 kafka_message[field] = value
                 logger.info(f"[CUSTOM_FIELD] 字段覆盖: {field} = {old_val} -> {value}")
 
         # 强制设置某些字段的固定值（不受前端custom_fields影响）
         kafka_message["TOPIC_PARTITION"] = 7  # 固定分区值
+        
+        # 强制重新生成所有FP字段，确保它们是动态生成的
+        fp_value = generate_consistent_fp()
+        for fp_field in fp_fields:
+            kafka_message[fp_field] = fp_value
+        
+        # 强制重新生成时间字段，确保它们是根据delay_time计算的
+        from datetime import datetime, timedelta
+        # 使用 delay_time 参数，如果没有则使用默认值15分钟
+        current_delay_time = delay_time if delay_time is not None else 15
+        delay_hours = int(current_delay_time) / 60
+        creation_time = (datetime.now() - timedelta(hours=delay_hours)).strftime("%Y-%m-%d %H:%M:%S")
+        kafka_message["EVENT_TIME"] = creation_time
+        kafka_message["CREATION_EVENT_TIME"] = creation_time
+        kafka_message["EVENT_ARRIVAL_TIME"] = creation_time
+        kafka_message["TIME_STAMP"] = int(datetime.strptime(creation_time, "%Y-%m-%d %H:%M:%S").timestamp())
+        logger.info(f"[FORCE_TIME] 强制重新生成时间字段: delay_time={current_delay_time}分钟, EVENT_TIME={creation_time}")
 
         # 按照标准字段顺序重新排列返回数据
         ordered_data = {}
@@ -2303,7 +2728,7 @@ def get_field_cache():
 
     try:
         with conn.cursor() as cur:
-            query = "SELECT field_name, field_value, is_pinned, history_values FROM knowledge_base.kafka_field_cache"
+            query = "SELECT field_name, field_value, is_pinned, is_fixed, history_values FROM knowledge_base.kafka_field_cache"
             cur.execute(query)
             rows = cur.fetchall()
 
@@ -2311,6 +2736,7 @@ def get_field_cache():
 
             cache_data = {}
             pinned_fields = []
+            fixed_fields = []
             history_data = {}
 
             for row in rows:
@@ -2318,6 +2744,8 @@ def get_field_cache():
                     cache_data[row['field_name']] = row['field_value']
                 if row['is_pinned']:
                     pinned_fields.append(row['field_name'])
+                if row.get('is_fixed'):
+                    fixed_fields.append(row['field_name'])
 
                 # 处理历史值
                 history_val = row['history_values']
@@ -2341,13 +2769,14 @@ def get_field_cache():
                         history_data[row['field_name']] = []
 
             logger.info(
-                f"返回缓存数据：{len(cache_data)} 个字段值，{len(pinned_fields)} 个置顶，{len(history_data)} 个历史值")
+                f"返回缓存数据：{len(cache_data)} 个字段值，{len(pinned_fields)} 个置顶，{len(fixed_fields)} 个固定，{len(history_data)} 个历史值")
 
             return jsonify({
                 "success": True,
                 "data": {
                     "field_cache": cache_data,
                     "pinned_fields": pinned_fields,
+                    "fixed_fields": fixed_fields,
                     "history_values": history_data
                 }
             })
@@ -2370,6 +2799,7 @@ def save_field_cache():
     field_name = data.get('field_name', '').strip().upper()
     field_value = data.get('field_value', '')
     is_pinned = 1 if data.get('is_pinned', False) else 0
+    is_fixed = 1 if data.get('is_fixed', False) else 0
 
     if not field_name:
         return jsonify({"success": False, "message": "缺少字段名称"}), 400
@@ -2382,14 +2812,15 @@ def save_field_cache():
         with conn.cursor() as cur:
             # 使用 INSERT ... ON DUPLICATE KEY UPDATE
             query = """
-                INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
-                VALUES (%s, %s, %s)
+                INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned, is_fixed)
+                VALUES (%s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE 
                     field_value = VALUES(field_value),
                     is_pinned = VALUES(is_pinned),
+                    is_fixed = VALUES(is_fixed),
                     updated_at = CURRENT_TIMESTAMP
             """
-            cur.execute(query, (field_name, field_value, is_pinned))
+            cur.execute(query, (field_name, field_value, is_pinned, is_fixed))
             conn.commit()
 
             return jsonify({"success": True, "message": "保存成功"})
@@ -2411,6 +2842,7 @@ def save_batch_field_cache():
 
     field_cache = data.get('field_cache', {})
     pinned_fields = data.get('pinned_fields', [])
+    fixed_fields = data.get('fixed_fields', [])
 
     conn = get_mysql_conn_dict_cursor()
     if not conn:
@@ -2422,16 +2854,18 @@ def save_batch_field_cache():
             for field_name, field_value in field_cache.items():
                 field_name = field_name.strip().upper()
                 is_pinned = 1 if field_name in pinned_fields else 0
+                is_fixed = 1 if field_name in fixed_fields else 0
 
                 query = """
-                    INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO knowledge_base.kafka_field_cache (field_name, field_value, is_pinned, is_fixed)
+                    VALUES (%s, %s, %s, %s)
                     ON DUPLICATE KEY UPDATE 
                         field_value = VALUES(field_value),
                         is_pinned = VALUES(is_pinned),
+                        is_fixed = VALUES(is_fixed),
                         updated_at = CURRENT_TIMESTAMP
                 """
-                cur.execute(query, (field_name, field_value if field_value else None, is_pinned))
+                cur.execute(query, (field_name, field_value if field_value else None, is_pinned, is_fixed))
 
             conn.commit()
             return jsonify({"success": True, "message": "批量保存成功"})

@@ -1,0 +1,14 @@
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:317] - ============================================================
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:318] - LM Studio Bridge 服务启动
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:319] - 监听地址: 0.0.0.0:8081
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:320] - LM Studio: http://localhost:1234
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:321] - 默认模型: qwen3-coder-30b-a3b-instruct-mlx
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:322] - 日志文件: /Users/linziwang/PycharmProjects/wordToWord/utils/claude code/logs/lmstudio_bridge_20260518.log
+2026-05-18 10:35:40 - lmstudio_bridge - INFO - [claude_code.py:323] - ============================================================
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:317] - ============================================================
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:318] - LM Studio Bridge 服务启动
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:319] - 监听地址: 0.0.0.0:8081
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:320] - LM Studio: http://localhost:1234
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:321] - 默认模型: qwen3-coder-30b-a3b-instruct-mlx
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:322] - 日志文件: /Users/linziwang/PycharmProjects/wordToWord/utils/claude code/logs/lmstudio_bridge_20260518.log
+2026-05-18 10:35:55 - lmstudio_bridge - INFO - [claude_code.py:323] - ============================================================
