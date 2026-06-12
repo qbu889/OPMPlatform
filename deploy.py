@@ -108,9 +108,14 @@ def git_commit_and_push():
         run_command(f'git commit -m "Auto deploy: {timestamp}"', cwd=PROJECT_ROOT)
         print_success("提交完成")
     
+    # 获取当前分支名称
+    _, current_branch, _ = run_command("git rev-parse --abbrev-ref HEAD", cwd=PROJECT_ROOT)
+    current_branch = current_branch.strip() if current_branch else "master"
+    print_info(f"当前分支: {current_branch}")
+    
     # 推送到远程
     print_info("推送到 Git 仓库...")
-    success, stdout, stderr = run_command("git push origin q/dev", cwd=PROJECT_ROOT)
+    success, stdout, stderr = run_command(f"git push origin {current_branch}", cwd=PROJECT_ROOT)
     if success:
         print_success("Git 推送成功")
         return True

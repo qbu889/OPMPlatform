@@ -698,8 +698,13 @@ def execute_full_deploy():
     deploy_status['progress'] = 15
     add_log('   📤 Git推送到远程仓库...', 'info')
 
+    # 获取当前分支名称
+    _, current_branch, _ = run_local_command("git rev-parse --abbrev-ref HEAD", cwd=str(PROJECT_ROOT))
+    current_branch = current_branch.strip() if current_branch else "master"
+    add_log(f'   当前分支: {current_branch}', 'info')
+
     # 增加超时时间到 120 秒
-    success, stdout, stderr = run_local_command("git push origin q/dev", cwd=str(PROJECT_ROOT), timeout=120)
+    success, stdout, stderr = run_local_command(f"git push origin {current_branch}", cwd=str(PROJECT_ROOT), timeout=120)
     if success:
         add_log('   ✅ Git推送成功', 'success')
         deploy_status['progress'] = 20
