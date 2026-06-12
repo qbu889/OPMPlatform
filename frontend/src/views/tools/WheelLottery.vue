@@ -1,18 +1,12 @@
 
 <template>
   <div class="wheel-lottery-container">
-    <!-- 顶部导航栏 -->
-    <el-header class="header">
-      <div class="header-content">
-        <div class="logo" @click="$router.push('/')">
-          <img src="/nokia-06.png" alt="NOKIA" class="logo-icon" />
-          <span class="logo-text">OPM 系统</span>
-        </div>
-        <el-button size="small" @click="$router.back()">
-          <el-icon><ArrowLeft /></el-icon> 返回
-        </el-button>
-      </div>
-    </el-header>
+    <!-- 返回按钮 -->
+    <div class="back-bar">
+      <el-button text @click="$router.back()">
+        <el-icon><ArrowLeft /></el-icon> 返回
+      </el-button>
+    </div>
 
     <!-- 主内容区 -->
     <div class="main-content">
@@ -396,43 +390,20 @@ onBeforeUnmount(() => {
   background: var(--apple-bg, #f5f5f7);
 }
 
-/* 顶部导航栏 */
-.header {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
-  padding: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  height: 48px;
-}
-
-.header-content {
+/* 返回栏 */
+.back-bar {
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  height: 48px;
+  padding: 12px 24px 0;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  margin-right: 32px;
-}
-
-.logo-icon {
-  height: 20px;
-  margin-right: 10px;
-}
-
-.logo-text {
-  color: #1d1d1f;
-  font-weight: 600;
+.back-bar .el-button {
+  color: #0071e3;
   font-size: 14px;
+}
+
+.back-bar .el-button:hover {
+  background: rgba(0, 113, 227, 0.1);
 }
 
 /* 主内容区 */

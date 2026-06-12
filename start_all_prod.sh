@@ -90,12 +90,13 @@ echo ""
 # 清理旧进程
 cleanup_app_py_processes
 
-# 激活虚拟环境
+# 确定后端 Python 路径（优先使用 .venv）
 if [ -d ".venv" ]; then
-    echo "✅ 激活虚拟环境..."
-    source .venv/bin/activate
+    PYTHON_PATH=".venv/bin/python"
+elif [ -d "venv" ]; then
+    PYTHON_PATH="venv/bin/python"
 else
-    echo "⚠️  未找到 .venv 虚拟环境，将使用系统 Python"
+    PYTHON_PATH="python3"
 fi
 
 # 检查端口是否被占用
@@ -111,8 +112,8 @@ fi
 echo "🚀 启动 Flask 后端应用（端口：$BACKEND_PORT）..."
 echo ""
 
-# 在后台启动后端服务（绑定 0.0.0.0 以支持局域网访问）
-PORT=$BACKEND_PORT python app.py --host 0.0.0.0 &
+# 在后台启动后端服务（绑定 0.0.0.0 以支持局域网访问，使用虚拟环境中的 Python）
+PORT=$BACKEND_PORT $PYTHON_PATH app.py --host 0.0.0.0 &
 BACKEND_PID=$!
 
 # 等待后端启动
