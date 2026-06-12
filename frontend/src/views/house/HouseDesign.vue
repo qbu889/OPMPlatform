@@ -333,9 +333,8 @@ onMounted(() => { loadHouseData() })
 
 /* ========== 顶部导航栏 ========== */
 .header {
-  background: rgba(15, 15, 26, 0.8);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
   height: 56px;
 }
 
@@ -344,6 +343,7 @@ onMounted(() => { loadHouseData() })
   margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 32px;
   height: 100%;
 }
@@ -352,13 +352,21 @@ onMounted(() => { loadHouseData() })
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-right: 40px;
   transition: opacity 0.2s;
 }
 
 .logo:hover { opacity: 0.8 }
 .logo-icon { height: 24px; margin-right: 12px }
-.logo-text { color: #e0e0e0; font-weight: 600; font-size: 15px; letter-spacing: 0.5px }
+.logo-text { color: #1d1d1f; font-weight: 600; font-size: 15px; letter-spacing: 0.5px }
+
+.header .el-button {
+  color: #0071e3;
+  font-size: 14px;
+}
+
+.header .el-button:hover {
+  background: rgba(0, 113, 227, 0.1);
+}
 
 /* ========== 主内容区 ========== */
 .main-content {
@@ -370,17 +378,13 @@ onMounted(() => { loadHouseData() })
 .page-title {
   font-size: 42px;
   font-weight: 800;
-  color: #ffffff;
+  color: #1d1d1f;
   text-align: center;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, #a0b4c8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .page-subtitle {
-  color: rgba(255, 255, 255, 0.45);
+  color: #86868b;
   text-align: center;
   margin-top: 12px;
   font-size: 15px;

@@ -515,35 +515,39 @@ onMounted(() => {
 }
 
 .header {
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  height: 56px;
 }
 
 .header-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  height: 60px;
+  padding: 0 24px;
+  height: 100%;
 }
 
 .logo {
   display: flex;
   align-items: center;
   cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.logo-icon {
-  height: 36px;
-  margin-right: 12px;
+.logo:hover { opacity: 0.8 }
+.logo-icon { height: 24px; margin-right: 12px }
+.logo-text { color: #1d1d1f; font-weight: 600; font-size: 15px; letter-spacing: 0.5px }
+
+.header .el-button {
+  color: #0071e3;
+  font-size: 14px;
 }
 
-.logo-text {
-  font-size: 18px;
-  font-weight: bold;
-  color: #303133;
+.header .el-button:hover {
+  background: rgba(0, 113, 227, 0.1);
 }
 
 .main-content {

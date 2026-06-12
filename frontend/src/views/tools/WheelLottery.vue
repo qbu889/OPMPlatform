@@ -1,12 +1,19 @@
 
 <template>
   <div class="wheel-lottery-container">
-    <!-- 返回按钮 -->
-    <div class="back-bar">
-      <el-button text @click="$router.back()">
-        <el-icon><ArrowLeft /></el-icon> 返回
-      </el-button>
-    </div>
+    <!-- 顶部导航栏 -->
+    <el-header class="header">
+      <div class="header-content">
+        <div class="logo" @click="$router.push('/')">
+          <img src="/nokia-06.png" alt="NOKIA" class="logo-icon" />
+          <span class="logo-text">OPM 系统</span>
+        </div>
+        <el-button size="small" @click="$router.back()">
+          <el-icon><ArrowLeft /></el-icon>
+          <span>返回</span>
+        </el-button>
+      </div>
+    </el-header>
 
     <!-- 主内容区 -->
     <div class="main-content">
@@ -109,7 +116,7 @@
     <!-- 结果弹窗 -->
     <el-dialog v-model="resultDialogVisible" title="抽奖结果" width="400px" center>
       <div class="dialog-result">
-        <el-icon size="60" :color="lastResult?.color">{{ Picture }}</el-icon>
+        <div class="result-icon" :style="{ backgroundColor: lastResult?.color }"></div>
         <h2>{{ lastResult?.name }}</h2>
         <p style="color: #666;">恭喜中奖！</p>
       </div>
@@ -259,8 +266,8 @@ const getSegmentLabelStyle = (index) => {
 
   return {
     position: 'absolute',
-    left: `calc(50% + ${Math.cos(angle) * radius}% - 40px)`,
-    top: `calc(50% + ${Math.sin(angle) * radius}% - 12px)`,
+    left: `calc(50% + ${Math.cos(angle) * radius}%)`,
+    top: `calc(50% + ${Math.sin(angle) * radius}%)`,
     transform: 'translate(-50%, -50%)',
     color: '#fff',
     fontWeight: 'bold',
@@ -268,6 +275,7 @@ const getSegmentLabelStyle = (index) => {
     textShadow: '0 1px 2px rgba(0,0,0,0.5)',
     whiteSpace: 'nowrap',
     zIndex: 10,
+    textAlign: 'center',
   }
 }
 
@@ -304,7 +312,10 @@ const handleDraw = async () => {
   }
 }
 
-// 转盘动画（三段式：加速 → 匀速 → 缓停）
+// 当前累计旋转角度（保持连续，不重置）
+let currentRotation = 0
+
+// 转盘动画（从当前位置连续旋转）
 const animateWheel = (winner) => {
   return new Promise((resolve) => {
     const n = wheelItems.value.length
@@ -316,27 +327,18 @@ const animateWheel = (winner) => {
     // 指针在顶部（0度），需要旋转使目标分区中心对准顶部
     const targetAngle = 360 - (winnerIndex * segmentAngle + segmentAngle / 2)
 
-    // 总旋转角度：多圈旋转（8-12圈）+ 目标角度
+    // 多圈旋转（8-12圈）+ 目标角度
     const totalRotations = 360 * (8 + Math.floor(Math.random() * 4))
-    const finalAngle = totalRotations + targetAngle
+    const finalAngle = currentRotation + totalRotations + targetAngle
 
-    // 获取转盘 DOM
-    const wheelEl = wheelRef.value
-    if (!wheelEl) return resolve()
-
-    // 重置为初始状态（无过渡）
-    wheelStyle.transition = 'none'
-    wheelEl.style.transform = 'rotate(0deg)'
-
-    // 强制重排，确保重置生效
-    wheelEl.offsetHeight
-
-    // 启动动画：缓动函数 easeOutQuart（模拟三段式效果）
-    const duration = 5000 // 5秒总时长
+    // 通过 Vue 响应式对象驱动动画（与 :style="wheelStyle" 绑定）
+    const duration = 5000
     wheelStyle.transition = `transform ${duration}ms cubic-bezier(0.15, 0.85, 0.25, 1)`
-    wheelEl.style.transform = `rotate(${finalAngle}deg)`
+    wheelStyle.transform = `rotate(${finalAngle}deg)`
 
-    // 动画结束后显示结果
+    // 更新当前角度（保持连续）
+    currentRotation = finalAngle % 360
+
     setTimeout(() => {
       resolve()
     }, duration + 200)
@@ -386,23 +388,44 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .wheel-lottery-container {
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
   background: var(--apple-bg, #f5f5f7);
 }
 
-/* 返回栏 */
-.back-bar {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 24px 0;
+/* 顶部导航栏 */
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  height: 56px;
 }
 
-.back-bar .el-button {
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.logo:hover { opacity: 0.8 }
+.logo-icon { height: 24px; margin-right: 12px }
+.logo-text { color: #1d1d1f; font-weight: 600; font-size: 15px; letter-spacing: 0.5px }
+
+.header .el-button {
   color: #0071e3;
   font-size: 14px;
 }
 
-.back-bar .el-button:hover {
+.header .el-button:hover {
   background: rgba(0, 113, 227, 0.1);
 }
 
@@ -589,6 +612,14 @@ onBeforeUnmount(() => {
 .dialog-result {
   text-align: center;
   padding: 20px 0;
+}
+
+.result-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dialog-result h2 {
