@@ -65,16 +65,22 @@
           </el-button>
 
           <!-- 结果展示 -->
-          <el-card v-if="lastResult" class="result-section" shadow="hover">
+          <el-card v-if="isDrawing || lastResult" class="result-section" shadow="hover">
             <template #header>
-              <span>🎉 抽奖结果</span>
+              <span>{{ isDrawing ? '� 抽取中...' : '� 抽奖结果' }}</span>
             </template>
             <div class="result-display">
-              <div class="result-color" :style="{ backgroundColor: lastResult.color }"></div>
-              <div class="result-info">
-                <h3>{{ lastResult.name }}</h3>
-                <p>权重: {{ lastResult.weight }}</p>
+              <div v-if="isDrawing" class="drawing-state">
+                <div class="loading-spinner"></div>
+                <span>正在抽取中...</span>
               </div>
+              <template v-else>
+                <div class="result-color" :style="{ backgroundColor: lastResult.color }"></div>
+                <div class="result-info">
+                  <h3>{{ lastResult.name }}</h3>
+                  <p>权重: {{ lastResult.weight }}</p>
+                </div>
+              </template>
             </div>
           </el-card>
 
@@ -534,6 +540,27 @@ onBeforeUnmount(() => {
   margin: 0;
   font-size: 13px;
   color: #86868b;
+}
+
+/* 抽取中状态 */
+.drawing-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e8e8e8;
+  border-top-color: #4488FF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* 右侧面板：转盘 */
