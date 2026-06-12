@@ -54,10 +54,16 @@
             <el-icon color="#67c23a"><CircleCheck /></el-icon>
             <span>格式化结果</span>
           </div>
-          <el-button type="success" @click="handleCopy">
-            <el-icon><DocumentCopy /></el-icon>
-            复制结果
-          </el-button>
+          <div style="display: flex; gap: 10px;">
+            <el-button type="success" @click="handleCopy">
+              <el-icon><DocumentCopy /></el-icon>
+              复制结果
+            </el-button>
+            <el-button type="warning" @click="handleCopyNoNewline">
+              <el-icon><DocumentCopy /></el-icon>
+              复制（无换行）
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -124,6 +130,32 @@ const handleFormat = () => {
   ElMessage.success(`已格式化 ${ids.length} 个 ID`)
 }
 
+const copyToClipboard = async (text) => {
+  // 方法1：尝试使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
+  if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+  
+  // 方法2：降级方案 - 使用传统的 execCommand（适用于 HTTP 环境）
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-999999px'
+  textarea.style.top = '-999999px'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  
+  const successful = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  
+  if (!successful) {
+    throw new Error('execCommand 复制失败')
+  }
+}
+
 const handleCopy = async () => {
   if (!sqlResult.value) {
     ElMessage.warning('没有可复制的内容')
@@ -131,32 +163,24 @@ const handleCopy = async () => {
   }
   
   try {
-    // 方法1：尝试使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
-    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      await navigator.clipboard.writeText(sqlResult.value)
-      ElMessage.success('已复制到剪贴板')
-      return
-    }
-    
-    // 方法2：降级方案 - 使用传统的 execCommand（适用于 HTTP 环境）
-    const textarea = document.createElement('textarea')
-    textarea.value = sqlResult.value
-    textarea.style.position = 'fixed'
-    textarea.style.left = '-999999px'
-    textarea.style.top = '-999999px'
-    textarea.style.opacity = '0'
-    document.body.appendChild(textarea)
-    textarea.focus()
-    textarea.select()
-    
-    const successful = document.execCommand('copy')
-    document.body.removeChild(textarea)
-    
-    if (successful) {
-      ElMessage.success('已复制到剪贴板')
-    } else {
-      throw new Error('execCommand 复制失败')
-    }
+    await copyToClipboard(sqlResult.value)
+    ElMessage.success('已复制到剪贴板')
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动选择文本复制（Ctrl+C）')
+  }
+}
+
+const handleCopyNoNewline = async () => {
+  if (!sqlResult.value) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+  
+  try {
+    const noNewlineText = sqlResult.value.replace(/,\n/g, ',')
+    await copyToClipboard(noNewlineText)
+    ElMessage.success('已复制（无换行）到剪贴板')
   } catch (error) {
     console.error('复制失败:', error)
     ElMessage.error('复制失败，请手动选择文本复制（Ctrl+C）')
