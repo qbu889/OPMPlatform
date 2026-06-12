@@ -107,6 +107,15 @@
             <p>可视化配置分区，点击抽奖触发流畅动画，体验随机乐趣</p>
           </el-card>
         </el-col>
+        <el-col :xs="24" :sm="12" :lg="8">
+          <el-card class="feature-card" shadow="hover" @click="goTo('/gallery')">
+            <div class="feature-icon" style="background: #f3e5f5">
+              <el-icon size="40" color="#9c27b0"><PictureFilled /></el-icon>
+            </div>
+            <h3>艺术与诗集鉴赏</h3>
+            <p>浏览经典画作与传世诗文，探索永恒的艺术魅力</p>
+          </el-card>
+        </el-col>
       </el-row>
     </el-card>
 

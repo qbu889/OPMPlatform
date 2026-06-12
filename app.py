@@ -95,6 +95,9 @@ from routes.city_color.city_color_routes import city_color_bp, init_city_color
 # 彩色抽奖转盘模块
 from routes.wheel_lottery.wheel_lottery_routes import wheel_lottery_bp, init_wheel_config
 
+# 画作与诗集鉴赏模块
+from routes.gallery import gallery_bp
+
 # 工具类
 from utils.ollama_client import init_ollama_service, check_omlx_connectivity
 from utils.cleanup_thread import CleanupThread
@@ -305,6 +308,9 @@ def create_app(config_name='development'):
 
         # 彩色抽奖转盘模块
         wheel_lottery_bp,
+
+        # 画作与诗集鉴赏模块
+        gallery_bp,
 
         # Swagger API 文档
         swagger_bp,

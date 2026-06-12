@@ -241,6 +241,13 @@ const routes = [
     component: () => import('../views/chat/CategoryManagement.vue'),
     meta: { title: '专业领域管理', hidden: true }
   },
+  // 画作与诗集鉴赏
+  {
+    path: '/gallery',
+    name: 'Gallery',
+    component: () => import('../views/gallery/Gallery.vue'),
+    meta: { title: '艺术与诗集鉴赏', hidden: true }
+  },
   // 404 页面
   {
     path: '/:pathMatch(.*)*',

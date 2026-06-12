@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "title": "星空",
+    "artist": "梵高",
+    "year": 1889,
+    "category": "后印象派",
+    "image_url": "/static/gallery/starry_night.jpg",
+    "description": "夜晚的天空中，星星闪烁着光芒，月亮像金色的镰刀悬挂在天边。",
+    "tags": [
+      "油画",
+      "夜景",
+      "经典"
+    ],
+    "created_at": "2026-01-01"
+  },
+  {
+    "id": 2,
+    "title": "睡莲",
+    "artist": "莫奈",
+    "year": 1899,
+    "category": "印象派",
+    "image_url": "/static/gallery/water_lilies.jpg",
+    "description": "池塘中睡莲静静绽放，水面倒映着天空的色彩。",
+    "tags": [
+      "油画",
+      "花卉",
+      "印象派"
+    ],
+    "created_at": "2026-01-01"
+  },
+  {
+    "id": 3,
+    "title": "清明上河图",
+    "artist": "张择端",
+    "year": 1120,
+    "category": "古代绘画",
+    "image_url": "/static/gallery/qingming_scroll.jpg",
+    "description": "描绘了北宋都城汴京的繁华景象，人物众多，场景丰富。",
+    "tags": [
+      "国画",
+      "长卷",
+      "历史"
+    ],
+    "created_at": "2026-01-01"
+  },
+  {
+    "id": 4,
+    "title": "蒙娜丽莎",
+    "artist": "达芬奇",
+    "year": 1503,
+    "category": "文艺复兴",
+    "image_url": "/static/gallery/mona_lisa.jpg",
+    "description": "神秘的微笑穿越时空，成为艺术史上最著名的肖像画。",
+    "tags": [
+      "油画",
+      "肖像",
+      "经典"
+    ],
+    "created_at": "2026-01-01"
+  },
+  {
+    "id": 5,
+    "title": "富春山居图",
+    "artist": "黄公望",
+    "year": 1347,
+    "category": "古代绘画",
+    "image_url": "/static/gallery/fuchun_mountains.jpg",
+    "description": "以富春江一带秋景为题材，笔墨简远，意境苍茫。",
+    "tags": [
+      "国画",
+      "山水",
+      "经典"
+    ],
+    "created_at": "2026-01-01"
+  },
+  {
+    "id": 6,
+    "title": "呐喊",
+    "artist": "蒙克",
+    "year": 1893,
+    "category": "表现主义",
+    "image_url": "/static/gallery/the_scream.jpg",
+    "description": "扭曲的天空下，一个人捂住耳朵发出无声的呐喊。",
+    "tags": [
+      "油画",
+      "表现主义",
+      "现代"
+    ],
+    "created_at": "2026-01-01"
+  }
+]

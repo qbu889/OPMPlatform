@@ -16,6 +16,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 PAINTINGS_FILE = os.path.join(DATA_DIR, 'paintings.json')
 POETRY_FILE = os.path.join(DATA_DIR, 'poetry.json')
 
+# 图片存储目录
+IMAGES_DIR = os.path.join(DATA_DIR, 'images')
+os.makedirs(IMAGES_DIR, exist_ok=True)
+
 # ==================== 示例数据（首次启动时初始化）====================
 DEFAULT_PAINTINGS = [
     {
@@ -381,6 +385,41 @@ def delete_poetry(poetry_id):
     poetry_list = [p for p in poetry_list if p['id'] != poetry_id]
     _save_json(POETRY_FILE, poetry_list)
     return jsonify({'code': 200, 'message': '删除成功'})
+
+
+# ==================== 图片上传接口 ====================
+@gallery_bp.route('/upload-image', methods=['POST'])
+def upload_image():
+    """上传图片文件"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '没有文件'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'code': 400, 'message': '没有选择文件'}), 400
+
+    # 只允许图片格式
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    if '.' not in file.filename:
+        return jsonify({'code': 400, 'message': '不支持的文件格式'}), 400
+
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    if ext not in allowed_extensions:
+        return jsonify({'code': 400, 'message': f'只支持 {", ".join(allowed_extensions)} 格式'}), 400
+
+    # 生成唯一文件名
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    unique_name = f"{timestamp}_{os.urandom(4).hex()}.{ext}"
+    filepath = os.path.join(IMAGES_DIR, unique_name)
+
+    file.save(filepath)
+    image_url = f"/static/gallery/images/{unique_name}"
+
+    return jsonify({
+        'code': 200,
+        'message': '上传成功',
+        'data': {'image_url': image_url}
+    })
 
 
 # ==================== 统计接口 ====================
