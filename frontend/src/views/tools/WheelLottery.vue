@@ -118,7 +118,6 @@
       <div class="dialog-result">
         <div class="result-icon" :style="{ backgroundColor: lastResult?.color }"></div>
         <h2>{{ lastResult?.name }}</h2>
-        <p style="color: #666;">恭喜中奖！</p>
       </div>
       <template #footer>
         <el-button type="primary" @click="resultDialogVisible = false">确定</el-button>
@@ -322,14 +321,21 @@ const animateWheel = (winner) => {
     if (n === 0) return resolve()
 
     const segmentAngle = 360 / n
-    // 计算目标角度：让中奖分区中心对准顶部指针
+    // 找到中奖项的索引
     const winnerIndex = wheelItems.value.findIndex(i => i.id === winner.id)
-    // 指针在顶部（0度），需要旋转使目标分区中心对准顶部
-    const targetAngle = 360 - (winnerIndex * segmentAngle + segmentAngle / 2)
+    
+    // 计算中奖分区中心应该对准顶部指针的角度
+    const winnerCenterAngle = winnerIndex * segmentAngle + segmentAngle / 2
+    // 目标角度：让中奖分区中心对准顶部（0度位置）
+    const targetAngle = (360 - winnerCenterAngle) % 360
+    
+    // 计算从当前位置到目标位置需要旋转的角度（确保为正数）
+    const currentAngle = currentRotation % 360
+    let rotationDiff = (targetAngle - currentAngle + 360) % 360
 
-    // 多圈旋转（8-12圈）+ 目标角度
+    // 多圈旋转（8-12圈）+ 目标角度差
     const totalRotations = 360 * (8 + Math.floor(Math.random() * 4))
-    const finalAngle = currentRotation + totalRotations + targetAngle
+    const finalAngle = currentRotation + totalRotations + rotationDiff
 
     // 通过 Vue 响应式对象驱动动画（与 :style="wheelStyle" 绑定）
     const duration = 5000
@@ -337,7 +343,7 @@ const animateWheel = (winner) => {
     wheelStyle.transform = `rotate(${finalAngle}deg)`
 
     // 更新当前角度（保持连续）
-    currentRotation = finalAngle % 360
+    currentRotation = finalAngle
 
     setTimeout(() => {
       resolve()
