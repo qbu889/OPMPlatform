@@ -461,6 +461,37 @@ def _fix_json_quotes(content):
     """修复 JSON 中未转义的双引号和控制字符问题"""
     import re
     
+    # ---- 新增：正则表达式全面修复（优先于逐行处理）----
+    # 覆盖三类问题：
+    #   1. 三引号 """内容""" → 正确折叠为 "内容"（同时修复内部换行和非法转义）
+    #   2. 普通字符串内字面控制字符（实际 \n \r \t 字节）→ JSON 转义序列
+    #   3. 非法 JSON 转义序列（\: \= 等）→ 移除反斜杠保留字符
+
+    def _fix_string_inner(text):
+        """修复字符串内部内容：控制字符转义 + 非法转义序列"""
+        # 将字面控制字符转换为 JSON 转义序列
+        text = text.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+        # 移除其他非法控制字符（< 0x20）
+        text = ''.join(ch if ord(ch) >= 0x20 else '' for ch in text)
+        # 修复非法转义序列（\: \= 等，X 不是合法 JSON 转义字符）
+        text = re.sub(r'\\([^"\\/bfnrtu])', r'\1', text)
+        return text
+
+    # Step 1: 将 """内容""" 正确折叠为 "内容"（含内部换行、非法转义修复）
+    def _replace_triple_quotes(m):
+        return '"' + _fix_string_inner(m.group(1)) + '"'
+
+    content = re.sub(r'"""(.*?)"""', _replace_triple_quotes, content, flags=re.DOTALL)
+
+    # Step 2: 对剩余的普通 JSON 字符串同样修复控制字符和非法转义
+    def _fix_string_content(m):
+        s = m.group(0)       # 完整 "..." 字符串（含首尾引号）
+        inner = s[1:-1]      # 去掉首尾引号
+        return '"' + _fix_string_inner(inner) + '"'
+
+    content = re.sub(r'"(?:[^"\\]|\\.)*"', _fix_string_content, content, flags=re.DOTALL)
+    # ----------------------------------------------------------------
+    
     # 策略：逐行处理，识别并修复字符串值中的问题
     lines = content.split('\n')
     fixed_lines = []

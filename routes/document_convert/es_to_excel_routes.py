@@ -65,11 +65,24 @@ def _parse_json_with_control_char_fix(raw_data):
         except Exception:
             raise ValueError("无法解码请求体数据")
 
-    # 预处理：移除三引号（\"\"\"）作为 ES SQL 响应格式的分隔符
-    # ES SQL 响应中，字符串值可能包含 \"\"\" 包裹多行文本（如定界结果），
-    # 这不是合法的 JSON。策略：直接移除所有 \"\"\"（它们只是 ES SQL 的分隔符，
+    # 预处理：移除三引号（"""）作为 ES SQL 响应格式的分隔符
+    # ES SQL 响应中，字符串值可能包含 """ 包裹多行文本（如定界结果），
+    # 这不是合法的 JSON。策略：直接移除所有 """（它们只是 ES SQL 的分隔符，
     # 内容本身才是有用的），然后继续清理控制字符。
     raw_str = raw_str.replace('"""', '')
+    
+    # 修复非法 JSON 转义序列（如 \: \= 等非 JSON 标准转义）
+    # 合法 JSON 转义字符后缀：" \\ / b f n r t u
+    # 对于 \X（X 不在合法列表中），将反斜杠移除，只保留字符本身
+    def _fix_invalid_escape_in_string(m):
+        s = m.group(0)          # 完整 "..." 字符串（含首尾引号）
+        inner = s[1:-1]         # 去掉首尾引号
+        # 将 \X（X 不是合法转义字符）替换为 X
+        fixed = re.sub(r'\\([^"\\/bfnrtu])', r'\1', inner)
+        return '"' + fixed + '"'
+    
+    raw_str = re.sub(r'"(?:[^"\\]|\\.)*"', _fix_invalid_escape_in_string,
+                     raw_str, flags=re.DOTALL)
 
     # 清理 JSON 字符串值中的非法控制字符
     # 策略：匹配 JSON 字符串值（引号内的内容），将字面控制字符转换为
