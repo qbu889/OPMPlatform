@@ -6,6 +6,9 @@ echo "  安装 Claude Code Skills"
 echo "=========================================="
 echo ""
 
+# Change to the correct directory
+cd /Users/linziwang/PycharmProjects/OPMPlatform
+
 SKILLS=(
   "superpowers"
   "gsd"
@@ -14,8 +17,6 @@ SKILLS=(
   "frontend-design"
   "agent-browser"
 )
-
-cd /Users/linziwang/PycharmProjects/wordToWord
 
 for skill in "${SKILLS[@]}"; do
   echo "📦 安装 skill: $skill"

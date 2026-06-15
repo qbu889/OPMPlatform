@@ -6,9 +6,11 @@ ES 查询结果转 Excel 路由
   3. 字段中英文映射（基于 MySQL 数据库配置）
 """
 import os
+import re
 import time
 import sys
 import csv
+import json
 import mysql.connector
 import pandas as pd
 from pathlib import Path
@@ -32,8 +34,135 @@ ALLOWED_EXTENSIONS = {'txt', 'json'}
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-# 导入 EsToExcel 工具（需要添加路径）
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'utils' / 'ES结果导Excel'))
+
+def _parse_json_with_control_char_fix(raw_data):
+    """安全解析 JSON，自动清理非法控制字符。
+
+    当请求体包含未转义的控制字符（如 \\x01-\\x1f 中除 \\n, \\t, \\r 外的字符）时，
+    Flask 的 request.json 会抛出 JSONDecodeError。此函数先清理控制字符再解析。
+
+    修复内容：
+    - 预处理三引号（\"\"\"），将其替换为合法的 JSON 转义序列（\\\"）
+    - 正则表达式添加 re.DOTALL 标志，确保能匹配跨行字符串值
+    - 将字符串内的字面控制字符（\\n, \\r, \\t 字节）转换为 JSON 转义序列（\\\\n, \\\\r, \\\\t）
+    - 同时清理 JSON 结构部分（字符串之外）的字面控制字符
+    """
+    try:
+        return json.loads(raw_data)
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    try:
+        raw_bytes = raw_data if isinstance(raw_data, bytes) else raw_data.encode('utf-8')
+    except Exception:
+        raise ValueError("无法解析请求体数据")
+
+    try:
+        raw_str = raw_bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            raw_str = raw_bytes.decode('latin-1')
+        except Exception:
+            raise ValueError("无法解码请求体数据")
+
+    # 预处理：移除三引号（\"\"\"）作为 ES SQL 响应格式的分隔符
+    # ES SQL 响应中，字符串值可能包含 \"\"\" 包裹多行文本（如定界结果），
+    # 这不是合法的 JSON。策略：直接移除所有 \"\"\"（它们只是 ES SQL 的分隔符，
+    # 内容本身才是有用的），然后继续清理控制字符。
+    raw_str = raw_str.replace('"""', '')
+
+    # 清理 JSON 字符串值中的非法控制字符
+    # 策略：匹配 JSON 字符串值（引号内的内容），将字面控制字符转换为
+    # JSON 转义序列（\\n, \\r, \\t），移除其他非法控制字符（\\x01-\\x1f）和 DEL (0x7f)
+    def clean_json_string_value(match):
+        full = match.group(0)
+        start_q = full.find('"')
+        end_q = full.rfind('"')
+        if start_q == end_q:
+            return full
+
+        prefix = full[:start_q + 1]
+        inner = full[start_q + 1:end_q]
+        suffix = full[end_q:]
+
+        # 将字面控制字符转换为 JSON 转义序列
+        cleaned = inner.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+        # 移除其他非法控制字符（\\x01-\\x1f，排除 \\n, \\t, \\r 已转换）
+        cleaned = ''.join(
+            ch if 0x20 <= ord(ch) or ord(ch) == 0 else ''
+            for ch in cleaned
+        )
+        # 同时移除 DEL (0x7f)
+        cleaned = cleaned.replace('\x7f', '')
+
+        return prefix + cleaned + suffix
+
+    # 匹配 JSON 字符串值（处理转义引号）
+    # 使用 re.DOTALL 确保 . 匹配换行符，从而正确处理跨行字符串值
+    cleaned_str = re.sub(
+        r'"(?:[^"\\]|\\.)*"',
+        clean_json_string_value,
+        raw_str,
+        flags=re.DOTALL
+    )
+
+    # 清理 JSON 结构部分（字符串之外）的字面控制字符
+    def clean_json_structure(match):
+        text = match.group(0)
+        # 将字面控制字符转换为 JSON 转义序列
+        text = text.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+        # 移除其他非法控制字符（\\x01-\\x1f，排除 \\n, \\t, \\r 已转换）
+        text = ''.join(
+            ch if 0x20 <= ord(ch) or ord(ch) == 0 else ''
+            for ch in text
+        )
+        # 移除 DEL (0x7f)
+        return text.replace('\x7f', '')
+
+    # 匹配非字符串部分（JSON 结构：括号、逗号、冒号、键名等）
+    cleaned_str = re.sub(
+        r'(?:"(?:[^"\\]|\\.)*"|[^"\\])',
+        clean_json_structure,
+        raw_str,  # 使用原始字符串清理结构部分
+        flags=re.DOTALL
+    )
+
+    try:
+        return json.loads(cleaned_str)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON 格式错误：{e.msg} at line {e.lineno}, column {e.colno}")
+
+
+def _clean_string_value(match_str):
+    """清理 JSON 字符串值中的字面控制字符，转换为合法的 JSON 转义序列。
+
+    Args:
+        match_str: 正则匹配到的完整字符串（包含首尾双引号）
+
+    Returns:
+        清理后的字符串值，控制字符已转换为 \\n, \\r, \\t 等转义序列
+    """
+    start_q = match_str.find('"')
+    end_q = match_str.rfind('"')
+    if start_q == end_q:
+        return match_str
+
+    prefix = match_str[:start_q + 1]
+    inner = match_str[start_q + 1:end_q]
+    suffix = match_str[end_q:]
+
+    # 将字面控制字符转换为 JSON 转义序列
+    cleaned = inner.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+    # 移除其他非法控制字符（\\x01-\\x1f，排除 \\n, \\t, \\r 已转换）
+    cleaned = ''.join(
+        ch if 0x20 <= ord(ch) or ord(ch) == 0 else ''
+        for ch in cleaned
+    )
+    # 同时移除 DEL (0x7f)
+    cleaned = cleaned.replace('\x7f', '')
+
+    return prefix + cleaned + suffix
+
 
 def _get_field_mapping():
     """获取最新的字段映射（实时从数据库查询）"""
@@ -338,7 +467,8 @@ def preview_data():
 def paste_text():
     """直接粘贴文本进行处理（支持 ES SQL 表格、JSON、竖线分隔格式）"""
     try:
-        data = request.json
+        # 使用安全解析，自动处理非法控制字符
+        data = _parse_json_with_control_char_fix(request.get_data())
         text = data.get('text', '').strip()
         excel_format = data.get('format', 'xlsx')
         use_chinese_names = data.get('use_chinese_names', False)  # 是否使用中文字段名
