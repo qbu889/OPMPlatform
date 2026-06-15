@@ -54,10 +54,16 @@
             <el-icon color="#67c23a"><CircleCheck /></el-icon>
             <span>格式化结果</span>
           </div>
-          <el-button type="success" @click="handleCopy">
-            <el-icon><DocumentCopy /></el-icon>
-            复制结果
-          </el-button>
+          <div style="display:flex;gap:8px;">
+            <el-button type="success" @click="handleCopy">
+              <el-icon><DocumentCopy /></el-icon>
+              复制结果
+            </el-button>
+            <el-button type="warning" @click="handleCopyNoNewline">
+              <el-icon><DocumentCopy /></el-icon>
+              复制（无换行）
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -114,14 +120,22 @@ const handleFormat = () => {
     return
   }
 
+  // 去重
+  const uniqueIds = [...new Set(ids)]
+  const duplicateCount = ids.length - uniqueIds.length
+
   // 格式化 ID（所有 ID 都加单引号）
-  const formattedIds = ids.map((id) => {
+  const formattedIds = uniqueIds.map((id) => {
     return `'${id.replace(/'/g, "''")}'` // 所有 ID 都加引号，并转义单引号
   })
 
   // 直接输出带引号的 ID 列表，每行一个
   sqlResult.value = formattedIds.join(',\n')
-  ElMessage.success(`已格式化 ${ids.length} 个 ID`)
+  if (duplicateCount > 0) {
+    ElMessage.success(`已格式化 ${uniqueIds.length} 个 ID（已去除 ${duplicateCount} 条重复数据）`)
+  } else {
+    ElMessage.success(`已格式化 ${uniqueIds.length} 个 ID`)
+  }
 }
 
 const handleCopy = async () => {
@@ -154,6 +168,45 @@ const handleCopy = async () => {
     
     if (successful) {
       ElMessage.success('已复制到剪贴板')
+    } else {
+      throw new Error('execCommand 复制失败')
+    }
+  } catch (error) {
+    console.error('复制失败:', error)
+    ElMessage.error('复制失败，请手动选择文本复制（Ctrl+C）')
+  }
+}
+
+const handleCopyNoNewline = async () => {
+  if (!sqlResult.value) {
+    ElMessage.warning('没有可复制的内容')
+    return
+  }
+
+  const noNewlineText = sqlResult.value.replace(/,\n/g, ',')
+
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(noNewlineText)
+      ElMessage.success('已复制（无换行）到剪贴板')
+      return
+    }
+
+    const textarea = document.createElement('textarea')
+    textarea.value = noNewlineText
+    textarea.style.position = 'fixed'
+    textarea.style.left = '-999999px'
+    textarea.style.top = '-999999px'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+
+    const successful = document.execCommand('copy')
+    document.body.removeChild(textarea)
+
+    if (successful) {
+      ElMessage.success('已复制（无换行）到剪贴板')
     } else {
       throw new Error('execCommand 复制失败')
     }
